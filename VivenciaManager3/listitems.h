@@ -155,14 +155,6 @@ public:
 	inline void setPayItem ( payListItem* const pay ) { m_payitem = pay; }
 	inline payListItem* payItem () const { return m_payitem; }
 
-	inline uint helper_addDay () { return ++helper_n_days; }
-	inline uint helper_delDay () {
-		if ( helper_n_days > 0 ) --helper_n_days;
-		return helper_n_days;
-	}
-
-	inline void helper_setDays ( const uint n_days ) { helper_n_days = n_days; }
-	inline uint helper_nDays () const { return helper_n_days; }
 	inline void setNewProjectOpt ( const int opt ) { m_newproject_opt = opt; }
 	inline int newProjectOpt () const { return m_newproject_opt; }
 
