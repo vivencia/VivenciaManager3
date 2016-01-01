@@ -1,0 +1,75 @@
+#include "machinesrecord.h"
+#include "global.h"
+
+#ifdef TRANSITION_PERIOD
+#include "inventory.h"
+#include "vivenciadb.h"
+#endif
+
+static const double TABLE_VERSION ( 1.0 );
+
+static const uint MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] = {
+	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
+	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
+};
+
+bool updateMachinesTable ()
+{
+#ifdef TRANSITION_PERIOD
+	VDB ()->createTable ( &machinesRecord::t_info );
+	/*Inventory invRec;
+	if ( invRec.readFirstRecord () ) {
+		machinesRecord macRec;
+		QString brand, type;
+		do {
+			if ( recStrValue ( &invRec, FLD_INVENTORY_TYPE ) == QStringLiteral ( "Ferramenta" ) ) {
+				macRec.setAction ( ACTION_ADD );
+				setRecValue ( &macRec, FLD_MACHINES_NAME, recStrValue ( &invRec, FLD_INVENTORY_ITEM ) );
+				brand = recStrValue ( &invRec, FLD_INVENTORY_BRAND );
+				if ( brand == QStringLiteral ( "BOSCH" ) || brand == QStringLiteral ( "DEWALT" ) || brand == QStringLiteral ( "TRAPP" ) )
+					type = QStringLiteral ( "Elétrica" );
+				else if ( brand == QStringLiteral ( "HUSQVARNA" ) || brand == QStringLiteral ( "BRIGGS" ) )
+					type = QStringLiteral ( "Combustão (gasolina)" );
+				else
+					type = QStringLiteral ( "Manual" );
+
+				setRecValue ( &macRec, FLD_MACHINES_BRAND, brand );
+				setRecValue ( &macRec, FLD_MACHINES_BRAND, type );
+				macRec.saveRecord ();
+				macRec.clearAll ();
+			}
+		} while ( invRec.readNextRecord () );
+	}*/
+	return true;
+
+#endif //TRANSITION_PERIOD
+	return false;
+}
+
+const TABLE_INFO machinesRecord::t_info = {
+	MACHINES_TABLE,
+	QStringLiteral ( "MACHINES" ),
+	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
+	QStringLiteral ( " PRIMARY KEY ( `ID` ) , UNIQUE KEY `id` ( `ID` ) " ),
+	QStringLiteral ( "`ID`|`SUPPLIES_ID`|`NAME`|`BRAND`|`TYPE`|`EVENTS`|`EVENT_DATES`|`EVENT_TIMES`|`EVENT_JOBS`|" ),
+	QStringLiteral ( " int ( 9 ) NOT NULL, | int ( 9 ) DEFAULT NULL, | varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
+	" varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 80 ) DEFAULT NULL, |"
+	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, |"
+	" longtext COLLATE utf8_unicode_ci, |" ),
+	QStringLiteral ( "ID|Supplies ID|Name|Brand|Type|Events|Events dates|Events times|Events jobs|" ),
+	MACHINES_FIELDS_TYPE, TABLE_VERSION, MACHINES_FIELD_COUNT, TABLE_MACHINES_ORDER, &updateMachinesTable
+	#ifdef TRANSITION_PERIOD
+	, true
+	#endif
+};
+
+machinesRecord::machinesRecord ()
+	: DBRecord ( MACHINES_FIELD_COUNT )
+{
+	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
+	DBRecord::t_info = & ( this->t_info );
+	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::helperFunction = this->helperFunction;
+}
+
+machinesRecord::~machinesRecord () {}
