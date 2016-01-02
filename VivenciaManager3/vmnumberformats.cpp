@@ -627,9 +627,9 @@ vmNumber& vmNumber::fromTrustedStrDate ( const QString& date, const VM_DATE_FORM
 
 vmNumber& vmNumber::dateFromHumanDate ( const QString& date, const bool cache )
 {
-	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toInt ();
-	nbr_upart[VM_IDX_MONTH] = date.mid ( 5, 2 ).toInt ();
-	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
+    nbr_upart[VM_IDX_YEAR] = date.right ( 4 ).toInt ();
+    nbr_upart[VM_IDX_MONTH] = date.mid ( 3, 2 ).toInt ();
+    nbr_upart[VM_IDX_DAY] = date.left ( 2 ).toInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_HUMAN_DATE;
 	if ( cache ) {

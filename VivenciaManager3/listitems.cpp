@@ -283,7 +283,7 @@ void clientListItem::relationActions ( vmListItem* subordinateItem )
 
 jobListItem::jobListItem ()
     : vmListItem ( JOB_TABLE, job_nBadInputs, badInputs ),
-      mSearchSubFields ( nullptr ), m_payitem ( nullptr ), helper_n_days ( 0 ), m_newproject_opt ( INT_MIN )
+      mSearchSubFields ( nullptr ), m_payitem ( nullptr ), m_newproject_opt ( INT_MIN )
 {
     setSearchArray ( searchFields );
 }

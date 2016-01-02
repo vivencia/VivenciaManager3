@@ -167,7 +167,6 @@ public:
 private:
     podList<uint>* mSearchSubFields;
 	payListItem* m_payitem;
-	uint helper_n_days;
 	int m_newproject_opt;
 
 	bool badInputs[job_nBadInputs];

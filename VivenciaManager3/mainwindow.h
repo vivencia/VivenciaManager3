@@ -144,7 +144,8 @@ public:
 	void calcJobTime ();
 	void showJobTotalTime ( const vmNumber& time ) const;
 	bool dateIsInDaysList ( const QString& str_date );
-	void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
+    void rescanJobDaysList ();
+    void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
 	bool setNewProjectName ();
     void createNewProjectDir ();
 	bool renameProjectDir ( const bool phase_two = false );
@@ -154,6 +155,7 @@ public:
 	void selectJob ();
 	void btnJobSelect_clicked ();
 	void btnJobAddDay_clicked ();
+    void btnJobEditDay_clicked ();
 	void btnJobDelDay_clicked ();
 	void btnJobCancelDelDay_clicked ();
 	void btnJobPrevDay_clicked ();

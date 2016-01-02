@@ -726,6 +726,8 @@ void MainWindow::setupJobPanel ()
 		return btnJobSelect_clicked (); } );
 	connect ( ui->btnJobAddDay, &QToolButton::clicked, this, [&] () {
 		return btnJobAddDay_clicked (); } );
+    connect ( ui->btnJobEditDay, &QToolButton::clicked, this, [&] () {
+        return btnJobEditDay_clicked (); } );
 	connect ( ui->btnJobDelDay, &QToolButton::clicked, this, [&] () {
 		return btnJobDelDay_clicked (); } );
 	connect ( ui->btnJobCancelDelDay, &QToolButton::clicked, this, [&] () {
@@ -895,11 +897,8 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 		{
 			for ( ; i >= 0 ; --i ) {
 				item = static_cast<vmListItem*>( ui->lstJobDayReport->item ( i ) );
-				if ( item->data ( JILUR_REMOVED ).toBool () == true ) {
-					ui->lstJobDayReport->takeItem ( i );
-					delete item;
+                if ( item->data ( JILUR_REMOVED ).toBool () == true )
 					continue;
-				}
                 else
                     item->setData ( JILUR_ADDED, false );
 				date.fromTrustedStrDate ( item->data ( JILUR_DATE ).toString (), vmNumber::VDF_DB_DATE );
@@ -939,8 +938,6 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 							if ( !oldPricePerDay.isNull () )
 								mCal->addCalendarExchangeRule ( job->ce_list, CEAO_DEL_PRICE_DATE1, date, oldPricePerDay );
 						}
-						ui->lstJobDayReport->takeItem ( i );
-						delete item;
 						continue;
 					}
                     if ( item->data ( JILUR_ADDED ).toBool () == true ) {
@@ -1012,16 +1009,18 @@ void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item, v
 {
 	if ( item ) {
         if ( !item->data ( JILUR_REMOVED ).toBool () ) {
-            vmNumber time ( item->data ( JILUR_START_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
-            ui->timeJobStart->setTime ( time.toQTime () );
-            time.fromTrustedStrTime ( item->data ( JILUR_END_TIME ).toString (), vmNumber::VTF_DAYS );
-            ui->timeJobEnd->setTime ( time.toQTime () );
-            time.fromTrustedStrTime ( item->data ( JILUR_DAY_TIME ).toString (), vmNumber::VTF_DAYS );
-            ui->txtJobTotalDayTime->setText ( time.toTime ( vmNumber::VTF_FANCY ) );
+            vmNumber timeAndDate ( item->data ( JILUR_START_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
+            ui->timeJobStart->setTime ( timeAndDate.toQTime () );
+            timeAndDate.fromTrustedStrTime ( item->data ( JILUR_END_TIME ).toString (), vmNumber::VTF_DAYS );
+            ui->timeJobEnd->setTime ( timeAndDate.toQTime () );
+            ui->dteJobAddDate->setDate( item->data ( JILUR_DATE ).toDate () );
+            ui->txtJobTotalDayTime->setText ( timeAndDate.toTime ( vmNumber::VTF_FANCY ) );
+
+            timeAndDate.fromTrustedStrDate ( item->data ( JILUR_DATE ).toString (), vmNumber::VDF_HUMAN_DATE );
+            ui->dteJobAddDate->setDate ( timeAndDate );
+
             ui->txtJobWheather->setText ( item->data ( JILUR_WHEATHER ).toString () );
             ui->txtJobReport->textEditWithCompleter::setText ( item->data ( JILUR_REPORT ).toString () );
-            ui->btnJobDelDay->setEnabled ( item->data ( JILUR_REMOVED ).toBool () == false );
-            ui->btnJobCancelDelDay->setEnabled ( !ui->btnJobDelDay );
         }
         else
             ui->txtJobReport->textEditWithCompleter::setText ( TR_FUNC ( " - THIS DAY WAS REMOVED - " ) );
@@ -1075,10 +1074,11 @@ void MainWindow::controlJobDayForms ()
 	ui->txtJobReport->setEditable ( b_hasDays );
 
     ui->btnJobAddDay->setEnabled ( false );
+    ui->btnJobEditDay->setEnabled ( b_hasDays );
 	ui->btnJobPrevDay->setEnabled ( ui->lstJobDayReport-> currentRow () >= 1 );
 	ui->btnJobNextDay->setEnabled ( ui->lstJobDayReport->currentRow () < ui->lstJobDayReport->count () - 1 );
 	ui->btnJobDelDay->setEnabled ( b_hasDays );
-	ui->btnJobCancelDelDay->setEnabled ( false );
+    ui->btnJobCancelDelDay->setEnabled ( b_hasDays ? ui->lstJobDayReport->currentItem ()->data ( JILUR_REMOVED ).toBool () : false );
 	ui->btnJobMachines->setEnabled ( mJobCurItem != nullptr ? mJobCurItem->action () != ACTION_ADD: false );
 	ui->btnJobSeparateReportWindow->setEnabled ( mJobCurItem != nullptr );
 }
@@ -1297,7 +1297,6 @@ void MainWindow::decodeJobReportInfo ( jobListItem* job_item )
                     }
                     rec = &str_report.next ();
                 } while ( rec->isOK () );
-                job_item->helper_setDays ( day - 1 );
             }
         }
         else {
@@ -1330,7 +1329,7 @@ void MainWindow::updateJobInfoByRemoval ( const uint day, const bool bUndo )
     stringTable job_report ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_REPORT ) );
     if ( !bUndo )
         job_report.removeRecord ( day );
-    else {
+    else { // Restore removed day to list of valid days. Only works before commiting (saving) changes
         const stringRecord deletedDayRecord ( stringTable (
                     mJobCurItem->jobRecord ()->recordStrAlternate ( FLD_JOB_REPORT ) ).readRecord ( day ) );
         job_report.insertRecord ( day, deletedDayRecord );
@@ -1428,6 +1427,31 @@ bool MainWindow::dateIsInDaysList ( const QString& str_date )
         }
 	}
 	return false;
+}
+
+void MainWindow::rescanJobDaysList ()
+{
+    vmListItem* day_entry ( nullptr );
+    bool b_reorder ( false );
+    QString itemText;
+
+    for ( uint i ( 0 ); i < (unsigned) ui->lstJobDayReport->count (); ) {
+        day_entry = static_cast<vmListItem*>( ui->lstJobDayReport->item ( i ) );
+        if ( day_entry->data ( JILUR_REMOVED ).toBool () == true ) {
+            ui->lstJobDayReport-> takeItem ( i );
+            delete day_entry;
+            b_reorder = true;
+        }
+        else {
+            if ( b_reorder ) {
+                itemText = day_entry->data ( Qt::DisplayRole ).toString (); //QListWidgetItem::text () is an inline function that calls data ()
+                itemText.remove ( 0, itemText.indexOf ( QLatin1Char ( 'o' ) ) ); // Removes all characters before 'o' from lstJobReportItemPrefix ( "o dia")
+                itemText.prepend ( QString::number ( i + 1 ) ); //Starts the new label with item index minus number of all items removed. The +1 is because day counting starts at 1, not 0
+                day_entry->QListWidgetItem::setText ( itemText );
+            }
+            ++i; //move to the next item only when we did not remove an item
+        }
+    }
 }
 
 void MainWindow::fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list )
@@ -1633,7 +1657,7 @@ void MainWindow::btnJobAddDay_clicked ()
     ui->lstJobDayReport->setIgnoreChanges ( true );
     jobDayReportListWidget_currentItemChanged ( nullptr ); // clear forms
 
-    const uint n_days ( mJobCurItem->helper_addDay () );
+    const uint n_days ( ui->lstJobDayReport->count () + 1 );
     vmListItem* new_item ( new vmListItem ( 1000 ) );
     new_item->QListWidgetItem::setText ( QString::number ( n_days ) + lstJobReportItemPrefix + vmdate.toDate ( vmNumber::VDF_HUMAN_DATE ) );
     new_item->setData ( JILUR_ADDED, true );
@@ -1655,9 +1679,25 @@ void MainWindow::btnJobAddDay_clicked ()
     ui->btnJobPrevDay->setEnabled ( n_days > 1 );
     ui->btnJobNextDay->setEnabled ( false );
     ui->btnJobDelDay->setEnabled ( true );
+    ui->btnJobCancelDelDay->setEnabled ( false );
+    ui->btnJobEditDay->setEnabled ( true );
     ui->btnJobAddDay->setEnabled( false );
     mJobCurItem->daysList->append ( new_item );
     ui->lstJobDayReport->setIgnoreChanges ( false );
+}
+
+void MainWindow::btnJobEditDay_clicked ()
+{
+    const vmNumber vmdate ( ui->dteJobAddDate->date () );
+    ui->lstJobDayReport->setIgnoreChanges ( true );
+    vmListItem* day_entry ( static_cast<vmListItem*> ( ui->lstJobDayReport->currentItem () ) );
+    day_entry->QListWidgetItem::setText ( QString::number ( ui->lstJobDayReport->currentRow () + 1 ) + lstJobReportItemPrefix + vmdate.toDate ( vmNumber::VDF_HUMAN_DATE ) );
+    updateJobInfo ( vmdate.toDate ( vmNumber::VDF_DB_DATE ), JILUR_DATE );
+
+    if ( ui->lstJobDayReport->currentRow () == 0 ) // first day
+        ui->dteJobStart->setDate ( vmdate, true );
+    else if ( ui->lstJobDayReport->currentRow () == ui->lstJobDayReport->count () - 1 ) // last day
+        ui->dteJobEnd->setDate ( vmdate, true );
 }
 
 void MainWindow::btnJobDelDay_clicked ()
@@ -1669,9 +1709,10 @@ void MainWindow::btnJobDelDay_clicked ()
 		item->setFont ( fntStriked );
 		item->setBackground ( QBrush ( Qt::red ) );
 		item->setData ( JILUR_REMOVED, true );
-		mJobCurItem->helper_delDay ();
 		ui->btnJobCancelDelDay->setEnabled ( true );
         updateJobInfoByRemoval ( ui->lstJobDayReport->currentRow () );
+        ui->btnJobDelDay->setEnabled ( false );
+        ui->btnJobCancelDelDay->setEnabled ( true );
 	}
 }
 
@@ -1684,7 +1725,6 @@ void MainWindow::btnJobCancelDelDay_clicked ()
 		item->setFont ( fntStriked );
 		item->setBackground ( QBrush ( Qt::white ) );
 		item->setData ( JILUR_REMOVED, false );
-		mJobCurItem->helper_addDay ();
         updateJobInfoByRemoval ( ui->lstJobDayReport->currentRow (), true );
 	}
 }
@@ -1818,7 +1858,9 @@ void MainWindow::dteJob_dateAltered ( const vmWidget* const sender )
 void MainWindow::dteJobAddDate_dateAltered ()
 {
     const vmNumber vmdate ( ui->dteJobAddDate->date () );
-    ui->btnJobAddDay->setEnabled ( !dateIsInDaysList ( vmdate.toDate ( vmNumber::VDF_DB_DATE ) ) );
+    const bool bEnabled ( !dateIsInDaysList ( vmdate.toDate ( vmNumber::VDF_DB_DATE ) ) );
+    ui->btnJobAddDay->setEnabled ( bEnabled );
+    ui->btnJobEditDay->setEnabled ( bEnabled );
 }
 
 //-----------------------------------EDITING-FINISHED-JOB----------------------------------------------------
@@ -4056,7 +4098,7 @@ void MainWindow::on_btnJobSave_clicked ()
 				saveJobPayment ( job );
 			}
 			updateCalendarWithJobInfo ( job, orignalAction );
-			newProjectAction ();
+            rescanJobDaysList ();
 			crash->eliminateRestoreInfo ( mJobCurItem->crashID () );
             VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), TR_FUNC ( "Job data saved!" ) );
 			controlJobForms ();
