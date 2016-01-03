@@ -35,7 +35,7 @@ private:
 	void removeFiles ( QTreeWidgetItem* item, const bool bSingleFile = false, const bool bAsk = false );
     bool removeDir ( QTreeWidgetItem* item, const bool bAsk = false );
     bool renameDir ( QTreeWidgetItem* item, QString& strNewName );
-    void addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, const QString &projectid, PointersList<fileOps::st_fileInfo*>& files );
+    void addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, QString& projectid, PointersList<fileOps::st_fileInfo*>& files );
 	void execAction ( const QTreeWidgetItem* item, const int action_id );
 
 	estimateDlg ( QWidget* parent );

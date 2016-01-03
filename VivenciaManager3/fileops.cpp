@@ -211,10 +211,10 @@ triStateType fileOps::createDir ( const QString& path )
 {
     triStateType ret ( isDir ( path ) );
     if ( ret == TRI_UNDEF ) {
-        // Either path is an empty string, and so the next function will yield -1 ad we will not
+        // Either path is an empty string, and so the next function will yield -1 and we will not
         // proceed, returning TRI_UNDEF as the default result for empty parameters, or path does not
         // exists because the ::stat func inside isDir could not find it
-        const int idx ( path.lastIndexOf ( CHR_F_SLASH ) );
+        const int idx ( path.lastIndexOf ( CHR_F_SLASH, ( path.at ( path.length () - 1 ) == CHR_F_SLASH ) ? -2 : -1 ) );
         if ( idx != -1 ) {
             ret = createDir ( path.left ( idx ) );
             if ( ret == TRI_ON ) {

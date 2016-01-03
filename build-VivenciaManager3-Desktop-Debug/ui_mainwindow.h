@@ -247,10 +247,9 @@ public:
     QHBoxLayout *horizontalLayout_13;
     QToolButton *btnJobPrevDay;
     QToolButton *btnJobNextDay;
-    QFrame *line_17;
-    QToolButton *btnJobAddDay;
     vmDateEdit *dteJobAddDate;
-    QFrame *line_16;
+    QToolButton *btnJobAddDay;
+    QToolButton *btnJobEditDay;
     QToolButton *btnJobDelDay;
     QToolButton *btnJobCancelDelDay;
     textEditWithCompleter *txtJobReport;
@@ -521,7 +520,7 @@ public:
         scrollWorkFlow->setAlignment(Qt::AlignJustify|Qt::AlignVCenter);
         scrollAreaWidgetContents_2 = new QWidget();
         scrollAreaWidgetContents_2->setObjectName(QStringLiteral("scrollAreaWidgetContents_2"));
-        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 100, 30));
+        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 645, 592));
         scrollWorkFlow->setWidget(scrollAreaWidgetContents_2);
 
         horizontalLayout_5->addWidget(scrollWorkFlow);
@@ -1767,19 +1766,6 @@ public:
 
         horizontalLayout_13->addWidget(btnJobNextDay);
 
-        line_17 = new QFrame(frmJobReportControls);
-        line_17->setObjectName(QStringLiteral("line_17"));
-        line_17->setFrameShape(QFrame::VLine);
-        line_17->setFrameShadow(QFrame::Sunken);
-
-        horizontalLayout_13->addWidget(line_17);
-
-        btnJobAddDay = new QToolButton(frmJobReportControls);
-        btnJobAddDay->setObjectName(QStringLiteral("btnJobAddDay"));
-        btnJobAddDay->setIcon(icon15);
-
-        horizontalLayout_13->addWidget(btnJobAddDay);
-
         dteJobAddDate = new vmDateEdit(frmJobReportControls);
         dteJobAddDate->setObjectName(QStringLiteral("dteJobAddDate"));
         QSizePolicy sizePolicy5(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -1790,12 +1776,19 @@ public:
 
         horizontalLayout_13->addWidget(dteJobAddDate);
 
-        line_16 = new QFrame(frmJobReportControls);
-        line_16->setObjectName(QStringLiteral("line_16"));
-        line_16->setFrameShape(QFrame::VLine);
-        line_16->setFrameShadow(QFrame::Sunken);
+        btnJobAddDay = new QToolButton(frmJobReportControls);
+        btnJobAddDay->setObjectName(QStringLiteral("btnJobAddDay"));
+        btnJobAddDay->setMaximumSize(QSize(32, 32));
+        btnJobAddDay->setIcon(icon15);
 
-        horizontalLayout_13->addWidget(line_16);
+        horizontalLayout_13->addWidget(btnJobAddDay);
+
+        btnJobEditDay = new QToolButton(frmJobReportControls);
+        btnJobEditDay->setObjectName(QStringLiteral("btnJobEditDay"));
+        btnJobEditDay->setMaximumSize(QSize(32, 32));
+        btnJobEditDay->setIcon(icon8);
+
+        horizontalLayout_13->addWidget(btnJobEditDay);
 
         btnJobDelDay = new QToolButton(frmJobReportControls);
         btnJobDelDay->setObjectName(QStringLiteral("btnJobDelDay"));
@@ -2466,8 +2459,7 @@ public:
         QWidget::setTabOrder(btnJobSelectJob, txtJobPrice);
         QWidget::setTabOrder(txtJobPrice, btnJobPrevDay);
         QWidget::setTabOrder(btnJobPrevDay, btnJobNextDay);
-        QWidget::setTabOrder(btnJobNextDay, btnJobAddDay);
-        QWidget::setTabOrder(btnJobAddDay, btnJobDelDay);
+        QWidget::setTabOrder(btnJobNextDay, btnJobDelDay);
         QWidget::setTabOrder(btnJobDelDay, btnJobCancelDelDay);
         QWidget::setTabOrder(btnJobCancelDelDay, lstJobDayReport);
         QWidget::setTabOrder(lstJobDayReport, timeJobStart);
@@ -2524,7 +2516,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabMain->setCurrentIndex(7);
+        tabMain->setCurrentIndex(6);
         tboxCalJobs->setCurrentIndex(0);
 
 
@@ -2764,11 +2756,15 @@ public:
 #endif // QT_NO_TOOLTIP
         btnJobAddDay->setText(QApplication::translate("MainWindow", "...", 0));
 #ifndef QT_NO_TOOLTIP
-        btnJobDelDay->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Remove the selected date from the list. While the change is not saved it is possible to undo this operation. Select the strikedthrough item from the list and press the button just next to this one.</p></body></html>", 0));
+        btnJobEditDay->setToolTip(QApplication::translate("MainWindow", "Change the current date for the selected day entry in the list. The date must not be in use by another day entry.", 0));
+#endif // QT_NO_TOOLTIP
+        btnJobEditDay->setText(QApplication::translate("MainWindow", "...", 0));
+#ifndef QT_NO_TOOLTIP
+        btnJobDelDay->setToolTip(QApplication::translate("MainWindow", "Remove the selected date from the list. While the change is not saved it is possible to undo this operation. Select the strikedthrough item from the list and press the button just next to this one.", 0));
 #endif // QT_NO_TOOLTIP
         btnJobDelDay->setText(QApplication::translate("MainWindow", "...", 0));
 #ifndef QT_NO_TOOLTIP
-        btnJobCancelDelDay->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Deselect the strikedthrough item from the days list, canceling its removal. Only before saving the changes.</p></body></html>", 0));
+        btnJobCancelDelDay->setToolTip(QApplication::translate("MainWindow", "Deselect the strikedthrough item from the days list, canceling its removal. Only before saving the changes.", 0));
 #endif // QT_NO_TOOLTIP
         btnJobCancelDelDay->setText(QApplication::translate("MainWindow", "...", 0));
 #ifndef QT_NO_TOOLTIP

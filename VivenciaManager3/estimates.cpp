@@ -680,6 +680,7 @@ void estimateDlg::projectActions ( QAction *action )
         break;
     }
     PointersList<fileOps::st_fileInfo*> files;
+    files.setAutoDeleteItem ( true );
     jobListItem* jobItem ( nullptr );
 
     if ( bUseDialog ) {
@@ -694,7 +695,12 @@ void estimateDlg::projectActions ( QAction *action )
                 bProceed = fileOps::createDir ( strProjectPath ).isOn ();
                 if ( bProceed ) {
                     f_info->filename = fileOps::nthDirFromPath ( strProjectPath );
+                    if ( f_info->filename.endsWith ( CHR_F_SLASH ) )
+                        f_info->filename.chop ( 1 );
                     f_info->fullpath = strProjectPath;
+                    f_info->is_dir = true;
+                    f_info->is_file = false;
+                    files.append ( f_info );
                     strProjectID = npdlg->projectID ();
                     (void) fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) );
                     addFilesToDir ( bAddDoc, bAddXls, strProjectPath, strProjectID, files );
@@ -940,12 +946,13 @@ bool estimateDlg::renameDir ( QTreeWidgetItem *item, QString &strNewName )
     return false;
 }
 
-void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, const QString& projectid,
+void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, QString& projectid,
                                   PointersList<fileOps::st_fileInfo*>& files )
 {
     QString fileName, fileNameComplete;
     QString sub_version ( QLatin1Char ( 'A' ) );
     uint i ( 1 );
+    bool b_ok ( false );
     if ( bAddDoc ) {
         fileName = QLatin1String ( "Projeto-" ) + projectid + QLatin1String ( "-%1" ) + CONFIG ()->projectDocumentExtension ();
         do {
@@ -960,12 +967,13 @@ void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const 
             f_info->filename = fileName.arg ( sub_version );
             f_info->fullpath = fileNameComplete;
             files.append ( f_info );
+            b_ok = true;
         }
     }
     if ( bAddXls ) {
-        fileName = projectpath + QLatin1String ( "Planilhas-" ) + projectid + QLatin1String ( "-%1") + CONFIG ()->projectSpreadSheetExtension ();
+        fileName = QLatin1String ( "Planilhas-" ) + projectid + QLatin1String ( "-%1") + CONFIG ()->projectSpreadSheetExtension ();
         do {
-            fileNameComplete = fileName.arg ( sub_version );
+            fileNameComplete = projectpath + fileName.arg ( sub_version );
             if ( fileOps::exists ( fileNameComplete ).isOn () )
                 sub_version = QChar ( 'A' + i++ );
             else
@@ -976,8 +984,11 @@ void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const 
             f_info->filename = fileName.arg ( sub_version );
             f_info->fullpath = fileNameComplete;
             files.append ( f_info );
+            b_ok = true;
         }
     }
+    if ( b_ok )
+        projectid += CHR_HYPHEN + sub_version;
 }
 
 void estimateDlg::execAction ( const QTreeWidgetItem* item, const int action_id )
