@@ -1,4 +1,5 @@
 #include "payment.h"
+#include "listitems.h"
 #include "global.h"
 #include "vivenciadb.h"
 #include "dbcalendar.h"
@@ -332,4 +333,14 @@ void Payment::updateCalendarPayInfo ()
 	}
 	ce_list.clearButKeepMemory ( true );
 	delete cal;
+}
+
+void Payment::setListItem ( payListItem* pay_item )
+{
+    DBRecord::mListItem = static_cast<vmListItem*>( pay_item );
+}
+
+payListItem* Payment::payItem () const
+{
+    return static_cast<payListItem*>( DBRecord::mListItem );
 }

@@ -15,6 +15,7 @@ class contactsManagerWidget : public QWidget, public vmWidget
 
 public:
 	enum CMW_TYPE { CMW_PHONES = 0, CMW_EMAIL = 1 };
+
 	contactsManagerWidget ( QWidget* parent, const CMW_TYPE type = CMW_PHONES );
 	virtual ~contactsManagerWidget ();
 
@@ -22,8 +23,8 @@ public:
 	void initInterface ();
 	void setEditable ( const bool editable );
 
-	void decodePhones ( const stringRecord& phones );
-	void decodeEmails ( const stringRecord& emails );
+    void decodePhones ( const stringRecord& phones, const bool bClear = true );
+    void decodeEmails ( const stringRecord& emails, const bool bClear = true );
 	void insertItem ();
 	bool removeCurrent ( int& removed_idx );
 

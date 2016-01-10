@@ -15,6 +15,8 @@
 #define recStrValueAlternate(dbrecord,field) (dbrecord)->recordStrAlternate ( field )
 #define recIntValue(dbrecord,field) (dbrecord)->recordInt ( field )
 
+class vmListItem;
+
 class DBRecord
 {
 
@@ -166,6 +168,8 @@ public:
 	inline int backupRecordInt ( const uint field ) const {
 		return m_RECFIELDS[field].i_field[RECORD_FIELD::IDX_TEMP]; }
 
+    inline void setListItem ( vmListItem* listitem ) { mListItem = listitem; }
+
 protected:
 	friend void updateSuppliesItemCompleter ( const DBRecord* db_rec );
 	friend void updateInventoryItemCompleter ( const DBRecord* db_rec );
@@ -220,6 +224,7 @@ protected:
 
 	const TABLE_INFO* t_info;
 	RECORD_FIELD* m_RECFIELDS;
+    vmListItem* mListItem;
 
 	typedef void ( **HelperFunction ) ( const DBRecord* );
 	HelperFunction helperFunction;

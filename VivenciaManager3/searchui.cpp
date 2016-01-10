@@ -265,6 +265,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 							if ( dbrec->readRecord ( id ) ) {
 								for ( fld = 0; fld < fld_max; ++fld ) {
 									if ( recStrValue ( dbrec, fld ).contains ( mSearchTerm, Qt::CaseInsensitive ) ) {
+                                        item->setSearchArray (); // for the found item - only -, initialize the array
 										item->setSearchFieldStatus ( fld, SS_SEARCH_FOUND );
 										bhas_result = true;
 									}

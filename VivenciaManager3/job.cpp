@@ -404,3 +404,13 @@ const QString Job::jobTypeWithDate () const
     return  CHR_L_PARENTHESIS + recStrValue ( this, FLD_JOB_ID ) + CHR_R_PARENTHESIS + CHR_SPACE +
             recStrValue ( this, FLD_JOB_TYPE ) + QLatin1String ( " - " ) + date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_HUMAN_DATE );
 }
+
+void Job::setListItem ( jobListItem* job_item )
+{
+    DBRecord::mListItem = static_cast<vmListItem*>( job_item );
+}
+
+jobListItem* Job::jobItem () const
+{
+    return static_cast<jobListItem*>( DBRecord::mListItem );
+}

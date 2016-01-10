@@ -3,6 +3,8 @@
 
 #include "dbrecord.h"
 
+class buyListItem;
+
 const uint BUY_FIELD_COUNT ( 13 );
 
 const uint BUYS_FIELDS_TYPE[BUY_FIELD_COUNT] = {
@@ -37,6 +39,9 @@ public:
 	QString isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_record = -1 ) const;
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	void updateCalendarBuyInfo ();
+
+    void setListItem ( buyListItem* buy_item );
+    buyListItem* buyItem () const;
 
 	static const TABLE_INFO t_info;
 

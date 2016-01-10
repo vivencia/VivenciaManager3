@@ -23,7 +23,7 @@ static inline int recordFieldsCompare_pod ( const RECORD_FIELD& rec1, const RECO
 }
 
 DBRecord::DBRecord ( const uint field_count )
-	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), helperFunction ( nullptr ),
+    : t_info ( nullptr ), m_RECFIELDS ( nullptr ) , mListItem ( nullptr ), helperFunction ( nullptr ),
 	  fld_count ( field_count ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
 {
@@ -31,7 +31,7 @@ DBRecord::DBRecord ( const uint field_count )
 }
 
 DBRecord::DBRecord ( const DBRecord* other )
-	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), helperFunction ( nullptr ),
+    : t_info ( nullptr ), m_RECFIELDS ( nullptr ), mListItem ( nullptr ),helperFunction ( nullptr ),
 	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
 {

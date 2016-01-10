@@ -1,4 +1,5 @@
 #include "client.h"
+#include "listitems.h"
 #include "completers.h"
 #include "configops.h"
 #include "fileops.h"
@@ -240,4 +241,14 @@ QString Client::concatenateClientInfo ( const Client& client )
 		}
 	}
 	return info;
+}
+
+void Client::setListItem ( clientListItem* client_item )
+{
+    DBRecord::mListItem = static_cast<vmListItem*>( client_item );
+}
+
+clientListItem* Client::clientItem () const
+{
+    return static_cast<clientListItem*>( DBRecord::mListItem );
 }

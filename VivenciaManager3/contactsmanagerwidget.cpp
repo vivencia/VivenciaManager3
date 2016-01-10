@@ -189,8 +189,10 @@ void contactsManagerWidget::btnExtra_clicked ()
 	}
 }
 
-void contactsManagerWidget::decodePhones ( const stringRecord& phones )
+void contactsManagerWidget::decodePhones ( const stringRecord& phones, const bool bClear )
 {
+    if ( bClear )
+        clearAll ();
 	if ( !phones.isNull () ) {
 		phones.first ();
 		vmNumber phone ( phones.curValue (), VMNT_PHONE, 1 );
@@ -207,8 +209,10 @@ void contactsManagerWidget::decodePhones ( const stringRecord& phones )
 	}
 }
 
-void contactsManagerWidget::decodeEmails ( const stringRecord& emails )
+void contactsManagerWidget::decodeEmails ( const stringRecord& emails, const bool bClear )
 {
+    if ( bClear )
+        clearAll ();
 	if ( emails.first () ) {
 		cboInfoData->setIgnoreChanges ( true );
 		do {

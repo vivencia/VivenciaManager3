@@ -222,7 +222,7 @@ void Data::loadDataIntoMemory ()
 			client_item->item_related[RLI_CLIENTPARENT] = client_item;
 			client_item->loadData ();
 			client_item->update ( false );
-            client_item->addToList( globalMainWindow->clientsList );
+            client_item->addToList ( globalMainWindow->clientsList );
 
 			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) ) {
 				do {

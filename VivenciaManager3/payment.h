@@ -3,6 +3,7 @@
 
 #include "dbrecord.h"
 
+class payListItem;
 struct CALENDAR_EXCHANGE;
 
 const uint PAY_FIELD_COUNT ( 10 );
@@ -31,6 +32,9 @@ public:
 	}
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	void updateCalendarPayInfo ();
+
+    void setListItem ( payListItem* pay_item );
+    payListItem* payItem () const;
 
 	static const TABLE_INFO t_info;
 

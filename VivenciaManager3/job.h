@@ -5,6 +5,10 @@
 #include "dbrecord.h"
 
 class Client;
+class jobListItem;
+struct CALENDAR_EXCHANGE;
+
+class QListWidgetItem;
 
 const uint JOB_FIELD_COUNT ( 12 );
 const uint JOB_REPORT_FIELDS_COUNT ( 5 );
@@ -21,11 +25,6 @@ enum OLD_JOB_TABLE_FIELDS {
 	FLD_OLDJOB_PROJECTID = 10, FLD_OLDJOB_REPORT = 11
 };
 #endif
-
-class vmListWidget;
-struct CALENDAR_EXCHANGE;
-
-class QListWidgetItem;
 
 class Job : public DBRecord
 {
@@ -65,7 +64,10 @@ public:
     static QString jobTypeWithDate ( const QString& id );
     const QString jobTypeWithDate () const;
 
-	static const TABLE_INFO t_info;
+    void setListItem ( jobListItem* job_item );
+    jobListItem* jobItem () const;
+
+    static const TABLE_INFO t_info;
 
 protected:
 	friend bool updateJobTable ();

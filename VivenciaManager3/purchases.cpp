@@ -1,4 +1,5 @@
 #include "purchases.h"
+#include "listitems.h"
 #include "global.h"
 #include "stringrecord.h"
 #include "completers.h"
@@ -455,4 +456,14 @@ void Buy::updateCalendarBuyInfo ()
 	}
 	ce_list.clearButKeepMemory ( true );
 	delete cal;
+}
+
+void Buy::setListItem ( buyListItem* buy_item )
+{
+    DBRecord::mListItem = static_cast<vmListItem*>( buy_item );
+}
+
+buyListItem* Buy::buyItem () const
+{
+    return static_cast<buyListItem*>( DBRecord::mListItem );
 }

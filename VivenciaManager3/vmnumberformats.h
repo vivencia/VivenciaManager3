@@ -193,7 +193,7 @@ public:
 		return ( ( this->year () - year ) * 12 ) + this->month () - month;
 	}
 
-	bool isDateWithinRange ( const vmNumber& checkDate, const uint years = 0, const uint months = 0, const uint days = 0 ) const;
+    bool isDateWithinRange ( const vmNumber& checkDate, const uint years = 0, const uint months = 0, const uint days = 0 ) const;
 	unsigned int julianDay () const;
 	unsigned int dayOfYear () const;
 	unsigned int dayOfWeek () const;

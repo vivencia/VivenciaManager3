@@ -352,7 +352,7 @@ Message::MESSAGE_BTNCLICKED  vmNotify::notifyBox ( const QString& title, const Q
 		btn2->setObjectName ( QString::number ( Message::BUTTON_3 ) );
 		message->addWidget ( btn2, 1, Qt::AlignCenter, true );
 	}
-    message->isModal = ( btn1 != nullptr ) | ( btn2 != nullptr );
+    //message->isModal = ( btn1 != nullptr ) | ( btn2 != nullptr );
 	addMessage ( message );
 
 	const Message::MESSAGE_BTNCLICKED btnID ( message->mBtnID );

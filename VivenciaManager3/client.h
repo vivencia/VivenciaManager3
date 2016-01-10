@@ -3,6 +3,8 @@
 
 #include "dbrecord.h"
 
+class clientListItem;
+
 const uint CLIENT_FIELD_COUNT ( 12 );
 
 class Client : public DBRecord
@@ -24,6 +26,9 @@ public:
     static QString clientName ( const QString& id );
     static int clientID ( const QString& name );
     static QString concatenateClientInfo ( const Client& client );
+
+    void setListItem ( clientListItem* client_item );
+    clientListItem* clientItem () const;
 
     static const TABLE_INFO t_info;
 

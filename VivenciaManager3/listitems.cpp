@@ -41,8 +41,6 @@ vmListItem::~vmListItem ()
         disconnectRelation ( RLI_CLIENTITEM, this );
 	if ( mbSearchCreated )
 		delete[] searchFields;
-    if ( mRelation == RLI_CLIENTITEM )
-		heap_del ( m_dbrec );
 }
 
 QString vmListItem::defaultStyleSheet () const
@@ -100,10 +98,10 @@ void vmListItem::syncSiblingWithThis ( vmListItem* sibling )
 
 void vmListItem::addToList ( vmListWidget* const w_list )
 {
-    if ( m_list != w_list ) {
+    //if ( m_list != w_list ) {
         w_list->addItem ( this );
         m_list = w_list;
-    }
+    //}
     //w_list->setCurrentItem ( this );
 }
 
@@ -214,18 +212,12 @@ void vmListItem::saveCrashInfo ( crashRestore* crash )
 	m_crashid = crash->commitState ( m_crashid, state_info.toString () );
 }
 
-void vmListItem::createSearchArray ()
+void vmListItem::setSearchArray ()
 {
-	if ( !mbSearchCreated ) {
-		if ( m_dbrec )
-			searchFields = new triStateType[m_dbrec->fieldCount ()];
+    if ( m_dbrec != nullptr ) {
+        searchFields = new triStateType[m_dbrec->fieldCount ()];
+        mbSearchCreated = true;
 	}
-}
-
-clientListItem::clientListItem ()
-    : vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs )
-{
-	setSearchArray ( searchFields );
 }
 
 clientListItem::~clientListItem ()
@@ -254,8 +246,10 @@ void clientListItem::createDBRecord ()
 
 bool clientListItem::loadData ()
 {
-	if ( !m_dbrec )
+    if ( !m_dbrec ) {
 		createDBRecord ();
+        CLIENT_REC->setListItem ( this );
+    }
 	if ( action () == ACTION_READ )
 		return ( CLIENT_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -279,13 +273,6 @@ void clientListItem::relationActions ( vmListItem* subordinateItem )
             static_cast<clientListItem*>( subordinateItem )->buys = this->buys;
         }
     }
-}
-
-jobListItem::jobListItem ()
-    : vmListItem ( JOB_TABLE, job_nBadInputs, badInputs ),
-      mSearchSubFields ( nullptr ), m_payitem ( nullptr ), m_newproject_opt ( INT_MIN )
-{
-    setSearchArray ( searchFields );
 }
 
 jobListItem::~jobListItem ()
@@ -325,8 +312,10 @@ void jobListItem::createDBRecord ()
 
 bool jobListItem::loadData ()
 {
-	if ( !m_dbrec )
+    if ( !m_dbrec ) {
 		createDBRecord ();
+        JOB_REC->setListItem ( this );
+    }
 	if ( action () == ACTION_READ )
 		return ( JOB_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -372,12 +361,6 @@ podList<uint>* jobListItem::searchSubFields () const
 void jobListItem::setReportSearchFieldFound ( const uint report_field, const uint day )
 {
     mSearchSubFields->operator []( day ) = report_field;
-}
-
-payListItem::payListItem ()
-	: vmListItem ( PAYMENT_TABLE, pay_nBadInputs, badInputs )
-{
-	setSearchArray ( searchFields );
 }
 
 payListItem::~payListItem ()
@@ -430,8 +413,10 @@ void payListItem::createDBRecord ()
 
 bool payListItem::loadData ()
 {
-	if ( !m_dbrec )
+    if ( !m_dbrec ) {
 		createDBRecord ();
+        PAY_REC->setListItem ( this );
+    }
 	if ( action () == ACTION_READ )
 		return ( PAY_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -461,12 +446,6 @@ uint payListItem::translatedInputFieldIntoBadInputField ( const uint field ) con
 		break;
 	}
 	return input_field;
-}
-
-buyListItem::buyListItem ()
-	: vmListItem ( PURCHASE_TABLE, buy_nBadInputs, badInputs )
-{
-	setSearchArray ( searchFields );
 }
 
 buyListItem::~buyListItem ()
@@ -535,8 +514,10 @@ void buyListItem::createDBRecord ()
 
 bool buyListItem::loadData ()
 {
-	if ( !m_dbrec )
+    if ( !m_dbrec ) {
 		createDBRecord ();
+        BUY_REC->setListItem ( this );
+    }
 	if ( action () == ACTION_READ )
 		return ( BUY_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input

@@ -2,9 +2,7 @@
 #define LISTITEMS_H
 
 #include "vmwidget.h"
-#include "dbrecord.h"
 #include "client.h"
-
 #include "job.h"
 #include "payment.h"
 #include "purchases.h"
@@ -13,6 +11,7 @@
 
 enum SEARCH_STATUS { SS_NOT_SEARCHING = TRI_UNDEF, SS_SEARCH_FOUND = TRI_ON, SS_NOT_FOUND = TRI_UNDEF };
 
+class vmListWidget;
 class jobListItem;
 class payListItem;
 class buyListItem;
@@ -90,7 +89,7 @@ public:
 	inline SEARCH_STATUS searchFieldStatus ( const uint field ) const {
 			return searchFields ? static_cast<SEARCH_STATUS> ( searchFields[field].state () ) : SS_NOT_SEARCHING; }
 
-	inline void setSearchArray ( triStateType* s_array ) { searchFields = s_array; }
+    void setSearchArray ();
 	void createSearchArray (); //for generic items
 
 protected:
@@ -118,7 +117,8 @@ class clientListItem : public vmListItem
 {
 
 public:
-	explicit clientListItem ();
+    explicit inline clientListItem ()
+        : vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs ) {}
 	virtual ~clientListItem ();
 
 	inline Client* clientRecord () const { return static_cast<Client*> ( dbRec () ); }
@@ -134,13 +134,15 @@ public:
 
 private:
 	bool badInputs[client_nBadInputs];
-	triStateType searchFields[CLIENT_FIELD_COUNT];
 };
 
 class jobListItem : public vmListItem
 {
 public:
-	explicit jobListItem ();
+    explicit inline jobListItem ()
+        : vmListItem ( JOB_TABLE, job_nBadInputs, badInputs ),
+          mSearchSubFields ( nullptr ), m_payitem ( nullptr ), m_newproject_opt ( INT_MIN ) {}
+
 	virtual ~jobListItem ();
 
 	inline Job* jobRecord () const { return static_cast<Job*> ( dbRec () ); }
@@ -170,14 +172,14 @@ private:
 	int m_newproject_opt;
 
 	bool badInputs[job_nBadInputs];
-	triStateType searchFields[JOB_FIELD_COUNT];
 };
 
 class payListItem : public vmListItem
 {
 
 public:
-	explicit payListItem ();
+    explicit inline payListItem ()
+        : vmListItem ( PAYMENT_TABLE, pay_nBadInputs, badInputs ) {}
 	virtual ~payListItem ();
 
 	inline Payment* payRecord () const { return static_cast<Payment*> ( dbRec () ); }
@@ -191,14 +193,14 @@ public:
 
 private:
 	bool badInputs[pay_nBadInputs];
-	triStateType searchFields[PAY_FIELD_COUNT];
 };
 
 class buyListItem : public vmListItem
 {
 
 public:
-	explicit buyListItem ();
+    explicit inline buyListItem ()
+        : vmListItem ( PURCHASE_TABLE, buy_nBadInputs, badInputs ) {}
 	virtual ~buyListItem ();
 
 	inline Buy* buyRecord () const { return static_cast<Buy*> ( dbRec () ); }
@@ -212,6 +214,5 @@ public:
 
 private:
 	bool badInputs[buy_nBadInputs];
-	triStateType searchFields[BUY_FIELD_COUNT];
 };
 #endif // LISTITEMS_H

@@ -97,7 +97,7 @@ public:
 	void clientsListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
 	void controlClientForms ();
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
-	void displayClientInfo ( const Client* const client );
+    void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const int id ) const;
 	void fillAllLists ( const clientListItem* client_item );
     void btnClientAdd_clicked ();
@@ -129,13 +129,13 @@ public:
 	void jobDayReportListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
 	void controlJobForms ();
 	void controlJobDayForms ();
-    void controlJobPictureControls (); //must be called from within displayJobInfo or after because it relies on having read the database for info
+    void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
-	void displayJobInfo ( const Job* const job );
+    void loadJobInfo ( const Job* const job );
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
 	void preFillJobInfo ();
 	void scanJobImages ();
-	void decodeJobReportInfo ( jobListItem* job_item );
+    void decodeJobReportInfo ( const Job* const job );
 	void updateJobInfo ( const QString& text, const uint user_role );
     void updateJobInfoByRemoval ( const uint day , const bool bUndo = false );
 	void addJobPayment ( jobListItem* const job_item );
@@ -143,7 +143,7 @@ public:
 	void removeJobPayment ( payListItem* pay_item );
 	void calcJobTime ();
 	void showJobTotalTime ( const vmNumber& time ) const;
-	bool dateIsInDaysList ( const QString& str_date );
+    triStateType dateIsInDaysList ( const QString& str_date );
     void rescanJobDaysList ();
     void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
 	bool setNewProjectName ();
@@ -193,7 +193,7 @@ public:
 	void payOverdueGUIActions ( const Payment* const pay );
 	void controlPayForms ();
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
-	void displayPayInfo ( const Payment* const pay );
+    void loadPayInfo ( const Payment* const pay );
 	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
 	void preFillPayInfo ();
 	void fillCalendarPaysList ( const stringTable& payids, vmListWidget* list, const bool use_date = false );
@@ -221,9 +221,9 @@ public:
 	void buySuppliersListWidget_currentItemChanged ( vmListItem* item, vmListItem* );
 	void updateCalendarWithBuyInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateCalendarWithBuyPayInfo ( Buy* const buy, const RECORD_ACTION action );
-	void controlBuyForms ();
+    void controlBuyForms ( const buyListItem* const buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
-	void displayBuyInfo ( const Buy* const buy );
+    void loadBuyInfo ( const buyListItem* const buy_item );
 	buyListItem* getBuyItem ( const clientListItem* const parent_client, const int id ) const;
 	void fillJobBuyList ( const jobListItem* parent_job );
 	void fillCalendarBuysList ( const stringTable& buyids, vmListWidget* list, const bool pay_date = false );
