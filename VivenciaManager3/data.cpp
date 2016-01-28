@@ -220,7 +220,7 @@ void Data::loadDataIntoMemory ()
 			client_item->setDBRecID ( id );
 			client_item->setRelation ( RLI_CLIENTITEM );
 			client_item->item_related[RLI_CLIENTPARENT] = client_item;
-			client_item->loadData ();
+			(void) client_item->loadData ();
 			client_item->update ( false );
             client_item->addToList ( globalMainWindow->clientsList );
 

@@ -167,9 +167,10 @@ void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES cat
 			const uint field ( translateCategory ( category ) );
 			if ( readFirstRecord () ) {
 				do {
-					if ( recStrValue ( this, field ).isEmpty () )
+					if ( recStrValue ( this, field ).isEmpty () ) {
 						b_needadd = false;
 						break;
+					}
 				} while ( readNextRecord () );
 			}
 			setAction ( b_needadd ? ACTION_ADD : ACTION_EDIT );

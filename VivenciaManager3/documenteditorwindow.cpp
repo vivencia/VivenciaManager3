@@ -150,17 +150,14 @@ void documentEditorWindow::setCurrentFile ( const QString& fileName )
 bool documentEditorWindow::canClose ()
 {
 	if ( mb_modified ) {
-		const Message::MESSAGE_BTNCLICKED btn (
+		const int btn (
 			VM_NOTIFY ()->customBox ( strippedName ( curFile ) + tr ( " was modified" ),  tr ( "Do you want to save your changes?" ),
-								  vmNotify::QUESTION, tr ( "Save" ), tr ( " Discard" ), tr ( "Cancel" ) ) );
+								  vmNotify::QUESTION, tr ( "Save" ), tr ( "Cancel" ), tr ( " Discard" ) ) );
 
 		switch ( btn ) {
-		case Message::BUTTON_1:
-			return save ( curFile );
-		case Message::BUTTON_3: // cancel
-			return false;
-		default: // ignore or some error
-			break;
+			case 0:		return save ( curFile );	break;
+			case -1:	return false;				break;
+			default:								break;
 		}
 	}
 	return true;

@@ -275,8 +275,8 @@ bool VivenciaDB::createDatabase ()
 		}
 	}
 	if ( !m_ok )
-		vmNotify::messageBox ( QCoreApplication::tr ( "Database error" ),
-									  QCoreApplication::tr ( "MYSQL could create the database." ), nullptr );
+		vmNotify::messageBox ( nullptr, QCoreApplication::tr ( "Database error" ),
+									  QCoreApplication::tr ( "MYSQL could create the database." ) );
 	return m_ok;
 }
 
@@ -310,8 +310,8 @@ bool VivenciaDB::createUser ()
 
 	}
 	if ( !m_ok )
-		vmNotify::messageBox ( QCoreApplication::tr ( "Database error" ),
-								QCoreApplication::tr ( "MYSQL could create the user for the application's database." ), nullptr );
+		vmNotify::messageBox ( nullptr, QCoreApplication::tr ( "Database error" ),
+								QCoreApplication::tr ( "MYSQL could create the user for the application's database." ) );
 	return m_ok;
 }
 

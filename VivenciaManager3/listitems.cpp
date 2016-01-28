@@ -30,15 +30,15 @@ vmListItem::vmListItem ( const uint type_id, const uint nbadInputs, bool* const 
 	  item_related { nullptr, nullptr, nullptr, nullptr },
 			   m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ), searchFields ( nullptr ),
 			   m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( badinputs_ptr ),
-               n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false )
+			   n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false )
 {
 	setAction ( ACTION_READ, true );
 }
 
 vmListItem::~vmListItem ()
 {
-    if ( !EXITING_PROGRAM )
-        disconnectRelation ( RLI_CLIENTITEM, this );
+	if ( !EXITING_PROGRAM )
+		disconnectRelation ( RLI_CLIENTITEM, this );
 	if ( mbSearchCreated )
 		delete[] searchFields;
 }
@@ -68,50 +68,50 @@ void vmListItem::setRelation ( const RELATED_LIST_ITEMS relation )
 {
 	mRelation = relation;
 	item_related[static_cast<int> ( relation )] = this;
-    relationActions ();
+	relationActions ();
 }
 
 void vmListItem::disconnectRelation ( const uint start_relation, vmListItem* item )
 {
-    for ( uint i ( start_relation ); i <= RLI_EXTRAITEM; ++i ) {
-        if ( item_related[i] == item )
-            item_related[i] = nullptr;
-        else {
-            if ( item_related[i] != nullptr )
-                item_related[i]->disconnectRelation ( i+1, item );
-        }
-    }
+	for ( uint i ( start_relation ); i <= RLI_EXTRAITEM; ++i ) {
+		if ( item_related[i] == item )
+			item_related[i] = nullptr;
+		else {
+			if ( item_related[i] != nullptr )
+				item_related[i]->disconnectRelation ( i+1, item );
+		}
+	}
 }
 
 void vmListItem::syncSiblingWithThis ( vmListItem* sibling )
 {
-    if ( mRelation != sibling->mRelation ) {
-        sibling->setDBRecID ( dbRecID () );
-        sibling->setDBRec ( dbRec (), true );
-        this->item_related[sibling->mRelation] = sibling;
-        relationActions ( sibling );
-        for ( uint i ( 0 ); i <= RLI_EXTRAITEM; ++i )
-            sibling->item_related[i] = this->item_related[i];
-        sibling->setAction ( action (), false, true );
-    }
+	if ( mRelation != sibling->mRelation ) {
+		sibling->setDBRecID ( dbRecID () );
+		sibling->setDBRec ( dbRec (), true );
+		this->item_related[sibling->mRelation] = sibling;
+		relationActions ( sibling );
+		for ( uint i ( 0 ); i <= RLI_EXTRAITEM; ++i )
+			sibling->item_related[i] = this->item_related[i];
+		sibling->setAction ( action (), false, true );
+	}
 }
 
 void vmListItem::addToList ( vmListWidget* const w_list )
 {
-    //if ( m_list != w_list ) {
-        w_list->addItem ( this );
-        m_list = w_list;
-    //}
-    //w_list->setCurrentItem ( this );
+	//if ( m_list != w_list ) {
+		w_list->addItem ( this );
+		m_list = w_list;
+	//}
+	//w_list->setCurrentItem ( this );
 }
 
 void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, const bool bSelfOnly )
 {
 	if ( action != m_action ) {
-        m_action = action != ACTION_REVERT ? action : ACTION_READ;
+		m_action = action != ACTION_REVERT ? action : ACTION_READ;
 		setBackground ( QBrush ( COLORS[static_cast<int>( action )] ) );
 		QFont fnt ( font () );
-        fnt.setItalic ( action > ACTION_READ );
+		fnt.setItalic ( action > ACTION_READ );
 		setFont ( fnt );
 
 		// Since m_dbrec is a shared pointer among all related items, only the first -external- call
@@ -123,7 +123,7 @@ void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 		if ( !bSelfOnly ) {
 			for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i ) {
 				if ( ( static_cast<uint> ( mRelation ) != i ) && item_related[i] != nullptr )
-                    item_related[i]->setAction ( m_action, false, true );
+					item_related[i]->setAction ( m_action, false, true );
 			}
 			update ( false );
 		}
@@ -214,20 +214,20 @@ void vmListItem::saveCrashInfo ( crashRestore* crash )
 
 void vmListItem::setSearchArray ()
 {
-    if ( m_dbrec != nullptr ) {
-        searchFields = new triStateType[m_dbrec->fieldCount ()];
-        mbSearchCreated = true;
+	if ( m_dbrec != nullptr ) {
+		searchFields = new triStateType[m_dbrec->fieldCount ()];
+		mbSearchCreated = true;
 	}
 }
 
 clientListItem::~clientListItem ()
 {
-    if ( mRelation == RLI_CLIENTITEM ) {
-        heap_del ( CLIENT_REC );
-        heap_del ( jobs );
-        heap_del ( pays );
-        heap_del ( buys );
-    }
+	if ( mRelation == RLI_CLIENTITEM ) {
+		heap_del ( CLIENT_REC );
+		heap_del ( jobs );
+		heap_del ( pays );
+		heap_del ( buys );
+	}
 	vmListItem::m_dbrec = nullptr;
 }
 
@@ -246,10 +246,10 @@ void clientListItem::createDBRecord ()
 
 bool clientListItem::loadData ()
 {
-    if ( !m_dbrec ) {
+	if ( !m_dbrec ) {
 		createDBRecord ();
-        CLIENT_REC->setListItem ( this );
-    }
+		CLIENT_REC->setListItem ( this );
+	}
 	if ( action () == ACTION_READ )
 		return ( CLIENT_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -257,38 +257,38 @@ bool clientListItem::loadData ()
 
 void clientListItem::relationActions ( vmListItem* subordinateItem )
 {
-    if ( mRelation == RLI_CLIENTITEM ) {
-        if ( subordinateItem == nullptr ) {
-            jobs = new PointersList<jobListItem*> ( 50 );
-            pays = new PointersList<payListItem*> ( 50 );
-            buys = new PointersList<buyListItem*> ( 20 );
-            // No need to explicitly call clear ( true ) in the dctor
-            jobs->setAutoDeleteItem ( true );
-            pays->setAutoDeleteItem ( true );
-            buys->setAutoDeleteItem ( true );
-        }
-        else {
-            static_cast<clientListItem*>( subordinateItem )->jobs = this->jobs;
-            static_cast<clientListItem*>( subordinateItem )->pays = this->pays;
-            static_cast<clientListItem*>( subordinateItem )->buys = this->buys;
-        }
-    }
+	if ( mRelation == RLI_CLIENTITEM ) {
+		if ( subordinateItem == nullptr ) {
+			jobs = new PointersList<jobListItem*> ( 50 );
+			pays = new PointersList<payListItem*> ( 50 );
+			buys = new PointersList<buyListItem*> ( 20 );
+			// No need to explicitly call clear ( true ) in the dctor
+			jobs->setAutoDeleteItem ( true );
+			pays->setAutoDeleteItem ( true );
+			buys->setAutoDeleteItem ( true );
+		}
+		else {
+			static_cast<clientListItem*>( subordinateItem )->jobs = this->jobs;
+			static_cast<clientListItem*>( subordinateItem )->pays = this->pays;
+			static_cast<clientListItem*>( subordinateItem )->buys = this->buys;
+		}
+	}
 }
 
 jobListItem::~jobListItem ()
 {
-    if ( mRelation == RLI_CLIENTITEM ) {
-        heap_del ( JOB_REC );
-        buys->clear ();
-        heap_del ( buys );
-        daysList->clear ();
-        heap_del ( daysList );
-        if ( mSearchSubFields != nullptr ) {
-            mSearchSubFields->clear ();
-            delete mSearchSubFields;
-        }
-    }
-    vmListItem::m_dbrec = nullptr;
+	if ( mRelation == RLI_CLIENTITEM ) {
+		heap_del ( JOB_REC );
+		buys->clear ();
+		heap_del ( buys );
+		daysList->clear ();
+		heap_del ( daysList );
+		if ( mSearchSubFields != nullptr ) {
+			mSearchSubFields->clear ();
+			delete mSearchSubFields;
+		}
+	}
+	vmListItem::m_dbrec = nullptr;
 }
 
 uint jobListItem::translatedInputFieldIntoBadInputField ( const uint field ) const
@@ -312,10 +312,10 @@ void jobListItem::createDBRecord ()
 
 bool jobListItem::loadData ()
 {
-    if ( !m_dbrec ) {
+	if ( !m_dbrec ) {
 		createDBRecord ();
-        JOB_REC->setListItem ( this );
-    }
+		JOB_REC->setListItem ( this );
+	}
 	if ( action () == ACTION_READ )
 		return ( JOB_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -326,11 +326,11 @@ void jobListItem::update ( const bool bQtCall )
 	if ( bQtCall ) return;
 
 	if ( m_dbrec ) {
-        if ( mRelation == RLI_CLIENTITEM ) {
-            m_strBodyText = recStrValue ( JOB_REC, FLD_JOB_TYPE );
-            if ( !m_strBodyText.isEmpty () )
-                m_strBodyText += QLatin1String ( " - " ) + recStrValue ( JOB_REC, FLD_JOB_STARTDATE );
-        }
+		if ( mRelation == RLI_CLIENTITEM ) {
+			m_strBodyText = recStrValue ( JOB_REC, FLD_JOB_TYPE );
+			if ( !m_strBodyText.isEmpty () )
+				m_strBodyText += QLatin1String ( " - " ) + recStrValue ( JOB_REC, FLD_JOB_STARTDATE );
+		}
 	}
 	else
 		m_strBodyText = CHR_QUESTION_MARK;
@@ -339,28 +339,28 @@ void jobListItem::update ( const bool bQtCall )
 
 void jobListItem::relationActions ( vmListItem* subordinateItem )
 {
-    if ( mRelation == RLI_CLIENTITEM ) {
-        if ( subordinateItem == nullptr ) {
-            buys = new PointersList<buyListItem*> ( 50 );
-            daysList = new PointersList<vmListItem*> ( 5 );
-        }
-        else {
-            static_cast<jobListItem*>( subordinateItem )->buys = this->buys;
-            static_cast<jobListItem*>( subordinateItem )->daysList = this->daysList;
-        }
-    }
+	if ( mRelation == RLI_CLIENTITEM ) {
+		if ( subordinateItem == nullptr ) {
+			buys = new PointersList<buyListItem*> ( 50 );
+			daysList = new PointersList<vmListItem*> ( 5 );
+		}
+		else {
+			static_cast<jobListItem*>( subordinateItem )->buys = this->buys;
+			static_cast<jobListItem*>( subordinateItem )->daysList = this->daysList;
+		}
+	}
 }
 
 podList<uint>* jobListItem::searchSubFields () const
 {
-    if ( mSearchSubFields == nullptr )
-        const_cast<jobListItem*>( this )->mSearchSubFields = new podList<uint> ( 5 );
-    return mSearchSubFields;
+	if ( mSearchSubFields == nullptr )
+		const_cast<jobListItem*>( this )->mSearchSubFields = new podList<uint> ( 5 );
+	return mSearchSubFields;
 }
 
 void jobListItem::setReportSearchFieldFound ( const uint report_field, const uint day )
 {
-    mSearchSubFields->operator []( day ) = report_field;
+	mSearchSubFields->operator []( day ) = report_field;
 }
 
 payListItem::~payListItem ()
@@ -382,18 +382,22 @@ void payListItem::update ( const bool bQtCall )
 	if ( m_dbrec ) {
 		if ( item_related[RLI_CLIENTITEM] != nullptr ) {
 			if ( action () == ACTION_ADD )
-				item_related[RLI_CLIENTITEM]->m_strBodyText = QApplication::tr ( "Automatically generated payment info - edit it after saving job" );
-			else
-				item_related[RLI_CLIENTITEM]->m_strBodyText = recStrValue ( PAY_REC, FLD_PAY_PRICE ) + CHR_SPACE + CHR_L_PARENTHESIS +
-					recStrValue ( PAY_REC, FLD_PAY_TOTALPAID ) + CHR_R_PARENTHESIS;
+				item_related[RLI_CLIENTITEM]->m_strBodyText = APP_TR_FUNC ( "Automatically generated payment info - edit it after saving job" );
+			else {
+				if ( !recStrValue ( PAY_REC, FLD_PAY_PRICE ).isEmpty () ) {
+					item_related[RLI_CLIENTITEM]->m_strBodyText =  PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
+						PAY_REC->price ( FLD_PAY_TOTALPAID ).toPrice () + CHR_R_PARENTHESIS;
+				}
+				else
+					item_related[RLI_CLIENTITEM]->m_strBodyText = APP_TR_FUNC ( "No payment yet for job" );
+			}
 			item_related[RLI_CLIENTITEM]->vmListItem::update ( false );
 
 			if ( item_related[RLI_EXTRAITEM] != nullptr ) {
 				item_related[RLI_EXTRAITEM]->m_strBodyText = recStrValue ( static_cast<clientListItem*> (
 					item_related[RLI_CLIENTPARENT] )->clientRecord (), FLD_CLIENT_NAME ) +
-					CHR_SPACE + CHR_HYPHEN + CHR_SPACE + recStrValue (
-					PAY_REC, FLD_PAY_PRICE ) + CHR_SPACE + CHR_L_PARENTHESIS + recStrValue (
-					PAY_REC, FLD_PAY_OVERDUE_VALUE ) + CHR_R_PARENTHESIS;
+					CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
+					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS;
 				item_related[RLI_EXTRAITEM]->vmListItem::update ( false );
 			}
 		}
@@ -413,10 +417,10 @@ void payListItem::createDBRecord ()
 
 bool payListItem::loadData ()
 {
-    if ( !m_dbrec ) {
+	if ( !m_dbrec ) {
 		createDBRecord ();
-        PAY_REC->setListItem ( this );
-    }
+		PAY_REC->setListItem ( this );
+	}
 	if ( action () == ACTION_READ )
 		return ( PAY_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -495,17 +499,7 @@ void buyListItem::update ( const bool bQtCall )
 	}
 }
 
-void buyListItem::relationActions ( vmListItem* subordinateItem )
-{
-    if ( mRelation == RLI_CLIENTITEM ) {
-        if ( subordinateItem != nullptr ) {
-            ;
-        }
-        else {
-            ;
-        }
-    }
-}
+void buyListItem::relationActions ( vmListItem* ) {}
 
 void buyListItem::createDBRecord ()
 {
@@ -514,10 +508,10 @@ void buyListItem::createDBRecord ()
 
 bool buyListItem::loadData ()
 {
-    if ( !m_dbrec ) {
+	if ( !m_dbrec ) {
 		createDBRecord ();
-        BUY_REC->setListItem ( this );
-    }
+		BUY_REC->setListItem ( this );
+	}
 	if ( action () == ACTION_READ )
 		return ( BUY_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input

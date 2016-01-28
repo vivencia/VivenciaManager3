@@ -388,7 +388,7 @@ p, li { white-space: pre-wrap; }
               <x>0</x>
               <y>0</y>
               <width>240</width>
-              <height>629</height>
+              <height>632</height>
              </rect>
             </property>
            </widget>
@@ -411,7 +411,7 @@ p, li { white-space: pre-wrap; }
         <string/>
        </property>
        <property name="currentIndex">
-        <number>6</number>
+        <number>5</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -465,7 +465,7 @@ p, li { white-space: pre-wrap; }
               <x>0</x>
               <y>0</y>
               <width>645</width>
-              <height>592</height>
+              <height>598</height>
              </rect>
             </property>
            </widget>
@@ -665,8 +665,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>267</width>
-                        <height>166</height>
+                        <width>223</width>
+                        <height>159</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -724,8 +724,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>280</width>
-                        <height>166</height>
+                        <width>233</width>
+                        <height>159</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -786,8 +786,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>292</width>
-                        <height>166</height>
+                        <width>243</width>
+                        <height>159</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -862,8 +862,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>247</width>
-                     <height>168</height>
+                     <width>221</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -916,8 +916,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>261</width>
-                     <height>168</height>
+                     <width>233</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -970,8 +970,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>273</width>
-                     <height>168</height>
+                     <width>244</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1035,8 +1035,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>214</width>
-                     <height>168</height>
+                     <width>206</width>
+                     <height>179</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1089,8 +1089,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>228</width>
-                     <height>168</height>
+                     <width>204</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1143,8 +1143,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>240</width>
-                     <height>168</height>
+                     <width>215</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1795,7 +1795,7 @@ p, li { white-space: pre-wrap; }
            <property name="frameShadow">
             <enum>QFrame::Plain</enum>
            </property>
-           <layout class="QGridLayout" name="gridLayout_3" columnstretch="2,0,0,0,0,0,0,0">
+           <layout class="QGridLayout" name="gridLayout_3" columnstretch="2,0,0,0,0,0,0">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -1811,7 +1811,29 @@ p, li { white-space: pre-wrap; }
             <property name="spacing">
              <number>2</number>
             </property>
-            <item row="5" column="6">
+            <item row="5" column="0">
+             <widget class="vmLineEdit" name="txtClientDistrict">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="inputMask">
+               <string notr="true"/>
+              </property>
+              <property name="readOnly">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="5">
              <widget class="vmLineEdit" name="txtClientZipCode">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1836,7 +1858,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="5" column="3" colspan="3">
+            <item row="5" column="3" colspan="2">
              <widget class="vmLineEdit" name="txtClientCity">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1858,7 +1880,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="0" column="6">
+            <item row="0" column="5">
              <widget class="QLabel" name="lblClientID">
               <property name="minimumSize">
                <size>
@@ -1915,29 +1937,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="vmLineEdit" name="txtClientDistrict">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="inputMask">
-               <string notr="true"/>
-              </property>
-              <property name="readOnly">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="6">
+            <item row="1" column="5">
              <widget class="vmLineEdit" name="txtClientID">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1999,7 +1999,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="0" column="7" rowspan="6">
+            <item row="0" column="6" rowspan="6">
              <widget class="QFrame" name="frame_2">
               <property name="minimumSize">
                <size>
@@ -2213,20 +2213,10 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="6" column="3" colspan="5">
+            <item row="6" column="3" colspan="4">
              <widget class="QLabel" name="lblClientEmail">
               <property name="text">
                <string>e-mail/site:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="contactsManagerWidget" name="contactsClientPhones" native="true">
-              <property name="minimumSize">
-               <size>
-                <width>100</width>
-                <height>25</height>
-               </size>
               </property>
              </widget>
             </item>
@@ -2252,17 +2242,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="7" column="3" colspan="5">
-             <widget class="contactsManagerWidget" name="contactsClientEmails" native="true">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>25</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="6">
+            <item row="4" column="5">
              <widget class="QLabel" name="lblClientZipCode">
               <property name="minimumSize">
                <size>
@@ -2281,7 +2261,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="3" column="6">
+            <item row="3" column="5">
              <widget class="vmLineEdit" name="txtClientNumberAddress">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -2309,7 +2289,7 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="2" column="6">
+            <item row="2" column="5">
              <widget class="QLabel" name="lblClientNumberAdress">
               <property name="minimumSize">
                <size>
@@ -2331,6 +2311,41 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
+            <item row="7" column="0">
+             <widget class="contactsManagerWidget" name="contactsClientPhones">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="3" colspan="4">
+             <widget class="contactsManagerWidget" name="contactsClientEmails">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLineEdit" name="txtDummy"/>
+            </item>
            </layout>
            <zorder>lblClientID</zorder>
            <zorder>txtClientID</zorder>
@@ -2341,7 +2356,6 @@ p, li { white-space: pre-wrap; }
            <zorder>txtClientZipCode</zorder>
            <zorder>txtClientCity</zorder>
            <zorder>lblClientEmail</zorder>
-           <zorder>contactsClientEmails</zorder>
            <zorder>frame_2</zorder>
            <zorder>txtClientName</zorder>
            <zorder>lblClientName</zorder>
@@ -2350,7 +2364,9 @@ p, li { white-space: pre-wrap; }
            <zorder>lblClientDistrict</zorder>
            <zorder>txtClientDistrict</zorder>
            <zorder>lblClientPhones</zorder>
+           <zorder>txtDummy</zorder>
            <zorder>contactsClientPhones</zorder>
+           <zorder>contactsClientEmails</zorder>
           </widget>
          </item>
         </layout>
@@ -2566,46 +2582,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="2" column="2">
-               <widget class="QToolButton" name="btnNewProject">
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Tahoma'; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Create a new project folder&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;-&amp;gt; New project folder &lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;    Will create a new folder in the client's folder. You will be asked for a project name, which will be part of the new folder name, along with this job's start date. To the folder it will be copied a single instance of the MS Word document for the project's description and the equivalent MS Excel spreadsheet. It will alse be created a folder called Pictures for the job's pictures.&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;-&amp;gt; Add a new document to folder &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;    Will copy another MS Word file to the current project folder, if it exists&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;-&amp;gt; Add a new spredsheet to folder &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;    Will copy another MS Excel file to the current project folder, if it exists&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/new_project.png</normaloff>:/resources/new_project.png</iconset>
-                </property>
-                <property name="popupMode">
-                 <enum>QToolButton::InstantPopup</enum>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="1">
                <widget class="QLabel" name="lblJobType">
                 <property name="frameShape">
@@ -2790,6 +2766,12 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="5" column="6" colspan="2">
                <widget class="QPushButton" name="btnQuickProject">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>Quick Estimate</string>
                 </property>
@@ -2828,7 +2810,14 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item row="5" column="1" colspan="5">
-               <widget class="vmLineEdit" name="txtJobProjectID"/>
+               <widget class="vmLineEdit" name="txtJobProjectID">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+               </widget>
               </item>
               <item row="0" column="7">
                <widget class="vmLineEdit" name="txtJobID">
@@ -4289,7 +4278,7 @@ p, li { white-space: pre-wrap; }
        </widget>
       </item>
       <item>
-       <widget class="vmLineEdit" name="txtQuickSearch">
+       <widget class="vmLineEdit" name="txtSearch">
         <property name="minimumSize">
          <size>
           <width>200</width>
@@ -4425,7 +4414,7 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>DB_Image</class>
    <extends>QFrame</extends>
-   <header>db_image.h</header>
+   <header location="global">db_image.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -4440,8 +4429,8 @@ p, li { white-space: pre-wrap; }
   </customwidget>
   <customwidget>
    <class>contactsManagerWidget</class>
-   <extends>QWidget</extends>
-   <header>contactsmanagerwidget.h</header>
+   <extends>QFrame</extends>
+   <header location="global">contactsmanagerwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -4467,7 +4456,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnJobSave</tabstop>
   <tabstop>btnJobCancel</tabstop>
   <tabstop>cboJobType</tabstop>
-  <tabstop>btnNewProject</tabstop>
   <tabstop>btnJobOpenFileFolder</tabstop>
   <tabstop>btnJobOpenDoc</tabstop>
   <tabstop>btnJobOpenXls</tabstop>

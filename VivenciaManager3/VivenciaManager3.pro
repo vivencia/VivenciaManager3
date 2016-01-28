@@ -164,11 +164,11 @@ RESOURCES += resources.qrc
 LIBS += -L/usr/lib -lhunspell -lbz2
 DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS TRANSITION_PERIOD
 INCLUDEPATH += -I/usr/include
-#QMAKE_CXXFLAGS_RELEASE += -O3 -march=core2 -mtune=core2 -fomit-frame-pointer -funroll-loops
+QMAKE_CXXFLAGS_RELEASE += -march=haswell -mtune=haswell -fomit-frame-pointer -funroll-loops -Ofast
 #QMAKE_CXXFLAGS_DEBUG += -g -fvar-tracking-assignments-toggle
-QMAKE_CXXFLAGS_DEBUG += -g -std=c++14
+QMAKE_CXXFLAGS_DEBUG += -g
 #QMAKE_CXXFLAGS += -g -fvar-tracking-assignments-toggle
-QMAKE_CXXFLAGS += -g -std=c++0x -Werror -Wextra -Wall -pedantic
+QMAKE_CXXFLAGS += -Werror -Wall -Wextra -pedantic -std=c++14
 TRANSLATIONS += i18n/VivenciaManager_pt_BR.ts
 
 OTHER_FILES +=

@@ -3,15 +3,16 @@
 
 #include "vmlist.h"
 #include "completers.h"
-#include "vmtaskpanel.h"
-#include "vmactiongroup.h"
 
+#include <QDialog>
 #include <QSize>
 #include <QPointer>
 #include <QEventLoop>
 
 #include <functional>
 
+class vmTaskPanel;
+class vmActionGroup;
 class vmNotify;
 
 class QTimer;
@@ -21,13 +22,14 @@ class QPushButton;
 class QVBoxLayout;
 class QTimerEvent;
 
-class Message : public QObject
+enum { MESSAGE_BTN_OK = 0, MESSAGE_BTN_CANCEL = -1 };
+
+class Message
 {
 
 friend class vmNotify;
 
 public:
-	enum MESSAGE_BTNCLICKED { NO_BUTTON = -1, BUTTON_1 = 0, BUTTON_2 = 1, BUTTON_3 = 2, BUTTON_4 = 3, BUTTON_5 = 4 };
 
 	struct st_widgets
 	{
@@ -41,12 +43,9 @@ public:
 	Message ( vmNotify* parent = nullptr );
 	~Message ();
 
-	void showMessage ();
 	void addWidget ( QWidget* widget, const uint row,
 					 const Qt::Alignment alignment = Qt::AlignLeft,
 					 const bool is_button = false );
-	void setupWidgets ();
-    void slotActionButtonClicked ( QWidget* widget = nullptr );
 
 	inline void setMessageFinishedCallback ( std::function<void ( Message* )> func ) {
 		messageFinishedFunc = func; }
@@ -55,10 +54,10 @@ public:
 
 	int timeout; // ms
 	QString title, bodyText, iconName;
-    bool isModal, mbClosable, mbAutoRemove;
+	bool isModal, mbClosable, mbAutoRemove;
 	PointersList<st_widgets*> widgets;
 	vmNotify* m_parent;
-	MESSAGE_BTNCLICKED mBtnID;
+	int mBtnID;
 	QPixmap* icon;
 	vmActionGroup* mGroup;
 	QTimer* timer;
@@ -66,7 +65,7 @@ public:
 	std::function<void ( Message* )> messageFinishedFunc;
 };
 
-class vmNotify : public vmTaskPanel
+class vmNotify : public QDialog
 {
 
 friend class Message;
@@ -83,12 +82,12 @@ public:
 	void notifyMessage ( const QString& title, const QString& msg, const int msecs = 3000, const bool b_critical = false );
 	static void notifyMessage ( const QWidget* referenceWidget, const QString& title, const QString& msg, const int msecs = 3000, const bool b_critical = false );
 
-	void messageBox ( const QString& title, const QString& msg );
-	static void messageBox ( const QString& title, const QString& msg, const QWidget* referenceWidget );
+	void messageBox ( const QString& title, const QString& msg, const int msec = -1 );
+	static void messageBox ( const QWidget* referenceWidget, const QString& title, const QString& msg, const int msec = -1 );
 	static bool questionBox ( const QString& title, const QString& msg, const QWidget* referenceWidget = nullptr );
-	static Message::MESSAGE_BTNCLICKED criticalBox ( const QString& title, const QString& msg,
+	static int criticalBox ( const QString& title, const QString& msg,
 		const bool b_message_only = true, const QWidget* referenceWidget = nullptr );
-	static Message::MESSAGE_BTNCLICKED customBox ( const QString& title, const QString& msg, const MESSAGE_BOX_ICON icon,
+	static int customBox ( const QString& title, const QString& msg, const MESSAGE_BOX_ICON icon,
 			const QString& btnText1, const QString& btnText2 = QString::null, const QString& btnText3 = QString::null, const QWidget* referenceWidget = nullptr );
 
 	static bool inputBox ( QString& result, const QWidget* referenceWidget, const QString& title, const QString& label_text,
@@ -99,11 +98,17 @@ public:
 	static vmNotify* progressBox ( vmNotify* box = nullptr, QWidget* parent = nullptr, const uint max_value = 10, uint next_value = 0,
 								   const QString& title = QString::null, const QString& label = QString::null );
 
+	int notifyBox ( const QString& title, const QString& msg,
+					const MESSAGE_BOX_ICON icon, const QString btnsText[3], const int m_sec = -1 );
+	
 private:
 	friend vmNotify* VM_NOTIFY ();
 	friend void deleteNotifyInstance ();
 	static vmNotify* s_instance;
 
+	void buttonClicked ( QPushButton* btn, Message* const message );
+	void setupWidgets ( Message* const message );
+	void startMessageTimer ( Message* const message );
 	void fadeWidget ();
 	void showMenu ();
 	void addMessage ( Message* message );
@@ -112,13 +117,12 @@ private:
 	void adjustSizeAndPosition ();
 	QPoint displayPosition ( const QSize& widgetSize );
 
-	Message::MESSAGE_BTNCLICKED notifyBox ( const QString& title, const QString& msg,
-					const MESSAGE_BOX_ICON icon, const QString btnsText[3], int btnsValue[3], const int m_sec = -1 );
-
-	QString mPos;
+	bool mbDeleteWhenStackIsEmpty;
+	vmTaskPanel* mPanel;
 	QTimer *fadeTimer;
 	QWidget* m_parent;
-    QPointer<QEventLoop> mEventLoop;
+	QString mPos;
+	QPointer<QEventLoop> mEventLoop;
 	PointersList<Message*> messageStack;
 };
 

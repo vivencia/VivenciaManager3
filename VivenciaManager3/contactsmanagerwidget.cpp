@@ -26,7 +26,7 @@ const char* const BTN_CANCEL_TOOLTIP[CMW_N_TYPES] = {
 };
 
 contactsManagerWidget::contactsManagerWidget ( QWidget* parent, const CMW_TYPE type )
-	: QWidget ( parent ), vmWidget ( WT_COMBO ), cboInfoData ( nullptr ), btnExtra ( nullptr ),
+	: QFrame ( parent ), vmWidget ( WT_COMBO ), cboInfoData ( nullptr ), btnExtra ( nullptr ),
 	  m_contact_type ( type ), insertFunc ( nullptr ), removeFunc ( nullptr ) {}
 
 contactsManagerWidget::~contactsManagerWidget () {}
@@ -74,7 +74,6 @@ void contactsManagerWidget::initInterface ()
 		btnExtra->setEnabled ( false );
 		mainLayout->addWidget ( btnExtra );
 	}
-
 	setLayout ( mainLayout );
 }
 

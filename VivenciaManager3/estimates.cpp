@@ -593,28 +593,26 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 
 	targetPath = CONFIG ()->projectsBaseDir () + clientName + CHR_F_SLASH;
 
-	const Message::MESSAGE_BTNCLICKED btn =
-        VM_NOTIFY ()->customBox ( TR_FUNC ( "New project" ), TR_FUNC ( "Create new project or choose existing directory?" ),
-                                  vmNotify::QUESTION, TR_FUNC ( "Choose existing " ), TR_FUNC ( "Cancel" ) );
+	const int btn (
+        vmNotify::customBox ( TR_FUNC ( "New project" ), TR_FUNC ( "Create new project or choose existing directory?" ),
+                                  vmNotify::QUESTION, TR_FUNC ( "Choose existing " ), TR_FUNC ( "Create new" ), TR_FUNC ( "Cancel" ) ) );
 	switch ( btn ) {
-		case Message::BUTTON_1:
-            vmNotify::inputBox ( project_name, this, TR_FUNC ( "Project's new name" ),
-                             TR_FUNC ( "New name: " ), item->parent ()->text ( 0 ) );
-			if ( project_name.isEmpty () )
-				return;
-			targetPath += project_name;
-            if ( !fileOps::createDir ( targetPath ).isOn () ) //maybe first estimate for user, create dir
-                return;
-		break;
-		case Message::BUTTON_2:
-            project_name = fileOps::getExistingDir ( targetPath );
+		case MESSAGE_BTN_OK: // Choose existing
+			project_name = fileOps::getExistingDir ( targetPath );
 			if ( project_name.isEmpty () )
 				return;
 			targetPath = project_name;
 		break;
-		default:
-			return;
+		case MESSAGE_BTN_CANCEL:
 		break;
+		default: // create new project
+			vmNotify::inputBox ( project_name, this, TR_FUNC ( "Project's new name" ),
+                     TR_FUNC ( "New name: " ), item->parent ()->text ( 0 ) );
+			if ( project_name.isEmpty () )
+				return;
+			targetPath += project_name;
+		    if ( !fileOps::createDir ( targetPath ).isOn () ) //maybe first estimate for user, create dir
+		        return;
 	}
 
     if ( fileOps::isDir ( srcPath ).isOn () ) {
@@ -734,7 +732,7 @@ void estimateDlg::projectActions ( QAction *action )
         else
             msgBody[0] = msgBody[0].arg ( strProjectPath );
     }
-    VM_NOTIFY ()->notifyMessage ( this, msgTitle, msgBody[static_cast<uint>( bProceed )] );
+    VM_NOTIFY ()->notifyMessage ( msgTitle, msgBody[static_cast<uint>( bProceed )] );
 }
 
 jobListItem* estimateDlg::findJobByPath ( QTreeWidgetItem* const item )

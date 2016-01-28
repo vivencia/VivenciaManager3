@@ -95,7 +95,7 @@ public:
 	void setupClientPanel ();
 	void clientKeyPressedSelector ( const QKeyEvent* ke );
 	void clientsListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
-	void controlClientForms ();
+	void controlClientForms ( const clientListItem* const client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
     void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const int id ) const;
@@ -103,7 +103,7 @@ public:
     void btnClientAdd_clicked ();
     void btnClientEdit_clicked ();
     void btnClientDel_clicked ();
-    void btnclientSave_clicked ();
+    void btnClientSave_clicked ();
     void btnClientCancel_clicked ();
 //--------------------------------------------CLIENT------------------------------------------------------------
 
@@ -127,8 +127,8 @@ public:
 	void jobKeyPressedSelector ( const QKeyEvent* ke );
 	void jobsListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
 	void jobDayReportListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
-	void controlJobForms ();
-	void controlJobDayForms ();
+    void controlJobForms ( const jobListItem* const job_item );
+    void controlJobDayForms ( const jobListItem* const job_item );
     void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
     void loadJobInfo ( const Job* const job );
@@ -139,19 +139,14 @@ public:
 	void updateJobInfo ( const QString& text, const uint user_role );
     void updateJobInfoByRemoval ( const uint day , const bool bUndo = false );
 	void addJobPayment ( jobListItem* const job_item );
-	void saveJobPayment ( const Job* const job );
+	void saveJobPayment ( jobListItem* const job_item );
 	void removeJobPayment ( payListItem* pay_item );
+	void alterJobPayPrice ( jobListItem* const job_item );
 	void calcJobTime ();
 	void showJobTotalTime ( const vmNumber& time ) const;
     triStateType dateIsInDaysList ( const QString& str_date );
     void rescanJobDaysList ();
     void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
-	bool setNewProjectName ();
-    void createNewProjectDir ();
-	bool renameProjectDir ( const bool phase_two = false );
-	bool removeProjectDir ( const bool phase_two = false );
-	bool chooseExistingDirForProject ( const bool phase_two = false );
-	void newProjectAction ( const vmAction* const action = nullptr );
 	void selectJob ();
 	void btnJobSelect_clicked ();
 	void btnJobAddDay_clicked ();
@@ -191,7 +186,7 @@ public:
 	void updateCalendarWithPayInfo ( Payment* const pay, const RECORD_ACTION action );
 	void removePaymentOverdueItems ( payListItem* pay_item );
 	void payOverdueGUIActions ( const Payment* const pay );
-	void controlPayForms ();
+	void controlPayForms ( const payListItem* const pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
     void loadPayInfo ( const Payment* const pay );
 	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
@@ -223,7 +218,7 @@ public:
 	void updateCalendarWithBuyPayInfo ( Buy* const buy, const RECORD_ACTION action );
     void controlBuyForms ( const buyListItem* const buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
-    void loadBuyInfo ( const buyListItem* const buy_item );
+    void loadBuyInfo ( const Buy* const buy );
 	buyListItem* getBuyItem ( const clientListItem* const parent_client, const int id ) const;
 	void fillJobBuyList ( const jobListItem* parent_job );
 	void fillCalendarBuysList ( const stringTable& buyids, vmListWidget* list, const bool pay_date = false );
@@ -407,7 +402,7 @@ private:
 //--------------------------------------------SLOTS-----------------------------------------------------------
 
 //--------------------------------------------SEARCH-----------------------------------------------------------
-	void on_txtQuickSearch_textEdited ( const QString& text );
+	void on_txtSearch_textEdited ( const QString& text );
 	void on_btnSearchStart_clicked ();
 	void on_btnSearchCancel_clicked ();
 //--------------------------------------------SEARCH-----------------------------------------------------------

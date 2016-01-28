@@ -36,10 +36,12 @@ int main ( int argc, char *argv[] )
     app.setStyle ( QStyleFactory::create ( QLatin1String ( "GTK+ Style" ) ) );
     app.setPalette ( app.style ()->standardPalette () );
 
+#ifdef TRANSLATION_ENABLED
     const QString locale ( QLocale::system ().name () );
     QTranslator translator;
     translator.load ( QLatin1String ( ":/i18n/VivenciaManager_" ) + locale );
     app.installTranslator ( &translator );
+#endif
 
     Data::init ();
 

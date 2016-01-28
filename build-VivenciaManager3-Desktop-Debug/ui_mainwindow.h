@@ -20,6 +20,7 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollArea>
@@ -31,11 +32,11 @@
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <contactsmanagerwidget.h>
+#include <db_image.h>
 #include <texteditwithcompleter.h>
 #include <vmtablewidget.h>
 #include <vmwidgets.h>
-#include "contactsmanagerwidget.h"
-#include "db_image.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -164,12 +165,12 @@ public:
     QLabel *lblTotalPay;
     QFrame *frmClientInfo;
     QGridLayout *gridLayout_3;
+    vmLineEdit *txtClientDistrict;
     vmLineEdit *txtClientZipCode;
     vmLineEdit *txtClientCity;
     QLabel *lblClientID;
     vmLineEdit *txtClientName;
     QLabel *lblClientPhones;
-    vmLineEdit *txtClientDistrict;
     vmLineEdit *txtClientID;
     QLabel *lblClientCity;
     QFrame *frame_2;
@@ -183,12 +184,13 @@ public:
     QLabel *lblClientName;
     QLabel *lblClientStreetAdress;
     QLabel *lblClientEmail;
-    contactsManagerWidget *contactsClientPhones;
     vmLineEdit *txtClientStreetAddress;
-    contactsManagerWidget *contactsClientEmails;
     QLabel *lblClientZipCode;
     vmLineEdit *txtClientNumberAddress;
     QLabel *lblClientNumberAdress;
+    contactsManagerWidget *contactsClientPhones;
+    contactsManagerWidget *contactsClientEmails;
+    QLineEdit *txtDummy;
     QWidget *tab;
     QHBoxLayout *horizontalLayout_2;
     QFrame *frmJobInfo;
@@ -206,7 +208,6 @@ public:
     QToolButton *btnJobSelectJob;
     QLabel *lblJobProjectID;
     vmLineEdit *txtJobProjectPath;
-    QToolButton *btnNewProject;
     QLabel *lblJobType;
     QToolButton *btnJobOpenDoc;
     QLabel *lblJobID;
@@ -337,7 +338,7 @@ public:
     QSpacerItem *horizontalSpacer_2;
     QFrame *line_5;
     QLabel *lblFastSearch;
-    vmLineEdit *txtQuickSearch;
+    vmLineEdit *txtSearch;
     QToolButton *btnSearchStart;
     QToolButton *btnSearchCancel;
     QStatusBar *statusbar;
@@ -491,7 +492,7 @@ public:
         scrollLeftPanel->setAlignment(Qt::AlignJustify|Qt::AlignTop);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 240, 629));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 240, 632));
         scrollLeftPanel->setWidget(scrollAreaWidgetContents);
         splitterClient->addWidget(scrollLeftPanel);
 
@@ -520,7 +521,7 @@ public:
         scrollWorkFlow->setAlignment(Qt::AlignJustify|Qt::AlignVCenter);
         scrollAreaWidgetContents_2 = new QWidget();
         scrollAreaWidgetContents_2->setObjectName(QStringLiteral("scrollAreaWidgetContents_2"));
-        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 645, 592));
+        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 645, 598));
         scrollWorkFlow->setWidget(scrollAreaWidgetContents_2);
 
         horizontalLayout_5->addWidget(scrollWorkFlow);
@@ -594,7 +595,7 @@ public:
         tboxCalJobs->setFrameShadow(QFrame::Plain);
         tboxPageJobDay = new QWidget();
         tboxPageJobDay->setObjectName(QStringLiteral("tboxPageJobDay"));
-        tboxPageJobDay->setGeometry(QRect(0, 0, 267, 166));
+        tboxPageJobDay->setGeometry(QRect(0, 0, 223, 159));
         verticalLayout_6 = new QVBoxLayout(tboxPageJobDay);
         verticalLayout_6->setObjectName(QStringLiteral("verticalLayout_6"));
         lblCalPriceJobDay = new QLabel(tboxPageJobDay);
@@ -628,7 +629,7 @@ public:
         tboxCalJobs->addItem(tboxPageJobDay, QStringLiteral("Jobs"));
         tboxPageJobWeek = new QWidget();
         tboxPageJobWeek->setObjectName(QStringLiteral("tboxPageJobWeek"));
-        tboxPageJobWeek->setGeometry(QRect(0, 0, 280, 166));
+        tboxPageJobWeek->setGeometry(QRect(0, 0, 233, 159));
         verticalLayout_21 = new QVBoxLayout(tboxPageJobWeek);
         verticalLayout_21->setObjectName(QStringLiteral("verticalLayout_21"));
         lblCalPriceJobWeek = new QLabel(tboxPageJobWeek);
@@ -658,7 +659,7 @@ public:
         tboxCalJobs->addItem(tboxPageJobWeek, QStringLiteral("Jobs"));
         tboxPageJobMonth = new QWidget();
         tboxPageJobMonth->setObjectName(QStringLiteral("tboxPageJobMonth"));
-        tboxPageJobMonth->setGeometry(QRect(0, 0, 292, 166));
+        tboxPageJobMonth->setGeometry(QRect(0, 0, 243, 159));
         verticalLayout_22 = new QVBoxLayout(tboxPageJobMonth);
         verticalLayout_22->setObjectName(QStringLiteral("verticalLayout_22"));
         lblCalPriceJobMonth = new QLabel(tboxPageJobMonth);
@@ -696,7 +697,7 @@ public:
         tboxCalPays->setFrameShadow(QFrame::Plain);
         tboxPagePayDay = new QWidget();
         tboxPagePayDay->setObjectName(QStringLiteral("tboxPagePayDay"));
-        tboxPagePayDay->setGeometry(QRect(0, 0, 247, 168));
+        tboxPagePayDay->setGeometry(QRect(0, 0, 221, 162));
         verticalLayout_5 = new QVBoxLayout(tboxPagePayDay);
         verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
         lblCalPricePayDay = new QLabel(tboxPagePayDay);
@@ -724,7 +725,7 @@ public:
         tboxCalPays->addItem(tboxPagePayDay, QStringLiteral("Payment"));
         tboxPagePayWeek = new QWidget();
         tboxPagePayWeek->setObjectName(QStringLiteral("tboxPagePayWeek"));
-        tboxPagePayWeek->setGeometry(QRect(0, 0, 261, 168));
+        tboxPagePayWeek->setGeometry(QRect(0, 0, 233, 162));
         verticalLayout_17 = new QVBoxLayout(tboxPagePayWeek);
         verticalLayout_17->setObjectName(QStringLiteral("verticalLayout_17"));
         lblCalPricePayWeek = new QLabel(tboxPagePayWeek);
@@ -752,7 +753,7 @@ public:
         tboxCalPays->addItem(tboxPagePayWeek, QStringLiteral("Payment"));
         tboxPagePayMonth = new QWidget();
         tboxPagePayMonth->setObjectName(QStringLiteral("tboxPagePayMonth"));
-        tboxPagePayMonth->setGeometry(QRect(0, 0, 273, 168));
+        tboxPagePayMonth->setGeometry(QRect(0, 0, 244, 162));
         verticalLayout_18 = new QVBoxLayout(tboxPagePayMonth);
         verticalLayout_18->setObjectName(QStringLiteral("verticalLayout_18"));
         lblCalPricePayMonth = new QLabel(tboxPagePayMonth);
@@ -785,7 +786,7 @@ public:
         tboxCalBuys->setFrameShadow(QFrame::Plain);
         tboxPageBuyDay = new QWidget();
         tboxPageBuyDay->setObjectName(QStringLiteral("tboxPageBuyDay"));
-        tboxPageBuyDay->setGeometry(QRect(0, 0, 214, 168));
+        tboxPageBuyDay->setGeometry(QRect(0, 0, 206, 179));
         verticalLayout_8 = new QVBoxLayout(tboxPageBuyDay);
         verticalLayout_8->setObjectName(QStringLiteral("verticalLayout_8"));
         lblCalPriceBuyDay = new QLabel(tboxPageBuyDay);
@@ -813,7 +814,7 @@ public:
         tboxCalBuys->addItem(tboxPageBuyDay, QStringLiteral("Purchase"));
         tboxPageBuyWeek = new QWidget();
         tboxPageBuyWeek->setObjectName(QStringLiteral("tboxPageBuyWeek"));
-        tboxPageBuyWeek->setGeometry(QRect(0, 0, 228, 168));
+        tboxPageBuyWeek->setGeometry(QRect(0, 0, 204, 162));
         verticalLayout_23 = new QVBoxLayout(tboxPageBuyWeek);
         verticalLayout_23->setObjectName(QStringLiteral("verticalLayout_23"));
         lblCalPriceBuyWeek = new QLabel(tboxPageBuyWeek);
@@ -841,7 +842,7 @@ public:
         tboxCalBuys->addItem(tboxPageBuyWeek, QStringLiteral("Purchase"));
         tboxPageBuyMonth = new QWidget();
         tboxPageBuyMonth->setObjectName(QStringLiteral("tboxPageBuyMonth"));
-        tboxPageBuyMonth->setGeometry(QRect(0, 0, 240, 168));
+        tboxPageBuyMonth->setGeometry(QRect(0, 0, 215, 162));
         verticalLayout_24 = new QVBoxLayout(tboxPageBuyMonth);
         verticalLayout_24->setObjectName(QStringLiteral("verticalLayout_24"));
         lblCalPriceBuyMonth = new QLabel(tboxPageBuyMonth);
@@ -1157,6 +1158,16 @@ public:
         gridLayout_3->setSpacing(2);
         gridLayout_3->setObjectName(QStringLiteral("gridLayout_3"));
         gridLayout_3->setContentsMargins(0, 0, 0, 0);
+        txtClientDistrict = new vmLineEdit(frmClientInfo);
+        txtClientDistrict->setObjectName(QStringLiteral("txtClientDistrict"));
+        sizePolicy3.setHeightForWidth(txtClientDistrict->sizePolicy().hasHeightForWidth());
+        txtClientDistrict->setSizePolicy(sizePolicy3);
+        txtClientDistrict->setMinimumSize(QSize(0, 0));
+        txtClientDistrict->setInputMask(QStringLiteral(""));
+        txtClientDistrict->setReadOnly(false);
+
+        gridLayout_3->addWidget(txtClientDistrict, 5, 0, 1, 1);
+
         txtClientZipCode = new vmLineEdit(frmClientInfo);
         txtClientZipCode->setObjectName(QStringLiteral("txtClientZipCode"));
         sizePolicy3.setHeightForWidth(txtClientZipCode->sizePolicy().hasHeightForWidth());
@@ -1166,7 +1177,7 @@ public:
         txtClientZipCode->setInputMask(QStringLiteral(""));
         txtClientZipCode->setReadOnly(false);
 
-        gridLayout_3->addWidget(txtClientZipCode, 5, 6, 1, 1);
+        gridLayout_3->addWidget(txtClientZipCode, 5, 5, 1, 1);
 
         txtClientCity = new vmLineEdit(frmClientInfo);
         txtClientCity->setObjectName(QStringLiteral("txtClientCity"));
@@ -1176,7 +1187,7 @@ public:
         txtClientCity->setInputMask(QStringLiteral(""));
         txtClientCity->setReadOnly(false);
 
-        gridLayout_3->addWidget(txtClientCity, 5, 3, 1, 3);
+        gridLayout_3->addWidget(txtClientCity, 5, 3, 1, 2);
 
         lblClientID = new QLabel(frmClientInfo);
         lblClientID->setObjectName(QStringLiteral("lblClientID"));
@@ -1185,7 +1196,7 @@ public:
         lblClientID->setFrameShadow(QFrame::Plain);
         lblClientID->setTextFormat(Qt::PlainText);
 
-        gridLayout_3->addWidget(lblClientID, 0, 6, 1, 1);
+        gridLayout_3->addWidget(lblClientID, 0, 5, 1, 1);
 
         txtClientName = new vmLineEdit(frmClientInfo);
         txtClientName->setObjectName(QStringLiteral("txtClientName"));
@@ -1203,16 +1214,6 @@ public:
 
         gridLayout_3->addWidget(lblClientPhones, 6, 0, 1, 1);
 
-        txtClientDistrict = new vmLineEdit(frmClientInfo);
-        txtClientDistrict->setObjectName(QStringLiteral("txtClientDistrict"));
-        sizePolicy3.setHeightForWidth(txtClientDistrict->sizePolicy().hasHeightForWidth());
-        txtClientDistrict->setSizePolicy(sizePolicy3);
-        txtClientDistrict->setMinimumSize(QSize(0, 0));
-        txtClientDistrict->setInputMask(QStringLiteral(""));
-        txtClientDistrict->setReadOnly(false);
-
-        gridLayout_3->addWidget(txtClientDistrict, 5, 0, 1, 1);
-
         txtClientID = new vmLineEdit(frmClientInfo);
         txtClientID->setObjectName(QStringLiteral("txtClientID"));
         sizePolicy3.setHeightForWidth(txtClientID->sizePolicy().hasHeightForWidth());
@@ -1228,7 +1229,7 @@ public:
         txtClientID->setText(QStringLiteral(""));
         txtClientID->setReadOnly(true);
 
-        gridLayout_3->addWidget(txtClientID, 1, 6, 1, 1);
+        gridLayout_3->addWidget(txtClientID, 1, 5, 1, 1);
 
         lblClientCity = new QLabel(frmClientInfo);
         lblClientCity->setObjectName(QStringLiteral("lblClientCity"));
@@ -1293,7 +1294,7 @@ public:
         verticalLayout_4->addWidget(chkClientActive);
 
 
-        gridLayout_3->addWidget(frame_2, 0, 7, 6, 1);
+        gridLayout_3->addWidget(frame_2, 0, 6, 6, 1);
 
         lblClientDistrict = new QLabel(frmClientInfo);
         lblClientDistrict->setObjectName(QStringLiteral("lblClientDistrict"));
@@ -1325,13 +1326,7 @@ public:
         lblClientEmail = new QLabel(frmClientInfo);
         lblClientEmail->setObjectName(QStringLiteral("lblClientEmail"));
 
-        gridLayout_3->addWidget(lblClientEmail, 6, 3, 1, 5);
-
-        contactsClientPhones = new contactsManagerWidget(frmClientInfo);
-        contactsClientPhones->setObjectName(QStringLiteral("contactsClientPhones"));
-        contactsClientPhones->setMinimumSize(QSize(100, 25));
-
-        gridLayout_3->addWidget(contactsClientPhones, 7, 0, 1, 1);
+        gridLayout_3->addWidget(lblClientEmail, 6, 3, 1, 4);
 
         txtClientStreetAddress = new vmLineEdit(frmClientInfo);
         txtClientStreetAddress->setObjectName(QStringLiteral("txtClientStreetAddress"));
@@ -1343,19 +1338,13 @@ public:
 
         gridLayout_3->addWidget(txtClientStreetAddress, 3, 0, 1, 4);
 
-        contactsClientEmails = new contactsManagerWidget(frmClientInfo);
-        contactsClientEmails->setObjectName(QStringLiteral("contactsClientEmails"));
-        contactsClientEmails->setMinimumSize(QSize(0, 25));
-
-        gridLayout_3->addWidget(contactsClientEmails, 7, 3, 1, 5);
-
         lblClientZipCode = new QLabel(frmClientInfo);
         lblClientZipCode->setObjectName(QStringLiteral("lblClientZipCode"));
         lblClientZipCode->setMinimumSize(QSize(0, 30));
         lblClientZipCode->setFrameShape(QFrame::NoFrame);
         lblClientZipCode->setFrameShadow(QFrame::Plain);
 
-        gridLayout_3->addWidget(lblClientZipCode, 4, 6, 1, 1);
+        gridLayout_3->addWidget(lblClientZipCode, 4, 5, 1, 1);
 
         txtClientNumberAddress = new vmLineEdit(frmClientInfo);
         txtClientNumberAddress->setObjectName(QStringLiteral("txtClientNumberAddress"));
@@ -1366,7 +1355,7 @@ public:
         txtClientNumberAddress->setInputMask(QStringLiteral(""));
         txtClientNumberAddress->setReadOnly(false);
 
-        gridLayout_3->addWidget(txtClientNumberAddress, 3, 6, 1, 1);
+        gridLayout_3->addWidget(txtClientNumberAddress, 3, 5, 1, 1);
 
         lblClientNumberAdress = new QLabel(frmClientInfo);
         lblClientNumberAdress->setObjectName(QStringLiteral("lblClientNumberAdress"));
@@ -1375,7 +1364,28 @@ public:
         lblClientNumberAdress->setFrameShadow(QFrame::Plain);
         lblClientNumberAdress->setTextFormat(Qt::PlainText);
 
-        gridLayout_3->addWidget(lblClientNumberAdress, 2, 6, 1, 1);
+        gridLayout_3->addWidget(lblClientNumberAdress, 2, 5, 1, 1);
+
+        contactsClientPhones = new contactsManagerWidget(frmClientInfo);
+        contactsClientPhones->setObjectName(QStringLiteral("contactsClientPhones"));
+        contactsClientPhones->setMinimumSize(QSize(0, 30));
+        contactsClientPhones->setFrameShape(QFrame::NoFrame);
+        contactsClientPhones->setFrameShadow(QFrame::Plain);
+
+        gridLayout_3->addWidget(contactsClientPhones, 7, 0, 1, 1);
+
+        contactsClientEmails = new contactsManagerWidget(frmClientInfo);
+        contactsClientEmails->setObjectName(QStringLiteral("contactsClientEmails"));
+        contactsClientEmails->setMinimumSize(QSize(0, 30));
+        contactsClientEmails->setFrameShape(QFrame::NoFrame);
+        contactsClientEmails->setFrameShadow(QFrame::Plain);
+
+        gridLayout_3->addWidget(contactsClientEmails, 7, 3, 1, 4);
+
+        txtDummy = new QLineEdit(frmClientInfo);
+        txtDummy->setObjectName(QStringLiteral("txtDummy"));
+
+        gridLayout_3->addWidget(txtDummy, 8, 0, 1, 1);
 
         gridLayout_3->setColumnStretch(0, 2);
         lblClientID->raise();
@@ -1387,7 +1397,6 @@ public:
         txtClientZipCode->raise();
         txtClientCity->raise();
         lblClientEmail->raise();
-        contactsClientEmails->raise();
         frame_2->raise();
         txtClientName->raise();
         lblClientName->raise();
@@ -1396,7 +1405,9 @@ public:
         lblClientDistrict->raise();
         txtClientDistrict->raise();
         lblClientPhones->raise();
+        txtDummy->raise();
         contactsClientPhones->raise();
+        contactsClientEmails->raise();
 
         verticalLayout_3->addWidget(frmClientInfo);
 
@@ -1487,17 +1498,6 @@ public:
 
         gridLayout_15->addWidget(txtJobProjectPath, 3, 1, 1, 7);
 
-        btnNewProject = new QToolButton(frmJobInfo);
-        btnNewProject->setObjectName(QStringLiteral("btnNewProject"));
-        btnNewProject->setMinimumSize(QSize(30, 30));
-        btnNewProject->setMaximumSize(QSize(30, 30));
-        QIcon icon16;
-        icon16.addFile(QStringLiteral(":/resources/new_project.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnNewProject->setIcon(icon16);
-        btnNewProject->setPopupMode(QToolButton::InstantPopup);
-
-        gridLayout_15->addWidget(btnNewProject, 2, 2, 1, 1);
-
         lblJobType = new QLabel(frmJobInfo);
         lblJobType->setObjectName(QStringLiteral("lblJobType"));
         lblJobType->setFrameShape(QFrame::NoFrame);
@@ -1511,9 +1511,9 @@ public:
         btnJobOpenDoc->setSizePolicy(sizePolicy1);
         btnJobOpenDoc->setMinimumSize(QSize(30, 30));
         btnJobOpenDoc->setMaximumSize(QSize(30, 30));
-        QIcon icon17;
-        icon17.addFile(QStringLiteral(":/resources/Microsoft+Office+Word+2007.xpm"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenDoc->setIcon(icon17);
+        QIcon icon16;
+        icon16.addFile(QStringLiteral(":/resources/Microsoft+Office+Word+2007.xpm"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenDoc->setIcon(icon16);
 
         gridLayout_15->addWidget(btnJobOpenDoc, 2, 5, 1, 1);
 
@@ -1538,9 +1538,9 @@ public:
         btnJobOpenXls->setSizePolicy(sizePolicy1);
         btnJobOpenXls->setMinimumSize(QSize(30, 30));
         btnJobOpenXls->setMaximumSize(QSize(30, 30));
-        QIcon icon18;
-        icon18.addFile(QStringLiteral(":/resources/Microsoft+Office+Excel+2007.xpm"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenXls->setIcon(icon18);
+        QIcon icon17;
+        icon17.addFile(QStringLiteral(":/resources/Microsoft+Office+Excel+2007.xpm"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenXls->setIcon(icon17);
 
         gridLayout_15->addWidget(btnJobOpenXls, 2, 6, 1, 1);
 
@@ -1554,9 +1554,9 @@ public:
         btnJobOpenFileFolder->setSizePolicy(sizePolicy1);
         btnJobOpenFileFolder->setMinimumSize(QSize(30, 30));
         btnJobOpenFileFolder->setMaximumSize(QSize(30, 30));
-        QIcon icon19;
-        icon19.addFile(QStringLiteral(":/resources/system-file-manager.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenFileFolder->setIcon(icon19);
+        QIcon icon18;
+        icon18.addFile(QStringLiteral(":/resources/system-file-manager.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenFileFolder->setIcon(icon18);
 
         gridLayout_15->addWidget(btnJobOpenFileFolder, 2, 4, 1, 1);
 
@@ -1570,6 +1570,7 @@ public:
 
         btnQuickProject = new QPushButton(frmJobInfo);
         btnQuickProject->setObjectName(QStringLiteral("btnQuickProject"));
+        btnQuickProject->setMaximumSize(QSize(16777215, 30));
 
         gridLayout_15->addWidget(btnQuickProject, 5, 6, 1, 2);
 
@@ -1579,14 +1580,15 @@ public:
         btnJobOpenPdf->setSizePolicy(sizePolicy1);
         btnJobOpenPdf->setMinimumSize(QSize(30, 30));
         btnJobOpenPdf->setMaximumSize(QSize(30, 30));
-        QIcon icon20;
-        icon20.addFile(QStringLiteral(":/resources/application-pdf.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenPdf->setIcon(icon20);
+        QIcon icon19;
+        icon19.addFile(QStringLiteral(":/resources/application-pdf.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenPdf->setIcon(icon19);
 
         gridLayout_15->addWidget(btnJobOpenPdf, 2, 7, 1, 1);
 
         txtJobProjectID = new vmLineEdit(frmJobInfo);
         txtJobProjectID->setObjectName(QStringLiteral("txtJobProjectID"));
+        txtJobProjectID->setMaximumSize(QSize(16777215, 30));
 
         gridLayout_15->addWidget(txtJobProjectID, 5, 1, 1, 5);
 
@@ -1752,17 +1754,17 @@ public:
         horizontalLayout_13->setContentsMargins(0, 2, 0, 2);
         btnJobPrevDay = new QToolButton(frmJobReportControls);
         btnJobPrevDay->setObjectName(QStringLiteral("btnJobPrevDay"));
-        QIcon icon21;
-        icon21.addFile(QStringLiteral(":/resources/browse-controls/prev_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobPrevDay->setIcon(icon21);
+        QIcon icon20;
+        icon20.addFile(QStringLiteral(":/resources/browse-controls/prev_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobPrevDay->setIcon(icon20);
 
         horizontalLayout_13->addWidget(btnJobPrevDay);
 
         btnJobNextDay = new QToolButton(frmJobReportControls);
         btnJobNextDay->setObjectName(QStringLiteral("btnJobNextDay"));
-        QIcon icon22;
-        icon22.addFile(QStringLiteral(":/resources/browse-controls/next_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobNextDay->setIcon(icon22);
+        QIcon icon21;
+        icon21.addFile(QStringLiteral(":/resources/browse-controls/next_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobNextDay->setIcon(icon21);
 
         horizontalLayout_13->addWidget(btnJobNextDay);
 
@@ -1798,9 +1800,9 @@ public:
 
         btnJobCancelDelDay = new QToolButton(frmJobReportControls);
         btnJobCancelDelDay->setObjectName(QStringLiteral("btnJobCancelDelDay"));
-        QIcon icon23;
-        icon23.addFile(QStringLiteral(":/resources/cancel_remove.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobCancelDelDay->setIcon(icon23);
+        QIcon icon22;
+        icon22.addFile(QStringLiteral(":/resources/cancel_remove.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobCancelDelDay->setIcon(icon22);
 
         horizontalLayout_13->addWidget(btnJobCancelDelDay);
 
@@ -1824,9 +1826,9 @@ public:
 
         btnJobSeparateReportWindow = new QToolButton(frmJobInfo_2);
         btnJobSeparateReportWindow->setObjectName(QStringLiteral("btnJobSeparateReportWindow"));
-        QIcon icon24;
-        icon24.addFile(QStringLiteral(":/resources/separate_window.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobSeparateReportWindow->setIcon(icon24);
+        QIcon icon23;
+        icon23.addFile(QStringLiteral(":/resources/separate_window.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobSeparateReportWindow->setIcon(icon23);
         btnJobSeparateReportWindow->setCheckable(true);
 
         gLayoutJobExtraInfo->addWidget(btnJobSeparateReportWindow, 0, 7, 1, 1);
@@ -1857,33 +1859,33 @@ public:
 
         btnJobPrevPicture = new QToolButton(frmJobPicturesControls);
         btnJobPrevPicture->setObjectName(QStringLiteral("btnJobPrevPicture"));
-        QIcon icon25;
-        icon25.addFile(QStringLiteral(":/resources/arrow-left.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobPrevPicture->setIcon(icon25);
+        QIcon icon24;
+        icon24.addFile(QStringLiteral(":/resources/arrow-left.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobPrevPicture->setIcon(icon24);
 
         horizontalLayout_23->addWidget(btnJobPrevPicture);
 
         btnJobNextPicture = new QToolButton(frmJobPicturesControls);
         btnJobNextPicture->setObjectName(QStringLiteral("btnJobNextPicture"));
-        QIcon icon26;
-        icon26.addFile(QStringLiteral(":/resources/arrow-right.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobNextPicture->setIcon(icon26);
+        QIcon icon25;
+        icon25.addFile(QStringLiteral(":/resources/arrow-right.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobNextPicture->setIcon(icon25);
 
         horizontalLayout_23->addWidget(btnJobNextPicture);
 
         btnJobReloadPictures = new QToolButton(frmJobPicturesControls);
         btnJobReloadPictures->setObjectName(QStringLiteral("btnJobReloadPictures"));
-        QIcon icon27;
-        icon27.addFile(QStringLiteral(":/resources/reload.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobReloadPictures->setIcon(icon27);
+        QIcon icon26;
+        icon26.addFile(QStringLiteral(":/resources/reload.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobReloadPictures->setIcon(icon26);
 
         horizontalLayout_23->addWidget(btnJobReloadPictures);
 
         btnJobRenamePicture = new QToolButton(frmJobPicturesControls);
         btnJobRenamePicture->setObjectName(QStringLiteral("btnJobRenamePicture"));
-        QIcon icon28;
-        icon28.addFile(QStringLiteral(":/resources/edit-rename.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobRenamePicture->setIcon(icon28);
+        QIcon icon27;
+        icon27.addFile(QStringLiteral(":/resources/edit-rename.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobRenamePicture->setIcon(icon27);
         btnJobRenamePicture->setCheckable(true);
 
         horizontalLayout_23->addWidget(btnJobRenamePicture);
@@ -1897,23 +1899,23 @@ public:
 
         btnJobOpenPictureEditor = new QToolButton(frmJobPicturesControls);
         btnJobOpenPictureEditor->setObjectName(QStringLiteral("btnJobOpenPictureEditor"));
-        QIcon icon29;
-        icon29.addFile(QStringLiteral(":/resources/gimp.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenPictureEditor->setIcon(icon29);
+        QIcon icon28;
+        icon28.addFile(QStringLiteral(":/resources/gimp.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenPictureEditor->setIcon(icon28);
 
         horizontalLayout_23->addWidget(btnJobOpenPictureEditor);
 
         btnJobOpenPictureFolder = new QToolButton(frmJobPicturesControls);
         btnJobOpenPictureFolder->setObjectName(QStringLiteral("btnJobOpenPictureFolder"));
-        btnJobOpenPictureFolder->setIcon(icon19);
+        btnJobOpenPictureFolder->setIcon(icon18);
 
         horizontalLayout_23->addWidget(btnJobOpenPictureFolder);
 
         btnJobOpenPictureViewer = new QToolButton(frmJobPicturesControls);
         btnJobOpenPictureViewer->setObjectName(QStringLiteral("btnJobOpenPictureViewer"));
-        QIcon icon30;
-        icon30.addFile(QStringLiteral(":/resources/gwenview.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenPictureViewer->setIcon(icon30);
+        QIcon icon29;
+        icon29.addFile(QStringLiteral(":/resources/gwenview.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenPictureViewer->setIcon(icon29);
 
         horizontalLayout_23->addWidget(btnJobOpenPictureViewer);
 
@@ -1926,9 +1928,9 @@ public:
 
         btnJobClientsYearPictures = new QToolButton(frmJobPicturesControls);
         btnJobClientsYearPictures->setObjectName(QStringLiteral("btnJobClientsYearPictures"));
-        QIcon icon31;
-        icon31.addFile(QStringLiteral(":/resources/clients-year-pictures.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobClientsYearPictures->setIcon(icon31);
+        QIcon icon30;
+        icon30.addFile(QStringLiteral(":/resources/clients-year-pictures.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobClientsYearPictures->setIcon(icon30);
 
         horizontalLayout_23->addWidget(btnJobClientsYearPictures);
 
@@ -1945,7 +1947,7 @@ public:
 
         btnJobSeparatePicture = new QToolButton(frmJobPicturesControls);
         btnJobSeparatePicture->setObjectName(QStringLiteral("btnJobSeparatePicture"));
-        btnJobSeparatePicture->setIcon(icon24);
+        btnJobSeparatePicture->setIcon(icon23);
         btnJobSeparatePicture->setCheckable(true);
 
         horizontalLayout_23->addWidget(btnJobSeparatePicture);
@@ -2009,9 +2011,9 @@ public:
 
         btnJobMachines = new QToolButton(frmJobInfo_2);
         btnJobMachines->setObjectName(QStringLiteral("btnJobMachines"));
-        QIcon icon32;
-        icon32.addFile(QStringLiteral(":/resources/job_machines.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobMachines->setIcon(icon32);
+        QIcon icon31;
+        icon31.addFile(QStringLiteral(":/resources/job_machines.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobMachines->setIcon(icon31);
 
         gLayoutJobExtraInfo->addWidget(btnJobMachines, 0, 6, 1, 1);
 
@@ -2122,9 +2124,9 @@ public:
         btnShowSuppliersDlg = new QToolButton(frmBuyJobList);
         btnShowSuppliersDlg->setObjectName(QStringLiteral("btnShowSuppliersDlg"));
         btnShowSuppliersDlg->setMinimumSize(QSize(30, 30));
-        QIcon icon33;
-        icon33.addFile(QStringLiteral(":/resources/arrow-down.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnShowSuppliersDlg->setIcon(icon33);
+        QIcon icon32;
+        icon32.addFile(QStringLiteral(":/resources/arrow-down.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnShowSuppliersDlg->setIcon(icon32);
         btnShowSuppliersDlg->setCheckable(false);
 
         horizontalLayout_6->addWidget(btnShowSuppliersDlg);
@@ -2180,9 +2182,9 @@ public:
         btnBuyCopyRows->setEnabled(false);
         btnBuyCopyRows->setMinimumSize(QSize(0, 0));
         btnBuyCopyRows->setLayoutDirection(Qt::LeftToRight);
-        QIcon icon34;
-        icon34.addFile(QStringLiteral(":/resources/copy_buy_to_qp.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnBuyCopyRows->setIcon(icon34);
+        QIcon icon33;
+        icon33.addFile(QStringLiteral(":/resources/copy_buy_to_qp.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnBuyCopyRows->setIcon(icon33);
 
         gLayoutBuyForms->addWidget(btnBuyCopyRows, 6, 3, 1, 1);
 
@@ -2389,19 +2391,19 @@ public:
 
         horizontalLayout_8->addWidget(lblFastSearch);
 
-        txtQuickSearch = new vmLineEdit(centralwidget);
-        txtQuickSearch->setObjectName(QStringLiteral("txtQuickSearch"));
-        txtQuickSearch->setMinimumSize(QSize(200, 30));
+        txtSearch = new vmLineEdit(centralwidget);
+        txtSearch->setObjectName(QStringLiteral("txtSearch"));
+        txtSearch->setMinimumSize(QSize(200, 30));
 
-        horizontalLayout_8->addWidget(txtQuickSearch);
+        horizontalLayout_8->addWidget(txtSearch);
 
         btnSearchStart = new QToolButton(centralwidget);
         btnSearchStart->setObjectName(QStringLiteral("btnSearchStart"));
         btnSearchStart->setEnabled(false);
         btnSearchStart->setMinimumSize(QSize(30, 30));
-        QIcon icon35;
-        icon35.addFile(QStringLiteral(":/resources/search.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnSearchStart->setIcon(icon35);
+        QIcon icon34;
+        icon34.addFile(QStringLiteral(":/resources/search.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnSearchStart->setIcon(icon34);
         btnSearchStart->setCheckable(false);
 
         horizontalLayout_8->addWidget(btnSearchStart);
@@ -2447,8 +2449,7 @@ public:
         QWidget::setTabOrder(btnJobDel, btnJobSave);
         QWidget::setTabOrder(btnJobSave, btnJobCancel);
         QWidget::setTabOrder(btnJobCancel, cboJobType);
-        QWidget::setTabOrder(cboJobType, btnNewProject);
-        QWidget::setTabOrder(btnNewProject, btnJobOpenFileFolder);
+        QWidget::setTabOrder(cboJobType, btnJobOpenFileFolder);
         QWidget::setTabOrder(btnJobOpenFileFolder, btnJobOpenDoc);
         QWidget::setTabOrder(btnJobOpenDoc, btnJobOpenXls);
         QWidget::setTabOrder(btnJobOpenXls, btnJobOpenPdf);
@@ -2516,7 +2517,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabMain->setCurrentIndex(6);
+        tabMain->setCurrentIndex(5);
         tboxCalJobs->setCurrentIndex(0);
 
 
@@ -2690,23 +2691,6 @@ public:
 #endif // QT_NO_TOOLTIP
         btnJobSelectJob->setText(QApplication::translate("MainWindow", "...", 0));
         lblJobProjectID->setText(QApplication::translate("MainWindow", "Project ID:", 0));
-#ifndef QT_NO_TOOLTIP
-        btnNewProject->setToolTip(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Tahoma'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Create a new project folder</p>\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">-&gt; New project folder </span></p>\n"
-"<p align=\"justify\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">    Will create a new folder in the client's"
-                        " folder. You will be asked for a project name, which will be part of the new folder name, along with this job's start date. To the folder it will be copied a single instance of the MS Word document for the project's description and the equivalent MS Excel spreadsheet. It will alse be created a folder called Pictures for the job's pictures.</p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">-&gt; Add a new document to folder </span></p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">    Will copy another MS Word file to the current project folder, if it exists</p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-weight:600;\">-&gt; Add a new spredsheet to folder </span></p>\n"
-"<p style=\" margin-top:12px; margin-bottom:12px"
-                        "; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">    Will copy another MS Excel file to the current project folder, if it exists</p></body></html>", 0));
-#endif // QT_NO_TOOLTIP
-        btnNewProject->setText(QApplication::translate("MainWindow", "...", 0));
         lblJobType->setText(QApplication::translate("MainWindow", "Type:", 0));
 #ifndef QT_NO_TOOLTIP
         btnJobOpenDoc->setToolTip(QApplication::translate("MainWindow", "Abrir arquivo doc", 0));
@@ -2837,7 +2821,7 @@ public:
         lblCurInfoBuy->setText(QApplication::translate("MainWindow", "TextLabel", 0));
         lblFastSearch->setText(QApplication::translate("MainWindow", "Search: ", 0));
 #ifndef QT_NO_TOOLTIP
-        txtQuickSearch->setToolTip(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        txtSearch->setToolTip(QApplication::translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;\">\n"

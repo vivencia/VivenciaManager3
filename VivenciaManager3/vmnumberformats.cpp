@@ -593,15 +593,19 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 			setType ( VMNT_DATE );
 		}
 		else {
-			if ( date.contains ( QLatin1String ( "de" ) ) )
+			if ( date.contains ( QStringLiteral ( "de" ) ) )
 				return dateFromLongString ( date );
 			else
 				return dateFromFilenameDate ( date );
 		}
 		setCached ( false );
-		return *this;
 	}
-	clear ( false );
+	else {
+		clear ( false );
+		nbr_upart[VM_IDX_YEAR] = 2000;
+		nbr_upart[VM_IDX_MONTH] = 1;
+		nbr_upart[VM_IDX_DAY] = 1;
+	}
 	return *this;
 }
 
@@ -1185,6 +1189,7 @@ vmNumber& vmNumber::fromStrPrice ( const QString& price )
 
 vmNumber& vmNumber::fromTrustedStrPrice ( const QString& price, const bool cache )
 {
+	QString newStrPrice;
 	if ( !price.isEmpty () ) {
 		clear ( false );
 		const int idx_sep ( price.indexOf ( CHR_COMMA ) );
@@ -1193,11 +1198,16 @@ vmNumber& vmNumber::fromTrustedStrPrice ( const QString& price, const bool cache
 		nbr_part[VM_IDX_CENTS] = price.right ( 2 ).toInt ();
 		if ( price.at ( 0 ) == CHR_L_PARENTHESIS ) // negative
 			nbr_part[VM_IDX_TENS] = 0 - nbr_part[VM_IDX_TENS];
-		setType ( VMNT_PRICE );
-		if ( cache ) {
-			setCached ( true );
-			cached_str = price;
-		}
+	}
+	else {
+		nbr_part[VM_IDX_TENS] = 0;
+		nbr_part[VM_IDX_CENTS] = 0;
+		formatPrice ( newStrPrice, 0, 0 );
+	}
+	setType ( VMNT_PRICE );
+	if ( cache ) {
+		setCached ( true );
+		cached_str = newStrPrice.isEmpty () ? price : newStrPrice;
 	}
 	return *this;
 }

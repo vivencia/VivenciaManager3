@@ -42,14 +42,14 @@ constexpr uint PURCHASES_TABLE_COLS ( 7 );
 vmTableWidget::vmTableWidget ( QWidget* parent )
 	: QTableWidget ( parent ), vmWidget ( WT_TABLE ),
 	  mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_ncols ( 0 ), mAddedItems ( 0 ),
-      mTableChanged ( false ), mbKeepModRec ( true ),
-      mPlainTable ( false ), mIsPurchaseTable ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mTableChanged ( false ), mbKeepModRec ( true ),
+	  mPlainTable ( false ), mIsPurchaseTable ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( 10 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ),
 	  mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
-      monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr ),
-      searchPanelPlacement_func ( nullptr )
+	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr ),
+	  searchPanelPlacement_func ( nullptr )
 {
 	sharedContructorsCode ();
 }
@@ -57,14 +57,14 @@ vmTableWidget::vmTableWidget ( QWidget* parent )
 vmTableWidget::vmTableWidget ( const uint rows, vmTableColumn** cols, QWidget* parent )
 	: QTableWidget ( rows + 1, 0, parent ), vmWidget ( WT_TABLE, rows ),
 	  mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_ncols ( 0 ), mAddedItems ( 0 ),
-      mTableChanged ( false ), mbKeepModRec ( true ),
-      mPlainTable ( false ), mIsPurchaseTable ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mTableChanged ( false ), mbKeepModRec ( true ),
+	  mPlainTable ( false ), mIsPurchaseTable ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( rows + 1 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ),
 	  mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
-      monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr ),
-      searchPanelPlacement_func ( nullptr )
+	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr ),
+	  searchPanelPlacement_func ( nullptr )
 {
 	sharedContructorsCode ();
 	initTable ( rows, cols );
@@ -152,13 +152,13 @@ void vmTableWidget::initTable ( const uint rows, vmTableColumn** cols )
 			if ( colWidth == 0 ) {
 				switch ( column->wtype ) {
 					case WT_DATEEDIT:
-                        colWidth = 180;
+						colWidth = 180;
 					break;
 					case WT_LINEEDIT:
 						colWidth = ( column->text_type >= vmWidget::TT_PHONE ? 130 : 100 );
 					break;
 					case WT_LINEEDIT_WITH_BUTTON:
-                        colWidth = 150;
+						colWidth = 150;
 					default:
 						colWidth = 100;
 					break;
@@ -254,15 +254,15 @@ bool vmTableWidget::searchLast ()
 
 void vmTableWidget::showSearchPanel ()
 {
-    searchPanelPlacement_func ( true );
-    m_searchPanel->showPanel ();
+	searchPanelPlacement_func ( true );
+	m_searchPanel->showPanel ();
 }
 
 void vmTableWidget::hideSearchPanel ()
 {
-    searchPanelPlacement_func ( false );
-    m_searchPanel->hide ();
-    setFocus ();
+	searchPanelPlacement_func ( false );
+	m_searchPanel->hide ();
+	setFocus ();
 }
 
 vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidget* parent )
@@ -303,7 +303,7 @@ vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidg
 			case PURCHASES_TABLE_REG_COL:
 				cols[PURCHASES_TABLE_REG_COL]->wtype = WT_CHECKBOX;
 				cols[PURCHASES_TABLE_REG_COL]->width = 50;
-                cols[PURCHASES_TABLE_REG_COL]->default_value = CHR_ZERO;
+				cols[PURCHASES_TABLE_REG_COL]->default_value = CHR_ZERO;
 				cols[PURCHASES_TABLE_REG_COL]->label = tr ( "Register" );
 			break;
 		}
@@ -314,89 +314,89 @@ vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidg
 	else
 		table = new vmTableWidget ( 10, cols, parent );
 
-    table->mIsPurchaseTable = true;
+	table->mIsPurchaseTable = true;
 	table->insertMonitoredCell ( table->totalsRow (), ISR_TOTAL_PRICE );
 	return table;
 }
 
 void vmTableWidget::exchangePurchaseTablesInfo (
 	const vmTableWidget* const src_table, vmTableWidget* const dst_table,
-    const DBRecord* const src_dbrec, DBRecord* const dst_dbrec )
+	const DBRecord* const src_dbrec, DBRecord* const dst_dbrec )
 {
-    if ( !src_table->property ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER ).toBool () )
-        return;
+	if ( !src_table->property ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER ).toBool () )
+		return;
 
-    spreadRow* s_row ( new spreadRow );
-    s_row->column[0] = dst_dbrec->isrRecordField ( ISR_NAME );
-    s_row->column[1] = dst_dbrec->isrRecordField ( ISR_UNIT );
-    s_row->column[2] = dst_dbrec->isrRecordField ( ISR_BRAND );
-    s_row->column[3] = dst_dbrec->isrRecordField ( ISR_UNIT_PRICE );
-    s_row->column[4] = dst_dbrec->isrRecordField ( ISR_SUPPLIER );
-    s_row->column[5] = dst_dbrec->isrRecordField ( ISR_DATE );
+	spreadRow* s_row ( new spreadRow );
+	s_row->column[0] = dst_dbrec->isrRecordField ( ISR_NAME );
+	s_row->column[1] = dst_dbrec->isrRecordField ( ISR_UNIT );
+	s_row->column[2] = dst_dbrec->isrRecordField ( ISR_BRAND );
+	s_row->column[3] = dst_dbrec->isrRecordField ( ISR_UNIT_PRICE );
+	s_row->column[4] = dst_dbrec->isrRecordField ( ISR_SUPPLIER );
+	s_row->column[5] = dst_dbrec->isrRecordField ( ISR_DATE );
 
-    bool bEditable ( false );
+	bool bEditable ( false );
 
-    if ( dst_table != nullptr ) {
-        bEditable = dst_table->isEditable ();
-        dst_table->setEditable ( true );
-    }
+	if ( dst_table != nullptr ) {
+		bEditable = dst_table->isEditable ();
+		dst_table->setEditable ( true );
+	}
 
-    s_row->field_value[s_row->column[4]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_SUPPLIER ) );
-    s_row->field_value[s_row->column[5]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_DATE ) );
+	s_row->field_value[s_row->column[4]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_SUPPLIER ) );
+	s_row->field_value[s_row->column[5]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_DATE ) );
 
-    for ( int i_row ( 0 ); i_row <= src_table->lastUsedRow (); ++i_row ) {
-        if ( src_table->sheetItem ( i_row, PURCHASES_TABLE_REG_COL )->text () == CHR_ZERO ) // item is not marked to be exported
+	for ( int i_row ( 0 ); i_row <= src_table->lastUsedRow (); ++i_row ) {
+		if ( src_table->sheetItem ( i_row, PURCHASES_TABLE_REG_COL )->text () == CHR_ZERO ) // item is not marked to be exported
 			continue;
 
-        s_row->field_value[s_row->column[0]] = src_table->sheetItem ( i_row, ISR_NAME )->text ();
-        s_row->field_value[s_row->column[1]] = src_table->sheetItem ( i_row, ISR_UNIT )->text ();
-        s_row->field_value[s_row->column[2]] = src_table->sheetItem ( i_row, ISR_BRAND )->text ();
-        s_row->field_value[s_row->column[3]] = src_table->sheetItem ( i_row, ISR_UNIT_PRICE )->text ();
+		s_row->field_value[s_row->column[0]] = src_table->sheetItem ( i_row, ISR_NAME )->text ();
+		s_row->field_value[s_row->column[1]] = src_table->sheetItem ( i_row, ISR_UNIT )->text ();
+		s_row->field_value[s_row->column[2]] = src_table->sheetItem ( i_row, ISR_BRAND )->text ();
+		s_row->field_value[s_row->column[3]] = src_table->sheetItem ( i_row, ISR_UNIT_PRICE )->text ();
 
-        if ( dst_dbrec->readRecord ( s_row->column[0], s_row->field_value[s_row->column[0]] ) ) { //item description
-            if ( recStrValue ( dst_dbrec, s_row->column[1] ) == s_row->field_value[s_row->column[1]] ) { // item unit
-                if ( recStrValue ( dst_dbrec, s_row->column[2] ) == s_row->field_value[s_row->column[2]] ) { // item brand
-                    if ( recStrValue ( dst_dbrec, s_row->column[4] ) == s_row->field_value[s_row->column[4]] ) { // item supplier
-                        if ( recStrValue ( dst_dbrec, s_row->column[3] ) == s_row->field_value[s_row->column[3]] ) { // item price
-                            if ( recStrValue ( dst_dbrec, s_row->column[5] ) == s_row->field_value[s_row->column[5]] ) // item date
-                                continue; // everything is the same, do nothing
-                        }
-                        dst_dbrec->setAction ( ACTION_EDIT ); // either price or date are different: edit to update the info
-                    }
-                }
-            }
-        }
-        if ( dst_dbrec->action () == ACTION_READ )
-            dst_dbrec->setAction ( ACTION_ADD ); //one single piece of different information (price and date excluded ) and we add the new info
+		if ( dst_dbrec->readRecord ( s_row->column[0], s_row->field_value[s_row->column[0]] ) ) { //item description
+			if ( recStrValue ( dst_dbrec, s_row->column[1] ) == s_row->field_value[s_row->column[1]] ) { // item unit
+				if ( recStrValue ( dst_dbrec, s_row->column[2] ) == s_row->field_value[s_row->column[2]] ) { // item brand
+					if ( recStrValue ( dst_dbrec, s_row->column[4] ) == s_row->field_value[s_row->column[4]] ) { // item supplier
+						if ( recStrValue ( dst_dbrec, s_row->column[3] ) == s_row->field_value[s_row->column[3]] ) { // item price
+							if ( recStrValue ( dst_dbrec, s_row->column[5] ) == s_row->field_value[s_row->column[5]] ) // item date
+								continue; // everything is the same, do nothing
+						}
+						dst_dbrec->setAction ( ACTION_EDIT ); // either price or date are different: edit to update the info
+					}
+				}
+			}
+		}
+		if ( dst_dbrec->action () == ACTION_READ )
+			dst_dbrec->setAction ( ACTION_ADD ); //one single piece of different information (price and date excluded ) and we add the new info
 
-        /* dst_table might be nullptr. For optimization purpose, a table might be uninitialized by the time this function is called
-         * but the dbrecord must be existent. At a later point, when the table might be created, VivenciaDB::populateTable must be called
-         */
-        if ( dst_table != nullptr ) {
-            if ( dst_dbrec->action () == ACTION_ADD )
-                s_row->row = dst_table->lastUsedRow () + 1;
-            else
-                s_row->row = recIntValue ( dst_dbrec, dst_dbrec->isrRecordField ( ISR_ID ) );
-            s_row->field_value[dst_dbrec->isrRecordField ( ISR_ID )] = QString::number ( s_row->row );
-            dst_table->setRowData ( s_row, true );
-        }
-        else {
-            if ( dst_dbrec->action () == ACTION_ADD ) {
-                setRecValue ( dst_dbrec, s_row->column[0], s_row->field_value[s_row->column[0]] );
-                setRecValue ( dst_dbrec, s_row->column[1], s_row->field_value[s_row->column[1]] );
-                setRecValue ( dst_dbrec, s_row->column[2], s_row->field_value[s_row->column[2]] );
-                setRecValue ( dst_dbrec, s_row->column[4], s_row->field_value[s_row->column[4]] );
-            }
-            // only update is on either PRICE or DATE when editing.
-            setRecValue ( dst_dbrec, s_row->column[3], s_row->field_value[s_row->column[3]] );
-            setRecValue ( dst_dbrec, s_row->column[5], s_row->field_value[s_row->column[5]] );
-            dst_dbrec->saveRecord ();
-            dst_dbrec->clearAll ();
-        }
+		/* dst_table might be nullptr. For optimization purpose, a table might be uninitialized by the time this function is called
+		 * but the dbrecord must be existent. At a later point, when the table might be created, VivenciaDB::populateTable must be called
+		 */
+		if ( dst_table != nullptr ) {
+			if ( dst_dbrec->action () == ACTION_ADD )
+				s_row->row = dst_table->lastUsedRow () + 1;
+			else
+				s_row->row = recIntValue ( dst_dbrec, dst_dbrec->isrRecordField ( ISR_ID ) );
+			s_row->field_value[dst_dbrec->isrRecordField ( ISR_ID )] = QString::number ( s_row->row );
+			dst_table->setRowData ( s_row, true );
+		}
+		else {
+			if ( dst_dbrec->action () == ACTION_ADD ) {
+				setRecValue ( dst_dbrec, s_row->column[0], s_row->field_value[s_row->column[0]] );
+				setRecValue ( dst_dbrec, s_row->column[1], s_row->field_value[s_row->column[1]] );
+				setRecValue ( dst_dbrec, s_row->column[2], s_row->field_value[s_row->column[2]] );
+				setRecValue ( dst_dbrec, s_row->column[4], s_row->field_value[s_row->column[4]] );
+			}
+			// only update is on either PRICE or DATE when editing.
+			setRecValue ( dst_dbrec, s_row->column[3], s_row->field_value[s_row->column[3]] );
+			setRecValue ( dst_dbrec, s_row->column[5], s_row->field_value[s_row->column[5]] );
+			dst_dbrec->saveRecord ();
+			dst_dbrec->clearAll ();
+		}
 	}
 	delete s_row;
-    if ( dst_table != nullptr )
-        dst_table->setEditable ( bEditable );
+	if ( dst_table != nullptr )
+		dst_table->setEditable ( bEditable );
 }
 
 vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWidget* parent,
@@ -407,40 +407,40 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 
 	for ( uint i ( 0 ); i <= last_column; ++i ) {
 		switch ( i ) {
-            case PHR_DATE:
-                cols[PHR_DATE] = new vmTableColumn;
-                cols[PHR_DATE]->label = tr ( "Date" );
-                cols[PHR_DATE]->wtype = WT_DATEEDIT;
+			case PHR_DATE:
+				cols[PHR_DATE] = new vmTableColumn;
+				cols[PHR_DATE]->label = tr ( "Date" );
+				cols[PHR_DATE]->wtype = WT_DATEEDIT;
 			break;
-            case PHR_VALUE:
-                cols[PHR_VALUE] = new vmTableColumn;
-                cols[PHR_VALUE]->label = tr ( "Value" );
-                cols[PHR_VALUE]->button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
-                cols[PHR_VALUE]->text_type = vmLineEdit::TT_PRICE;
+			case PHR_VALUE:
+				cols[PHR_VALUE] = new vmTableColumn;
+				cols[PHR_VALUE]->label = tr ( "Value" );
+				cols[PHR_VALUE]->button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
+				cols[PHR_VALUE]->text_type = vmLineEdit::TT_PRICE;
 			break;
-            case PHR_PAID:
-                cols[PHR_PAID] = new vmTableColumn;
-                cols[PHR_PAID]->label = tr ( "Paid?" );
-                cols[PHR_PAID]->wtype = WT_CHECKBOX;
-                cols[PHR_PAID]->width = 50;
+			case PHR_PAID:
+				cols[PHR_PAID] = new vmTableColumn;
+				cols[PHR_PAID]->label = tr ( "Paid?" );
+				cols[PHR_PAID]->wtype = WT_CHECKBOX;
+				cols[PHR_PAID]->width = 50;
 			break;
-            case PHR_METHOD:
-                cols[PHR_METHOD] = new vmTableColumn;
-                cols[PHR_METHOD]->label = tr ( "Method" );
-                cols[PHR_METHOD]->completer_type = vmCompleters::PAYMENT_METHOD;
-                cols[PHR_METHOD]->text_type = vmWidget::TT_UPPERCASE;
-                cols[PHR_METHOD]->width = 200;
-            break;
-            case PHR_ACCOUNT:
-                cols[PHR_ACCOUNT] = new vmTableColumn;
-                cols[PHR_ACCOUNT]->label = tr ( "Account" );
-                cols[PHR_ACCOUNT]->completer_type = vmCompleters::ACCOUNT;
-                cols[PHR_ACCOUNT]->width = 120;
-            break;
-            case PHR_USE_DATE:
-                cols[PHR_USE_DATE] = new vmTableColumn;
-                cols[PHR_USE_DATE]->label = tr ( "Use Date" );
-                cols[PHR_USE_DATE]->wtype = WT_DATEEDIT;
+			case PHR_METHOD:
+				cols[PHR_METHOD] = new vmTableColumn;
+				cols[PHR_METHOD]->label = tr ( "Method" );
+				cols[PHR_METHOD]->completer_type = vmCompleters::PAYMENT_METHOD;
+				cols[PHR_METHOD]->text_type = vmWidget::TT_UPPERCASE;
+				cols[PHR_METHOD]->width = 200;
+			break;
+			case PHR_ACCOUNT:
+				cols[PHR_ACCOUNT] = new vmTableColumn;
+				cols[PHR_ACCOUNT]->label = tr ( "Account" );
+				cols[PHR_ACCOUNT]->completer_type = vmCompleters::ACCOUNT;
+				cols[PHR_ACCOUNT]->width = 120;
+			break;
+			case PHR_USE_DATE:
+				cols[PHR_USE_DATE] = new vmTableColumn;
+				cols[PHR_USE_DATE]->label = tr ( "Use Date" );
+				cols[PHR_USE_DATE]->wtype = WT_DATEEDIT;
 			break;
 		}
 	}
@@ -450,7 +450,7 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 	else
 		table = new vmTableWidget ( 5, cols, parent );
 
-    table->insertMonitoredCell ( table->totalsRow (), PHR_VALUE );
+	table->insertMonitoredCell ( table->totalsRow (), PHR_VALUE );
 	heap_del ( cols );
 	return table;
 }
@@ -576,7 +576,7 @@ void vmTableWidget::clearRow ( const uint row, const uint n )
 				for ( uint i_col = 0; i_col <= ( colCount () - 1 ); ++i_col ) {
 					if ( !isBitSet ( readOnlyColumnsMask, i_col ) ) {
 						item = sheetItem ( i_row, i_col );
-                        item->setTextToDefault ( true );
+						item->setTextToDefault ( true );
 						item->highlight ( vmDefault_Color );
 					}
 				}
@@ -601,7 +601,7 @@ void vmTableWidget::clear ( const bool force )
 		}
 	}
 	mTableChanged = false;
-    setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
+	setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
 	m_lastUsedRow = -1;
 }
 
@@ -685,10 +685,10 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 			}
 			modifiedRows.insert ( insert_pos, unsigned ( row ) );
 		}
-        if ( mIsPurchaseTable ) {
-            if ( item->column () == PURCHASES_TABLE_REG_COL )
-                setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
-        }
+		if ( mIsPurchaseTable ) {
+			if ( item->column () == PURCHASES_TABLE_REG_COL )
+				setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
+		}
 		if ( cellChanged_func )
 			cellChanged_func ( item );
 	//}
@@ -761,11 +761,11 @@ void vmTableWidget::loadFromStringTable ( const stringTable& data )
 			s_row->row = 0;
 			do {
 				if ( rec->first () ) {
-                    for ( i_col = 0; i_col < colCount (); ++i_col ) {
-                        s_row->field_value[i_col] = rec->curValue ();
-                        if ( !rec->next () )
-                            break;
-                    }
+					for ( i_col = 0; i_col < colCount (); ++i_col ) {
+						s_row->field_value[i_col] = rec->curValue ();
+						if ( !rec->next () )
+							break;
+					}
 					setRowData ( s_row );
 					++( s_row->row );
 					rec = &data.next ();
@@ -856,61 +856,61 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 
 void vmTableWidget::searchPanelPlacement_GridLayout ( const bool bShow )
 {
-    // A QGridLayout is not dynamic as a QVBoxLayout. A dummy widget must be placed
-    // before the table so that the search panel occupies its place
-    QGridLayout* glayout ( static_cast<QGridLayout*>( mParentLayout ) );
-    if ( bShow ) {
-        int row ( 0 ), col ( 0 ), rowSpan ( 0 ), colSpan ( 0 );
-        glayout->getItemPosition ( glayout->indexOf ( this ), &row, &col, &rowSpan, &colSpan );
-        glayout->addWidget ( m_searchPanel, row - 1, col, rowSpan, colSpan );
-    }
-    else
-        glayout->removeWidget( m_searchPanel );
+	// A QGridLayout is not dynamic as a QVBoxLayout. A dummy widget must be placed
+	// before the table so that the search panel occupies its place
+	QGridLayout* glayout ( static_cast<QGridLayout*>( mParentLayout ) );
+	if ( bShow ) {
+		int row ( 0 ), col ( 0 ), rowSpan ( 0 ), colSpan ( 0 );
+		glayout->getItemPosition ( glayout->indexOf ( this ), &row, &col, &rowSpan, &colSpan );
+		glayout->addWidget ( m_searchPanel, row - 1, col, rowSpan, colSpan );
+	}
+	else
+		glayout->removeWidget( m_searchPanel );
 }
 
 void vmTableWidget::searchPanelPlacement_BoxLayout ( const bool bShow )
 {
-    QVBoxLayout* vblayout ( static_cast<QVBoxLayout*>( mParentLayout ) );
-    if ( bShow ) {
-        const int index ( vblayout->indexOf ( this ) );
-        vblayout->insertWidget( index, m_searchPanel, vblayout->stretch ( index ) );
-    }
-    else
-        vblayout->removeWidget( m_searchPanel );
+	QVBoxLayout* vblayout ( static_cast<QVBoxLayout*>( mParentLayout ) );
+	if ( bShow ) {
+		const int index ( vblayout->indexOf ( this ) );
+		vblayout->insertWidget( index, m_searchPanel, vblayout->stretch ( index ) );
+	}
+	else
+		vblayout->removeWidget( m_searchPanel );
 }
 
 void vmTableWidget::addToLayout ( QGridLayout* glayout, const uint row, const uint column )
 {
-    if ( setParentLayout ( glayout ) )
-        glayout->addWidget ( this, row, column );
+	if ( setParentLayout ( glayout ) )
+		glayout->addWidget ( this, row, column );
 }
 
 void vmTableWidget::addToLayout ( QVBoxLayout* vblayout, const uint stretch )
 {
-    if ( setParentLayout ( vblayout ) )
-        vblayout->addWidget ( this, stretch );
+	if ( setParentLayout ( vblayout ) )
+		vblayout->addWidget ( this, stretch );
 }
 
 bool vmTableWidget::setParentLayout ( QGridLayout* glayout )
 {
-    if ( mParentLayout == static_cast<QLayout*>( glayout ) )
-        return false;
-    if ( mParentLayout != nullptr )
-        mParentLayout->removeWidget ( this );
-    mParentLayout = static_cast<QLayout*>( glayout );
-    searchPanelPlacement_func = [&] ( const bool bShow ) { return searchPanelPlacement_GridLayout ( bShow ); };
-    return true;
+	if ( mParentLayout == static_cast<QLayout*>( glayout ) )
+		return false;
+	if ( mParentLayout != nullptr )
+		mParentLayout->removeWidget ( this );
+	mParentLayout = static_cast<QLayout*>( glayout );
+	searchPanelPlacement_func = [&] ( const bool bShow ) { return searchPanelPlacement_GridLayout ( bShow ); };
+	return true;
 }
 
 bool vmTableWidget::setParentLayout ( QVBoxLayout* vblayout )
 {
-    if ( mParentLayout == static_cast<QLayout*>( vblayout ) )
-        return false;
-    if ( mParentLayout != nullptr )
-        mParentLayout->removeWidget ( this );
-    mParentLayout = static_cast<QLayout*>( vblayout );
-    searchPanelPlacement_func = [&] ( const bool bShow ) { return searchPanelPlacement_BoxLayout ( bShow ); };
-    return true;
+	if ( mParentLayout == static_cast<QLayout*>( vblayout ) )
+		return false;
+	if ( mParentLayout != nullptr )
+		mParentLayout->removeWidget ( this );
+	mParentLayout = static_cast<QLayout*>( vblayout );
+	searchPanelPlacement_func = [&] ( const bool bShow ) { return searchPanelPlacement_BoxLayout ( bShow ); };
+	return true;
 }
 
 /* For optimal results, when populating a table, set it readonly.
@@ -932,22 +932,22 @@ void vmTableWidget::setEditable ( const bool editable )
 	}
 
 	if ( editable ) {
-        if ( cellNavigation_func != nullptr ) {
+		if ( cellNavigation_func != nullptr ) {
 			connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
 				return cellNavigation_func ( static_cast<uint> ( row ), static_cast<uint> ( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } );
-        }
-        if ( mIsPurchaseTable ) {
-            connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
-                      static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
-                    this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
-            } ) );
-        }
+		}
+		if ( mIsPurchaseTable ) {
+			connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
+					  static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
+					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
+			} ) );
+		}
 	}
 	else {
 		if ( cellNavigation_func != nullptr )
 			disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
-        if ( mIsPurchaseTable )
-            disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
+		if ( mIsPurchaseTable )
+			disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
 	}
 	rowActivatedConnection ( editable );
 	vmWidget::setEditable ( editable );
@@ -1009,7 +1009,7 @@ void vmTableWidget::setTableUpdated ()
 {
 	modifiedRows.clearButKeepMemory ();
 	mTableChanged = false;
-    setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
+	setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
 	// Accept user input and save data for newer usage
 	for ( uint i_row ( 0 ); ( signed )i_row <= m_lastUsedRow; ++i_row ) {
 		for ( uint i_col = 0; i_col <= ( colCount () - 1 ); ++i_col )
@@ -1159,63 +1159,63 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 	if ( isEditable () ) {
 		if ( ctrlKey ) {
 			switch ( k->key () ) {
-                case Qt::Key_Enter:
-                case Qt::Key_Return:
-                    if ( keypressed_func )
-                        keypressed_func ( k, this );
-                break;
-                case Qt::Key_F:
-                    if ( !m_searchPanel )
-                        m_searchPanel = new vmTableSearchPanel ( this );
-                    showSearchPanel ();
+				case Qt::Key_Enter:
+				case Qt::Key_Return:
+					if ( keypressed_func )
+						keypressed_func ( k, this );
 				break;
-                case Qt::Key_I:
-                    insertRow_slot ();
+				case Qt::Key_F:
+					if ( !m_searchPanel )
+						m_searchPanel = new vmTableSearchPanel ( this );
+					showSearchPanel ();
 				break;
-                case Qt::Key_O:
-                    appendRow_slot ();
+				case Qt::Key_I:
+					insertRow_slot ();
 				break;
-                case Qt::Key_R:
-                    removeRow_slot ();
+				case Qt::Key_O:
+					appendRow_slot ();
 				break;
-                case Qt::Key_D:
-                    clearRow_slot ();
+				case Qt::Key_R:
+					removeRow_slot ();
 				break;
-                case Qt::Key_C:
-                    copyCellContents ();
+				case Qt::Key_D:
+					clearRow_slot ();
 				break;
-                case Qt::Key_B:
-                    copyRowContents ();
+				case Qt::Key_C:
+					copyCellContents ();
 				break;
-                case Qt::Key_Z:
-                    undoChange ();
+				case Qt::Key_B:
+					copyRowContents ();
 				break;
-                default:
-                    k->setAccepted ( false );
+				case Qt::Key_Z:
+					undoChange ();
+				break;
+				default:
+					k->setAccepted ( false );
 				return;
 			}
 		}
 		else { // no CTRL modifier
 			switch ( k->key () ) {
-                case Qt::Key_Escape:
-                    if ( m_searchPanel && m_searchPanel->isVisible () ) {
-                        hideSearchPanel ();
-                        return;
-                    }
-                case Qt::Key_Enter:
-                case Qt::Key_Return:
-                    if ( keypressed_func )
-                        keypressed_func ( k, this );
+				case Qt::Key_Escape:
+					if ( m_searchPanel && m_searchPanel->isVisible () ) {
+						hideSearchPanel ();
+						return;
+					}
+				case Qt::Key_Enter:
+				case Qt::Key_Return:
+					if ( keypressed_func )
+						keypressed_func ( k, this );
 				break;
-                case Qt::Key_F2:
-                case Qt::Key_F3:
-                case Qt::Key_F4:
-                    if ( m_searchPanel && m_searchPanel->isVisible () ) {
-                        QApplication::sendEvent ( m_searchPanel, k ); // m_searchPanel will propagate the event its children
-                        QApplication::sendPostedEvents ( m_searchPanel, 0 ); // force event to be processed before posting another one to que queue
-                    }
+				case Qt::Key_F2:
+				case Qt::Key_F3:
+				case Qt::Key_F4:
+					if ( m_searchPanel && m_searchPanel->isVisible () ) {
+						QApplication::sendEvent ( m_searchPanel, k ); // m_searchPanel will propagate the event its children
+						QApplication::sendPostedEvents ( m_searchPanel, 0 ); // force event to be processed before posting another one to que queue
+					}
 				break;
-                default:
+				default:
 				break;
 			}
 			QTableWidget::keyPressEvent ( k );
@@ -1225,16 +1225,16 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 		if ( ctrlKey && k->key () == Qt::Key_F ) {
 			if ( !m_searchPanel )
 				m_searchPanel = new vmTableSearchPanel ( this );
-            showSearchPanel ();
-            return;
+			showSearchPanel ();
+			return;
 		}
-        else if ( k->key () == Qt::Key_Escape ) {
-            if ( m_searchPanel && m_searchPanel->isVisible () ) {
-                hideSearchPanel ();
-                return;
-            }
-        }
-        QTableWidget::keyPressEvent ( k );
+		else if ( k->key () == Qt::Key_Escape ) {
+			if ( m_searchPanel && m_searchPanel->isVisible () ) {
+				hideSearchPanel ();
+				return;
+			}
+		}
+		QTableWidget::keyPressEvent ( k );
 	}
 }
 
@@ -1354,18 +1354,18 @@ void vmTableWidget::reScanItem ( vmTableItem* const sheet_item )
 
 void vmTableWidget::interceptCompleterActivated ( const QModelIndex& index, const vmTableWidget* const table )
 {
-    if ( table != this )
-        return;
+	if ( table != this )
+		return;
 
-    const stringRecord record ( APP_COMPLETERS ()->getCompleter (
-                                    vmCompleters::PRODUCT_OR_SERVICE )->completionModel ()->data (
-                                    index.sibling ( index.row (), 1 ) ).toString () );
+	const stringRecord record ( APP_COMPLETERS ()->getCompleter (
+									vmCompleters::PRODUCT_OR_SERVICE )->completionModel ()->data (
+									index.sibling ( index.row (), 1 ) ).toString () );
 
 
-    if ( record.isOK () ) {
-        if ( currentRow () == -1 )
-            setCurrentCell ( 1, 0, QItemSelectionModel::Select );
-        const int current_row ( currentRow () );
+	if ( record.isOK () ) {
+		if ( currentRow () == -1 )
+			setCurrentCell ( 1, 0, QItemSelectionModel::Select );
+		const int current_row ( currentRow () );
 
 		if ( record.first () ) {
 			sheetItem ( current_row, 0 )->setText ( record.curValue (), false, true );
@@ -1409,8 +1409,8 @@ void vmTableWidget::copyCellContents ()
 											   static_cast<QModelIndex> ( *itr ).column () )->text () );
 				cell_text.append ( CHR_NEWLINE );
 			}
-            //cell_text.truncate ( cell_text.length () - 1 ); // remove last newline character
-            cell_text.chop ( 1 );
+			//cell_text.truncate ( cell_text.length () - 1 ); // remove last newline character
+			cell_text.chop ( 1 );
 		}
 	}
 	Data::copyToClipboard ( cell_text );
@@ -1421,10 +1421,10 @@ void vmTableWidget::copyRowContents ()
 	QString rowText;
 	uint i_col ( 0 );
 	if ( mContextMenuCell != nullptr ) {
-        for ( ; i_col < colCount (); ++i_col )
-            rowText += sheetItem ( mContextMenuCell->row (), i_col )->text () + QLatin1Char ( '\t' );
-        //rowText.truncate ( rowText.length () - 1 ); // remove last tab character
-        rowText.chop ( 1 );
+		for ( ; i_col < colCount (); ++i_col )
+			rowText += sheetItem ( mContextMenuCell->row (), i_col )->text () + QLatin1Char ( '\t' );
+		//rowText.truncate ( rowText.length () - 1 ); // remove last tab character
+		rowText.chop ( 1 );
 	}
 	else {
 		const QModelIndexList selIndexes ( selectedIndexes () );
@@ -1432,14 +1432,14 @@ void vmTableWidget::copyRowContents ()
 			QModelIndexList::const_iterator itr = selIndexes.constBegin ();
 			const QModelIndexList::const_iterator itr_end = selIndexes.constEnd ();
 			for ( ; itr != itr_end; ++itr ) {
-                for ( i_col = 0; i_col < colCount (); ++i_col )
-                    rowText += sheetItem ( static_cast<QModelIndex> ( *itr ).row (), i_col )->text () + QLatin1Char ( '\t' );
-                //rowText.truncate ( rowText.length () - 1 ); // remove last tab character
-                rowText.chop ( 1 );
-                rowText += CHR_NEWLINE;
+				for ( i_col = 0; i_col < colCount (); ++i_col )
+					rowText += sheetItem ( static_cast<QModelIndex> ( *itr ).row (), i_col )->text () + QLatin1Char ( '\t' );
+				//rowText.truncate ( rowText.length () - 1 ); // remove last tab character
+				rowText.chop ( 1 );
+				rowText += CHR_NEWLINE;
 			}
-            //rowText.truncate ( rowText.length () - 1 ); // remove last new line character
-            rowText.chop ( 1 );
+			//rowText.truncate ( rowText.length () - 1 ); // remove last new line character
+			rowText.chop ( 1 );
 		}
 	}
 
@@ -1635,16 +1635,16 @@ vmTableSearchPanel::vmTableSearchPanel ( vmTableWidget* table )
 	chkSearchAllTable->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) {
 		return searchFieldsChanged (); } );
 
-    QHBoxLayout* mLayout ( new QHBoxLayout );
-    mLayout->setSpacing( 2 );
-    mLayout->setMargin ( 2 );
-    mLayout->addWidget ( txtSearchTerm, 3 );
-    mLayout->addWidget ( btnSearchStart );
-    mLayout->addWidget ( btnSearchPrev );
-    mLayout->addWidget ( btnSearchNext );
-    mLayout->addWidget ( btnSearchCancel );
-    mLayout->addStretch ( 2 );
-    mLayout->addWidget ( chkSearchAllTable, 0, Qt::AlignRight );
+	QHBoxLayout* mLayout ( new QHBoxLayout );
+	mLayout->setSpacing( 2 );
+	mLayout->setMargin ( 2 );
+	mLayout->addWidget ( txtSearchTerm, 3 );
+	mLayout->addWidget ( btnSearchStart );
+	mLayout->addWidget ( btnSearchPrev );
+	mLayout->addWidget ( btnSearchNext );
+	mLayout->addWidget ( btnSearchCancel );
+	mLayout->addStretch ( 2 );
+	mLayout->addWidget ( chkSearchAllTable, 0, Qt::AlignRight );
 	setLayout ( mLayout );
 }
 
@@ -1696,7 +1696,7 @@ void vmTableSearchPanel::searchCancel ()
 	btnSearchNext->setEnabled ( false );
 	btnSearchPrev->setEnabled ( false );
 	txtSearchTerm->clear ();
-    m_table->hideSearchPanel ();
+	m_table->hideSearchPanel ();
 }
 
 void vmTableSearchPanel::searchTextChanged ( const QString& text )

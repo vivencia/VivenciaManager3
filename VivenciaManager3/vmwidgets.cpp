@@ -193,8 +193,8 @@ QString pvmDateEdit::defaultStyleSheet () const
 
 void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 {
+	QDateEdit::setDate ( date.toQDate () );
     if ( date.isDate () ) {
-        QDateEdit::setDate ( date.toQDate () );
         if ( isEditable () ) {
             const triStateType mEmitSignalOriginal ( mEmitSignal );
             mEmitSignal = b_notify;
@@ -206,13 +206,14 @@ void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 
 void pvmDateEdit::setEditable ( const bool editable )
 {
-    /*if ( editable ) {
+	//TODO test if this code is working and not triggering unwanted calls
+    if ( editable ) {
 		connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) {
             return vmDateChanged ( date ); } );
 		mDateBeforeFocus = date ();
 	}
 	else
-        disconnect ( this, nullptr, nullptr, nullptr );*/
+        disconnect ( this, nullptr, nullptr, nullptr );
 
 	setReadOnly ( !editable );
 	vmWidget::setEditable ( editable );
@@ -492,6 +493,7 @@ vmListWidget::vmListWidget ( QWidget* parent )
 	setFrameShape ( QFrame::NoFrame );
 	setFrameShadow ( QFrame::Plain );
     setAlternatingRowColors ( true );
+	setSelectionMode ( QAbstractItemView::SingleSelection );
 }
 
 vmListWidget::~vmListWidget () {}
@@ -518,7 +520,7 @@ void vmListWidget::setItemChanged ( vmListItem* item ) const
 void vmListWidget::setCurrentItem ( QListWidgetItem *item )
 {
     QListWidget::setCurrentItem ( item, QItemSelectionModel::ClearAndSelect );
-    scrollToItem ( item, QAbstractItemView::PositionAtBottom );
+    //scrollToItem ( item, QAbstractItemView::PositionAtBottom );
 }
 
 //------------------------------------------------VM-LIST-WIDGET------------------------------------------------

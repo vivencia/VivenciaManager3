@@ -141,7 +141,7 @@ bool textEditor::loadFile ( const QString& filename )
             tr ( "File %1 does not exist" ),
             tr ( "Please speficy the filaname for opening" )
         };
-		if ( VM_NOTIFY ()->criticalBox ( tr ( "Error loading file" ), msg_err[error_num].arg ( filename ), false ) == Message::BUTTON_1 )
+		if ( VM_NOTIFY ()->criticalBox ( tr ( "Error loading file" ), msg_err[error_num].arg ( filename ), false ) == MESSAGE_BTN_OK )
             return loadFile ( filename );
         else
             return false;

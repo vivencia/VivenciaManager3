@@ -4,13 +4,13 @@
 #include "vmwidget.h"
 #include "stringrecord.h"
 
-#include <QWidget>
+#include <QFrame>
 
 class vmComboBox;
 class vmLineEdit;
 class QToolButton;
 
-class contactsManagerWidget : public QWidget, public vmWidget
+class contactsManagerWidget : public QFrame, public vmWidget
 {
 
 public:

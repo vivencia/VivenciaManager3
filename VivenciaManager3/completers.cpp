@@ -120,7 +120,7 @@ int vmCompleters::inList ( const QString& str, const vmCompleters::COMPLETER_CAT
 	const QModelIndex index ( model->index ( 0, 0 ) );
 	const int n_items ( model->rowCount () );
 	for ( int i_row ( 0 ); i_row < n_items; ++i_row ) {
-        if ( str.compare( model->data ( index.sibling ( i_row, 0 ) ).toString (), Qt::CaseInsensitive ) != 0 )
+		if ( str.compare ( model->data ( index.sibling ( i_row, 0 ) ).toString (), Qt::CaseInsensitive ) == 0 )
 			return i_row;
 	}
 	return -1;
