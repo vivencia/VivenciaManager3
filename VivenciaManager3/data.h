@@ -50,21 +50,6 @@ public:
 	void startUserInteface ();
 	void loadDataIntoMemory ();
 
-	struct st_mostOften {
-		TABLE_IDS table;
-		uint result_field;
-		uint search_field;
-		QString search_term;
-		int client_id;
-		uint id_field;
-
-		st_mostOften () : table ( JOB_TABLE ), result_field ( 0 ),
-			search_field ( 0 ), search_term ( QString::null ),
-			client_id ( -1 ), id_field ( FLD_JOB_CLIENTID ) {}
-	};
-
-	QString mostOften ( const st_mostOften &st );
-
 	const QString currentClientID () const;
 	const QString currentClientName () const;
 

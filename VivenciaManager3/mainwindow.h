@@ -133,7 +133,6 @@ public:
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
     void loadJobInfo ( const Job* const job );
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
-	void preFillJobInfo ();
 	void scanJobImages ();
     void decodeJobReportInfo ( const Job* const job );
 	void updateJobInfo ( const QString& text, const uint user_role );
@@ -190,7 +189,6 @@ public:
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
     void loadPayInfo ( const Payment* const pay );
 	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
-	void preFillPayInfo ();
 	void fillCalendarPaysList ( const stringTable& payids, vmListWidget* list, const bool use_date = false );
 	void loadClientOverduesList ();
 	void loadAllOverduesList ();
@@ -216,6 +214,7 @@ public:
 	void buySuppliersListWidget_currentItemChanged ( vmListItem* item, vmListItem* );
 	void updateCalendarWithBuyInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateCalendarWithBuyPayInfo ( Buy* const buy, const RECORD_ACTION action );
+	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
     void controlBuyForms ( const buyListItem* const buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
     void loadBuyInfo ( const Buy* const buy );
@@ -225,7 +224,6 @@ public:
 	void interceptBuyItemsCellChange ( const vmTableItem* const item );
 	void interceptBuyPaymentCellChange ( const vmTableItem* const item );
 	void updateBuyTotalPaidValue ();
-	void preFillBuyInfo ();
 	void buyKeyPressedSelector ( const QKeyEvent* ke );
 	void getPurchasesForSuppliers ( const QString& supplier );
 //--------------------------------------------BUY------------------------------------------------------------
@@ -356,6 +354,7 @@ private:
 
 	void btnJobReloadPictures_clicked ();
 	void showClientsYearPictures ( QAction* action );
+	void showDayPictures ( const vmNumber& date );
 	void showJobImage ( const int index );
 	void showJobImageRequested ( const int index );
 	void btnJobRenamePicture_clicked ( const bool checked );

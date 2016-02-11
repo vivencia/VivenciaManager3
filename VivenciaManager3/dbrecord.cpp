@@ -5,6 +5,8 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 
+PointersList<DBRecord*> DBRecord::tempNewRecs[TABLES_IN_DB];
+
 static const int podBytes ( sizeof ( RECORD_FIELD::i_field ) + sizeof ( RECORD_FIELD::modified ) + sizeof ( RECORD_FIELD::was_modified ) );
 
 static const TABLE_INFO generic_tinfo = {
@@ -107,12 +109,12 @@ void DBRecord::callHelperFunctions ()
 	}
 }
 
-const vmNumber& DBRecord::setPrice ( const uint field, const QString& price )
+/*const vmNumber& DBRecord::setPrice ( const uint field, const QString& price )
 {
 	rec_number.fromStrPrice ( price );
 	setRecValue ( this, field, rec_number.toPrice () );
 	return rec_number;
-}
+}*/
 
 bool DBRecord::readRecord ( const int id, const bool load_data )
 {
@@ -245,6 +247,8 @@ bool DBRecord::saveRecord ()
 	// anywhere else. The mb_completerUpdated flag is just used to speedup execution by not doing the same thing over for
 	// all the fields in the respective record that comprise the product´s completer for it
 	if ( ret ) {
+		if ( m_action == ACTION_ADD )
+			DBRecord::removeFromTemporaryRecords ( this );
 		callHelperFunctions ();
 		setAction ( ACTION_READ );
 		setAllModified ( false );
@@ -291,6 +295,7 @@ void DBRecord::clearAll ()
 void DBRecord::setAction ( const RECORD_ACTION action )
 {
 	if ( action != m_action ) {
+		m_prevaction = m_action;
 		m_action = action;
 		if ( m_action != ACTION_DEL ) {
 			switch ( action ) {
@@ -313,6 +318,7 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 					fptr_recordStr = &DBRecord::actualRecordStr;
 					fptr_recordInt = &DBRecord::actualRecordInt;
 					fptr_recordStrAlternate = &DBRecord::backupRecordStr;
+					DBRecord::addToTemporaryRecords ( this );
 				break;
 				case ACTION_EDIT:
 					sync ( RECORD_FIELD::IDX_ACTUAL, true );
@@ -325,6 +331,34 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 				default:
 				break;
 			}
+		}
+	}
+}
+
+
+void DBRecord::addToTemporaryRecords ( DBRecord* dbrec )
+{
+	const uint table ( dbrec->t_info->table_order );
+	uint id ( 0 );
+	if ( DBRecord::tempNewRecs[table].isEmpty () )
+		id = VDB ()->getNextID ( table );
+	else
+		id = DBRecord::tempNewRecs[table].last ()->recordInt ( 0 ) + 1;
+	dbrec->setIntValue ( 0, id ); // this is set so that VivenciaDB::insertDBREcord can use the already evaluated value
+	dbrec->setIntBackupValue ( 0, id ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
+	DBRecord::tempNewRecs[table].append( dbrec );
+}
+
+void DBRecord::removeFromTemporaryRecords ( DBRecord* dbrec )
+{
+	const uint table ( dbrec->t_info->table_order );
+	int pos ( DBRecord::tempNewRecs[table].contains ( dbrec ) );
+	if ( pos >= 0 ) {
+		DBRecord::tempNewRecs[table].remove ( pos );
+		if ( (unsigned) pos < DBRecord::tempNewRecs[table].count () ) {
+			uint id ( VDB ()->getNextID ( table ) );
+			for ( uint i ( 0 ); i < DBRecord::tempNewRecs[table].count (); ++i )
+				DBRecord::tempNewRecs[table][i]->setIntValue ( 0, id++ );
 		}
 	}
 }

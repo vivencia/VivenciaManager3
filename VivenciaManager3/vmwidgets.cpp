@@ -17,34 +17,6 @@
 #include <QIntValidator>
 
 //------------------------------------------------VM-ACTION-LABEL-------------------------------------------------
-/*const char* const vmActionLabelStyle (
-	"vmActionLabel[class='action'] {"
-	"background-color: transparent;"
-	"border: 1px solid transparent;"
-	"color: #0033ff;"
-	"text-align: left;"
-	"font: 11px;"
-	"}"
-
-	"vmActionLabel[class='action']:!enabled {"
-	"color: #999999;"
-	"}"
-
-	"vmActionLabel[class='action']:hover {"
-	"color: #0099ff;"
-	"text-decoration: underline;"
-	"}"
-
-	"vmActionLabel[class='action']:focus {"
-	"border: 1px dotted black;"
-	"}"
-
-	"vmActionLabel[class='action']:on {"
-	"background-color: #ddeeff;"
-	"color: #006600;"
-	"}"
-);*/
-
 vmActionLabel::vmActionLabel ( QWidget *parent )
 	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION )
 {
@@ -71,9 +43,7 @@ vmActionLabel::~vmActionLabel ()
 void vmActionLabel::init ( const bool b_action )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	//setProperty ( "class", QStringLiteral ( "action" ) );
 	setToolButtonStyle ( Qt::ToolButtonTextBesideIcon );
-	//setStyleSheet ( QLatin1String ( vmActionLabelStyle ) );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
 	if ( b_action ) {
 		setCursor ( Qt::PointingHandCursor );
@@ -222,18 +192,21 @@ void pvmDateEdit::setEditable ( const bool editable )
 /* Because we are connected directly with Qt's QDateEdit::dateChanged signal (the calendar popup
  * mechanism sort of obligates us to do so) we receive te signal both programatically and by user
  * interaction and we do not have control when the signal is emitted. But, because we can control
- * when the signal received is processed, we choose to do so when the control is editable and the new date
+ * when the signal received is processed, we choose to do so when the control is editable, and when
+ * it loses focus (avoids processing each and every date change via keyboard arrows), and the new date
  * is not the same as the date the control had first receive focus or when we made it editable,
  * and not everytime Qt decides to throw the signal
  */
 void pvmDateEdit::vmDateChanged ( const QDate& date )
 {
 	if ( isEditable () && !mEmitSignal.isOff () ) {
-		if ( mDateBeforeFocus != date ) {
-			vmDateEdit::updateRecentUsedDates ( date );
-			mEmitSignal.setUndefined ();
-            if ( mOwner->contentsAltered_func != nullptr )
-				mOwner->contentsAltered_func ( mOwner );
+		if ( !hasFocus () ) {
+			if ( mDateBeforeFocus != date ) {
+				vmDateEdit::updateRecentUsedDates ( date );
+				mEmitSignal.setUndefined ();
+		        if ( mOwner->contentsAltered_func != nullptr )
+					mOwner->contentsAltered_func ( mOwner );
+			}
 		}
 	}
 }
@@ -406,7 +379,7 @@ void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 		DBG_OUT ( "Replaced internal data", true, false );
 		action->QAction::setText ( date.toDate ( vmNumber::VDF_HUMAN_DATE ) );
 		DBG_OUT ( "Changed text", true, false );
-		if ( ++ins_pos == MAX_RECENT_USE_DATES )
+		if ( ++ins_pos == ( N_DATES_MENU_STATIC_ENTRIES + MAX_RECENT_USE_DATES ) )
 			ins_pos = N_DATES_MENU_STATIC_ENTRIES;
 	}
 	DBG_OUT ( "Exiting function", true, false );
@@ -592,6 +565,7 @@ void vmLineEdit::setText ( const QString& text, const bool b_notify )
 	else
 		QLineEdit::setText ( text );
 
+	setToolTip ( isEditable () ? emptyString : QLineEdit::text () );
     setCursorPosition ( isEditable () ? QLineEdit::text ().count () - 1 : 0 );
 	if ( b_notify && contentsAltered_func )
 		contentsAltered_func ( this );

@@ -38,12 +38,12 @@ constexpr uint PURCHASES_TABLE_COLS ( 7 );
 }*/
 //---------------------------------------------STATIC---------------------------------------------------------
 
-//---------------------------------------------SPREAD SHEET---------------------------------------------------------
+//---------------------------------------------TABLE WIDGET---------------------------------------------------------
 vmTableWidget::vmTableWidget ( QWidget* parent )
 	: QTableWidget ( parent ), vmWidget ( WT_TABLE ),
 	  mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_ncols ( 0 ), mAddedItems ( 0 ),
 	  mTableChanged ( false ), mbKeepModRec ( true ),
-	  mPlainTable ( false ), mIsPurchaseTable ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mPlainTable ( false ), mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( 10 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ),
@@ -58,7 +58,7 @@ vmTableWidget::vmTableWidget ( const uint rows, vmTableColumn** cols, QWidget* p
 	: QTableWidget ( rows + 1, 0, parent ), vmWidget ( WT_TABLE, rows ),
 	  mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_ncols ( 0 ), mAddedItems ( 0 ),
 	  mTableChanged ( false ), mbKeepModRec ( true ),
-	  mPlainTable ( false ), mIsPurchaseTable ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mPlainTable ( false ), mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( rows + 1 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ),
@@ -1357,6 +1357,7 @@ void vmTableWidget::interceptCompleterActivated ( const QModelIndex& index, cons
 	if ( table != this )
 		return;
 
+	mbDoNotUpdateCompleters = true; //avoid a call to update the item's completer because we are retrieving the values from the completer itself
 	const stringRecord record ( APP_COMPLETERS ()->getCompleter (
 									vmCompleters::PRODUCT_OR_SERVICE )->completionModel ()->data (
 									index.sibling ( index.row (), 1 ) ).toString () );
@@ -1375,10 +1376,11 @@ void vmTableWidget::interceptCompleterActivated ( const QModelIndex& index, cons
 					sheetItem ( current_row, i_col++ )->setText ( record.curValue (), false, true );
 				else
 					break;
-			} while ( true );
+			} while ( i_col < ISR_TOTAL_PRICE );
 		}
 		setCurrentCell ( current_row, ISR_QUANTITY, QItemSelectionModel::ClearAndSelect );
 	}
+	mbDoNotUpdateCompleters = false;
 }
 
 void vmTableWidget::undoChange ()
@@ -1541,8 +1543,15 @@ void vmTableWidget::headerItemToggled ( const uint col, const bool checked )
 
 void vmTableWidget::textWidgetChanged ( const vmWidget* const sender )
 {
-	const_cast<vmTableItem*> ( sender->ownerItem () )->setText ( sender->text (), true, false );
-	cellContentChanged ( sender->ownerItem () );
+	vmTableItem* const item ( const_cast<vmTableItem*> ( sender->ownerItem () ) );
+	item->setText ( sender->text (), true, false );
+	if ( !mbDoNotUpdateCompleters ) {
+		// Update the runtime completers to make the entered text available for the current session, if not already in the model
+		// The runtime completer will, in turn, update the database. TODO: not only for the completers table, but all tables: a
+		// way to alter the data manually
+		APP_COMPLETERS ()->updateCompleter ( sender->text (), item->completerType () );
+	}
+	cellContentChanged ( item );
 }
 
 void vmTableWidget::dateWidgetChanged ( const vmWidget* const sender )
@@ -1586,15 +1595,16 @@ void vmTableWidget::cellWidgetRelevantKeyPressed ( const QKeyEvent* const ke, co
 			item->setText ( item->originalText (), false, false );
 			item->setCellIsAltered ( false );
 		}
-		/* If text is the same the item had when it went from non editable to editable,
+		/* If text is the same the item had when it went from non-editable to editable,
 		 * propagate the signal to the table so that it can do the appropriate cancel editing routine
 		 */
 		else
 			keyPressEvent ( const_cast<QKeyEvent*> ( ke ) );
 	}
 }
-//------------------------------------------------SEARCH-PANEL---------------------------------------------------
+//---------------------------------------------TABLE WIDGET---------------------------------------------------
 
+//---------------------------------------------SEARCH-PANEL---------------------------------------------------
 vmTableSearchPanel::vmTableSearchPanel ( vmTableWidget* table )
 	: QFrame ( nullptr ), m_SearchedWord ( emptyString ), m_table ( table ),
 	  btnSearchNext ( nullptr ), btnSearchPrev ( nullptr ), btnSearchCancel ( nullptr )
@@ -1736,4 +1746,4 @@ void vmTableSearchPanel::txtSearchTerm_keyPressed ( const QKeyEvent* ke )
 		break;
 	}
 }
-//------------------------------------------------SEARCH-PANEL---------------------------------------------------
+//---------------------------------------------SEARCH-PANEL---------------------------------------------------

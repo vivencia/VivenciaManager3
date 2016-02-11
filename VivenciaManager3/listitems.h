@@ -79,7 +79,7 @@ public:
 
 	inline int crashID () const { return m_crashid; }
 	inline bool isGoodToSave () const { return n_badInputs <= 0; }
-	inline bool fieldInputStatus ( const uint field ) const { return badInputs_ptr[field]; }
+	inline bool fieldInputStatus ( const uint field ) const { return badInputs_ptr[translatedInputFieldIntoBadInputField( field )]; }
 
 	void setFieldInputStatus ( const uint field, const bool ok, const vmWidget* widget );
 

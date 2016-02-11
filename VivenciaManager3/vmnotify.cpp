@@ -64,6 +64,8 @@ Message::Message ( vmNotify* parent )
 
 Message::~Message ()
 {
+	if ( m_parent != nullptr )
+		m_parent->mPanel->removeGroup ( mGroup, true );
 	heap_del ( timer );
 }
 
@@ -143,10 +145,9 @@ void vmNotify::removeMessage ( Message* message )
 			if ( mbDeleteWhenStackIsEmpty )
 				this->deleteLater ();
 		}
-		mPanel->removeGroup ( message->mGroup, true );
-		adjustSizeAndPosition ();
 		if ( message->mbAutoRemove )
 			delete message;
+		adjustSizeAndPosition ();
 	}
 }
 

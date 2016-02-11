@@ -28,13 +28,13 @@ enum listColumns { COL_TYPE = 0, COL_CLIENT, COL_JOB, COL_DATE, COL_FIELD };
 
 static const QString TYPE_NAMES[9] = {
 	emptyString, emptyString, //table orders TABLE_GENERAL_ORDER and TABLE_USERS_ORDER are not used
-    APP_TR_FUNC ( "Client" ),
-    APP_TR_FUNC ( "Job" ),
-    APP_TR_FUNC ( "Payment" ),
-    APP_TR_FUNC ( "Purchase" ),
-    APP_TR_FUNC ( "Inventory" ),
-    APP_TR_FUNC ( "Supply" ),
-    APP_TR_FUNC ( "Supplier" ),
+	APP_TR_FUNC ( "Client" ),
+	APP_TR_FUNC ( "Job" ),
+	APP_TR_FUNC ( "Payment" ),
+	APP_TR_FUNC ( "Purchase" ),
+	APP_TR_FUNC ( "Inventory" ),
+	APP_TR_FUNC ( "Supply" ),
+	APP_TR_FUNC ( "Supplier" ),
 };
 
 void deleteSearchUIInstance ()
@@ -47,7 +47,7 @@ searchUI::searchUI ()
 	  mFoundItems ( 10 ), mPreviusItemActivated ( nullptr ), displayFunc ( nullptr )
 {
 	setupUI ();
-    setWindowTitle ( PROGRAM_NAME + TR_FUNC ( " Search results" ) );
+	setWindowTitle ( PROGRAM_NAME + TR_FUNC ( " Search results" ) );
 }
 
 searchUI::~searchUI ()
@@ -87,7 +87,7 @@ void searchUI::searchCancel ()
 
 void searchUI::prepareSearch ( const QString& searchTerm, QWidget* widget )
 {
-    if ( static_cast<SEARCH_STATUS>( searchStatus.state () ) != SS_SEARCH_FOUND ) {
+	if ( static_cast<SEARCH_STATUS>( searchStatus.state () ) != SS_SEARCH_FOUND ) {
 		if ( searchTerm.length () >= 2 && mSearchTerm != searchTerm ) {
 			searchCancel ();
 			parseSearchTerm ( searchTerm );
@@ -265,7 +265,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 							if ( dbrec->readRecord ( id ) ) {
 								for ( fld = 0; fld < fld_max; ++fld ) {
 									if ( recStrValue ( dbrec, fld ).contains ( mSearchTerm, Qt::CaseInsensitive ) ) {
-                                        item->setSearchArray (); // for the found item - only -, initialize the array
+										item->setSearchArray (); // for the found item - only -, initialize the array
 										item->setSearchFieldStatus ( fld, SS_SEARCH_FOUND );
 										bhas_result = true;
 									}
@@ -282,7 +282,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 			}
 		}
 	} while ( ++search_step <= search_end );
-    VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Search panel notification" ), TR_FUNC ( "Search completed!" ) );
+	VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Search panel notification" ), TR_FUNC ( "Search completed!" ) );
 	if ( !mFoundItems.isEmpty () ) {
 		fillList ();
 		searchStatus.setState ( searchFirst () ? SS_SEARCH_FOUND : SS_NOT_FOUND );
@@ -292,7 +292,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 		}
 	}
 	else {
-        VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Search panel notification" ), TR_FUNC ( "Nothing found!" ) );
+		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Search panel notification" ), TR_FUNC ( "Nothing found!" ) );
 		searchStatus.setState ( SS_NOT_SEARCHING );
 	}
 }
@@ -332,7 +332,7 @@ void searchUI::fillList ()
 		mFoundList->setCellValue ( strInfo[COL_JOB-1], row, COL_JOB );
 		mFoundList->setCellValue ( strInfo[COL_DATE-1], row, COL_DATE );
 
-        strInfo[COL_FIELD-1].chop ( 2 );
+		strInfo[COL_FIELD-1].chop ( 2 );
 		mFoundList->setCellValue ( strInfo[COL_FIELD-1], row, COL_FIELD );
 		item = mFoundItems.next ();
 		++row;
@@ -411,31 +411,30 @@ void searchUI::createTable ()
 {
 	mFoundList = new vmTableWidget;
 	mFoundList->setIsPlainTable ();
-	//mFoundList->setSelectionBehavior ( QAbstractItemView::SelectRows );
 
 	vmTableColumn* cols[6] = { nullptr };
 	for ( uint i ( 0 ); i < 5; ++i ) {
 		cols[i] = new vmTableColumn;
 		switch ( i ) {
 			case COL_TYPE:
-                cols[COL_TYPE]->label = TR_FUNC ( "Type" );
-                cols[COL_TYPE]->width = 100;
+				cols[COL_TYPE]->label = TR_FUNC ( "Type" );
+				cols[COL_TYPE]->width = 100;
 			break;
 			case COL_CLIENT:
-                cols[COL_CLIENT]->label = TR_FUNC( "Client" );
+				cols[COL_CLIENT]->label = TR_FUNC( "Client" );
 				cols[COL_CLIENT]->width = 130;
 			break;
 			case COL_JOB:
-                cols[COL_JOB]->label = TR_FUNC ( "Job" );
-                cols[COL_JOB]->width = 180;
+				cols[COL_JOB]->label = TR_FUNC ( "Job" );
+				cols[COL_JOB]->width = 180;
 			break;
 			case COL_DATE:
-                cols[COL_DATE]->label = TR_FUNC ( "Date" );
+				cols[COL_DATE]->label = TR_FUNC ( "Date" );
 				cols[COL_DATE]->wtype = WT_DATEEDIT;
 			break;
 			case COL_FIELD:
-                cols[COL_FIELD]->label = TR_FUNC ( "Found Field(s)" );
-                cols[COL_JOB]->width = 150;
+				cols[COL_FIELD]->label = TR_FUNC ( "Found Field(s)" );
+				cols[COL_JOB]->width = 150;
 			break;
 		}
 	}
@@ -443,7 +442,7 @@ void searchUI::createTable ()
 	mFoundList->initTable ( 5, cols );
 	mFoundList->setCallbackForRowActivated ( [&] ( const vmTableItem* current ) { return
 				listRowSelected ( current ); } );
-    mFoundList->setMinimumWidth ( 600 );
+	mFoundList->setMinimumWidth ( 600 );
 }
 
 void searchUI::btnPrevClicked ()
@@ -528,7 +527,7 @@ vmListItem* searchUI::getOtherItem ( const uint typeID, const uint id ) const
 	dbrec->readRecord ( id );
 	vmListItem* item ( new vmListItem ( typeID ) );
 	item->setDBRecID ( id );
-    item->setRelation ( RLI_CLIENTITEM );
+	item->setRelation ( RLI_CLIENTITEM );
 	item->setDBRec ( dbrec, true );
 	return item;
 }
@@ -540,7 +539,7 @@ void searchUI::getClientInfo ( const clientListItem* const client_item, VMList<Q
 	cellData[COL_DATE-1] = recStrValue ( client_item->clientRecord (), FLD_CLIENT_STARTDATE );
 	for ( uint i ( 0 ); i < CLIENT_FIELD_COUNT; ++i ) {
 		if ( client_item->searchFieldStatus ( i ) == SS_SEARCH_FOUND )
-            cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( &( client_item->clientRecord ()->t_info ), i ) + CHR_COMMA + CHR_SPACE;
+			cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( &( client_item->clientRecord ()->t_info ), i ) + CHR_COMMA + CHR_SPACE;
 	}
 }
 
@@ -551,16 +550,16 @@ bool searchUI::getJobInfo ( jobListItem* job_item, VMList<QString>& cellData )
 		if ( client ) {
 			cellData[COL_CLIENT - 1] = recStrValue ( client->clientRecord (), FLD_CLIENT_NAME );
 			cellData[COL_JOB - 1] = recStrValue ( job_item->dbRec (), FLD_JOB_ID ) + CHR_HYPHEN + recStrValue ( job_item->dbRec (), FLD_JOB_TYPE );
-            job_item->searchSubFields ()->clearButKeepMemory (); //erase (possible) previous search results
+			job_item->searchSubFields ()->clearButKeepMemory (); //erase (possible) previous search results
 
 			const stringTable str_report ( recStrValue ( job_item->dbRec (), FLD_JOB_REPORT ) );
 			int day ( -1 );
 
 			for ( uint i ( 0 ); i < job_item->dbRec ()->fieldCount (); ++i ) {
 				if ( job_item->searchFieldStatus ( i ) == SS_SEARCH_FOUND ) {
-                    cellData[COL_FIELD - 1] += VivenciaDB::getTableColumnLabel ( job_item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
+					cellData[COL_FIELD - 1] += VivenciaDB::getTableColumnLabel ( job_item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
 					if ( i == FLD_JOB_REPORT ) {
-                        day = str_report.findRecordRowThatContainsWord ( mSearchTerm, job_item->searchSubFields () );
+						day = str_report.findRecordRowThatContainsWord ( mSearchTerm, job_item->searchSubFields () );
 						if ( day != -1 )
 							cellData[COL_DATE - 1] = str_report.readRecord ( day ).fieldValue ( Job::JRF_DATE ); // only list one day, the last, for simplicity
 					}
@@ -589,7 +588,7 @@ bool searchUI::getPayInfo ( payListItem* pay_item, VMList<QString>& cellData )
 
 				for ( uint i ( 0 ); i < pay_item->dbRec ()->fieldCount (); ++i ) {
 					if ( pay_item->searchFieldStatus ( i ) == SS_SEARCH_FOUND ) {
-                        cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( pay_item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
+						cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( pay_item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
 						if ( i == FLD_PAY_INFO ) {
 							day = str_payinfo.findRecordRowThatContainsWord ( mSearchTerm ); // only first date, for simplicity
 							cellData[COL_DATE-1] = str_payinfo.readRecord ( day == -1 ? 0 : day ).fieldValue ( PHR_DATE );
@@ -618,7 +617,7 @@ bool searchUI::getBuyInfo ( buyListItem* buy_item, VMList<QString>& cellData )
 
 				for ( uint i ( 0 ); i < buy_item->dbRec ()->fieldCount (); ++i ) {
 					if ( buy_item->searchFieldStatus ( i ) == SS_SEARCH_FOUND )
-                        cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( buy_item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
+						cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( buy_item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
 					if ( i == FLD_BUY_PAYINFO ) {
 						day = str_buypayinfo.findRecordRowThatContainsWord ( mSearchTerm ); // only first date, for simplicity
 						cellData[COL_DATE-1] = str_buypayinfo.readRecord ( day == -1 ? 0 : day ).fieldValue ( PHR_DATE );
@@ -657,7 +656,7 @@ bool searchUI::getOtherInfo ( vmListItem* item, VMList<QString>& cellData )
 
 		for ( uint i ( 0 ); i < item->dbRec ()->fieldCount (); ++i ) {
 			if ( item->searchFieldStatus ( i ) == SS_SEARCH_FOUND )
-                cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
+				cellData[COL_FIELD-1] += VivenciaDB::getTableColumnLabel ( item->dbRec ()->t_info, i ) + CHR_COMMA + CHR_SPACE;
 		}
 		return true;
 	}

@@ -317,59 +317,6 @@ Buy* Data::currentBuy () const
 	return nullptr;
 }
 
-QString Data::mostOften ( const st_mostOften &st )
-{
-	QString strResult;
-	DBRecord* dbrec ( nullptr );
-	switch ( st.table ) {
-		case CLIENT_TABLE:
-			dbrec = new Client;
-		break;
-		case JOB_TABLE:
-			dbrec = new Job;
-		break;
-		case PAYMENT_TABLE:
-			dbrec = new Payment;
-		break;
-		case PURCHASE_TABLE:
-			dbrec = new Buy;
-		break;
-		default:
-			return strResult;
-	}
-
-	if ( dbrec->readFirstRecord ( st.id_field, QString::number ( st.client_id ) ) ) {
-		VMList<QString> str_list;
-		podList<int> str_count ( 0, 30 );
-		int i ( 0 );
-		do {
-			if ( !st.search_term.isEmpty () ) {
-				if ( st.search_term != dbrec->actualRecordStr ( st.search_field ) )
-					continue;
-			}
-			strResult = dbrec->actualRecordStr ( st.result_field );
-			i = str_list.contains ( strResult );
-			if ( i == -1 ) {
-				i = str_list.count ();
-				str_list.append ( strResult );
-			}
-			++str_count[i];
-		} while ( dbrec->readNextRecord ( true ) );
-		strResult = str_list.at ( 0 );
-		uint max ( 0 );
-		for ( unsigned ( i ) = 1; i < str_count.count (); ++i ) {
-			// If we have two or more strResult categories with the same count, priorize the latest
-			if ( str_count.at ( i ) >= str_count.at ( max ) ) {
-				strResult = str_list.at ( i );
-				max = i;
-			}
-		}
-		str_list.clear ();
-		str_count.clear ();
-	}
-	return strResult;
-}
-
 void Data::copyToClipboard ( const QString& str )
 {
 	QApplication::clipboard ()->setText ( str, QClipboard::Clipboard );

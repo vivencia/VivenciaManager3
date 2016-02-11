@@ -615,7 +615,7 @@ bool VivenciaDB::insertDBRecord ( DBRecord* db_rec )
 {
 	const uint table_order ( db_rec->t_info->table_order );
 	const bool bOutOfOrder ( db_rec->recordInt ( 0 ) >= 1 );
-	const int new_id ( bOutOfOrder ? db_rec->recordInt ( 0 ) : getHighLowID ( table_order ) + 1 );
+	const int new_id ( bOutOfOrder ? db_rec->recordInt ( 0 ) : getNextID ( table_order ) );
 
 	db_rec->setIntValue ( 0, new_id );
 	db_rec->setValue ( 0, QString::number ( new_id ) );
@@ -705,7 +705,7 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, co
 	return ret;
 }
 
-uint VivenciaDB::getHighLowID ( const uint table, const bool high )
+uint VivenciaDB::getHighLowID ( const uint table, const bool high ) const
 {
 	QSqlQuery query ( QLatin1String ( "SELECT " ) +
 					  QLatin1String ( high ? "MAX(ID) FROM " : "MIN(ID) FROM " ) +

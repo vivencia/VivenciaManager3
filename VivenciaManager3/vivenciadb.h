@@ -85,7 +85,7 @@ public:
 	bool insertDBRecord ( DBRecord* db_rec );
 	bool getDBRecord ( DBRecord* db_rec, const uint field = 0, const bool load_data = true );
 	bool getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, const bool load_data = true );
-	uint getHighLowID ( const uint table, const bool high = true );
+	uint getHighLowID ( const uint table, const bool high = true ) const;
 	/* Used on table updates. If one table update makes use of information from another table by calling lastDBRecord
 	 * or getHighLowID to find the last record, highest_id will be set with current information. If later, this second table
 	 * must uptade its contents, might be that the last id must be reset for accurate results.
@@ -93,6 +93,8 @@ public:
 	inline void setHighestID ( const uint table, const int new_id = 0 ) {
 		if ( table < TABLES_IN_DB ) highest_id[table] = new_id; }
 
+	inline uint getNextID ( const uint table ) const { return getHighLowID ( table ) + 1; }
+	
 	bool recordExists ( const QString& table_name, const int id ) const;
 
 	// Call this when there is need for using the result of the query. Use VDB ()->database ()->exec () when
@@ -129,8 +131,8 @@ private:
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
 	QSqlDatabase m_db;
 
-	podList<uint> lowest_id;
-	podList<uint> highest_id;
+	mutable podList<uint> lowest_id;
+	mutable podList<uint> highest_id;
 
 	static const TABLE_INFO* table_info[TABLES_IN_DB];
 

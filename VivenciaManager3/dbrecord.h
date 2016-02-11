@@ -67,16 +67,16 @@ public:
 
 	// Convenience functions that assume the recorded value in db is formatted ( for the sake of speed )
 	// but handles graciously if it is empty
-	const vmNumber& phone ( const uint field ) const {
-		return const_cast<DBRecord*> ( this )->rec_number.fromTrustedStrPhone ( recStrValue ( this, field ) ); }
-	const vmNumber& price ( const uint field ) const {
-		return const_cast<DBRecord*> ( this )->rec_number.fromTrustedStrPrice ( recStrValue ( this, field ) ); }
-	const vmNumber& date ( const uint field ) const {
-		return const_cast<DBRecord*> ( this )->rec_number.fromTrustedStrDate ( recStrValue ( this, field ), vmNumber::VDF_DB_DATE ); }
-	const vmNumber& time ( const uint field ) const {
-		return const_cast<DBRecord*> ( this )->rec_number.fromTrustedStrTime ( recStrValue ( this, field ), vmNumber::VTF_DAYS ); }
-	const vmNumber& number ( const uint field ) const {
-		return const_cast<DBRecord*> ( this )->rec_number.fromTrustedStrInt ( recStrValue ( this, field ) ); }
+	inline vmNumber phone ( const uint field ) const {
+		return vmNumber ( recStrValue ( this, field ), VMNT_PHONE, 1 ); }
+	inline vmNumber price ( const uint field ) const {
+		return vmNumber ( recStrValue ( this, field ), VMNT_PRICE, 1 ); }
+	inline vmNumber date ( const uint field ) const {
+		return vmNumber ( recStrValue ( this, field ), VMNT_DATE, vmNumber::VDF_DB_DATE ); }
+	inline vmNumber time ( const uint field ) const {
+		return vmNumber ( recStrValue ( this, field ), VMNT_TIME, vmNumber::VTF_DAYS ); }
+	inline vmNumber number ( const uint field ) const {
+		return vmNumber ( recStrValue ( this, field ), VMNT_INT, 1 ); }
 	inline bool opt ( const uint field ) const {
 		return recStrValue ( this, field ) == QStringLiteral ( "1" ); }
 
@@ -90,7 +90,7 @@ public:
 	 * CHR_ZERO and CHR_ONE are note used so that I don't have to include "global.h"
 	 */
 
-	const vmNumber& setPrice ( const uint field, const QString& price );
+	//const vmNumber& setPrice ( const uint field, const QString& price );
 	inline void setDate ( const uint field, const vmNumber& date ) {
 		setRecValue ( this, field, date.toDate ( vmNumber::VDF_DB_DATE ) ); }
 	inline void setTime ( const uint field, const vmNumber& time ) {
@@ -143,7 +143,10 @@ public:
 	void clearAll ();
 
 	inline RECORD_ACTION action () const { return m_action; }
+	inline RECORD_ACTION prevAction () const { return m_prevaction; }
 	void setAction ( const RECORD_ACTION action );
+	static void addToTemporaryRecords ( DBRecord* dbrec );
+	static void removeFromTemporaryRecords ( DBRecord* dbrec );
 
 	inline bool inSync () const { return mb_synced; }
 	void sync ( const int src_index, const bool b_force );
@@ -233,10 +236,10 @@ protected:
 	bool mb_modified;
 	bool mb_synced;
 	bool mb_completerUpdated;
-	RECORD_ACTION m_action;
+	RECORD_ACTION m_action, m_prevaction;
 
-	vmNumber rec_number;
 	st_Query stquery;
+	static PointersList<DBRecord*> tempNewRecs[TABLES_IN_DB];
 
 	alterRecord fptr_change;
 	alterRecordInt fptr_changeInt;

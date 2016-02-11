@@ -301,6 +301,12 @@ public:
     vmComboBox *cboBuySuppliers;
     QToolButton *btnShowSuppliersDlg;
     vmListWidget *buysJobListWidget;
+    QGridLayout *gridLayout_5;
+    QLabel *lblBuyTotalPurchasePriceForJob;
+    QLabel *lblBuyTotalPaidForJob;
+    vmLineEdit *txtBuyTotalPurchasePriceForJob;
+    vmLineEdit *txtBuyTotalPaidForJob;
+    QFrame *line_6;
     QLabel *lblBuySupplierBuys;
     vmListWidget *lstBuySuppliers;
     QFrame *frmBuyInfo;
@@ -408,7 +414,7 @@ public:
         QIcon icon4;
         icon4.addFile(QStringLiteral(":/resources/estimatives.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnEstimates->setIcon(icon4);
-        btnEstimates->setCheckable(true);
+        btnEstimates->setCheckable(false);
 
         horizontalLayout_7->addWidget(btnEstimates);
 
@@ -1384,6 +1390,7 @@ public:
 
         txtDummy = new QLineEdit(frmClientInfo);
         txtDummy->setObjectName(QStringLiteral("txtDummy"));
+        txtDummy->setAutoFillBackground(true);
 
         gridLayout_3->addWidget(txtDummy, 8, 0, 1, 1);
 
@@ -1429,7 +1436,7 @@ public:
         gridLayout_15->setObjectName(QStringLiteral("gridLayout_15"));
         gridLayout_15->setHorizontalSpacing(5);
         gridLayout_15->setVerticalSpacing(2);
-        gridLayout_15->setContentsMargins(2, 2, 2, 2);
+        gridLayout_15->setContentsMargins(2, 2, 2, 0);
         lblJobAddress = new QLabel(frmJobInfo);
         lblJobAddress->setObjectName(QStringLiteral("lblJobAddress"));
 
@@ -2032,7 +2039,7 @@ public:
         tabDesign_4->setObjectName(QStringLiteral("tabDesign_4"));
         splitterBuyInfo = new QSplitter(tabDesign_4);
         splitterBuyInfo->setObjectName(QStringLiteral("splitterBuyInfo"));
-        splitterBuyInfo->setGeometry(QRect(7, 7, 631, 585));
+        splitterBuyInfo->setGeometry(QRect(7, 7, 966, 713));
         sizePolicy.setHeightForWidth(splitterBuyInfo->sizePolicy().hasHeightForWidth());
         splitterBuyInfo->setSizePolicy(sizePolicy);
         splitterBuyInfo->setMinimumSize(QSize(500, 0));
@@ -2139,6 +2146,40 @@ public:
         buysJobListWidget->setObjectName(QStringLiteral("buysJobListWidget"));
 
         verticalLayout_12->addWidget(buysJobListWidget);
+
+        gridLayout_5 = new QGridLayout();
+        gridLayout_5->setSpacing(2);
+        gridLayout_5->setObjectName(QStringLiteral("gridLayout_5"));
+        lblBuyTotalPurchasePriceForJob = new QLabel(frmBuyJobList);
+        lblBuyTotalPurchasePriceForJob->setObjectName(QStringLiteral("lblBuyTotalPurchasePriceForJob"));
+
+        gridLayout_5->addWidget(lblBuyTotalPurchasePriceForJob, 0, 0, 1, 1);
+
+        lblBuyTotalPaidForJob = new QLabel(frmBuyJobList);
+        lblBuyTotalPaidForJob->setObjectName(QStringLiteral("lblBuyTotalPaidForJob"));
+
+        gridLayout_5->addWidget(lblBuyTotalPaidForJob, 1, 0, 1, 1);
+
+        txtBuyTotalPurchasePriceForJob = new vmLineEdit(frmBuyJobList);
+        txtBuyTotalPurchasePriceForJob->setObjectName(QStringLiteral("txtBuyTotalPurchasePriceForJob"));
+
+        gridLayout_5->addWidget(txtBuyTotalPurchasePriceForJob, 0, 1, 1, 1);
+
+        txtBuyTotalPaidForJob = new vmLineEdit(frmBuyJobList);
+        txtBuyTotalPaidForJob->setObjectName(QStringLiteral("txtBuyTotalPaidForJob"));
+
+        gridLayout_5->addWidget(txtBuyTotalPaidForJob, 1, 1, 1, 1);
+
+        gridLayout_5->setColumnStretch(1, 1);
+
+        verticalLayout_12->addLayout(gridLayout_5);
+
+        line_6 = new QFrame(frmBuyJobList);
+        line_6->setObjectName(QStringLiteral("line_6"));
+        line_6->setFrameShape(QFrame::HLine);
+        line_6->setFrameShadow(QFrame::Sunken);
+
+        verticalLayout_12->addWidget(line_6);
 
         lblBuySupplierBuys = new QLabel(frmBuyJobList);
         lblBuySupplierBuys->setObjectName(QStringLiteral("lblBuySupplierBuys"));
@@ -2331,6 +2372,7 @@ public:
         horizontalLayout_8->setContentsMargins(-1, -1, 0, -1);
         lblCurInfoClient = new QLabel(centralwidget);
         lblCurInfoClient->setObjectName(QStringLiteral("lblCurInfoClient"));
+        lblCurInfoClient->setTextFormat(Qt::PlainText);
 
         horizontalLayout_8->addWidget(lblCurInfoClient);
 
@@ -2517,7 +2559,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabMain->setCurrentIndex(5);
+        tabMain->setCurrentIndex(6);
         tboxCalJobs->setCurrentIndex(0);
 
 
@@ -2800,6 +2842,8 @@ public:
         btnBuyCancel->setText(QApplication::translate("MainWindow", "...", 0));
         lblBuySupplier_2->setText(QApplication::translate("MainWindow", "Supplier: ", 0));
         btnShowSuppliersDlg->setText(QApplication::translate("MainWindow", "...", 0));
+        lblBuyTotalPurchasePriceForJob->setText(QApplication::translate("MainWindow", "Total purchase price:", 0));
+        lblBuyTotalPaidForJob->setText(QApplication::translate("MainWindow", "Total amoun paid:", 0));
         lblBuySupplierBuys->setText(QApplication::translate("MainWindow", "list os purchases", 0));
 #ifndef QT_NO_TOOLTIP
         btnBuyCopyRows->setToolTip(QApplication::translate("MainWindow", "Copy list to quick project", 0));

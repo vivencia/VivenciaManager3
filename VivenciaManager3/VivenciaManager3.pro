@@ -155,7 +155,8 @@ HEADERS += dbrecord.h \
     vmtableitem.h \
     vmcheckedtableitem.h \
     fast_library_functions.h \
-    newprojectdialog.h
+    newprojectdialog.h \
+    singleapp.h
 FORMS += mainwindow.ui \
 	backupdialog.ui \
     companypurchasesui.ui \

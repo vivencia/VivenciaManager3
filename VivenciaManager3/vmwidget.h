@@ -68,7 +68,7 @@ public:
 		keypressed_func = func; }
 
 	// assumes a derivative of a real QWidget
-	virtual void setCallbackForContextMenu
+	void setCallbackForContextMenu
 	( std::function<void ( const QPoint& pos, const vmWidget* const )> func );
 
 	inline virtual void setCallbackForContentsAltered ( std::function<void ( const vmWidget* const )> func )

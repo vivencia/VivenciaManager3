@@ -30,11 +30,11 @@ public:
 	inline vmAction ( const int index, const QIcon &icon, const QString& text, QObject* parent = nullptr )
 		: QAction ( icon, text, parent ), vmWidget ( WT_ACTION, -1, index ) {}
 
+	inline virtual ~vmAction () {}
+	
 	inline void setLabel ( const QString& text ) {
 		QAction::setText ( text );
 	}
-
-	inline virtual ~vmAction () {}
 };
 //------------------------------------------------VM-ACTION-------------------------------------------------
 

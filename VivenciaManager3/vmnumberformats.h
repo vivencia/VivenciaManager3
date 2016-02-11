@@ -153,7 +153,7 @@ public:
 
 //-------------------------------------DATE------------------------------------------
 	enum VM_DATE_FORMAT {
-		VDF_HUMAN_DATE = 1, VDF_DB_DATE, VDF_LONG_DATE, VDF_FILE_DATE
+		VDF_HUMAN_DATE = 1, VDF_DB_DATE, VDF_LONG_DATE, VDF_FILE_DATE, VDF_DROPBOX_DATE
 	};
 
 	inline bool isDate () const {
@@ -165,6 +165,7 @@ public:
 	vmNumber& fromTrustedStrDate ( const QString& date, const VM_DATE_FORMAT format, const bool cache = true );
 	vmNumber& dateFromHumanDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromDBDate ( const QString& date, const bool cache = true );
+	vmNumber& dateFromDropboxDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromFilenameDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromLongString ( const QString& date, const bool cache = true );
 
@@ -305,7 +306,6 @@ private:
 	unsigned int nbr_upart[5];
 	mutable QString cached_str;
 	mutable bool mb_cached;
-	mutable bool mb_yearFirst;
     mutable bool mb_valid;
 
 	mutable QDate mQDate;

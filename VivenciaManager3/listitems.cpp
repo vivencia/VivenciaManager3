@@ -180,8 +180,10 @@ void vmListItem::update ( const bool bQtCall )
 	 * their calls. When needed, we will use the update method, but it shall be at our discretion.
 	 * This is the main reason to name a method exactly like the parent's instead
 	 */
-	if ( !bQtCall )
+	if ( !bQtCall ) {
+		setData ( Qt::ToolTipRole, QString ( m_strBodyText + actionSuffix[action()] ) );
 		QListWidgetItem::setText ( m_strBodyText + actionSuffix[action()] );
+	}
 }
 
 uint vmListItem::translatedInputFieldIntoBadInputField ( const uint field ) const
@@ -385,7 +387,7 @@ void payListItem::update ( const bool bQtCall )
 				item_related[RLI_CLIENTITEM]->m_strBodyText = APP_TR_FUNC ( "Automatically generated payment info - edit it after saving job" );
 			else {
 				if ( !recStrValue ( PAY_REC, FLD_PAY_PRICE ).isEmpty () ) {
-					item_related[RLI_CLIENTITEM]->m_strBodyText =  PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
+					item_related[RLI_CLIENTITEM]->m_strBodyText = PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
 						PAY_REC->price ( FLD_PAY_TOTALPAID ).toPrice () + CHR_R_PARENTHESIS;
 				}
 				else

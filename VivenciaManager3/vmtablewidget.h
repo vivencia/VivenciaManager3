@@ -46,13 +46,8 @@ struct spreadRow {
 	int row;
 
 	inline spreadRow ()
-		: field_value ( emptyString, 20 ), column ( 0, 20 ), row ( -1 )
+		: field_value ( emptyString, 12 ), column ( 0, 12 ), row ( -1 )
 	{}
-
-	~spreadRow () {
-		field_value.clear ();
-		column.clear ();
-	}
 };
 
 constexpr uint PURCHASES_TABLE_REG_COL ( 6 );
@@ -97,7 +92,7 @@ class vmTableWidget : public QTableWidget, public vmWidget
 public:
 	explicit vmTableWidget ( QWidget* parent = nullptr ); // constructor for promoted widgets used by QtDesigner
 	vmTableWidget ( const uint rows, vmTableColumn** cols, QWidget* parent = nullptr );
-	~vmTableWidget ();
+	virtual ~vmTableWidget ();
 
 	void initTable ( const uint rows, vmTableColumn** cols );
 
@@ -265,9 +260,9 @@ private:
      * value immediately otherwise it will no be possible to know, later, what was and was not changed
      */
     bool mbKeepModRec;
-
 	bool mPlainTable;
     bool mIsPurchaseTable;
+	bool mbDoNotUpdateCompleters;
 
 	// Because of the mask, the maximum number of columns is limited to 32
 	uint readOnlyColumnsMask; // columns set here do not receive user input

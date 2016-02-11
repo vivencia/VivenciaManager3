@@ -276,7 +276,7 @@ void quickProjectUI::cancelEdit ()
     disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
 	btnEditTable->setChecked ( false );
 	enableControls ( false );
-    qp_rec->setAction( ACTION_REVERT );
+    qp_rec->setAction ( ACTION_REVERT );
 	const QString jobid ( recStrValue ( qp_rec, FLD_QP_JOB_ID ) );
 	loadData ( jobid, true );
 }
@@ -317,7 +317,7 @@ void quickProjectUI::selectDone ()
 
 void quickProjectUI::closeClicked ()
 {
-	if ( funcClosed )
+	if ( mbQPChanged && funcClosed != nullptr )
 		funcClosed ();
 	enableControls ( false );
 	hide ();

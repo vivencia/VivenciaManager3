@@ -625,6 +625,9 @@ vmNumber& vmNumber::fromTrustedStrDate ( const QString& date, const VM_DATE_FORM
         case VDF_LONG_DATE:
             return dateFromLongString ( date, cache );
         break;
+		case VDF_DROPBOX_DATE:
+			return dateFromDropboxDate( date, cache );
+		break;
 	}
 	return *this;
 }
@@ -650,6 +653,20 @@ vmNumber& vmNumber::dateFromDBDate ( const QString& date, const bool cache )
 	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_DB_DATE;
+	if ( cache ) {
+		setCached ( true );
+		cached_str = date;
+	}
+	return *this;
+}
+
+vmNumber& vmNumber::dateFromDropboxDate ( const QString& date, const bool cache )
+{
+	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toInt ();
+	nbr_upart[VM_IDX_MONTH] = date.mid ( 5, 2 ).toInt ();
+	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
+	setType ( VMNT_DATE );
+	nbr_upart[VM_IDX_STRFORMAT] = VDF_DROPBOX_DATE;
 	if ( cache ) {
 		setCached ( true );
 		cached_str = date;
@@ -809,6 +826,9 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 				case VDF_LONG_DATE:
 					cached_str = strDay + QLatin1String ( " de " ) + QLatin1String ( MONTHS[nbr_upart[VM_IDX_MONTH]] ) +
 							 QLatin1String ( " de " ) + strYear;
+				case VDF_DROPBOX_DATE:
+					cached_str = strYear + CHR_HYPHEN + strMonth + CHR_HYPHEN + strDay;
+				break;
 				break;
 			}
 			setCached ( true );
