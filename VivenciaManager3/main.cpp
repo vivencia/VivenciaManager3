@@ -14,11 +14,10 @@
 clock_t start, finish;
 start = clock();
 
-// your code here
+// code here
 finish = clock();
 qDebug() << ( (finish - start) );
 */
-
 int main ( int argc, char *argv[] )
 {
 	/*auto algorithm = [&]( double x, double m, double b ) -> double

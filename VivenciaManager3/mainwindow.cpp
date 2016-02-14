@@ -57,6 +57,8 @@ QLatin1String MainWindow::lstJobReportItemPrefix ( "o dia - " );
 
 static uint leftPanel_multiplier ( 0 );
 
+const char* const PROPERTY_TOTAL_PAYS ( "ptp" );
+
 static const QString chkPayOverdueToolTip_overdue[3] = {
 	APP_TR_FUNC ( "The total price paid for the job is met, nothing needs to be done." ),
 	APP_TR_FUNC ( "The total paid is less then the total price for the job.\n"
@@ -252,6 +254,11 @@ void MainWindow::setupClientPanel ()
 	connect ( ui->btnClientCancel, &QToolButton::clicked, this, [&] () {
 		return btnClientCancel_clicked (); } );
 	
+	setTabOrder ( ui->txtClientZipCode, ui->contactsClientPhones->combo () );
+	setTabOrder ( ui->contactsClientPhones->combo (), ui->contactsClientEmails->combo () );
+	setTabOrder ( ui->contactsClientEmails->combo (), ui->dteClientDateFrom );
+	setTabOrder ( ui->dteClientDateFrom, ui->dteClientDateTo );
+	setTabOrder ( ui->dteClientDateTo, ui->chkClientActive );
 	//ui->txtDummy->setVisible ( false );
 }
 
@@ -275,6 +282,7 @@ void MainWindow::clientsListWidget_currentItemChanged ( vmListItem* item, vmList
 			CLIENT_PREV_ITEM = nullptr;
 		}
 	}
+	insertNavItem ( item );
 	(void) displayClient ( static_cast<clientListItem*> ( item ), true );
 }
 
@@ -391,12 +399,16 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 		}
 
 		payListItem* pay_item ( nullptr );
+		vmNumber totalPays;
 		for ( i = 0; i < signed ( client_item->pays->count () ); ++i ) {
 			pay_item = client_item->pays->at ( i );
 			(void) pay_item->loadData ();
 			pay_item->update ( false );
 			pay_item->addToList ( paysList );
+			totalPays += pay_item->payRecord ()->price ( FLD_PAY_PRICE );
 		}
+		paysList->setProperty ( PROPERTY_TOTAL_PAYS, totalPays.toPrice () );
+		txtPayTotals->setText ( totalPays.toPrice () );
 
 		buyListItem* buy_item ( nullptr );
 		for ( i = 0; i < signed ( client_item->buys->count () ); ++i ) {
@@ -704,6 +716,12 @@ void MainWindow::setupJobPanel ()
 		return dteJobAddDate_dateAltered (); } );
 	connect ( ui->btnJobMachines, &QToolButton::clicked, this, [&] () {
 		return btnJobMachines_clicked (); } );
+	
+	setTabOrder ( ui->btnJobNextDay, ui->dteJobAddDate );
+	setTabOrder ( ui->dteJobAddDate, ui->btnJobAddDay );
+	setTabOrder ( ui->btnJobAddDay, ui->btnJobEditDay );
+	setTabOrder ( ui->btnJobSeparatePicture, ui->jobImageViewer );
+	setTabOrder ( ui->jobImageViewer, ui->btnPayInfoEdit );
 }
 
 void MainWindow::setUpJobButtons ( const QString& path )
@@ -772,7 +790,7 @@ void MainWindow::setUpJobButtons ( const QString& path )
 						menuJobXls = new QMenu ( this );
 						ui->btnJobOpenXls->setMenu ( menuJobXls );
 						connect ( menuJobXls, &QMenu::triggered, this, [&] ( QAction* action ) { return jobOpenProjectFile ( action ); } );
-						connect ( ui->btnJobOpenXls, &QToolButton::clicked, ui->btnJobOpenXls, [&] ( const bool ) { return ui->btnJobOpenDoc->showMenu (); } );
+						connect ( ui->btnJobOpenXls, &QToolButton::clicked, ui->btnJobOpenXls, [&] ( const bool ) { return ui->btnJobOpenXls->showMenu (); } );
 					}
 					menuJobXls->addAction ( new vmAction ( 2, menutext, this ) );
 				}
@@ -965,6 +983,7 @@ void MainWindow::jobsListWidget_currentItemChanged ( vmListItem* item, vmListIte
 			JOB_PREV_ITEM = nullptr;
 		}
 	}
+	insertNavItem ( item );
 	displayJob ( static_cast<jobListItem*> ( item ), true );
 }
 
@@ -1130,6 +1149,7 @@ void MainWindow::loadJobInfo ( const Job* const job )
 		ui->cboJobPictures->clear ();
         ui->dteJobStart->setDate ( vmNumber () );
         ui->dteJobEnd->setDate ( vmNumber () );
+		ui->txtJobTotalAllDaysTime->clear ();
 	}
 	scanJobImages ();
 	setUpJobButtons ( ui->txtJobProjectPath->text () );
@@ -1290,23 +1310,14 @@ void MainWindow::saveJobPayment ( jobListItem* const job_item )
 	setRecValue ( pay, FLD_PAY_CLIENTID, recStrValue ( job_item->jobRecord (), FLD_JOB_CLIENTID ) );
 	setRecValue ( pay, FLD_PAY_JOBID, recStrValue ( job_item->jobRecord (), FLD_JOB_ID ) );
 	setRecValue ( pay, FLD_PAY_PRICE, recStrValue ( job_item->jobRecord (), FLD_JOB_PRICE ) );
+	// Upon job creation, there is no paymented execed yet. So mark it as overdue
+	setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ONE );
 	if ( pay->saveRecord () ) {
 		job_item->payItem ()->setAction ( pay->action () );
 		job_item->payItem ()->setDBRecID ( recIntValue ( pay, FLD_PAY_ID ) );
 		mClientCurItem->pays->append ( job_item->payItem () );
 		crash->eliminateRestoreInfo ( job_item->payItem ()->crashID () );
-		//loadPayInfo ( pay );
-
-		// FLD_PAY_OVERDUE is set on Payment::commit ()
-		if ( recStrValue ( pay, FLD_PAY_OVERDUE ) == CHR_ONE ) {
-			payListItem* pay_overdue ( new payListItem );
-			pay_overdue->setRelation ( RLI_EXTRAITEM );
-			job_item->payItem ()->syncSiblingWithThis ( pay_overdue );
-
-			payListItem* pay_overdue_client ( new payListItem );
-			pay_overdue_client->setRelation ( RLI_JOBITEM );
-			job_item->payItem ()->syncSiblingWithThis ( pay_overdue );
-		}
+		addPaymentOverdueItems ( job_item->payItem () );
 	}
 }
 
@@ -1742,15 +1753,24 @@ void MainWindow::setupPayPanel ()
 	tabPaysLists->setCurrentIndex ( 0 );
 	connect ( tabPaysLists, &QTabWidget::currentChanged, this, [&] ( const int index ) { return tabPaysLists_currentChanged ( index ); } );
 
+	QLabel* lblPayTotal ( new QLabel ( TR_FUNC ( "Total: " ) ) );
+	lblPayTotal->setToolTip ( TR_FUNC ( "Displays the total payment amount for the current selected tab category" ) );
+	txtPayTotals = new vmLineEdit;
+	frmPayTotals = new QFrame;
+	QHBoxLayout* lTotals ( new QHBoxLayout );
+	lTotals->setMargin ( 2 );
+	lTotals->setSpacing ( 2 );
+	lTotals->addWidget ( lblPayTotal );
+	lTotals->addWidget ( txtPayTotals );
+	frmPayTotals->setLayout ( lTotals );
+	frmPayTotals->setMinimumSize ( 200, 30 );
+	
 	connect ( ui->btnPayPayReceipt, &QToolButton::clicked, this, [&] () { return
-			EDITOR ()->startNewReport ()->createPaymentStub (
-				static_cast<payListItem*> ( paysList->currentItem () )->dbRecID () ); } );
+			EDITOR ()->startNewReport ()->createPaymentStub ( mPayCurItem->dbRecID () ); } );
 	connect ( ui->btnPayPaymentsReport, &QToolButton::clicked, this, [&] () { return
-			EDITOR ()->startNewReport ()->createJobReport (
-				static_cast<clientListItem*> ( clientsList->currentItem () )->dbRecID (), true ); } );
+			EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), true ); } );
 	connect ( ui->btnPayPaymentsReportOnlyUnPaid, &QToolButton::clicked, this, [&] () { return
-			EDITOR ()->startNewReport ()->createJobReport (
-				static_cast<clientListItem*> ( clientsList->currentItem () )->dbRecID (), false ); } );
+			EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), false ); } );
 	connect ( ui->btnPayInfoDel, &QToolButton::clicked, this, [&] () { return on_btnPayInfoDel_clicked (); } );
 	connect ( ui->btnPayInfoEdit, &QToolButton::clicked, this, [&] () { return on_btnPayInfoEdit_clicked (); } );
 	connect ( ui->btnPayInfoSave, &QToolButton::clicked, this, [&] () { return on_btnPayInfoSave_clicked (); } );
@@ -1779,6 +1799,7 @@ void MainWindow::paysListWidget_currentItemChanged ( vmListItem* item, vmListIte
 			PAY_PREV_ITEM = nullptr;
 		}
 	}
+	insertNavItem ( item );
 	if ( static_cast<jobListItem*> ( item->item_related[RLI_JOBPARENT] ) != mJobCurItem )
 		displayJob ( static_cast<jobListItem*> ( item->item_related[RLI_JOBPARENT] ), true );
 	else
@@ -1859,17 +1880,56 @@ void MainWindow::updateCalendarWithPayInfo ( Payment* const pay, const RECORD_AC
 		pay->updateCalendarPayInfo ();
 }
 
+void MainWindow::addPaymentOverdueItems ( payListItem* pay_item )
+{
+	if ( tabPaysLists->currentIndex () == 1 ) {
+		payListItem* pay_item_overdue_client ( new payListItem );
+		pay_item_overdue_client->setRelation ( RLI_DATEITEM );
+		pay_item->syncSiblingWithThis ( pay_item_overdue_client );
+		pay_item_overdue_client->update ();
+		pay_item_overdue_client->addToList ( paysOverdueClientList );
+		vmNumber totalOverdue ( paysOverdueClientList->property ( PROPERTY_TOTAL_PAYS ).toString (), VMNT_PRICE, 1 );
+		totalOverdue += pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
+		paysOverdueClientList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toString () );
+		txtPayTotals->setText ( totalOverdue.toPrice () );
+	}
+	
+	if ( paysOverdueList->count () != 0 ) {
+		payListItem* pay_item_overdue ( new payListItem );
+		pay_item_overdue->setRelation ( RLI_EXTRAITEM );
+		pay_item->syncSiblingWithThis ( pay_item_overdue );
+		pay_item_overdue->update ();
+		pay_item_overdue->addToList ( paysOverdueList );
+		vmNumber totalOverdue ( paysOverdueList->property ( PROPERTY_TOTAL_PAYS ).toString (), VMNT_PRICE, 1 );
+		totalOverdue += pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
+		paysOverdueList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toString () );
+		txtPayTotals->setText ( totalOverdue.toPrice () );
+	}
+}
+
 void MainWindow::removePaymentOverdueItems ( payListItem* pay_item )
 {
+	vmNumber totalOverdue;
+	if ( pay_item->item_related[RLI_DATEITEM] ) {
+		paysOverdueClientList->takeItem ( paysOverdueClientList->row ( static_cast<QListWidgetItem*>( pay_item->item_related[RLI_DATEITEM] ) ) );
+		delete static_cast<payListItem*>( pay_item->item_related[RLI_DATEITEM] );
+		
+		totalOverdue.fromTrustedStrPrice ( paysOverdueClientList->property ( PROPERTY_TOTAL_PAYS ).toString () );
+		totalOverdue -= pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
+		paysOverdueClientList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toString () );
+		if ( tabPaysLists->currentIndex () == 1 )
+			txtPayTotals->setText ( totalOverdue.toPrice () );
+	}
+	
 	if ( pay_item->item_related[RLI_EXTRAITEM] ) {
 		paysOverdueList->takeItem ( paysOverdueList->row ( static_cast<QListWidgetItem*>( pay_item->item_related[RLI_EXTRAITEM] ) ) );
 		delete static_cast<payListItem*>( pay_item->item_related[RLI_EXTRAITEM] );
-		pay_item->item_related[RLI_EXTRAITEM] = nullptr;
-	}
-	if ( pay_item->item_related[RLI_JOBITEM] ) {
-		paysOverdueClientList->takeItem ( paysOverdueList->row ( static_cast<QListWidgetItem*>( pay_item->item_related[RLI_JOBITEM] ) ) );
-		delete static_cast<payListItem*>( pay_item->item_related[RLI_JOBITEM] );
-		pay_item->item_related[RLI_JOBITEM] = nullptr;
+		
+		totalOverdue.fromTrustedStrPrice ( paysOverdueList->property ( PROPERTY_TOTAL_PAYS ).toString () );
+		totalOverdue -= pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
+		paysOverdueList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toString () );
+		if ( tabPaysLists->currentIndex () == 2 )
+			txtPayTotals->setText ( totalOverdue.toPrice () );
 	}
 }
 
@@ -1888,7 +1948,7 @@ void MainWindow::payOverdueGUIActions ( const Payment* const pay )
 		}
 	}
 	else {
-		ui->chkPayOverdue->setToolTip ( TR_FUNC ( "Check this box to signal that payment overdue is to be ignored." ) );
+		ui->chkPayOverdue->setToolTip (	TR_FUNC ( "Check this box to signal that payment overdue is to be ignored." ) );
 		ui->chkPayOverdue->setChecked ( false );
 	}
 	ui->chkPayOverdue->highlight ( bMayBeOverdue ? vmYellow : vmDefault_Color );
@@ -2027,16 +2087,18 @@ void MainWindow::loadClientOverduesList ()
 	}
 	paysOverdueClientList->setIgnoreChanges ( true );
 	payListItem* pay_item_overdue_client ( nullptr ), *pay_item ( nullptr );
-	uint row ( 0 );
+	vmNumber totalOverdue;
 	for ( uint x ( 0 ); x < mClientCurItem->pays->count (); ++x ) {
 		pay_item = mClientCurItem->pays->at ( x );
-		pay_item_overdue_client = static_cast<payListItem*>( pay_item->item_related[RLI_JOBITEM] );
+		pay_item_overdue_client = static_cast<payListItem*>( pay_item->item_related[RLI_DATEITEM] );
 		if ( !pay_item_overdue_client ) {
 			if ( pay_item->loadData () ) {
 				if ( recStrValue ( pay_item->payRecord (), FLD_PAY_OVERDUE ) == CHR_ONE ) {
 					pay_item_overdue_client = new payListItem;
-					pay_item_overdue_client->setRelation ( RLI_JOBITEM );
+					pay_item_overdue_client->setRelation ( RLI_DATEITEM );
 					pay_item->syncSiblingWithThis ( pay_item_overdue_client );
+					pay_item_overdue_client->addToList ( paysOverdueClientList );
+					totalOverdue += pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
 				}
 				else
 					continue;
@@ -2045,7 +2107,8 @@ void MainWindow::loadClientOverduesList ()
 				continue;
 		}
 		pay_item_overdue_client->update ( false );
-		paysOverdueClientList->insertItem ( row++, pay_item_overdue_client );
+		paysOverdueClientList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toPrice () );
+		txtPayTotals->setText ( totalOverdue.toPrice () );
 	}
 }
 
@@ -2055,7 +2118,7 @@ void MainWindow::loadAllOverduesList ()
 		payListItem* pay_item_overdue ( nullptr ), *pay_item ( nullptr );
 		clientListItem* client_item ( nullptr );
 		const uint n ( clientsList->count () );
-		uint row ( 0 );
+		vmNumber totalOverdue;
 		for ( uint i ( 0 ); i < n; ++i ) {
 			client_item = static_cast<clientListItem*> ( clientsList->item ( i ) );
 			for ( uint x ( 0 ); x < client_item->pays->count (); ++x ) {
@@ -2066,11 +2129,14 @@ void MainWindow::loadAllOverduesList ()
 						pay_item_overdue->setRelation ( RLI_EXTRAITEM );
 						pay_item->syncSiblingWithThis ( pay_item_overdue );
 						pay_item_overdue->update ( false );
-						paysOverdueList->insertItem ( row++, pay_item_overdue );
+						pay_item_overdue->addToList ( paysOverdueList );
+						totalOverdue += pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
 					}
 				}
 			}
 		}
+		paysOverdueList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toPrice () );
+		txtPayTotals->setText ( totalOverdue.toPrice () );
 	}
 }
 
@@ -2157,13 +2223,15 @@ void MainWindow::payKeyPressedSelector ( const QKeyEvent* ke )
 // Delay loading lists until they are necessary
 void MainWindow::tabPaysLists_currentChanged ( const int index )
 {
+	vmListWidget* list ( nullptr );
 	switch ( index ) {
-		case 0: break;
-		case 1: loadClientOverduesList (); break;
-		case 2:	loadAllOverduesList ();	break;
+		case 0: list = paysList; break;
+		case 1: loadClientOverduesList (); list = paysOverdueClientList; break;
+		case 2:	loadAllOverduesList ();	list = paysOverdueList; break;
 	}
 	paysOverdueClientList->setIgnoreChanges ( index != 1 );
 	paysOverdueList->setIgnoreChanges ( index != 2 );
+	txtPayTotals->setText ( list->property ( PROPERTY_TOTAL_PAYS ).toString () );
 }
 //--------------------------------------------PAY------------------------------------------------------------
 
@@ -2331,6 +2399,11 @@ void MainWindow::setupBuyPanel ()
 	connect ( ui->btnBuySave, &QToolButton::clicked, this, [&] () { return on_btnBuySave_clicked (); } );
 	connect ( ui->btnBuyCancel, &QToolButton::clicked, this, [&] () { return on_btnBuyCancel_clicked (); } );
 	connect ( ui->btnBuyCopyRows, &QToolButton::clicked, this, [&] () { return on_btnBuyCopyRows_clicked (); } );
+	
+	setTabOrder ( ui->btnShowSuppliersDlg, ui->dteBuyDate );
+	setTabOrder ( ui->dteBuyDate, ui->dteBuyDeliveryDate );
+	setTabOrder ( ui->dteBuyDeliveryDate, ui->txtBuyDeliveryMethod );
+	setTabOrder ( ui->txtBuyDeliveryMethod, ui->tableBuyItems );
 }
 
 void MainWindow::displayBuyFromCalendar ( QListWidgetItem* cal_item )
@@ -2355,6 +2428,7 @@ void MainWindow::buysListWidget_currentItemChanged ( vmListItem* item, vmListIte
 			BUY_PREV_ITEM = nullptr;
 		}
 	}
+	insertNavItem ( item );
 	if ( static_cast<jobListItem*> ( item->item_related[RLI_JOBPARENT] ) != mJobCurItem )
 		displayJob ( static_cast<jobListItem*> ( item->item_related[RLI_JOBPARENT] ), true, static_cast<buyListItem*>( item ) );
 	else
@@ -2868,10 +2942,10 @@ void MainWindow::setupCustomControls ()
 	connect ( ui->btnSearchCancel, &QToolButton::clicked, this, [&] () { return on_btnSearchCancel_clicked (); } );
 
 	setupCalendarMethods ();
+	setupClientPanel ();
 	setupJobPanel ();
 	setupPayPanel ();
 	setupBuyPanel ();
-	setupClientPanel ();
 	setupLeftPanel ();
 	setupWorkFlow ();
 
@@ -2971,6 +3045,7 @@ void MainWindow::restoreLastSession ()
 	JOB_PREV_ITEM = getJobItem ( CLIENT_PREV_ITEM, CONFIG ()->lastViewedRecord ( JOB_TABLE ) );
 	PAY_PREV_ITEM = getPayItem ( CLIENT_PREV_ITEM, CONFIG ()->lastViewedRecord ( PAYMENT_TABLE ) );
 	BUY_PREV_ITEM = getBuyItem ( CLIENT_PREV_ITEM, CONFIG ()->lastViewedRecord ( PURCHASE_TABLE ) );
+	insertNavItem ( JOB_PREV_ITEM ); // Job is by convention the most important data in the app, so we use it
 	displayClient ( CLIENT_PREV_ITEM, true, JOB_PREV_ITEM, BUY_PREV_ITEM ? static_cast<buyListItem*>( BUY_PREV_ITEM->item_related[RLI_JOBITEM] ) : nullptr );
 	clientsList->setFocus ();
 }
@@ -3004,6 +3079,7 @@ void MainWindow::setupLeftPanel ()
 	tabPaysLists->setMinimumSize ( 200, 200 );
 	agClientPays->addQEntry ( tabPaysLists, layoutPayWidgets );
 	agClientPays->addQEntry ( ui->frmPayToolbar, layoutPayWidgets );
+	agClientPays->addQEntry ( frmPayTotals, new QHBoxLayout );
 
 	vmActionGroup* agClientBuys ( clientTaskPanel->createGroup ( ICON ( "client_buys->png" ), TR_FUNC ( "Purchases" ), true, false ) );
 	QHBoxLayout* layoutBuyWidgets ( new QHBoxLayout );
@@ -3037,12 +3113,35 @@ void MainWindow::setupWorkFlow ()
 
 	ui->scrollWorkFlow->setWidget ( mainTaskPanel );
 
+	setupTabNavigationButtons ();
 	ui->tabMain->removeTab ( 7 );
 	ui->tabMain->removeTab ( 6 );
 	ui->tabMain->removeTab ( 5 );
 	ui->tabMain->removeTab ( 4 );
 
 	syncLeftPanelWithWorkFlow ( 0 );
+}
+
+void MainWindow::setupTabNavigationButtons ()
+{
+	mBtnNavPrev = new QToolButton;
+	mBtnNavPrev->setIcon ( ICON ( "arrow-left" ) );
+	mBtnNavPrev->setEnabled ( false );
+	connect ( mBtnNavPrev, &QToolButton::clicked, this, [&] () { return navigatePrev (); } );
+	mBtnNavNext = new QToolButton;
+	mBtnNavNext->setIcon ( ICON ( "arrow-right" ) );
+	mBtnNavNext->setEnabled ( false );
+	connect ( mBtnNavNext, &QToolButton::clicked, this, [&] () { return navigateNext (); } );
+	
+	QHBoxLayout* lButtons ( new QHBoxLayout );
+	lButtons->setMargin ( 1 );
+	lButtons->setSpacing ( 1 );
+	lButtons->addWidget ( mBtnNavPrev );
+	lButtons->addWidget ( mBtnNavNext );
+	QFrame* frmContainer ( new QFrame );
+	frmContainer->setLayout ( lButtons );
+	ui->tabMain->tabBar ()->setTabButton ( 0, QTabBar::LeftSide, frmContainer );
+	navItems.setPreAllocNumber ( 50 );
 }
 
 void MainWindow::syncLeftPanelWithWorkFlow ( const int value )
@@ -3491,7 +3590,7 @@ bool MainWindow::eventFilter ( QObject* o, QEvent* e )
 			}
 		}
 		else { // no control key pressed
-			b_accepted = unsigned ( k->key () - Qt::Key_F5 ) <= unsigned ( Qt::Key_F12 - Qt::Key_F5 );
+			b_accepted = unsigned( k->key () - Qt::Key_F4 ) <= unsigned( Qt::Key_F12 - Qt::Key_F4 );
 			switch ( k->key () ) {
 				case Qt::Key_Escape:
 					if ( selJob_callback ) {
@@ -3501,13 +3600,13 @@ bool MainWindow::eventFilter ( QObject* o, QEvent* e )
 					}
 				break;
 
-				case Qt::Key_F5: btnReportGenerator_clicked (); break;
-				case Qt::Key_F6: btnBackupRestore_clicked (); break;
-				case Qt::Key_F7: btnCalculator_clicked (); break;
-				case Qt::Key_F8: btnServicesPrices_clicked (); break;
-				case Qt::Key_F9: btnEstimates_clicked (); break;
-				case Qt::Key_F10: btnCompanyPurchases_clicked (); break;
-				case Qt::Key_F11: btnConfiguration_clicked (); break;
+				case Qt::Key_F4: btnReportGenerator_clicked (); break;
+				case Qt::Key_F5: btnBackupRestore_clicked (); break;
+				case Qt::Key_F6: btnCalculator_clicked (); break;
+				case Qt::Key_F7: btnServicesPrices_clicked (); break;
+				case Qt::Key_F8: btnEstimates_clicked (); break;
+				case Qt::Key_F9: btnCompanyPurchases_clicked (); break;
+				case Qt::Key_F10: btnConfiguration_clicked (); break;
 				case Qt::Key_F12: btnExitProgram_clicked (); break;
 			}
 		}
@@ -3552,6 +3651,69 @@ void MainWindow::selectBuysItems ( const PROCESS_STEPS step )
 	}
 }
 
+void MainWindow::navigatePrev ()
+{
+	(void) navItems.prev ();
+	mBtnNavNext->setEnabled ( true );
+	displayNav ();
+	mBtnNavPrev->setEnabled ( navItems.peekPrev () != nullptr );
+}
+
+void MainWindow::navigateNext ()
+{
+	(void) navItems.next ();
+	mBtnNavPrev->setEnabled ( true );
+	displayNav ();
+	mBtnNavNext->setEnabled ( navItems.peekNext () != nullptr );
+}
+
+void MainWindow::insertNavItem ( vmListItem* item )
+{
+	if ( item != nullptr ) {
+		navItems.insert ( navItems.currentIndex () + 1, item );
+		mBtnNavPrev->setEnabled ( navItems.currentIndex () > 0 );
+	}
+}
+
+void MainWindow::displayNav ()
+{
+	clientListItem* parentClient ( static_cast<clientListItem*>( navItems.current ()->item_related[RLI_CLIENTPARENT] ) );
+	jobListItem* parentJob ( static_cast<jobListItem*>( navItems.current ()->item_related[RLI_JOBPARENT] ) );
+	const bool bSelectClient ( parentClient != mClientCurItem );
+	
+	switch ( navItems.current ()->subType () ) {
+		case CLIENT_TABLE:
+			displayClient ( parentClient, true );
+		break;
+		case JOB_TABLE:
+			if ( bSelectClient )
+				displayClient ( parentClient, true, static_cast<jobListItem*>( navItems.current () ) );
+			else
+				displayJob ( static_cast<jobListItem*>( navItems.current () ), true );
+		break;
+		case PAYMENT_TABLE:
+			if ( bSelectClient )
+				displayClient ( parentClient, true, parentJob );
+			else {
+				if ( parentJob != mJobCurItem )
+					displayJob ( parentJob, true );
+				else
+					displayPay ( static_cast<payListItem*>( navItems.current () ), true ); 
+			}
+		break;
+ 		case PURCHASE_TABLE:
+			if ( bSelectClient )
+				displayClient ( parentClient, true, parentJob, static_cast<buyListItem*>( navItems.current () ) );
+			else {
+				if ( parentJob != mJobCurItem )
+					displayJob ( parentJob, true );
+				else
+					displayPay ( static_cast<payListItem*>( navItems.current () ), true ); 
+			}
+		break;
+		default: break;
+	}
+}
 //--------------------------------------------WINDOWS-KEYS-EVENTS-EXTRAS-------------------------------------------------
 
 //--------------------------------------------SLOTS-----------------------------------------------------------
@@ -4121,12 +4283,22 @@ void MainWindow::on_btnPayInfoSave_clicked ()
 {
 	if ( mPayCurItem ) {
 		Payment* pay ( mPayCurItem->payRecord () );
+		const bool bWasOverdue ( pay->actualRecordStr ( FLD_PAY_OVERDUE ) == CHR_ONE );
+		const vmNumber oldPrice ( pay->actualRecordStr ( FLD_PAY_PRICE ), VMNT_PRICE, 1 );
+		
 		if ( pay->saveRecord () ) {
 			mPayCurItem->setAction ( pay->action () );
-			if ( mPayCurItem->item_related[RLI_EXTRAITEM] ) {
-				// If payment was overdue but now it is not, remove the items
-				if ( recStrValue ( pay, FLD_PAY_OVERDUE ) != CHR_ONE )
-					removePaymentOverdueItems ( mPayCurItem );
+			
+			if ( pay->wasModified ( FLD_PAY_OVERDUE ) ) {
+				bWasOverdue ? removePaymentOverdueItems ( mPayCurItem ) : addPaymentOverdueItems ( mPayCurItem );
+			}
+			
+			if ( pay->wasModified ( FLD_PAY_PRICE ) ) {
+				vmNumber totalPays ( paysList->property ( PROPERTY_TOTAL_PAYS ).toString (), VMNT_PRICE, 1 );
+				totalPays += mPayCurItem->payRecord ()->price ( FLD_PAY_PRICE );
+				totalPays -= oldPrice;
+				paysList->setProperty ( PROPERTY_TOTAL_PAYS, totalPays.toString () );
+				txtPayTotals->setText ( totalPays.toPrice () );
 			}
 			if ( ui->tablePayments->tableChanged () )
 				updateCalendarWithPayInfo ( pay, pay->prevAction () );

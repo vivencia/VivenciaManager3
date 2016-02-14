@@ -59,11 +59,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Documents Editor&lt;/span&gt;&lt;span style=&quot; font-family:'Sans Serif'; font-weight:600;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F5)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Documents Editor (F4)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -83,11 +79,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Open backup/restore dialog &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F6)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Backup/Restore Dialog (F5)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -113,11 +105,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Calculator &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F7)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Calculator (F6)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -149,11 +137,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Services Prices and Descriptions &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F8)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Services Prices and Descriptions (F7)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -173,11 +157,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Open the Estimatives and Reports Dialog &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F9)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Open the Estimatives and Reports Dialog (F8)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -200,7 +180,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Open the Company Purchases Log &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F10)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Open the Company Purchases Log (F9)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -223,7 +203,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Open Configuration Dialog &lt;/span&gt;&lt;span style=&quot; font-weight:600; font-style:italic;&quot;&gt;(F11)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Open Configuration Dialog (F10)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -243,11 +223,7 @@ p, li { white-space: pre-wrap; }
          </size>
         </property>
         <property name="toolTip">
-         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Ubuntu'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600;&quot;&gt;Exit program &lt;/span&gt;&lt;span style=&quot; font-family:'Tahoma'; font-weight:600; font-style:italic;&quot;&gt;(F12)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>Exit (F12)</string>
         </property>
         <property name="text">
          <string>...</string>
@@ -410,8 +386,11 @@ p, li { white-space: pre-wrap; }
        <property name="toolTip">
         <string/>
        </property>
+       <property name="tabPosition">
+        <enum>QTabWidget::East</enum>
+       </property>
        <property name="currentIndex">
-        <number>6</number>
+        <number>4</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -419,9 +398,12 @@ p, li { white-space: pre-wrap; }
        <property name="documentMode">
         <bool>true</bool>
        </property>
+       <property name="movable">
+        <bool>true</bool>
+       </property>
        <widget class="QWidget" name="tabWorkFlow">
         <attribute name="title">
-         <string>Workflow</string>
+         <string>    Workflow    </string>
         </attribute>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <property name="spacing">
@@ -464,8 +446,8 @@ p, li { white-space: pre-wrap; }
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>645</width>
-              <height>598</height>
+              <width>613</width>
+              <height>632</height>
              </rect>
             </property>
            </widget>
@@ -475,7 +457,7 @@ p, li { white-space: pre-wrap; }
        </widget>
        <widget class="QWidget" name="tabCalendar">
         <attribute name="title">
-         <string>Calendar</string>
+         <string>    Calendar    </string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_11">
          <item>
@@ -665,8 +647,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>223</width>
-                        <height>159</height>
+                        <width>227</width>
+                        <height>274</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -724,8 +706,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>233</width>
-                        <height>159</height>
+                        <width>237</width>
+                        <height>151</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -786,8 +768,8 @@ p, li { white-space: pre-wrap; }
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>243</width>
-                        <height>159</height>
+                        <width>247</width>
+                        <height>151</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -862,8 +844,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>221</width>
-                     <height>162</height>
+                     <width>200</width>
+                     <height>288</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -916,8 +898,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>233</width>
-                     <height>162</height>
+                     <width>210</width>
+                     <height>151</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -970,8 +952,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>244</width>
-                     <height>162</height>
+                     <width>219</width>
+                     <height>151</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1035,8 +1017,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>206</width>
-                     <height>179</height>
+                     <width>200</width>
+                     <height>288</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1089,8 +1071,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>204</width>
-                     <height>162</height>
+                     <width>184</width>
+                     <height>151</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1143,8 +1125,8 @@ p, li { white-space: pre-wrap; }
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>215</width>
-                     <height>162</height>
+                     <width>194</width>
+                     <height>151</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1205,12 +1187,12 @@ p, li { white-space: pre-wrap; }
        </widget>
        <widget class="QWidget" name="tabInventory">
         <attribute name="title">
-         <string>&amp;Inventory</string>
+         <string>    &amp;Inventory    </string>
         </attribute>
        </widget>
        <widget class="QWidget" name="tabSupplies">
         <attribute name="title">
-         <string>S&amp;upplies</string>
+         <string>    S&amp;upplies    </string>
         </attribute>
        </widget>
        <widget class="QWidget" name="tabDesign_1">
@@ -1833,6 +1815,34 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
+            <item row="3" column="5">
+             <widget class="vmLineEdit" name="txtClientNumberAddress">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>120</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="inputMask">
+               <string notr="true"/>
+              </property>
+              <property name="readOnly">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
             <item row="5" column="5">
              <widget class="vmLineEdit" name="txtClientZipCode">
               <property name="sizePolicy">
@@ -1858,8 +1868,56 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="5" column="3" colspan="2">
-             <widget class="vmLineEdit" name="txtClientCity">
+            <item row="4" column="0">
+             <widget class="QLabel" name="lblClientDistrict">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>District:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="5">
+             <widget class="QLabel" name="lblClientZipCode">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>ZIP Code:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="lblClientPhones">
+              <property name="text">
+               <string>Telephones:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="4">
+             <widget class="vmLineEdit" name="txtClientName">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1870,6 +1928,12 @@ p, li { white-space: pre-wrap; }
                <size>
                 <width>0</width>
                 <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
                </size>
               </property>
               <property name="inputMask">
@@ -1902,8 +1966,15 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="1" column="0" colspan="4">
-             <widget class="vmLineEdit" name="txtClientName">
+            <item row="6" column="3" colspan="4">
+             <widget class="QLabel" name="lblClientEmail">
+              <property name="text">
+               <string>e-mail/site:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="4">
+             <widget class="vmLineEdit" name="txtClientStreetAddress">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1916,10 +1987,48 @@ p, li { white-space: pre-wrap; }
                 <height>0</height>
                </size>
               </property>
-              <property name="maximumSize">
+              <property name="inputMask">
+               <string notr="true"/>
+              </property>
+              <property name="readOnly">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QLabel" name="lblClientCity">
+              <property name="minimumSize">
                <size>
-                <width>16777215</width>
-                <height>16777215</height>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>City:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3" colspan="2">
+             <widget class="vmLineEdit" name="txtClientCity">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
                </size>
               </property>
               <property name="inputMask">
@@ -1930,10 +2039,47 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="lblClientPhones">
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblClientName">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
               <property name="text">
-               <string>Telephones:</string>
+               <string>Name:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="5">
+             <widget class="QLabel" name="lblClientNumberAdress">
+              <property name="minimumSize">
+               <size>
+                <width>55</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>Number:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
               </property>
              </widget>
             </item>
@@ -1977,8 +2123,8 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="4" column="3">
-             <widget class="QLabel" name="lblClientCity">
+            <item row="2" column="0">
+             <widget class="QLabel" name="lblClientStreetAdress">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1992,10 +2138,26 @@ p, li { white-space: pre-wrap; }
                <enum>QFrame::Plain</enum>
               </property>
               <property name="text">
-               <string>City:</string>
+               <string>Street:</string>
               </property>
               <property name="textFormat">
                <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0" colspan="7">
+             <widget class="QFrame" name="frmDummy">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
               </property>
              </widget>
             </item>
@@ -2147,170 +2309,6 @@ p, li { white-space: pre-wrap; }
               </layout>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="lblClientDistrict">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>District:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="lblClientName">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>Name:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="lblClientStreetAdress">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>Street:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="3" colspan="4">
-             <widget class="QLabel" name="lblClientEmail">
-              <property name="text">
-               <string>e-mail/site:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="4">
-             <widget class="vmLineEdit" name="txtClientStreetAddress">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="inputMask">
-               <string notr="true"/>
-              </property>
-              <property name="readOnly">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="5">
-             <widget class="QLabel" name="lblClientZipCode">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>ZIP Code:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="5">
-             <widget class="vmLineEdit" name="txtClientNumberAddress">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>80</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>120</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="inputMask">
-               <string notr="true"/>
-              </property>
-              <property name="readOnly">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="5">
-             <widget class="QLabel" name="lblClientNumberAdress">
-              <property name="minimumSize">
-               <size>
-                <width>55</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>Number:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
             <item row="7" column="0">
              <widget class="contactsManagerWidget" name="contactsClientPhones">
               <property name="minimumSize">
@@ -2341,13 +2339,7 @@ p, li { white-space: pre-wrap; }
               <property name="frameShadow">
                <enum>QFrame::Plain</enum>
               </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLineEdit" name="txtDummy">
-              <property name="autoFillBackground">
-               <bool>true</bool>
-              </property>
+              <zorder>chkClientActive</zorder>
              </widget>
             </item>
            </layout>
@@ -2368,7 +2360,7 @@ p, li { white-space: pre-wrap; }
            <zorder>lblClientDistrict</zorder>
            <zorder>txtClientDistrict</zorder>
            <zorder>lblClientPhones</zorder>
-           <zorder>txtDummy</zorder>
+           <zorder>frmDummy</zorder>
            <zorder>contactsClientPhones</zorder>
            <zorder>contactsClientEmails</zorder>
           </widget>
@@ -2417,7 +2409,7 @@ p, li { white-space: pre-wrap; }
              <number>2</number>
             </property>
             <item>
-             <layout class="QGridLayout" name="gridLayout_15" rowstretch="0,0,0,0,0,0,0" columnstretch="0,0,0,0,0,0,0,0">
+             <layout class="QGridLayout" name="gridLayout_15" rowstretch="0,0,0,0,0,0" columnstretch="0,0,0,0,0,0,0,0">
               <property name="leftMargin">
                <number>2</number>
               </property>
@@ -2436,6 +2428,227 @@ p, li { white-space: pre-wrap; }
               <property name="verticalSpacing">
                <number>2</number>
               </property>
+              <item row="3" column="1" colspan="7">
+               <widget class="vmLineEdit" name="txtJobProjectPath">
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="6" colspan="2">
+               <layout class="QHBoxLayout" name="horizontalLayout_11">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <spacer name="horizontalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnJobOpenFileFolder">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Manager job's folder</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/resources/system-file-manager.png</normaloff>:/resources/system-file-manager.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnJobOpenDoc">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Abrir arquivo doc</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Abrir arquivo do projeto para edição - se existir</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/resources/Microsoft+Office+Word+2007.xpm</normaloff>:/resources/Microsoft+Office+Word+2007.xpm</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnJobOpenXls">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Abrir Planilha para edição - se existir</string>
+                  </property>
+                  <property name="statusTip">
+                   <string>Abrir arquivo de planilha do projeto - se houver</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/resources/Microsoft+Office+Excel+2007.xpm</normaloff>:/resources/Microsoft+Office+Excel+2007.xpm</iconset>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnJobOpenPdf">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>30</width>
+                    <height>30</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>16777215</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Visualizar PDF ou enviar por e-mail</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="resources.qrc">
+                    <normaloff>:/resources/application-pdf.png</normaloff>:/resources/application-pdf.png</iconset>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="lblJobType">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                 <string>Type:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="5">
+               <widget class="QLabel" name="lblJobID">
+                <property name="minimumSize">
+                 <size>
+                  <width>40</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>40</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                 <string>ID:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3" colspan="5">
+               <widget class="vmLineEdit" name="txtJobAddress"/>
+              </item>
+              <item row="1" column="1" colspan="2">
+               <widget class="vmComboBox" name="cboJobType">
+                <property name="minimumSize">
+                 <size>
+                  <width>300</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="3">
                <widget class="QLabel" name="lblJobAddress">
                 <property name="text">
@@ -2443,7 +2656,20 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="0" column="0" rowspan="7">
+              <item row="4" column="1">
+               <widget class="QLabel" name="lblJobProjectID">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Project ID:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" rowspan="6">
                <widget class="QFrame" name="frmJobToolbar">
                 <property name="maximumSize">
                  <size>
@@ -2572,257 +2798,6 @@ p, li { white-space: pre-wrap; }
                 </layout>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QLabel" name="lblJobProjectID">
-                <property name="text">
-                 <string>Project ID:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1" colspan="7">
-               <widget class="vmLineEdit" name="txtJobProjectPath">
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="lblJobType">
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="text">
-                 <string>Type:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="5">
-               <widget class="QToolButton" name="btnJobOpenDoc">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Abrir arquivo doc</string>
-                </property>
-                <property name="statusTip">
-                 <string>Abrir arquivo do projeto para edição - se existir</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/Microsoft+Office+Word+2007.xpm</normaloff>:/resources/Microsoft+Office+Word+2007.xpm</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="6">
-               <widget class="QLabel" name="lblJobID">
-                <property name="minimumSize">
-                 <size>
-                  <width>40</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>40</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="text">
-                 <string>ID:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1" colspan="2">
-               <widget class="vmComboBox" name="cboJobType">
-                <property name="minimumSize">
-                 <size>
-                  <width>300</width>
-                  <height>0</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="6">
-               <widget class="QToolButton" name="btnJobOpenXls">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Abrir Planilha para edição - se existir</string>
-                </property>
-                <property name="statusTip">
-                 <string>Abrir arquivo de planilha do projeto - se houver</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/Microsoft+Office+Excel+2007.xpm</normaloff>:/resources/Microsoft+Office+Excel+2007.xpm</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="3">
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="2" column="4">
-               <widget class="QToolButton" name="btnJobOpenFileFolder">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Manager job's folder</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/system-file-manager.png</normaloff>:/resources/system-file-manager.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="lblJobFilepath">
-                <property name="maximumSize">
-                 <size>
-                  <width>150</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="text">
-                 <string>Project folder: </string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="6" colspan="2">
-               <widget class="QPushButton" name="btnQuickProject">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Quick Estimate</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="7">
-               <widget class="QToolButton" name="btnJobOpenPdf">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>30</width>
-                  <height>30</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Visualizar PDF ou enviar por e-mail</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/application-pdf.png</normaloff>:/resources/application-pdf.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1" colspan="5">
-               <widget class="vmLineEdit" name="txtJobProjectID">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>30</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="7">
                <widget class="vmLineEdit" name="txtJobID">
                 <property name="minimumSize">
@@ -2845,8 +2820,47 @@ p, li { white-space: pre-wrap; }
                 </property>
                </widget>
               </item>
-              <item row="1" column="3" colspan="5">
-               <widget class="vmLineEdit" name="txtJobAddress"/>
+              <item row="2" column="1">
+               <widget class="QLabel" name="lblJobFilepath">
+                <property name="maximumSize">
+                 <size>
+                  <width>150</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::NoFrame</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="text">
+                 <string>Project folder: </string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="7">
+               <widget class="QPushButton" name="btnQuickProject">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Quick Estimate</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1" colspan="6">
+               <widget class="vmLineEdit" name="txtJobProjectID">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>30</height>
+                 </size>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -3180,8 +3194,8 @@ p, li { white-space: pre-wrap; }
                 <widget class="QToolButton" name="btnJobAddDay">
                  <property name="maximumSize">
                   <size>
-                   <width>32</width>
-                   <height>32</height>
+                   <width>16777215</width>
+                   <height>16777215</height>
                   </size>
                  </property>
                  <property name="toolTip">
@@ -3200,8 +3214,8 @@ p, li { white-space: pre-wrap; }
                 <widget class="QToolButton" name="btnJobEditDay">
                  <property name="maximumSize">
                   <size>
-                   <width>32</width>
-                   <height>32</height>
+                   <width>16777215</width>
+                   <height>16777215</height>
                   </size>
                  </property>
                  <property name="toolTip">
@@ -4476,65 +4490,86 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>btnClientAdd</tabstop>
+  <tabstop>btnClientEdit</tabstop>
+  <tabstop>btnClientDel</tabstop>
+  <tabstop>btnClientSave</tabstop>
+  <tabstop>btnClientCancel</tabstop>
+  <tabstop>txtClientName</tabstop>
+  <tabstop>txtClientStreetAddress</tabstop>
   <tabstop>txtClientNumberAddress</tabstop>
+  <tabstop>txtClientDistrict</tabstop>
   <tabstop>txtClientCity</tabstop>
   <tabstop>txtClientZipCode</tabstop>
   <tabstop>chkClientActive</tabstop>
-  <tabstop>btnPayInfoDel</tabstop>
-  <tabstop>btnPayInfoSave</tabstop>
-  <tabstop>btnPayInfoCancel</tabstop>
-  <tabstop>btnPayPayReceipt</tabstop>
-  <tabstop>btnPayPaymentsReportOnlyUnPaid</tabstop>
-  <tabstop>btnPayPaymentsReport</tabstop>
-  <tabstop>txtPayTotalPrice</tabstop>
-  <tabstop>txtPayTotalPaid</tabstop>
-  <tabstop>txtPayTotalPayments</tabstop>
-  <tabstop>txtPayObs</tabstop>
-  <tabstop>chkPayOverdue</tabstop>
   <tabstop>btnJobAdd</tabstop>
   <tabstop>btnJobEdit</tabstop>
   <tabstop>btnJobDel</tabstop>
   <tabstop>btnJobSave</tabstop>
   <tabstop>btnJobCancel</tabstop>
   <tabstop>cboJobType</tabstop>
-  <tabstop>btnJobOpenFileFolder</tabstop>
-  <tabstop>btnJobOpenDoc</tabstop>
-  <tabstop>btnJobOpenXls</tabstop>
-  <tabstop>btnJobOpenPdf</tabstop>
+  <tabstop>txtJobAddress</tabstop>
   <tabstop>txtJobProjectPath</tabstop>
   <tabstop>txtJobProjectID</tabstop>
   <tabstop>btnQuickProject</tabstop>
   <tabstop>btnJobSelectJob</tabstop>
   <tabstop>txtJobPrice</tabstop>
+  <tabstop>lstJobDayReport</tabstop>
   <tabstop>btnJobPrevDay</tabstop>
   <tabstop>btnJobNextDay</tabstop>
+  <tabstop>btnJobAddDay</tabstop>
+  <tabstop>btnJobEditDay</tabstop>
   <tabstop>btnJobDelDay</tabstop>
   <tabstop>btnJobCancelDelDay</tabstop>
-  <tabstop>lstJobDayReport</tabstop>
   <tabstop>timeJobStart</tabstop>
   <tabstop>timeJobEnd</tabstop>
   <tabstop>txtJobTotalDayTime</tabstop>
   <tabstop>txtJobTotalAllDaysTime</tabstop>
   <tabstop>txtJobWheather</tabstop>
-  <tabstop>txtJobReport</tabstop>
   <tabstop>btnJobMachines</tabstop>
   <tabstop>btnJobSeparateReportWindow</tabstop>
+  <tabstop>txtJobReport</tabstop>
   <tabstop>txtJobPicturesPath</tabstop>
+  <tabstop>cboJobPictures</tabstop>
   <tabstop>btnJobPrevPicture</tabstop>
   <tabstop>btnJobNextPicture</tabstop>
+  <tabstop>btnJobReloadPictures</tabstop>
+  <tabstop>btnJobRenamePicture</tabstop>
   <tabstop>btnJobOpenPictureEditor</tabstop>
   <tabstop>btnJobOpenPictureFolder</tabstop>
   <tabstop>btnJobOpenPictureViewer</tabstop>
   <tabstop>btnJobClientsYearPictures</tabstop>
   <tabstop>btnJobSeparatePicture</tabstop>
-  <tabstop>txtBuyDeliveryMethod</tabstop>
+  <tabstop>btnPayInfoEdit</tabstop>
+  <tabstop>btnPayInfoDel</tabstop>
+  <tabstop>btnPayInfoSave</tabstop>
+  <tabstop>btnPayInfoCancel</tabstop>
+  <tabstop>btnPayPayReceipt</tabstop>
+  <tabstop>btnPayPaymentsReportOnlyUnPaid</tabstop>
+  <tabstop>btnPayPaymentsReport</tabstop>
+  <tabstop>tablePayments</tabstop>
+  <tabstop>txtPayTotalPrice</tabstop>
+  <tabstop>txtPayTotalPaid</tabstop>
+  <tabstop>txtPayTotalPayments</tabstop>
+  <tabstop>txtPayID</tabstop>
+  <tabstop>txtPayObs</tabstop>
+  <tabstop>chkPayOverdue</tabstop>
+  <tabstop>btnBuyAdd</tabstop>
+  <tabstop>btnBuyEdit</tabstop>
+  <tabstop>btnBuyDel</tabstop>
+  <tabstop>btnBuySave</tabstop>
+  <tabstop>btnBuyCancel</tabstop>
+  <tabstop>cboBuySuppliers</tabstop>
+  <tabstop>btnShowSuppliersDlg</tabstop>
   <tabstop>txtBuyNotes</tabstop>
-  <tabstop>btnBuyCopyRows</tabstop>
-  <tabstop>txtBuyTotalPrice</tabstop>
-  <tabstop>txtCalPriceBuyMonth</tabstop>
+  <tabstop>tableBuyItems</tabstop>
+  <tabstop>tableBuyPayments</tabstop>
+  <tabstop>buysJobListWidget</tabstop>
+  <tabstop>txtBuyTotalPurchasePriceForJob</tabstop>
+  <tabstop>txtBuyTotalPaidForJob</tabstop>
+  <tabstop>lstBuySuppliers</tabstop>
   <tabstop>btnReportGenerator</tabstop>
   <tabstop>btnBackupRestore</tabstop>
-  <tabstop>txtCalPricePayDay</tabstop>
   <tabstop>btnCalculator</tabstop>
   <tabstop>btnServicesPrices</tabstop>
   <tabstop>btnEstimates</tabstop>
@@ -4543,25 +4578,32 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnExitProgram</tabstop>
   <tabstop>scrollLeftPanel</tabstop>
   <tabstop>tabMain</tabstop>
-  <tabstop>txtCalPriceBuyDay</tabstop>
+  <tabstop>txtSearch</tabstop>
+  <tabstop>btnSearchStart</tabstop>
+  <tabstop>btnSearchCancel</tabstop>
+  <tabstop>lstCalPaysWeek</tabstop>
+  <tabstop>txtBuyTotalPrice</tabstop>
+  <tabstop>txtCalPricePayDay</tabstop>
+  <tabstop>btnBuyCopyRows</tabstop>
+  <tabstop>txtCalPriceBuyWeek</tabstop>
+  <tabstop>txtCalPriceJobWeek</tabstop>
+  <tabstop>lstCalPaysMonth</tabstop>
+  <tabstop>txtCalPricePayWeek</tabstop>
+  <tabstop>txtCalPriceBuyMonth</tabstop>
+  <tabstop>lstCalPaysDay</tabstop>
+  <tabstop>lstCalBuysMonth</tabstop>
+  <tabstop>lstCalJobsWeek</tabstop>
   <tabstop>txtCalPriceJobMonth</tabstop>
   <tabstop>lstCalJobsDay</tabstop>
-  <tabstop>txtPayID</tabstop>
-  <tabstop>lstCalBuysDay</tabstop>
-  <tabstop>lstCalBuysWeek</tabstop>
+  <tabstop>calMain</tabstop>
   <tabstop>txtCalPricePayMonth</tabstop>
   <tabstop>lstCalJobsMonth</tabstop>
   <tabstop>txtCalPriceJobDay</tabstop>
-  <tabstop>calMain</tabstop>
-  <tabstop>txtCalPricePayWeek</tabstop>
-  <tabstop>txtCalPriceJobWeek</tabstop>
-  <tabstop>lstCalJobsWeek</tabstop>
-  <tabstop>lstCalPaysWeek</tabstop>
-  <tabstop>lstCalBuysMonth</tabstop>
+  <tabstop>lstCalBuysDay</tabstop>
+  <tabstop>lstCalBuysWeek</tabstop>
+  <tabstop>txtCalPriceBuyDay</tabstop>
   <tabstop>scrollWorkFlow</tabstop>
-  <tabstop>lstCalPaysDay</tabstop>
-  <tabstop>lstCalPaysMonth</tabstop>
-  <tabstop>txtCalPriceBuyWeek</tabstop>
+  <tabstop>txtBuyDeliveryMethod</tabstop>
  </tabstops>
  <resources>
   <include location="resources.qrc"/>

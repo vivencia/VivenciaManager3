@@ -216,6 +216,16 @@ bool VivenciaDB::openDataBase ()
 void VivenciaDB::doPreliminaryWork ()
 {
 	generalTable gen_rec;
+	
+	/* This piece of code was created and discarded at 2016/02/14. At this date I discovered that General table
+	 * was empty, for some reason, and I needed to use an update function (in Payment) which would not be called
+	 * for lack of database table version to compare. Fixed it. Code discarded.
+	if ( this->recordCount ( &gen_rec.t_info ) < TABLES_IN_DB ) {
+		for ( uint i ( 0 ); i < TABLES_IN_DB; ++i )
+			gen_rec.insertOrUpdate ( table_info[i] );
+	}
+	::exit ( 1 );
+	return;*/
 	if ( gen_rec.readFirstRecord () ) {
 		double t_version ( 0.0 );
 		uint i ( 0 );

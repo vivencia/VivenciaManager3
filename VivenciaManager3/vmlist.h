@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cmath>
 #include <type_traits>
+#include <algorithm>
 
 using namespace std;
 
@@ -311,11 +312,12 @@ void VMList<T>::resetMemory ( const T &value, uint length )
 		return;
 	}
 
-	uint i ( 0 );
+	std::fill ( _data, _data + length, value );
+	/*uint i ( 0 );
 	while ( i < length ) {
 		_data[i] = value;
 		++i;
-	};
+	};*/
 }
 
 template <typename T>
@@ -327,23 +329,13 @@ void VMList<T>::reserve ( const uint length )
 	const int prev_capacity = capacity;
 	this->realloc ( length );
 
-	for ( uint i = prev_capacity; i < capacity; ++i )
-		_data[i] = end_value;
+	std::fill ( _data + prev_capacity, _data + capacity, end_value );
 }
 
 template <typename T>
 inline void VMList<T>::copyItems ( T* dest, const T* src, const uint amount )
 {
-	if ( mb_ispointer || std::is_pod<T>::value ) {
-		::memcpy ( static_cast<void*> ( dest ),
-				   static_cast<void*> ( const_cast<T*> ( src ) ), amount * sizeof ( T ) );
-	}
-	else {
-		uint i ( 0 );
-		do {
-			dest[i] = src[i];
-		} while ( ++i < amount );
-	}
+	 std::copy ( src, src + amount, dest );
 }
 
 template <typename T>
@@ -477,8 +469,8 @@ const VMList<T>& VMList<T>::operator= ( const VMList<T>& other )
 		this->end_value = other.end_value;
 		this->mb_ispointer = other.mb_ispointer;
 
-		_data = new T[this->memCapacity];
-		::memcpy ( static_cast<void*> ( _data ), static_cast<void*> ( other._data ), this->memCapacity );
+		_data = new T[this->capacity];
+		copyItems ( this->_data, other._data, this->capacity );
 	}
 	return *this;
 }
@@ -533,10 +525,11 @@ uint VMList<T>::realloc ( const uint newsize )
 	_data = new_data;
 
 	if ( newsize >= capacity ) {
-		uint i = capacity;
+		std::fill ( _data + capacity, _data + newsize, end_value );
+		/*uint i ( capacity );
 		do {
 			_data[i] = end_value;
-		} while ( ++i < newsize );
+		} while ( ++i < newsize );*/
 	}
 
 	memCapacity = newsize * sizeof ( T );
@@ -612,12 +605,11 @@ void VMList<T>::clearButKeepMemory ( const bool delete_items )
 {
 	if ( _data != nullptr ) {
 		uint i ( 0 );
-		while ( i < unsigned ( nItems ) ) {
-			if ( delete_items || mb_autodel )
-				deletePointer ( &r, i );
-			_data[i] = end_value;
-			++i;
+		if ( delete_items || mb_autodel ) {
+			while ( i < unsigned ( nItems ) )
+				deletePointer ( &r, i++ );
 		}
+		std::fill ( _data, _data + nItems, end_value );
 	}
 	nItems = 0;
 	ptr = -1;
@@ -644,8 +636,9 @@ int VMList<T>::remove ( uint pos, const bool delete_item )
 	if ( signed ( pos ) < nItems ) {
 		if ( delete_item )
 			deletePointer ( &r, pos );
-		moveItems ( pos, pos + 1, nItems - pos - 1 );
-		_data[nItems] = end_value;
+		if ( (signed) pos < ( nItems - 1 ) )
+			moveItems ( pos, pos + 1, nItems - pos - 1 );
+		_data[nItems-1] = end_value;
 		--nItems;
 		ret = nItems;
 		if ( ptr >= signed ( pos ) )

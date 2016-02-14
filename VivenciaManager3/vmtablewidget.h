@@ -58,6 +58,7 @@ class vmTableSearchPanel : public QFrame
 {
 
 public:
+	inline virtual ~vmTableSearchPanel () {}
 	vmTableSearchPanel ( vmTableWidget* table );
 	void showPanel ();
 
@@ -134,8 +135,6 @@ public:
 	void clear ( const bool force = false );
 	inline void appendRow () {
 		insertRow ( mPlainTable ? rowCount () : mTotalsRow ); }
-
-	vmTableItem* find ( const QString& searchterm ) const;
 
 	void rowActivatedConnection ( const bool b_activate );
 	void setCellValue ( const QString& value, const uint row, const uint col );

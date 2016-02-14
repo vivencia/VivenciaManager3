@@ -18,12 +18,47 @@ enum OLD_PAY_TABLE {
 
 #endif
 
-const double TABLE_VERSION ( 2.1 );
+const double TABLE_VERSION ( 2.2 );
 
 void updateOverdueInfo ( const DBRecord* db_rec );
 
 bool updatePaymentTable ()
 {
+/*	if ( TABLE_VERSION == 2.2 ) {
+		QSqlQuery query;
+		if ( VDB ()->runQuery ( QStringLiteral ( "SELECT * FROM `PAYMENTS`" ), query ) ) {
+			vmNumber pay_price, paid_price;
+			Payment pay ( false );
+			do {
+				pay.readRecord ( query.value ( FLD_PAY_ID ).toInt () );
+				pay.setAction ( ACTION_EDIT );
+				pay_price.fromTrustedStrPrice ( query.value ( FLD_PAY_PRICE ).toString () );
+				paid_price.fromTrustedStrPrice ( query.value ( FLD_PAY_TOTALPAID ).toString () );
+				
+				if ( query.value ( FLD_PAY_INFO ).toString ().isEmpty () && !pay_price.isNull () ) {
+					if ( query.value ( FLD_PAY_ID ).toInt () <= 315 ) {
+						setRecValue ( &pay, FLD_PAY_TOTALPAYS, CHR_ONE );
+						setRecValue ( &pay, FLD_PAY_TOTALPAID, pay_price.toPrice () );
+						paid_price = pay_price;
+					}
+				}
+				if ( paid_price < pay_price ) {
+					if ( query.value ( FLD_PAY_OVERDUE ).toString () != CHR_TWO ) {
+						setRecValue ( &pay, FLD_PAY_OVERDUE, CHR_ONE );
+						setRecValue ( &pay, FLD_PAY_OVERDUE_VALUE, ( pay_price - paid_price ).toPrice () );	
+					}
+				}
+				else {
+					setRecValue ( &pay, FLD_PAY_OVERDUE, CHR_ZERO );
+					setRecValue ( &pay, FLD_PAY_OVERDUE_VALUE, vmNumber::zeroedPrice.toPrice () );
+				}
+				pay.saveRecord ();
+			} while ( query.next () );
+		}
+	}
+	VDB ()->optimizeTable ( &Payment::t_info );
+	return true;
+	*/
 #ifdef TRANSITION_PERIOD
 
 	QSqlQuery query;

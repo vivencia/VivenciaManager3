@@ -56,9 +56,6 @@ private:
     void readRowData ( const uint row, const uint col, const uint prev_row, const uint = 0 );
     void tableChanged ( const vmTableItem* const item );
     void rowRemoved ( const uint row = 0 );
-    void btnSuppliesInsertRowAbove_clicked ();
-    void btnSuppliesInsertRowBelow_clicked ();
-    void btnSuppliesRemoveRow_clicked ();
     void btnSuppliesCancelEdit_clicked ();
     void btnSuppliesEditTable_clicked ( const bool checked );
 };

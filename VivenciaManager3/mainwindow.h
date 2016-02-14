@@ -183,6 +183,7 @@ public:
 	void paysOverdueListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
 	void paysOverdueClientListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
 	void updateCalendarWithPayInfo ( Payment* const pay, const RECORD_ACTION action );
+	void addPaymentOverdueItems ( payListItem* pay_item );
 	void removePaymentOverdueItems ( payListItem* pay_item );
 	void payOverdueGUIActions ( const Payment* const pay );
 	void controlPayForms ( const payListItem* const pay_item );
@@ -242,6 +243,7 @@ public:
 	void searchCallbackSelector ( const QKeyEvent* ke );
     void setupLeftPanel ();
 	void setupWorkFlow ();
+	void setupTabNavigationButtons ();
     void syncLeftPanelWithWorkFlow ( const int value );
     void syncWorkFlowWithLeftPanel ( const int value );
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
@@ -261,7 +263,10 @@ public:
 	void findCalendarsHiddenWidgets ();
 	void saveView ();
 	void selectBuysItems ( const PROCESS_STEPS step );
-
+	void navigatePrev ();
+	void navigateNext ();
+	void insertNavItem ( vmListItem* item );
+	void displayNav ();
 //--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
 	void createTrayIcon ( const bool b_setup = true );
 	inline QSystemTrayIcon* appTrayIcon () const { return trayIcon; }
@@ -325,8 +330,11 @@ private:
 	vmActionGroup* grpPays;
 	vmActionGroup* grpBuys;
 
-	std::function<void ( const int )> selJob_callback;
 	QTabWidget* tabPaysLists;
+	vmLineEdit* txtPayTotals;
+	QFrame* frmPayTotals;
+	
+	std::function<void ( const int )> selJob_callback;
 	bool mb_jobPosActions;
 
 	vmNumber mCalendarDate;
@@ -335,12 +343,14 @@ private:
 	PointersList<vmWidget*> jobWidgetList;
 	PointersList<vmWidget*> payWidgetList;
 	PointersList<vmWidget*> buyWidgetList;
+	PointersList<vmListItem*> navItems;
 
 	clientListItem* mClientCurItem;
 	jobListItem* mJobCurItem;
 	payListItem* mPayCurItem;
 	buyListItem* mBuyCurItem;
 
+	QToolButton* mBtnNavPrev, *mBtnNavNext;
     double leftToRightWorkflowRatio;
 //---------------------------CUSTOM-WIDGETS-------------------------------------
 

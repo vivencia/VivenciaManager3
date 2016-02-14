@@ -15,8 +15,8 @@ TaskGroup::TaskGroup ( QWidget *parent, const bool stretchContents )
 	setProperty ( "header", QStringLiteral ( "true" ) );
     setScheme ( ActionPanelScheme::defaultScheme () );
 	QVBoxLayout* vbl ( new QVBoxLayout () );
-	vbl->setMargin ( 4 );
-	vbl->setSpacing ( 1 );
+	vbl->setMargin ( 2 );
+	vbl->setSpacing ( 4 );
 	setLayout ( vbl );
     setSizePolicy ( QSizePolicy::Minimum, QSizePolicy::Minimum );
 //	if ( !mbStretchContents )

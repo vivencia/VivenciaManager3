@@ -200,12 +200,12 @@ bool vmTableWidget::selectFound ( const vmTableItem* item )
 bool vmTableWidget::searchStart ( const QString& searchTerm )
 {
 	if ( searchTerm.count () >= 2 && searchTerm != mSearchTerm ) {
-		mSearchTerm = searchTerm;
+		searchCancel ();
 
 		uint i_row ( 0 ), i_col ( 0 );
 		uint max_row ( lastUsedRow () ), max_col ( colCount () );
 		vmTableItem* item ( nullptr );
-		searchCancel ();
+		mSearchTerm = searchTerm;
 
 		for ( ; i_row <= max_row; ++i_row ) {
 			for ( i_col = 0 ; i_col < max_col; ++i_col ) {
@@ -600,21 +600,11 @@ void vmTableWidget::clear ( const bool force )
 			}
 		}
 	}
+	scrollToItem ( sheetItem ( 0, 0 ), QAbstractItemView::PositionAtTop );
+	setCurrentCell ( 0, 0, QItemSelectionModel::ClearAndSelect );
 	mTableChanged = false;
 	setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
 	m_lastUsedRow = -1;
-}
-
-vmTableItem* vmTableWidget::find ( const QString& searchterm ) const
-{
-	uint i_col ( 0 );
-	for ( uint i_row ( 0 ); ( signed )i_row <= m_lastUsedRow; ++i_row ) {
-		for ( i_col = 0; i_col < colCount (); ++i_col ) {
-			if ( sheetItem ( i_row, i_col )->text () == searchterm )
-				return sheetItem ( i_row, i_col );
-		}
-	}
-	return nullptr;
 }
 
 void vmTableWidget::rowActivatedConnection ( const bool b_activate )
@@ -1619,31 +1609,26 @@ vmTableSearchPanel::vmTableSearchPanel ( vmTableWidget* table )
 	btnSearchStart = new QToolButton;
 	btnSearchStart->setIcon ( ICON ( "search.png" ) );
 	btnSearchStart->setEnabled ( false );
-	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () {
-		return searchStart (); } );
+	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } );
 
 	btnSearchPrev = new QToolButton;
 	btnSearchPrev->setIcon ( ICON ( "arrow-left.png" ) );
 	btnSearchPrev->setEnabled ( false );
-	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () {
-		return searchPrev (); } );
+	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () { return searchPrev (); } );
 
 	btnSearchNext = new QToolButton;
 	btnSearchNext->setIcon ( ICON ( "arrow-right.png" ) );
 	btnSearchNext->setEnabled ( false );
-	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () {
-		return searchNext (); } );
+	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () { return searchNext (); } );
 
 	btnSearchCancel = new QToolButton;
 	btnSearchCancel->setIcon ( ICON ( "cancel.png" ) );
-	connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () {
-		return searchCancel (); } );
+	connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return searchCancel (); } );
 
 	chkSearchAllTable = new vmCheckBox ( tr ( "Search all fields" ) );
 	chkSearchAllTable->setChecked ( true );
 	chkSearchAllTable->setEditable ( true );
-	chkSearchAllTable->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) {
-		return searchFieldsChanged (); } );
+	chkSearchAllTable->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return searchFieldsChanged (); } );
 
 	QHBoxLayout* mLayout ( new QHBoxLayout );
 	mLayout->setSpacing( 2 );
@@ -1677,7 +1662,8 @@ void vmTableSearchPanel::searchFieldsChanged ( const vmCheckBox* const )
 
 bool vmTableSearchPanel::searchStart ()
 {
-	const bool b_result ( m_table->searchStart ( txtSearchTerm->text () ) );
+	m_table->searchStart ( txtSearchTerm->text () );
+	const bool b_result ( m_table->searchFirst () );
 	btnSearchStart->setEnabled ( !b_result );
 	btnSearchNext->setEnabled ( b_result );
 	btnSearchPrev->setEnabled ( !b_result );

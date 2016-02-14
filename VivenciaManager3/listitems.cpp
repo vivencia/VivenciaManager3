@@ -98,11 +98,8 @@ void vmListItem::syncSiblingWithThis ( vmListItem* sibling )
 
 void vmListItem::addToList ( vmListWidget* const w_list )
 {
-	//if ( m_list != w_list ) {
-		w_list->addItem ( this );
-		m_list = w_list;
-	//}
-	//w_list->setCurrentItem ( this );
+	w_list->addItem ( this );
+	m_list = w_list;
 }
 
 void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, const bool bSelfOnly )
@@ -261,9 +258,9 @@ void clientListItem::relationActions ( vmListItem* subordinateItem )
 {
 	if ( mRelation == RLI_CLIENTITEM ) {
 		if ( subordinateItem == nullptr ) {
-			jobs = new PointersList<jobListItem*> ( 50 );
-			pays = new PointersList<payListItem*> ( 50 );
-			buys = new PointersList<buyListItem*> ( 20 );
+			jobs = new PointersList<jobListItem*> ( 100 );
+			pays = new PointersList<payListItem*> ( 100 );
+			buys = new PointersList<buyListItem*> ( 50 );
 			// No need to explicitly call clear ( true ) in the dctor
 			jobs->setAutoDeleteItem ( true );
 			pays->setAutoDeleteItem ( true );
@@ -344,7 +341,7 @@ void jobListItem::relationActions ( vmListItem* subordinateItem )
 	if ( mRelation == RLI_CLIENTITEM ) {
 		if ( subordinateItem == nullptr ) {
 			buys = new PointersList<buyListItem*> ( 50 );
-			daysList = new PointersList<vmListItem*> ( 5 );
+			daysList = new PointersList<vmListItem*> ( 10 );
 		}
 		else {
 			static_cast<jobListItem*>( subordinateItem )->buys = this->buys;
@@ -401,6 +398,13 @@ void payListItem::update ( const bool bQtCall )
 					CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
 					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS;
 				item_related[RLI_EXTRAITEM]->vmListItem::update ( false );
+			}
+			if ( item_related[RLI_DATEITEM] != nullptr ) {
+				item_related[RLI_DATEITEM]->m_strBodyText = recStrValue ( static_cast<clientListItem*> (
+					item_related[RLI_CLIENTPARENT] )->clientRecord (), FLD_CLIENT_NAME ) +
+					CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
+					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS;
+				item_related[RLI_DATEITEM]->vmListItem::update ( false );
 			}
 		}
 	}
