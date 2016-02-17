@@ -375,7 +375,7 @@ public:
     void setChecked ( const bool checked, const bool b_notify = false );
     inline void setText ( const QString& text, const bool b_notify = false ) {
         if ( text.length () <= 1 )
-            setChecked ( text == CHR_ONE, b_notify );
+            setChecked ( text != CHR_ZERO, b_notify );
         else
             QCheckBox::setText ( text );
     }

@@ -241,14 +241,13 @@ void clientListItem::update ( const bool bQtCall )
 void clientListItem::createDBRecord ()
 {
 	setDBRec ( static_cast<DBRecord*> ( new Client ( true ) ) );
+	CLIENT_REC->setListItem ( this );
 }
 
 bool clientListItem::loadData ()
 {
-	if ( !m_dbrec ) {
+	if ( !m_dbrec )
 		createDBRecord ();
-		CLIENT_REC->setListItem ( this );
-	}
 	if ( action () == ACTION_READ )
 		return ( CLIENT_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -307,14 +306,13 @@ uint jobListItem::translatedInputFieldIntoBadInputField ( const uint field ) con
 void jobListItem::createDBRecord ()
 {
 	setDBRec ( static_cast<DBRecord*> ( new Job ( true ) ) );
+	JOB_REC->setListItem ( this );
 }
 
 bool jobListItem::loadData ()
 {
-	if ( !m_dbrec ) {
+	if ( !m_dbrec )
 		createDBRecord ();
-		JOB_REC->setListItem ( this );
-	}
 	if ( action () == ACTION_READ )
 		return ( JOB_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -419,14 +417,13 @@ void payListItem::relationActions ( vmListItem* ) {}
 void payListItem::createDBRecord ()
 {
 	setDBRec ( static_cast<DBRecord*> ( new Payment ( true ) ) );
+	PAY_REC->setListItem ( this );
 }
 
 bool payListItem::loadData ()
 {
-	if ( !m_dbrec ) {
+	if ( !m_dbrec )
 		createDBRecord ();
-		PAY_REC->setListItem ( this );
-	}
 	if ( action () == ACTION_READ )
 		return ( PAY_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
@@ -510,14 +507,13 @@ void buyListItem::relationActions ( vmListItem* ) {}
 void buyListItem::createDBRecord ()
 {
 	setDBRec ( static_cast<DBRecord*> ( new Buy ( true ) ) );
+	BUY_REC->setListItem ( this );
 }
 
 bool buyListItem::loadData ()
 {
-	if ( !m_dbrec ) {
+	if ( !m_dbrec )
 		createDBRecord ();
-		BUY_REC->setListItem ( this );
-	}
 	if ( action () == ACTION_READ )
 		return ( BUY_REC->readRecord ( id () ) );
 	return true; // when adding or editing, do not read from the database, but use current user input

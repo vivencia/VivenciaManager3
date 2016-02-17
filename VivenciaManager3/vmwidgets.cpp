@@ -1045,7 +1045,7 @@ void vmCheckBox::setEditable ( const bool editable )
 {
 	if ( editable )
 		connect ( this, static_cast<void (QCheckBox::*)(const bool)>( &QCheckBox::clicked ), this, [&] ( const bool ) {
-			return contentsAltered_func ( this ); } );
+			return contentsAltered_func ( this ); } ); // clicked means mouse clicked, keyboard activated (enter, space bar) or shutcut activated
 	else
 		disconnect ( this, nullptr, nullptr, nullptr );
 	setEnabled ( editable );

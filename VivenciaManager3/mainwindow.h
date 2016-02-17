@@ -185,7 +185,8 @@ public:
 	void updateCalendarWithPayInfo ( Payment* const pay, const RECORD_ACTION action );
 	void addPaymentOverdueItems ( payListItem* pay_item );
 	void removePaymentOverdueItems ( payListItem* pay_item );
-	void payOverdueGUIActions ( const Payment* const pay );
+	void updatePayTotals ( const vmNumber& nAdd, const vmNumber& nSub );
+	void payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION new_action );
 	void controlPayForms ( const payListItem* const pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
     void loadPayInfo ( const Payment* const pay );
@@ -202,7 +203,7 @@ public:
 //------------------------------------EDITING-FINISHED-PAY-----------------------------------------------------------
 	void txtPayTotalPrice_textAltered ( const QString& text );
 	void txtPay_textAltered ( const vmWidget* const sender );
-	void chkPayOverdue_mouseClicked ( const bool clicked );
+	void chkPayOverdue_toggled ( const bool checked );
 //------------------------------------EDITING-FINISHED-PAY-----------------------------------------------------------
 
 //--------------------------------------------BUY------------------------------------------------------------
@@ -316,7 +317,7 @@ private:
 
 	vmListWidget* clientsList;
 	vmListWidget* jobsList;
-	vmListWidget* paysList, *paysOverdueList, *paysOverdueClientList;
+	vmListWidget* paysList, *paysOverdueList, *paysOverdueClientList, *paysCurrentList;
 	vmListWidget* buysList, *buysJobList;
 
 	clientListItem* CLIENT_PREV_ITEM;

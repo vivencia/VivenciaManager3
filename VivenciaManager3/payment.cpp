@@ -285,17 +285,17 @@ void updateOverdueInfo ( const DBRecord* db_rec )
 	}
 }
 
-Payment::Payment ( const bool connect_helper_funcs )
+Payment::Payment ( const bool )
 	: DBRecord ( PAY_FIELD_COUNT ), ce_list ( 10 )
 {
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
 
-	if ( connect_helper_funcs ) {
+/*	if ( connect_helper_funcs ) {
 		DBRecord::helperFunction = this->helperFunction;
 		setHelperFunction ( FLD_PAY_OVERDUE, &updateOverdueInfo );
-	}
+	}*/
 
 }
 
