@@ -99,6 +99,8 @@ public:
 	static void createDateButtonsMenu ( QWidget* parent = nullptr );
 	static void updateDateButtonsMenu ();
 	static void updateRecentUsedDates ( const vmNumber& date );
+	
+	void setTabOrder ( QWidget* formOwner, QWidget* prevWidget, QWidget* nextWidget );
 
 private:
 	pvmDateEdit* mDateEdit;

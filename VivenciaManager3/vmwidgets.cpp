@@ -384,6 +384,13 @@ void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 	}
 	DBG_OUT ( "Exiting function", true, false );
 }
+
+void vmDateEdit::setTabOrder ( QWidget* formOwner, QWidget* prevWidget, QWidget* nextWidget )
+{
+	formOwner->setTabOrder ( prevWidget, mDateEdit );
+	formOwner->setTabOrder ( mDateEdit, mButton );
+	formOwner->setTabOrder ( mButton, nextWidget );
+}
 //------------------------------------------------VM-DATE-EDIT-BUTTON------------------------------------------------
 
 //------------------------------------------------VM-TIME-EDIT------------------------------------------------

@@ -26,7 +26,7 @@ constexpr const char* const MONTHS[13] = { "", "Janeiro", "Fevereiro", "Março",
 constexpr const int months_table[13] = { -1, 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 };
 
 vmNumber vmNumber::currentDate;
-vmNumber vmNumber::zeroedPrice;
+const vmNumber vmNumber::zeroedPrice;
 const vmNumber vmNumber::emptyNumber;
 
 vmNumber::vmNumber ( const QString& str, const VM_NUMBER_TYPE type, const int format )

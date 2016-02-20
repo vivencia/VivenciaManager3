@@ -108,6 +108,7 @@ void MainWindow::continueStartUp ()
 	// connect for last to avoid unnecessary signal emission when we are removing tabs
 	connect ( ui->tabMain, &QTabWidget::currentChanged, this, &MainWindow::tabMain_currentTabChanged );
 	connect ( qApp, &QCoreApplication::aboutToQuit, this, [&] () { return exitRequested (); } );
+	this->tabPaysLists_currentChanged ( 0 ); // update pay totals line edit text
 }
 
 MainWindow::~MainWindow ()
@@ -256,10 +257,8 @@ void MainWindow::setupClientPanel ()
 	
 	setTabOrder ( ui->txtClientZipCode, ui->contactsClientPhones->combo () );
 	setTabOrder ( ui->contactsClientPhones->combo (), ui->contactsClientEmails->combo () );
-	setTabOrder ( ui->contactsClientEmails->combo (), ui->dteClientDateFrom );
-	setTabOrder ( ui->dteClientDateFrom, ui->dteClientDateTo );
-	setTabOrder ( ui->dteClientDateTo, ui->chkClientActive );
-	//ui->txtDummy->setVisible ( false );
+	ui->dteClientDateFrom->setTabOrder ( this, ui->contactsClientEmails->combo (), ui->dteClientDateTo );
+	ui->dteClientDateTo->setTabOrder ( this, ui->dteClientDateFrom, ui->chkClientActive );
 }
 
 void MainWindow::clientKeyPressedSelector ( const QKeyEvent* ke )
@@ -408,7 +407,6 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 			totalPays += pay_item->payRecord ()->price ( FLD_PAY_PRICE );
 		}
 		paysList->setProperty ( PROPERTY_TOTAL_PAYS, totalPays.toPrice () );
-		txtPayTotals->setText ( totalPays.toPrice () );
 
 		buyListItem* buy_item ( nullptr );
 		for ( i = 0; i < signed ( client_item->buys->count () ); ++i ) {
@@ -717,8 +715,7 @@ void MainWindow::setupJobPanel ()
 	connect ( ui->btnJobMachines, &QToolButton::clicked, this, [&] () {
 		return btnJobMachines_clicked (); } );
 	
-	setTabOrder ( ui->btnJobNextDay, ui->dteJobAddDate );
-	setTabOrder ( ui->dteJobAddDate, ui->btnJobAddDay );
+	ui->dteJobAddDate->setTabOrder ( this, ui->btnJobNextDay, ui->btnJobAddDay );
 	setTabOrder ( ui->btnJobAddDay, ui->btnJobEditDay );
 	setTabOrder ( ui->btnJobSeparatePicture, ui->jobImageViewer );
 	setTabOrder ( ui->jobImageViewer, ui->btnPayInfoEdit );
@@ -1307,9 +1304,12 @@ void MainWindow::addJobPayment ( jobListItem* const job_item )
 void MainWindow::saveJobPayment ( jobListItem* const job_item )
 {
 	Payment* pay ( job_item->payItem ()->payRecord () );
+	
+	ui->txtPayTotalPrice->setText ( recStrValue ( job_item->jobRecord (), FLD_JOB_PRICE ), true );
+	ui->txtPayID->setText ( recStrValue ( job_item->jobRecord (), FLD_JOB_ID ) );
+	
 	setRecValue ( pay, FLD_PAY_CLIENTID, recStrValue ( job_item->jobRecord (), FLD_JOB_CLIENTID ) );
 	setRecValue ( pay, FLD_PAY_JOBID, recStrValue ( job_item->jobRecord (), FLD_JOB_ID ) );
-	setRecValue ( pay, FLD_PAY_PRICE, recStrValue ( job_item->jobRecord (), FLD_JOB_PRICE ) );
 	
 	const vmNumber price ( pay->price ( FLD_PAY_PRICE ) );
 	setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, price.toPrice () );
@@ -1330,6 +1330,7 @@ void MainWindow::removeJobPayment ( payListItem* pay_item )
 	if ( pay_item ) {
 		pay_item->setAction ( ACTION_DEL, true );
 		payOverdueGUIActions ( pay_item->payRecord (), ACTION_DEL );
+		updateTotalPayValue ( vmNumber::zeroedPrice, pay_item->payRecord ()->price ( FLD_PAY_PRICE ) );
 		updateCalendarWithPayInfo ( pay_item->payRecord (), ACTION_DEL ); // remove pay info from calendar
 		removePaymentOverdueItems ( pay_item );
 		mClientCurItem->pays->remove ( paysList->currentRow () );
@@ -1812,8 +1813,13 @@ void MainWindow::paysListWidget_currentItemChanged ( vmListItem* item, vmListIte
 void MainWindow::paysOverdueListWidget_currentItemChanged ( vmListItem* item, vmListItem* )
 {
 	payListItem* pay_item ( static_cast<payListItem*> ( item ) );
+	/* displayClient will ignore a chunk of calls if pay_item->client_parent == mClientCurItem, which it is and supposed to.
+	 * Force reselection of current client
+	 **/
+	
+	mClientCurItem = nullptr;
 	displayClient ( static_cast<clientListItem*> ( pay_item->item_related[RLI_CLIENTPARENT] ), true,
-					static_cast<jobListItem*> ( pay_item->item_related[RLI_JOBPARENT] ) );
+		static_cast<jobListItem*> ( pay_item->item_related[RLI_JOBPARENT] ) );
 }
 
 void MainWindow::paysOverdueClientListWidget_currentItemChanged ( vmListItem* item, vmListItem* )
@@ -1885,37 +1891,51 @@ void MainWindow::updateCalendarWithPayInfo ( Payment* const pay, const RECORD_AC
 
 void MainWindow::addPaymentOverdueItems ( payListItem* pay_item )
 {
+	bool bOldState ( true );
 	if ( tabPaysLists->currentIndex () == 1 ) {
+		bOldState = paysOverdueClientList->isIgnoringChanges ();
+		paysOverdueClientList->setIgnoreChanges ( true );
 		payListItem* pay_item_overdue_client ( new payListItem );
 		pay_item_overdue_client->setRelation ( RLI_DATEITEM );
 		pay_item->syncSiblingWithThis ( pay_item_overdue_client );
 		pay_item_overdue_client->update ();
 		pay_item_overdue_client->addToList ( paysOverdueClientList );
+		paysOverdueClientList->setIgnoreChanges ( bOldState );
 	}
 	
 	if ( paysOverdueList->count () != 0 ) {
+		bOldState = paysOverdueList->isIgnoringChanges ();
+		paysOverdueList->setIgnoreChanges ( true );
 		payListItem* pay_item_overdue ( new payListItem );
 		pay_item_overdue->setRelation ( RLI_EXTRAITEM );
 		pay_item->syncSiblingWithThis ( pay_item_overdue );
 		pay_item_overdue->update ();
 		pay_item_overdue->addToList ( paysOverdueList );
+		paysOverdueList->setIgnoreChanges ( bOldState );
 	}
 }
 
 void MainWindow::removePaymentOverdueItems ( payListItem* pay_item )
 {
+	bool bOldState ( true );
 	if ( pay_item->item_related[RLI_DATEITEM] ) {
+		bOldState = paysOverdueClientList->isIgnoringChanges ();
+		paysOverdueClientList->setIgnoreChanges ( true );
 		paysOverdueClientList->takeItem ( paysOverdueClientList->row ( static_cast<QListWidgetItem*>( pay_item->item_related[RLI_DATEITEM] ) ) );
 		delete static_cast<payListItem*>( pay_item->item_related[RLI_DATEITEM] );
+		paysOverdueClientList->setIgnoreChanges ( bOldState );
 	}
 	
 	if ( pay_item->item_related[RLI_EXTRAITEM] ) {
+		bOldState = paysOverdueList->isIgnoringChanges ();
+		paysOverdueList->setIgnoreChanges ( true );
 		paysOverdueList->takeItem ( paysOverdueList->row ( static_cast<QListWidgetItem*>( pay_item->item_related[RLI_EXTRAITEM] ) ) );
 		delete static_cast<payListItem*>( pay_item->item_related[RLI_EXTRAITEM] );
+		paysOverdueList->setIgnoreChanges ( bOldState );
 	}
 }
 
-void MainWindow::updatePayTotals ( const vmNumber& nAdd, const vmNumber& nSub )
+void MainWindow::updateTotalPayValue ( const vmNumber& nAdd, const vmNumber& nSub )
 {
 	vmNumber totalPrice;
 	totalPrice.fromTrustedStrPrice ( paysList->property ( PROPERTY_TOTAL_PAYS ).toString (), false );
@@ -1923,8 +1943,12 @@ void MainWindow::updatePayTotals ( const vmNumber& nAdd, const vmNumber& nSub )
 	totalPrice += nAdd;
 	paysList->setProperty ( PROPERTY_TOTAL_PAYS, totalPrice.toPrice () );
 	if ( tabPaysLists->currentIndex () == 0 )
-		txtPayTotals->setText ( totalPrice.toPrice () );
-	
+		txtPayTotals->setText ( totalPrice.toPrice () );	
+}
+
+void MainWindow::updatePayOverdueTotals ( const vmNumber& nAdd, const vmNumber& nSub )
+{
+	vmNumber totalPrice;
 	if ( paysOverdueClientList->count () != 0 ) {
 		totalPrice.fromTrustedStrPrice ( paysOverdueClientList->property ( PROPERTY_TOTAL_PAYS ).toString (), false );
 		totalPrice -= nSub;
@@ -1950,36 +1974,46 @@ void MainWindow::payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION 
 		const int overdueIdx ( recStrValue ( pay, FLD_PAY_OVERDUE ).toInt () );
 		if ( new_action != ACTION_NONE ) {
 			vmNumber new_price, old_price;
+			vmNumber new_paid, old_paid;
+			if ( overdueIdx == 2 && new_action == ACTION_EDIT )
+				*(const_cast<RECORD_ACTION*>(&new_action)) = ACTION_DEL;
 			switch ( new_action ) {
 				case ACTION_EDIT:
 					new_price.fromTrustedStrPrice ( ui->txtPayTotalPrice->text (), false );
 					old_price.fromTrustedStrPrice ( pay->backupRecordStr ( FLD_PAY_PRICE ), false );
+					new_paid.fromTrustedStrPrice ( ui->txtPayTotalPaid->text (), false );
+					old_paid.fromTrustedStrPrice ( pay->backupRecordStr ( FLD_PAY_TOTALPAID ), false );
 				break;
 				case ACTION_REVERT:
 				case ACTION_READ:
 					new_price.fromTrustedStrPrice ( pay->actualRecordStr ( FLD_PAY_PRICE ), false );
 					old_price.fromTrustedStrPrice ( pay->backupRecordStr ( FLD_PAY_PRICE ), false );
+					new_paid.fromTrustedStrPrice ( pay->actualRecordStr ( FLD_PAY_TOTALPAID ), false );
+					old_paid.fromTrustedStrPrice ( pay->backupRecordStr ( FLD_PAY_TOTALPAID ), false );
 				break;
 				case ACTION_ADD:
 					new_price.fromTrustedStrPrice ( pay->actualRecordStr( FLD_PAY_PRICE ), false );
 					old_price = vmNumber::zeroedPrice;
+					new_paid.fromTrustedStrPrice ( pay->actualRecordStr( FLD_PAY_TOTALPAID ), false );
+					old_paid = vmNumber::zeroedPrice;
 				break;
 				case ACTION_DEL:
 					new_price = vmNumber::zeroedPrice;
 					old_price.fromTrustedStrPrice ( recStrValue ( pay, FLD_PAY_PRICE ) );
+					new_paid = vmNumber::zeroedPrice;
+					old_paid.fromTrustedStrPrice ( recStrValue ( pay, FLD_PAY_TOTALPAID ) );
 				break;
 				default: break; // avoid compiler warning/error
 			}
 			
-			const vmNumber paid_price ( pay->price ( FLD_PAY_TOTALPAID ) );
-			bIsOverdue = paid_price < new_price;
+			bIsOverdue = new_paid < new_price;
 			if ( bIsOverdue && overdueIdx == 0 )
 				setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ONE );
 			else if ( !bIsOverdue && overdueIdx == 1 )
 				setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ZERO );
 			
-			setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, ( new_price - paid_price ).toPrice () );
-			updatePayTotals ( new_price, old_price );
+			setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, ( new_price - new_paid ).toPrice () );
+			updatePayOverdueTotals ( new_price - new_paid, old_price - old_paid );
 			bIsOverdue &= overdueIdx != 2;
 		}
 		else { //reading record. Only update the one control
@@ -2140,6 +2174,7 @@ void MainWindow::loadClientOverduesList ()
 					pay_item_overdue_client = new payListItem;
 					pay_item_overdue_client->setRelation ( RLI_DATEITEM );
 					pay_item->syncSiblingWithThis ( pay_item_overdue_client );
+					pay_item_overdue_client->update ( false );
 					pay_item_overdue_client->addToList ( paysOverdueClientList );
 					totalOverdue += pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
 				}
@@ -2174,6 +2209,7 @@ void MainWindow::loadAllOverduesList ()
 						pay_item_overdue->update ( false );
 						pay_item_overdue->addToList ( paysOverdueList );
 						totalOverdue += pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE );
+						qDebug () << pay_item->payRecord ()->price ( FLD_PAY_OVERDUE_VALUE ).toPrice();
 					}
 				}
 			}
@@ -2248,8 +2284,9 @@ void MainWindow::updatePayTotalPaidValue ()
 		if ( ui->tablePayments->sheetItem ( i, PHR_PAID )->text () == CHR_ONE )
 			total_paid += vmNumber ( ui->tablePayments->sheetItem ( i, PHR_VALUE )->text (), VMNT_PRICE );
 	}
-	ui->txtPayTotalPaid->setText ( total_paid.toPrice (), true );
+	ui->txtPayTotalPaid->setText ( total_paid.toPrice () ); // do not notify text change so that payOverdueGUIActions can use the current stores paid value
 	payOverdueGUIActions ( mPayCurItem->payRecord (), ACTION_EDIT );
+	setRecValue ( mPayCurItem->payRecord (), FLD_PAY_TOTALPAID, total_paid.toPrice () ); // now we can update the record
 }
 
 void MainWindow::payKeyPressedSelector ( const QKeyEvent* ke )
@@ -2281,6 +2318,8 @@ void MainWindow::txtPayTotalPrice_textAltered ( const QString& text )
 {
 	const vmNumber new_price ( text, VMNT_PRICE, 1 );
 	payOverdueGUIActions ( mPayCurItem->payRecord (), mPayCurItem->payRecord ()->action () );
+	updateTotalPayValue ( new_price, vmNumber ( recStrValue ( mPayCurItem->payRecord (), FLD_PAY_PRICE ), VMNT_PRICE, 1 ) );
+	
 	bool input_ok ( true );
 	if ( static_cast<jobListItem*> ( mPayCurItem->item_related[RLI_JOBPARENT] )->jobRecord ()->price ( FLD_JOB_PRICE ).isNull () )
 		input_ok = !new_price.isNull ();
@@ -2312,7 +2351,7 @@ void MainWindow::chkPayOverdue_toggled ( const bool checked )
 			chr = &CHR_ONE;
 	}
 	setRecValue ( mPayCurItem->payRecord (), FLD_PAY_OVERDUE, *chr );
-	payOverdueGUIActions ( mPayCurItem->payRecord (), ACTION_NONE );
+	payOverdueGUIActions ( mPayCurItem->payRecord (), mPayCurItem->payRecord ()->action () );
 	postFieldAlterationActions ( mPayCurItem );
 }
 //--------------------------------------------EDITING-FINISHED-PAY-----------------------------------------------------------

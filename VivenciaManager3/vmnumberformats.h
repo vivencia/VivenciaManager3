@@ -148,7 +148,7 @@ public:
 	const QString& priceToDoubleString () const;
 	const QString& toPrice () const;
 
-	static vmNumber zeroedPrice;
+	static const vmNumber zeroedPrice;
 //-------------------------------------PRICE-----------------------------------------
 
 //-------------------------------------DATE------------------------------------------

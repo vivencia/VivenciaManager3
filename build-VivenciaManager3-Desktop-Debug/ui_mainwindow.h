@@ -1395,7 +1395,6 @@ public:
         contactsClientEmails->setMinimumSize(QSize(0, 30));
         contactsClientEmails->setFrameShape(QFrame::NoFrame);
         contactsClientEmails->setFrameShadow(QFrame::Plain);
-        chkClientActive->raise();
 
         gridLayout_3->addWidget(contactsClientEmails, 7, 3, 1, 4);
 
@@ -2386,6 +2385,7 @@ public:
         horizontalLayout_8->setContentsMargins(-1, -1, 0, -1);
         lblCurInfoClient = new QLabel(centralwidget);
         lblCurInfoClient->setObjectName(QStringLiteral("lblCurInfoClient"));
+        lblCurInfoClient->setFrameShape(QFrame::NoFrame);
         lblCurInfoClient->setTextFormat(Qt::PlainText);
 
         horizontalLayout_8->addWidget(lblCurInfoClient);
@@ -2399,6 +2399,7 @@ public:
 
         lblCurInfoJob = new QLabel(centralwidget);
         lblCurInfoJob->setObjectName(QStringLiteral("lblCurInfoJob"));
+        lblCurInfoJob->setFrameShape(QFrame::NoFrame);
 
         horizontalLayout_8->addWidget(lblCurInfoJob);
 
@@ -2411,6 +2412,7 @@ public:
 
         lblCurInfoPay = new QLabel(centralwidget);
         lblCurInfoPay->setObjectName(QStringLiteral("lblCurInfoPay"));
+        lblCurInfoPay->setFrameShape(QFrame::NoFrame);
 
         horizontalLayout_8->addWidget(lblCurInfoPay);
 
@@ -2423,6 +2425,7 @@ public:
 
         lblCurInfoBuy = new QLabel(centralwidget);
         lblCurInfoBuy->setObjectName(QStringLiteral("lblCurInfoBuy"));
+        lblCurInfoBuy->setFrameShape(QFrame::NoFrame);
 
         horizontalLayout_8->addWidget(lblCurInfoBuy);
 

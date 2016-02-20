@@ -185,7 +185,8 @@ public:
 	void updateCalendarWithPayInfo ( Payment* const pay, const RECORD_ACTION action );
 	void addPaymentOverdueItems ( payListItem* pay_item );
 	void removePaymentOverdueItems ( payListItem* pay_item );
-	void updatePayTotals ( const vmNumber& nAdd, const vmNumber& nSub );
+	void updateTotalPayValue (const vmNumber& nAdd, const vmNumber& nSub );
+	void updatePayOverdueTotals ( const vmNumber& nAdd, const vmNumber& nSub );
 	void payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION new_action );
 	void controlPayForms ( const payListItem* const pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
