@@ -59,7 +59,7 @@ class configFile : public textFile
 public:
 	explicit configFile ();
 	configFile ( const QString& filename );
-	~configFile ();
+	virtual ~configFile ();
 
 	bool setWorkingSection ( const QString& section_name );
 	bool setWorkingSection ( const uint section_pos );
@@ -94,7 +94,7 @@ class dataFile : public textFile
 public:
 	explicit dataFile ();
 	dataFile ( const QString& filename );
-	~dataFile ();
+	virtual ~dataFile ();
 
 	void insertRecord ( const int pos, const stringRecord& rec );
 	void changeRecord ( const int pos, const stringRecord& rec );

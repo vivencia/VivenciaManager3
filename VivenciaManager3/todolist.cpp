@@ -84,29 +84,28 @@ todoList::todoList ( QWidget* parent )
     mTdbList = new dataFile ( mListFileName );
     mTdbList->load ();
 
-    vmTableColumn *fields[TOTAL_FIELDS+1] = { nullptr };
+    vmTableColumn *fields ( mLstToDo->createColumns( TOTAL_FIELDS ) );
     uint i ( 0 );
     for ( ; i < ( TOTAL_FIELDS ); ++i ) { //exclude description
-        fields[i] = new vmTableColumn;
-        fields[i]->label = listFieldNames.at ( i );
+        fields[i].label = listFieldNames.at ( i );
         switch ( i ) {
         case FLD_TODO_ID:
-            fields[FLD_TODO_ID]->editable = false;
-            fields[FLD_TODO_ID]->width = 40;
+            fields[FLD_TODO_ID].editable = false;
+            fields[FLD_TODO_ID].width = 40;
             break;
         case FLD_TODO_NOTIFICATION:
         case FLD_TODO_DESCRIPTION:
-            fields[i]->editable = false;
+            fields[i].editable = false;
             break;
         case FLD_TODO_STARTDATE:
-            fields[FLD_TODO_STARTDATE]->wtype = WT_DATEEDIT;
+            fields[FLD_TODO_STARTDATE].wtype = WT_DATEEDIT;
             break;
         default:
-            fields[i]->wtype = WT_COMBO;
+            fields[i].wtype = WT_COMBO;
             break;
         }
     }
-    mLstToDo = new vmTableWidget ( 5, fields );
+    mLstToDo = new vmTableWidget ( 5 );
     //mLstToDo->setComboList ( FLD_TODO_IMPORTANCE, importanceList );
     //mLstToDo->setComboList ( FLD_TODO_STATUS, statusList );
     //mLstToDo->setComboList ( FLD_TODO_REPEAT, repeatList );

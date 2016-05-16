@@ -255,7 +255,7 @@ static QString stringFloatKey ( const uint increment )
     if ( increment >= 100 )
         return emptyString;
 
-    QString magicNumber ( "1.1111" );
+    QString magicNumber ( QStringLiteral ( "1.1111" ) );
     int multiplier ( static_cast<int>( increment / 10 ) );
     QChar uns ( '0' );
     QChar tens ( '0' );
@@ -343,10 +343,10 @@ static float floatFromStringKey ( const QString str )
     float magicNumber ( 1.1100 );
     char digit ( '0' );
 
-    // trailling 0 (zero) is truncated in the string because the last zeroes of a float number as omitted by the compiler
+    // trailling 0 (zero) is truncated in the string because the last zeroes of a float number are omitted by the compiler
     // therefore, str, in this case, would be, for instance, 1.112, instead of 1.1120
     if ( str.length () == 6 )
-        digit = str.at ( 5 ).toLatin1 ();
+        digit = str.at ( 5 ).unicode ();
 
     switch ( digit ) {
     case '0':
@@ -381,9 +381,9 @@ static float floatFromStringKey ( const QString str )
     }
 
     if ( str.length () == 6 )
-        digit = str.at ( 4 ).toLatin1 ();
+        digit = str.at ( 4 ).unicode ();
     else
-        digit = str.at ( 3 ).toLatin1 ();
+        digit = str.at ( 3 ).unicode ();
 
     switch ( digit ) {
     case '0':

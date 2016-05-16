@@ -8,7 +8,6 @@
 #include <QAction>
 #include <QString>
 #include <QLabel>
-#include <QListWidget>
 #include <QToolButton>
 #include <QDateEdit>
 #include <QTimeEdit>
@@ -69,7 +68,7 @@ class pvmDateEdit;
 class vmDateEdit : public QWidget, public vmWidget
 {
 
-	friend class pvmDateEdit;
+friend class pvmDateEdit;
 
 public:
 	vmDateEdit ( QWidget* parent = nullptr );
@@ -149,44 +148,11 @@ private:
 };
 //------------------------------------------------VM-TIME-EDIT------------------------------------------------
 
-//------------------------------------------------VM-LIST-WIDGET------------------------------------------------
-class vmListItem;
-
-class vmListWidget : public QListWidget, public vmWidget
-{
-
-public:
-	vmListWidget ( QWidget* parent = nullptr );
-	virtual ~vmListWidget ();
-
-	void setIgnoreChanges ( const bool b_ignore );
-	inline bool isIgnoringChanges () const {
-		return mbIgnore;
-	}
-	inline void setEditable ( const bool editable ) {
-		setEnabled ( editable );
-		vmWidget::setEditable ( editable );
-	}
-
-	void setItemChanged ( vmListItem* item ) const;
-
-	inline void setCallbackForCurrentItemChanged ( std::function<void ( vmListItem* item, vmListItem* prev_item )> func ) {
-		currentItemChanged_func = func;
-	}
-
-    void setCurrentItem ( QListWidgetItem *item );
-
-private:
-	std::function<void ( vmListItem* item, vmListItem* prev_item )> currentItemChanged_func;
-	bool mbIgnore;
-};
-//------------------------------------------------VM-LIST-WIDGET------------------------------------------------
-
 //------------------------------------------------LINE-EDIT-LINK----------------------------------------------
 class vmLineEdit : public QLineEdit, public vmWidget
 {
 
-	friend class vmLineEditWithButton;
+friend class vmLineEditWithButton;
 
 public:
 	explicit vmLineEdit ( QWidget* parent = nullptr, QWidget* ownerWindow = nullptr );
@@ -211,11 +177,14 @@ public:
 
 	void completerClickReceived ( const QString& value );
 	void updateText ();
+	
+	inline const QString& textBeforeChange () const { return mCurrentText; }
 
 protected:
 	void keyPressEvent ( QKeyEvent* );
 	void keyReleaseEvent ( QKeyEvent* );
 	void mouseMoveEvent ( QMouseEvent* );
+	void mousePressEvent ( QMouseEvent* );
 	void mouseReleaseEvent ( QMouseEvent* );
 	void contextMenuEvent ( QContextMenuEvent* );
 	void focusInEvent ( QFocusEvent* );
@@ -227,7 +196,7 @@ private:
 	bool b_widgetCannotGetFocus;
 	bool mbTrack;
 	bool mbButtonClicked;
-	QString mTextBeforeFocus;
+	QString mCurrentText; // Can be used as old value by contentsAltered_func because it's only updated after the call to it. Retrieve it via textBeforeChange ()
 
 	std::function<void ( const vmLineEdit* const )> mouseClicked_func;
 };
@@ -257,18 +226,12 @@ public:
 	inline void setText ( const QString& text , const bool b_notify = false ) {
 		mLineEdit->setText ( text, b_notify );
 	}
-	inline QString text () const {
-		return mLineEdit->QLineEdit::text ();
-	}
+	inline QString text () const { return mLineEdit->QLineEdit::text (); }
 
 	void setButtonType ( const LINE_EDIT_BUTTON_TYPE type );
 
-	inline vmLineEdit* lineControl () const {
-		return mLineEdit;
-	}
-	inline bool wasButtonClicked () const {
-		return mLineEdit->mbButtonClicked;
-	}
+	inline vmLineEdit* lineControl () const { return mLineEdit; }
+	inline bool wasButtonClicked () const { return mLineEdit->mbButtonClicked; }
 
 private:
 	vmLineEdit* mLineEdit;
@@ -291,23 +254,15 @@ public:
 		mLineEdit->setID ( id );
 		vmWidget::setID ( id );
 	}
-	inline QLatin1String qtClassName () const {
-		return QLatin1String ( "QComboBox" );
-	}
+	inline QLatin1String qtClassName () const { return QLatin1String ( "QComboBox" ); }
 	QString defaultStyleSheet () const;
 	void highlight ( const VMColors vm_color, const QString& str = QString::null );
 
 	void setText ( const QString& text, const bool b_notify = false );
-	inline QString text () const {
-		return mLineEdit->QLineEdit::text ();
-	}
-
-	inline void setIgnoreChanges ( const bool b_ignore ) {
-		mbIgnoreChanges = b_ignore;
-	}
+	inline QString text () const { return mLineEdit->QLineEdit::text (); }
 
 	void setCompleter ( const vmCompleters::COMPLETER_CATEGORIES completer );
-
+	void setIgnoreChanges ( const bool b_ignore );
 	void setEditable ( const bool editable );
 
 	/* Will check for existance of text and only append it if there is no match
@@ -393,7 +348,7 @@ public:
 	}
 
 	void setCallbackForContextMenu
-	( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
+		( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
 };
 //------------------------------------------------VM-CHECK-BOX------------------------------------------------
 

@@ -3,7 +3,7 @@
 #include "simplecalculator.h"
 #include "data.h"
 #include "configops.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "cleanup.h"
 #include "heapmanager.h"
 
@@ -17,6 +17,34 @@
 #include <QIntValidator>
 
 //------------------------------------------------VM-ACTION-LABEL-------------------------------------------------
+const char* const ActionLabelStyle (
+    "vmActionLabel[class='action'] {"
+        "background-color: transparent;"
+        "border: 1px solid transparent;"
+        "color: #0033ff;"
+        "text-align: left;"
+        "font: 11px;"
+    "}"
+
+    "vmActionLabel[class='action']:!enabled {"
+        "color: #999999;"
+    "}"
+
+    "vmActionLabel[class='action']:hover {"
+        "color: #0099ff;"
+        "text-decoration: underline;"
+    "}"
+
+    "vmActionLabel[class='action']:focus {"
+        "border: 1px dotted black;"
+    "}"
+
+    "vmActionLabel[class='action']:on {"
+        "background-color: #ddeeff;"
+        "color: #006600;"
+    "}"
+);
+
 vmActionLabel::vmActionLabel ( QWidget *parent )
 	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION )
 {
@@ -42,6 +70,8 @@ vmActionLabel::~vmActionLabel ()
 
 void vmActionLabel::init ( const bool b_action )
 {
+	setStyleSheet ( QString ( ActionLabelStyle ) );
+	setProperty ( "class", QStringLiteral( "action" ) );
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
 	setToolButtonStyle ( Qt::ToolButtonTextBesideIcon );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
@@ -163,14 +193,17 @@ QString pvmDateEdit::defaultStyleSheet () const
 
 void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 {
-	QDateEdit::setDate ( date.toQDate () );
     if ( date.isDate () ) {
-        if ( isEditable () ) {
+		const triStateType mEmitSignalOriginal ( mEmitSignal );
+		mEmitSignal = b_notify;
+		QDateEdit::setDate ( date.toQDate () );
+		mEmitSignal = mEmitSignalOriginal;
+        /*if ( isEditable () ) {
             const triStateType mEmitSignalOriginal ( mEmitSignal );
             mEmitSignal = b_notify;
             vmDateChanged ( date.toQDate () );
             mEmitSignal = mEmitSignalOriginal;
-        }
+        }*/
     }
 }
 
@@ -178,8 +211,7 @@ void pvmDateEdit::setEditable ( const bool editable )
 {
 	//TODO test if this code is working and not triggering unwanted calls
     if ( editable ) {
-		connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) {
-            return vmDateChanged ( date ); } );
+		connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) { return vmDateChanged ( date ); } );
 		mDateBeforeFocus = date ();
 	}
 	else
@@ -293,8 +325,7 @@ void vmDateEdit::contextMenuRequested ()
 	disconnect ( menuDateButtons, nullptr, nullptr, nullptr );
 	mButton->setMenu ( menuDateButtons );
     connect ( menuDateButtons, &QMenu::triggered, this, [&] ( QAction* action ) {
-		return execDateButtonsMenu ( static_cast<vmAction*> ( action ), mDateEdit );
-	} );
+				return execDateButtonsMenu ( static_cast<vmAction*> ( action ), this->mDateEdit ); } );
 	mButton->showMenu ();
 }
 
@@ -303,7 +334,7 @@ void vmDateEdit::setCallbackForContextMenu
 {
 	vmWidget::setCallbackForContextMenu ( func );
 	connect ( mDateEdit, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos ); } );
+			return showContextMenu ( pos ); } );
 }
 
 void vmDateEdit::execDateButtonsMenu ( const vmAction* const action, pvmDateEdit* dte )
@@ -465,46 +496,6 @@ void vmTimeEdit::focusOutEvent ( QFocusEvent* e )
 }
 //------------------------------------------------VM-TIME-EDIT------------------------------------------------
 
-//------------------------------------------------VM-LIST-WIDGET------------------------------------------------
-vmListWidget::vmListWidget ( QWidget* parent )
-	: QListWidget ( parent ), vmWidget ( WT_LISTITEM ), currentItemChanged_func ( nullptr ), mbIgnore ( false )
-{
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	setFrameShape ( QFrame::NoFrame );
-	setFrameShadow ( QFrame::Plain );
-    setAlternatingRowColors ( true );
-	setSelectionMode ( QAbstractItemView::SingleSelection );
-}
-
-vmListWidget::~vmListWidget () {}
-
-void vmListWidget::setIgnoreChanges ( const bool b_ignore )
-{
-	mbIgnore = b_ignore;
-	if ( b_ignore )
-		disconnect ( this, nullptr, nullptr, nullptr );
-	else {
-		if ( currentItemChanged_func ) {
-			connect ( this, &vmListWidget::currentItemChanged, this, [&] ( QListWidgetItem* item, QListWidgetItem* prev_item ) {
-				return currentItemChanged_func ( static_cast<vmListItem*> ( item ), static_cast<vmListItem*> ( prev_item ) ); } );
-		}
-	}
-}
-
-void vmListWidget::setItemChanged ( vmListItem* item ) const
-{
-	if ( currentItemChanged_func )
-		currentItemChanged_func ( item, nullptr );
-}
-
-void vmListWidget::setCurrentItem ( QListWidgetItem *item )
-{
-    QListWidget::setCurrentItem ( item, QItemSelectionModel::ClearAndSelect );
-    //scrollToItem ( item, QAbstractItemView::PositionAtBottom );
-}
-
-//------------------------------------------------VM-LIST-WIDGET------------------------------------------------
-
 //------------------------------------------------LINE-EDIT-LINK----------------------------------------------
 vmLineEdit::vmLineEdit ( QWidget* parent, QWidget* ownerWindow )
 	: QLineEdit ( parent ), vmWidget ( WT_LINEEDIT ), mCtrlKey ( false ), mCursorChanged ( false ),
@@ -574,8 +565,11 @@ void vmLineEdit::setText ( const QString& text, const bool b_notify )
 
 	setToolTip ( isEditable () ? emptyString : QLineEdit::text () );
     setCursorPosition ( isEditable () ? QLineEdit::text ().count () - 1 : 0 );
-	if ( b_notify && contentsAltered_func )
-		contentsAltered_func ( this );
+	if ( text != mCurrentText ) {
+		if ( b_notify && contentsAltered_func )
+			contentsAltered_func ( this ); // call before updating mCurrentText, so that the callee might use the old value
+		mCurrentText = text;
+	}
 }
 
 void vmLineEdit::setTrackingEnabled ( const bool b_tracking )
@@ -602,12 +596,8 @@ void vmLineEdit::setCallbackForContextMenu
 
 void vmLineEdit::completerClickReceived ( const QString& value )
 {
-	if ( hasFocus () ) {
-		if ( value != mTextBeforeFocus ) {
-			mTextBeforeFocus = value;
-			setText ( value, true );
-		}
-	}
+	if ( hasFocus () )
+		setText ( value, true );
 }
 
 void vmLineEdit::updateText ()
@@ -659,10 +649,10 @@ void vmLineEdit::keyPressEvent ( QKeyEvent* e )
 					return; // let the completer do its default behavior
 				}
 				else {
-					if ( keypressed_func ) {
+					if ( e->key () == Qt::Key_Enter )
 						updateText ();
+					if ( keypressed_func )
 						keypressed_func ( e, this );
-					}
 					e->accept ();
 				}
 			break;
@@ -704,8 +694,23 @@ void vmLineEdit::mouseMoveEvent ( QMouseEvent* e )
 				mCursorChanged = true;
 			}
 		}
+		QLineEdit::mouseMoveEvent ( e );
+		return;
 	}
-	QLineEdit::mouseMoveEvent ( e );
+	e->ignore ();
+}
+
+void vmLineEdit::mousePressEvent ( QMouseEvent *e )
+{
+	if ( e->button () & Qt::RightButton ) {
+		if ( ownerItem () ) {
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );	
+			table->displayContextMenuForCell ( e->pos (), this );
+			e->ignore ();
+			return;
+		}
+	}
+	QLineEdit::mousePressEvent ( e );
 }
 
 void vmLineEdit::mouseReleaseEvent ( QMouseEvent* e )
@@ -718,18 +723,26 @@ void vmLineEdit::mouseReleaseEvent ( QMouseEvent* e )
 				mCtrlKey = mCursorChanged = false;
 			}
 		}
+		QLineEdit::mouseReleaseEvent ( e );
 	}
-	QLineEdit::mouseReleaseEvent ( e );
+	e->ignore ();
 }
 
 void vmLineEdit::contextMenuEvent ( QContextMenuEvent* e )
 {
-	mbButtonClicked = false;
-	QMenu* menu ( createStandardContextMenu () );
-	menu->addSeparator();
-    menu->addAction ( TR_FUNC ( "Clear" ), this, SLOT ( clear () ) );
-	menu->exec ( e->globalPos () );
-	delete menu;
+	if ( !ownerItem () ) {
+		mbButtonClicked = false;
+		QMenu* menu ( createStandardContextMenu () );
+		if ( !isEditable () ) {
+			menu->addSeparator();
+			menu->addAction ( TR_FUNC ( "Clear" ), this, SLOT ( clear () ) );
+		}
+		menu->exec ( e->globalPos () );
+		delete menu;
+	}
+	else
+		qDebug () << "has owner item";
+	e->ignore ();
 }
 
 void vmLineEdit::focusInEvent ( QFocusEvent* e )
@@ -753,18 +766,24 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 			}
 		}
 		mbButtonClicked = false;
-		mTextBeforeFocus = text ();
-		if ( ownerItem () )
-			const_cast<vmTableItem*> ( ownerItem () )->tableWidget ()->setCurrentItem ( const_cast<vmTableItem*> ( ownerItem () ), QItemSelectionModel::ClearAndSelect );
+		mCurrentText = text ();
 		e->setAccepted ( true );
 		QLineEdit::focusInEvent ( e );
+	}
+	else {
+		if ( ownerItem () ) {
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );
+			if ( table->isPlainTable () && ownerItem ()->row () != table->currentRow () ) {
+				table->setCurrentItem ( const_cast<vmTableItem*> ( ownerItem () ) );
+				table->callRowActivated_func ( ownerItem ()->row () );
+			}
+		}
 	}
 }
 
 void vmLineEdit::focusOutEvent ( QFocusEvent* e )
 {
-	if ( isEditable () && ( mTextBeforeFocus != text () ) ) {
-		qDebug () << "vmlineedit focus out";
+	if ( isEditable () && ( mCurrentText != text () ) ) {
 		updateText ();
 		if ( mbButtonClicked )
 			e->setAccepted ( true );
@@ -798,8 +817,8 @@ void vmLineEditWithButton::setButtonType ( const LINE_EDIT_BUTTON_TYPE type )
 	mBtnType = type;
 	mButton->setIcon ( mBtnType == LEBT_CALC_BUTTON ? ICON ( "calc.png" ) : ICON ( "folder-brown.png" ) );
     mButton->setToolTip ( mBtnType == LEBT_CALC_BUTTON ? TR_FUNC ( "Use calculator" ) : TR_FUNC ( "Most used dates" ) );
-	connect ( mButton, &QToolButton::clicked, this, [&] () {
-		return execButtonAction (); } );
+	connect ( mButton, &QToolButton::clicked, this, [&] () { return execButtonAction (); } );
+	mButton->setEnabled ( isEditable () );
 }
 
 void vmLineEditWithButton::setEditable ( const bool editable )
@@ -828,18 +847,14 @@ void vmLineEditWithButton::execButtonAction ()
 //------------------------------------------------VM-COMBO-BOX------------------------------------------------
 vmComboBox::vmComboBox ( QWidget* parent )
 	: QComboBox ( parent ), vmWidget ( WT_COMBO ), mbIgnoreChanges ( true ),
-	  mLineEdit ( new vmLineEdit ), indexChanged_func ( nullptr ),
-	  keyEnter_func ( nullptr ), keyEsc_func ( nullptr )
+		mLineEdit ( new vmLineEdit ), indexChanged_func ( nullptr ),
+		keyEnter_func ( nullptr ), keyEsc_func ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
 	setFrame ( false );
 	setLineEdit ( mLineEdit );
 	mLineEdit->setVmParent ( this );
 	setInsertPolicy ( QComboBox::NoInsert );
-	// If I do not static_cast like this, the compiler cannot know which overloaded function to use
-	connect ( this, static_cast<void (QComboBox::*)(int)>( &QComboBox::currentIndexChanged ), this, [&] ( int idx ) {
-		return currentIndexChanged_slot ( idx ); } );
-
 }
 
 vmComboBox::~vmComboBox () {}
@@ -898,6 +913,18 @@ void vmComboBox::setCompleter ( const vmCompleters::COMPLETER_CATEGORIES complet
 	APP_COMPLETERS ()->fillList ( completer, cboList );
 	mLineEdit->setCompleter ( APP_COMPLETERS ()->getCompleter ( completer ) );
 	QComboBox::addItems ( cboList );
+}
+
+void vmComboBox::setIgnoreChanges ( const bool b_ignore )
+{
+	mbIgnoreChanges = b_ignore;
+	if ( !mbIgnoreChanges ) {
+		// If I do not static_cast like this, the compiler cannot know which overloaded function to use
+		connect ( this, static_cast<void (QComboBox::*)(int)>( &QComboBox::currentIndexChanged ), this, [&] ( int idx ) {
+				return currentIndexChanged_slot ( idx ); } );
+	}
+	else 
+		disconnect ( this, nullptr, nullptr, nullptr );
 }
 
 void vmComboBox::setEditable ( const bool editable )

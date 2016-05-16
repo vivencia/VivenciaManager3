@@ -35,36 +35,35 @@ void servicesOfferedUI::showWindow ()
 
 void servicesOfferedUI::setupUI ()
 {
-	vmTableColumn *fields[SERVICES_FIELD_COUNT + 1] = { NULL };
+	vmTableColumn *fields ( m_table->createColumns( SERVICES_FIELD_COUNT ) );
 	uint i ( 0 );
 
 	for ( ; i < SERVICES_FIELD_COUNT; ++i ) {
-		fields[i] = new vmTableColumn;
-		fields[i]->label = VivenciaDB::getTableColumnLabel ( &so_rec->t_info, i );
+		fields[i].label = VivenciaDB::getTableColumnLabel ( &so_rec->t_info, i );
 		switch ( i ) {
 		case FLD_SERVICES_ID:
-			fields[FLD_SERVICES_ID]->editable = false;
+			fields[FLD_SERVICES_ID].editable = false;
 			break;
 		case FLD_SERVICES_TYPE:
 		case FLD_SERVICES_BASIC_UNIT:
 			break;
 		case FLD_SERVICES_DISCOUNT_FROM:
-			fields[FLD_SERVICES_DISCOUNT_FROM]->text_type = vmLineEdit::TT_INTEGER;
+			fields[FLD_SERVICES_DISCOUNT_FROM].text_type = vmLineEdit::TT_INTEGER;
 			break;
 		case FLD_SERVICES_LAST_UPDATE:
 		case FLD_SERVICES_AVERAGE_TIME:
-			fields[i]->wtype = WT_DATEEDIT;
+			fields[i].wtype = WT_DATEEDIT;
 			break;
 		case FLD_SERVICES_PRICE_PER_UNIT:
-			fields[FLD_SERVICES_PRICE_PER_UNIT]->text_type = vmLineEdit::TT_PRICE;
+			fields[FLD_SERVICES_PRICE_PER_UNIT].text_type = vmLineEdit::TT_PRICE;
 			break;
 		case FLD_SERVICES_DISCOUNT_FACTOR:
-			fields[FLD_SERVICES_DISCOUNT_FACTOR]->text_type = vmLineEdit::TT_DOUBLE;
+			fields[FLD_SERVICES_DISCOUNT_FACTOR].text_type = vmLineEdit::TT_DOUBLE;
 			break;
 		}
 	}
 
-	m_table = new vmTableWidget ( 20, fields );
+	m_table = new vmTableWidget ( 20 );
 	connect ( m_table, SIGNAL ( spreadCellChanged ( const int, const int ) ) , this, SLOT ( tableChanged ( const int, const int ) ) );
 	connect ( m_table, SIGNAL ( rowRemoved ( const uint ) ), this, SLOT ( rowRemoved ( const uint ) ) );
 	connect ( m_table, SIGNAL ( currentCellChanged ( const int, const int, const int, const int ) ), this, SLOT ( readRowData ( const int, const int, const int, const int ) ) );
@@ -75,9 +74,6 @@ void servicesOfferedUI::setupUI ()
 	layout->addWidget ( m_table, 1 );
 	setLayout ( layout );
 	setMinimumSize ( 800, 500 );
-
-	for ( i = 0; i < SERVICES_FIELD_COUNT; ++i )
-		delete fields[i];
 }
 
 void servicesOfferedUI::readRowData ( const int row, const int, const int prev_row, const int )

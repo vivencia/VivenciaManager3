@@ -204,11 +204,9 @@ void machinesDlg::setupConnections ()
 	} );
 
 	txtJob->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return dataAltered ( sender );
-	} );
+			return dataAltered ( sender ); } );
 	connect ( btnSelectJob, &QToolButton::clicked, this, [&] () {
-		return btnSelectJob_clicked ();
-	} );
+			return btnSelectJob_clicked (); } );
 
 	connect ( btnEdit, &QPushButton::clicked, this, [&] () {
 		return btnEdit_clicked ();
@@ -227,64 +225,62 @@ void machinesDlg::setupConnections ()
 void machinesDlg::initTableMachineEvents ()
 {
 	const uint n_cols ( 4 );
-	vmTableColumn* cols[n_cols + 1] = { nullptr };
+	vmTableColumn* cols ( tableJobEvents->createColumns( n_cols ) );
 	uint i ( 0 );
 	for ( ; i < n_cols - 1; ++i ) {
-		cols[i] = new vmTableColumn;
-		cols[i]->editable = false;
+		cols[i].editable = false;
 		switch ( i ) {
 			case 0: // FLD_MACHINES_NAME
-				cols[0]->label = tr ( "Machine" );
-				cols[0]->width = 180;
+				cols[0].label = tr ( "Machine" );
+				cols[0].width = 180;
 			break;
 			case 1: //FLD_MACHINES_EVENTS_DESC
-				cols[1]->label = tr ( "Event" );
-				cols[1]->width = 220;
+				cols[1].label = tr ( "Event" );
+				cols[1].width = 220;
 			break;
 			case 2: // FLD_MACHINES_EVENTS_DESC
-				cols[2]->wtype = WT_DATEEDIT;
-				cols[2]->label = tr ( "Event date" );
+				cols[2].wtype = WT_DATEEDIT;
+				cols[2].label = tr ( "Event date" );
 			break;
 			case 3: //FLD_MACHINES_EVENT_TIMES
-				cols[3]->wtype = WT_TIMEEDIT;
-				cols[3]->label = tr ( "Event duration" );
+				cols[3].wtype = WT_TIMEEDIT;
+				cols[3].label = tr ( "Event duration" );
 			break;
 		}
 	}
 	tableJobEvents->setIsPlainTable ();
-	tableJobEvents->initTable ( 6, cols );
+	tableJobEvents->initTable ( 6 );
 }
 
 // Display info only
 void machinesDlg::inittableMachineHistory ()
 {
-	const uint n_cols ( MACHINES_FIELD_COUNT - 4 );
-	vmTableColumn* cols[n_cols + 1] = { nullptr };
+	tableMachineHistory->setIsPlainTable ();
+	const uint n_cols ( MACHINES_FIELD_COUNT - 5 );
+	vmTableColumn* cols ( tableMachineHistory->createColumns ( n_cols ) );
 	uint i ( 0 );
-	for ( ; i < n_cols - 1; ++i ) {
-		cols[i] = new vmTableColumn;
-		cols[i]->editable = false;
+	for ( ; i < n_cols; ++i ) {
+		cols[i].editable = false;
 		switch ( i ) {
 			case FLD_MACHINES_EVENTS_DESC - 5:
-				cols[FLD_MACHINES_EVENTS_DESC - 5]->label = tr ( "Event" );
-				cols[FLD_MACHINES_EVENTS_DESC - 5]->width = 220;
+				cols[FLD_MACHINES_EVENTS_DESC - 5].label = tr ( "Event" );
+				cols[FLD_MACHINES_EVENTS_DESC - 5].width = 220;
 			break;
 			case FLD_MACHINES_EVENT_DATES - 5:
-				cols[FLD_MACHINES_EVENT_DATES - 5]->wtype = WT_DATEEDIT;
-				cols[FLD_MACHINES_EVENT_DATES - 5]->label = tr ( "Event date" );
+				cols[FLD_MACHINES_EVENT_DATES - 5].wtype = WT_DATEEDIT;
+				cols[FLD_MACHINES_EVENT_DATES - 5].label = tr ( "Event date" );
 			break;
 			case FLD_MACHINES_EVENT_TIMES - 5:
-				cols[FLD_MACHINES_EVENT_TIMES - 5]->wtype = WT_TIMEEDIT;
-				cols[FLD_MACHINES_EVENT_TIMES - 5]->label = tr ( "Event duration" );
+				cols[FLD_MACHINES_EVENT_TIMES - 5].wtype = WT_TIMEEDIT;
+				cols[FLD_MACHINES_EVENT_TIMES - 5].label = tr ( "Event duration" );
 			break;
 			case FLD_MACHINES_EVENT_JOBS - 5:
-				cols[FLD_MACHINES_EVENT_JOBS - 5]->label = tr ( "Associated job" );
-				cols[FLD_MACHINES_EVENT_JOBS - 5]->width = 200;
+				cols[FLD_MACHINES_EVENT_JOBS - 5].label = tr ( "Associated job" );
+				cols[FLD_MACHINES_EVENT_JOBS - 5].width = 200;
 			break;
 		}
 	}
-	tableMachineHistory->setIsPlainTable ();
-	tableMachineHistory->initTable ( 5, cols );
+	tableMachineHistory->initTable ( 5 );
 }
 
 void machinesDlg::canClose ()
@@ -313,10 +309,10 @@ void machinesDlg::controlForms ()
 
 void machinesDlg::clearForms ()
 {
-	cboMachines->setText ( emptyString );
-	cboBrand->setText ( emptyString );
-	cboType->setText ( emptyString );
-	cboEvents->setText ( emptyString );
+	cboMachines->clearEditText ();
+	cboBrand->clearEditText ();
+	cboType->clearEditText ();
+	cboEvents->clearEditText ();
 	tableMachineHistory->clear ();
 	dteEventDate->setDate ( vmNumber () );
 	timeEventTime->setTime ( vmNumber () );
@@ -520,8 +516,7 @@ void machinesDlg::btnDelEvent_clicked ()
 void machinesDlg::btnSelectJob_clicked ()
 {
 	globalMainWindow->setTempCallbackForJobSelect ( [&] ( const int jobid ) {
-		return getSelectedJobID ( jobid );
-	} );
+			return getSelectedJobID ( jobid ); } );
 	globalMainWindow->selectJob ();
 }
 
@@ -552,8 +547,9 @@ void machinesDlg::btnSave_clicked ()
 			APP_COMPLETERS ()->updateCompleter ( cboMachines->text (), vmCompleters::MACHINE_NAME );
 		if ( Data::insertComboItem ( cboBrand, cboBrand->text () ) != -1 )
 			APP_COMPLETERS ()->updateCompleter ( cboBrand->text (), vmCompleters::BRAND );
-		Data::insertComboItem ( cboType, cboType->text () );
-
+		if ( Data::insertComboItem ( cboType, cboType->text () ) != -1 )
+			APP_COMPLETERS ()->updateCompleter ( cboBrand->text (), vmCompleters::STOCK_TYPE );
+		
 		uint row ( tableMachineHistory->lastUsedRow () + 1 );
 		tableMachineHistory->setCellValue ( cboEvents->text (), row, 0 );
 		tableMachineHistory->setCellValue ( dteEventDate->text (), row, 1 );

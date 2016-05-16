@@ -126,7 +126,7 @@ bool stringRecord::isOK () const
 void stringRecord::fromString ( const QString& str )
 {
 	// making the stringRecord load an empty string or a unformatted string, sets mState
-	// to Undefined, in a way for callers to check the returned value and see that it is an invalid result.
+	// to Undefined, a means for callers to check the returned value and see that it is an invalid result.
 	// Off is not and invalid result, only marks the stringRecord as being empty
 	if ( str.isEmpty () ) {
 		clear ();

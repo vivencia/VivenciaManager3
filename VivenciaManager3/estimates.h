@@ -8,6 +8,8 @@
 #include <QDialog>
 #include <QStringList>
 
+class newProjectDialog;
+
 class QTreeWidgetItem;
 class QAction;
 
@@ -42,6 +44,8 @@ private:
 	static estimateDlg* s_instance;
 	friend estimateDlg* ESTIMATE ();
 	friend void deleteEstimateInstance ();
+	
+	newProjectDialog* m_npdlg;
 };
 
 inline estimateDlg* ESTIMATE ()

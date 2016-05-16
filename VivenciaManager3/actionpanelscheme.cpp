@@ -130,6 +130,190 @@ const char* const ActionPanelVistaStyle (
 	"}"
 );
 
+const char* const ActionPanelWinXPBlueStyle1 (
+
+    "QFrame[class='panel'] {"
+        "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #7ba2e7, stop: 1 #6375d6);"
+    "}"
+
+    "vmActionGroup QFrame[class='header'] {"
+        "background-color: #225aca;"
+        "border: 1px solid #225aca;"
+        "border-top-left-radius: 4px;"
+        "border-top-right-radius: 4px;"
+    "}"
+
+    "vmActionGroup QToolButton[class='header'] {"
+        "text-align: left;"
+        "color: #ffffff;"
+        "background-color: transparent;"
+        "border: 1px solid transparent;"
+        "font-weight: bold;"
+    "}"
+
+    "vmActionGroup QToolButton[class='header']:hover {"
+        "color: #428eff;"
+    "}"
+
+    "vmActionGroup QFrame[class='content'] {"
+        "background-color: #eff3ff;"
+        "border: 1px solid #ffffff;"
+    "}"
+
+    "vmActionGroup QFrame[class='content'][header='true'] {"
+        "border-top: none;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action'] {"
+        "background-color: transparent;"
+        "border: 1px solid transparent;"
+        "color: #215dc6;"
+        "text-align: left;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:!enabled {"
+        "color: #999999;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:hover {"
+        "color: #428eff;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:focus {"
+        "border: 1px dotted black;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:on {"
+        "background-color: #ddeeff;"
+        "color: #006600;"
+    "}"
+);
+
+const char* const ActionPanelWinXPBlueStyle2 (
+
+    "QFrame[class='panel'] {"
+        "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #7ba2e7, stop: 1 #6375d6);"
+    "}"
+
+    "vmActionGroup QFrame[class='header'] {"
+        "border: 1px solid #ffffff;"
+        "border-top-left-radius: 4px;"
+        "border-top-right-radius: 4px;"
+        "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #ffffff, stop: 1 #c6d3f7);"
+    "}"
+
+    "vmActionGroup QToolButton[class='header'] {"
+        "text-align: left;"
+        "color: #215dc6;"
+        "background-color: transparent;"
+        "border: 1px solid transparent;"
+        "font-weight: bold;"
+    "}"
+
+    "vmActionGroup QToolButton[class='header']:hover {"
+        "color: #428eff;"
+    "}"
+
+    "vmActionGroup QFrame[class='content'] {"
+        "background-color: #d6dff7;"
+        "border: 1px solid #ffffff;"
+    "}"
+
+    "vmActionGroup QFrame[class='content'][header='true'] {"
+        "border-top: none;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action'] {"
+        "background-color: transparent;"
+        "border: 1px solid transparent;"
+        "color: #215dc6;"
+        "text-align: left;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:!enabled {"
+        "color: #999999;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:hover {"
+        "color: #428eff;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:focus {"
+        "border: 1px dotted black;"
+    "}"
+
+    "vmActionGroup QToolButton[class='action']:on {"
+        "background-color: #ddeeff;"
+        "color: #006600;"
+    "}"
+);
+
+const char* const ActionPanelDefaultStyle2 (
+		"QFrame[class='panel'] {"
+	        "background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #99cccc, stop: 1 #EAF7FF);"
+	    "}"
+	
+	    "vmActionGroup QFrame[class='header'] {"
+	        "background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #F9FDFF, stop: 1 #EAF7FF);"
+	        "border: 1px solid #00aa99;"
+	        "border-bottom: 1px solid #99cccc;"
+	        "border-top-left-radius: 3px;"
+	        "border-top-right-radius: 3px;"
+	    "}"
+	
+	    "vmActionGroup QFrame[class='header']:hover {"
+	        "background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #EAF7FF, stop: 1 #F9FDFF);"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='header'] {"
+	        "text-align: left;"
+	        "font: 14px;"
+	        "color: #006600;"
+	        "background-color: transparent;"
+	        "border: 1px solid transparent;"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='header']:hover {"
+	        "color: #00cc00;"
+	        "text-decoration: underline;"
+	    "}"
+	
+	    "vmActionGroup QFrame[class='content'] {"
+	        "background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #F9FDFF, stop: 1 #EAF7FF);"
+	        "border: 1px solid #00aa99;"
+	    "}"
+	
+	    "vmActionGroup QFrame[class='content'][header='true'] {"
+	        "border-top: none;"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='action'] {"
+	        "background-color: transparent;"
+	        "border: 1px solid transparent;"
+	        "color: #0033ff;"
+	        "text-align: left;"
+	        "font: 11px;"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='action']:!enabled {"
+	        "color: #999999;"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='action']:hover {"
+	        "color: #0099ff;"
+	        "text-decoration: underline;"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='action']:focus {"
+	        "border: 1px dotted black;"
+	    "}"
+	
+	    "vmActionGroup QToolButton[class='action']:on {"
+	        "background-color: #ddeeff;"
+	        "color: #006600;"
+	    "}"
+);
+
 ActionPanelScheme::ActionPanelScheme ( const PanelStyle style )
 {
 	headerSize = 26;
@@ -141,11 +325,11 @@ ActionPanelScheme::ActionPanelScheme ( const PanelStyle style )
 	headerButtonUnfoldOver = ICON ( "stylepanel/def-UnfoldOver.png" );
 	headerButtonClose = ICON ( "stylepanel/panelClose.png" );
 	headerButtonCloseOver = ICON ( "stylepanel/panelCloseOver.png" );
-	headerButtonSize = QSize ( 18, 18 );
+	headerButtonSize = QSize ( 17, 17 );
 
 	groupFoldSteps = 20;
 	groupFoldDelay = 15;
-	groupFoldEffect = ShrunkFolding;
+	groupFoldEffect = SlideFolding;
 	groupFoldThaw = true;
 
 	switch ( style ) {
@@ -155,26 +339,23 @@ ActionPanelScheme::ActionPanelScheme ( const PanelStyle style )
 		case PANEL_DEFAULT:
 			actionStyle = ActionPanelDefaultStyle;
 		break;
+		case PANEL_DEFAULT_2:
+			actionStyle = ActionPanelDefaultStyle2;
+		break;
 		case PANEL_VISTA:
 			actionStyle = ActionPanelVistaStyle;
+		break;
+		case PANEL_XP_1:
+			actionStyle = ActionPanelWinXPBlueStyle1;
+		break;
+		case PANEL_XP_2:
+			actionStyle = ActionPanelWinXPBlueStyle2;
 		break;
 	}
 }
 
-ActionPanelScheme* ActionPanelScheme::noScheme ()
-{
-	static ActionPanelScheme scheme ( PANEL_NONE );
-	return &scheme;
-}
-
 ActionPanelScheme* ActionPanelScheme::defaultScheme ()
 {
-	static ActionPanelScheme scheme ( PANEL_DEFAULT );
-	return &scheme;
-}
-
-ActionPanelScheme* ActionPanelScheme::vistaScheme ()
-{
-    static ActionPanelScheme scheme ( PANEL_VISTA );
+	static ActionPanelScheme scheme ( PANEL_DEFAULT_2 );
 	return &scheme;
 }

@@ -5,7 +5,7 @@
 
 #include "vmlist.h"
 #include "tristatetype.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 
 class vmWidget;
 class vmTableWidget;
@@ -58,7 +58,7 @@ private:
 	void createTable ();
 	void btnPrevClicked ();
 	void btnNextClicked ();
-	void listRowSelected ( const vmTableItem* current );
+	void listRowSelected ( const int row );
 	vmListItem* getOtherItem ( const uint typeID, const uint id ) const;
 	void getClientInfo ( const clientListItem* const client_rec, VMList<QString>& cellData );
 	bool getJobInfo (jobListItem* job_item, VMList<QString>& cellData );

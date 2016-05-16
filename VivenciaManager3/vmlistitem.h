@@ -1,13 +1,11 @@
 #ifndef LISTITEMS_H
 #define LISTITEMS_H
 
-#include "vmwidget.h"
+#include "vmtableitem.h"
 #include "client.h"
 #include "job.h"
 #include "payment.h"
 #include "purchases.h"
-
-#include <QtWidgets/QListWidgetItem>
 
 enum SEARCH_STATUS { SS_NOT_SEARCHING = TRI_UNDEF, SS_SEARCH_FOUND = TRI_ON, SS_NOT_FOUND = TRI_UNDEF };
 
@@ -35,16 +33,16 @@ enum CRASH_FIELDS {
 	CF_SUBTYPE = 0, CF_CLIENTID, CF_JOBID, CF_ID, CF_ACTION, CF_DBRECORD
 };
 
-class vmListItem : public QListWidgetItem, public vmWidget
+class vmListItem : public vmTableItem
 {
 
-friend class DBRecord;
-friend class MainWindow;
+friend class vmListWidget;
 
 public:
 	explicit vmListItem ( const uint type_id, const uint nbadInputs = 0, bool* const badinputs_ptr = nullptr );
+	vmListItem ( const QString& label );
 	virtual ~vmListItem ();
-
+	
 	QString defaultStyleSheet () const;
 	void highlight ( const VMColors vm_color, const QString& = QString::null );
 
@@ -67,14 +65,11 @@ public:
 	void setAction ( const RECORD_ACTION action, const bool bSetDBRec = false, const bool bSelfOnly = false );
 	virtual void createDBRecord ();
 	virtual bool loadData ();
-	virtual void update ( const bool bQtCall = true );
+	virtual void update ();
     virtual void relationActions ( vmListItem* = nullptr ) { ; }
-
-	// I decided to make these public to test the concept of having public class members.
-	// This class and derived only delete the pointers, which are created and used elsewhere
-	vmListItem* item_related[6];
-	QString m_strBodyText;
-
+	void setRelatedItem ( const RELATED_LIST_ITEMS rel_idx, vmListItem* const item );
+	vmListItem* relatedItem ( const RELATED_LIST_ITEMS rel_idx ) const;
+	
 	virtual uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 
 	inline int crashID () const { return m_crashid; }
@@ -90,9 +85,10 @@ public:
 			return searchFields ? static_cast<SEARCH_STATUS> ( searchFields[field].state () ) : SS_NOT_SEARCHING; }
 
     void setSearchArray ();
-	void createSearchArray (); //for generic items
 
 protected:
+	void deleteRelatedItem ( const RELATED_LIST_ITEMS rel_idx );
+
 	int m_crashid;
 	DBRecord* m_dbrec;
 	RELATED_LIST_ITEMS mRelation;
@@ -104,6 +100,8 @@ private:
 	vmListItem& operator=( const vmListItem& );
 	vmListItem& operator=( const QListWidgetItem& );
 
+	vmListItem* item_related[6];
+	
 	RECORD_ACTION m_action;
     vmListWidget* m_list;
 
@@ -121,9 +119,12 @@ public:
         : vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs ) {}
 	virtual ~clientListItem ();
 
+	// Prevent Qt from deleting these objects
+	inline void operator delete ( void* )  { return; }
+	
 	inline Client* clientRecord () const { return static_cast<Client*> ( dbRec () ); }
 
-	void update ( const bool bQtCall = true );
+	void update ();
 	void createDBRecord ();
 	bool loadData ();
     void relationActions ( vmListItem* subordinateItem = nullptr );
@@ -145,13 +146,16 @@ public:
 
 	virtual ~jobListItem ();
 
+	// Prevent Qt from deleting these objects
+	inline void operator delete ( void* )  { return; }
+	
 	inline Job* jobRecord () const { return static_cast<Job*> ( dbRec () ); }
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 
 	void createDBRecord ();
 	bool loadData ();
-	void update ( const bool bQtCall = true );
+	void update ();
     void relationActions ( vmListItem* subordinateItem = nullptr );
 
 	inline void setPayItem ( payListItem* const pay ) { m_payitem = pay; }
@@ -182,13 +186,16 @@ public:
         : vmListItem ( PAYMENT_TABLE, pay_nBadInputs, badInputs ) {}
 	virtual ~payListItem ();
 
+	// Prevent Qt from deleting these objects
+	inline void operator delete ( void* )  { return; }
+		
 	inline Payment* payRecord () const { return static_cast<Payment*> ( dbRec () ); }
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 
 	void createDBRecord ();
 	bool loadData ();
-	void update ( const bool bQtCall = true );
+	void update ();
     void relationActions ( vmListItem* subordinateItem = nullptr );
 
 private:
@@ -203,11 +210,14 @@ public:
         : vmListItem ( PURCHASE_TABLE, buy_nBadInputs, badInputs ) {}
 	virtual ~buyListItem ();
 
+	// Prevent Qt from deleting these objects
+	inline void operator delete ( void* )  { return; }
+		
 	inline Buy* buyRecord () const { return static_cast<Buy*> ( dbRec () ); }
 
 	void createDBRecord ();
 	bool loadData ();
-	void update ( const bool bQtCall = true );
+	void update ();
     void relationActions ( vmListItem* subordinateItem = nullptr );
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;

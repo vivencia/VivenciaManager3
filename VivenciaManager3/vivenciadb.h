@@ -11,6 +11,7 @@
 
 class vmTableWidget;
 class passwordManager;
+class BackupDialog;
 
 class VivenciaDB
 {
@@ -104,10 +105,10 @@ public:
 
 	//-----------------------------------------IMPORT-EXPORT--------------------------------------------
 	bool checkDumpFile ( const QString& dumpfile );
-	bool doBackup ( const QString& filepath, const QString& tables );
-	bool doRestore ( const QString& filepath );
-	bool importFromCSV ( const QString& filename );
-	bool exportToCSV ( const uint table, const QString& filename );
+	bool doBackup ( const QString& filepath, const QString& tables, BackupDialog* bDlg );
+	bool doRestore ( const QString& filepath, BackupDialog* bDlg );
+	bool importFromCSV (const QString& filename, BackupDialog* bDlg );
+	bool exportToCSV (const uint table, const QString& filename, BackupDialog* bDlg );
 	//-----------------------------------------IMPORT-EXPORT--------------------------------------------
 
 private:

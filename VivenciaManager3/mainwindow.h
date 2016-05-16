@@ -44,7 +44,6 @@ class QLineEdit;
 class QFrame;
 class QLabel;
 class QListWidgetItem;
-class QModelIndex;
 class QTimer;
 class QTabWidget;
 
@@ -94,7 +93,7 @@ public:
 	void showClientSearchResult ( vmListItem* item, const bool bshow );
 	void setupClientPanel ();
 	void clientKeyPressedSelector ( const QKeyEvent* ke );
-	void clientsListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
+	void clientsListWidget_currentItemChanged ( vmListItem* item );
 	void controlClientForms ( const clientListItem* const client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
     void loadClientInfo ( const Client* const client );
@@ -122,11 +121,11 @@ public:
 	void setupJobPanel ();
 	void setUpJobButtons ( const QString& path );
 	void setupJobPictureControl ();
-	void displayJobFromCalendar ( QListWidgetItem* cal_item );
+	void displayJobFromCalendar ( vmListItem* cal_item );
 	void updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION action );
 	void jobKeyPressedSelector ( const QKeyEvent* ke );
-	void jobsListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
-	void jobDayReportListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
+	void jobsListWidget_currentItemChanged ( vmListItem* item );
+	void jobDayReportListWidget_currentItemChanged ( vmListItem* item );
     void controlJobForms ( const jobListItem* const job_item );
     void controlJobDayForms ( const jobListItem* const job_item );
     void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
@@ -146,6 +145,7 @@ public:
     triStateType dateIsInDaysList ( const QString& str_date );
     void rescanJobDaysList ();
     void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
+	void controlFormsForJobSelection ( const bool bStartSelection );
 	void selectJob ();
 	void btnJobSelect_clicked ();
 	void btnJobAddDay_clicked ();
@@ -178,10 +178,10 @@ public:
 	void savePayWidget ( vmWidget* widget, const uint id );
 	void showPaySearchResult ( vmListItem* item, const bool bshow );
 	void setupPayPanel ();
-	void displayPayFromCalendar ( QListWidgetItem* cal_item );
-	void paysListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
-	void paysOverdueListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
-	void paysOverdueClientListWidget_currentItemChanged ( vmListItem* item, vmListItem* = nullptr );
+	void displayPayFromCalendar ( vmListItem* cal_item );
+	void paysListWidget_currentItemChanged ( vmListItem* item );
+	void paysOverdueListWidget_currentItemChanged ( vmListItem* item );
+	void paysOverdueClientListWidget_currentItemChanged ( vmListItem* item );
 	void updateCalendarWithPayInfo ( Payment* const pay, const RECORD_ACTION action );
 	void addPaymentOverdueItems ( payListItem* pay_item );
 	void removePaymentOverdueItems ( payListItem* pay_item );
@@ -211,10 +211,10 @@ public:
 	void saveBuyWidget ( vmWidget* widget, const uint id );
 	void showBuySearchResult ( vmListItem* item, const bool bshow );
 	void setupBuyPanel ();
-	void displayBuyFromCalendar ( QListWidgetItem* cal_item );
-	void buysListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
-	void buysJobListWidget_currentItemChanged ( vmListItem* item, vmListItem* previous = nullptr );
-	void buySuppliersListWidget_currentItemChanged ( vmListItem* item, vmListItem* );
+	void displayBuyFromCalendar ( vmListItem* cal_item );
+	void buysListWidget_currentItemChanged ( vmListItem* item );
+	void buysJobListWidget_currentItemChanged ( vmListItem* item );
+	void buySuppliersListWidget_currentItemChanged ( vmListItem* item );
 	void updateCalendarWithBuyInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateCalendarWithBuyPayInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
@@ -229,6 +229,7 @@ public:
 	void updateBuyTotalPaidValue ();
 	void buyKeyPressedSelector ( const QKeyEvent* ke );
 	void getPurchasesForSuppliers ( const QString& supplier );
+	void setBuyPayValueToBuyPrice ( const QString& price );
 //--------------------------------------------BUY------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-BUY-----------------------------------------------------------
@@ -275,7 +276,7 @@ public:
 //--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
 
 //--------------------------------------------SHARED-----------------------------------------------------------
-    void removeListItem ( vmListItem* item, const bool b_select_another = true );
+    void removeListItem ( vmListItem* item, const bool b_delete_item = true );
 	void postFieldAlterationActions ( vmListItem* item );
 //--------------------------------------------SHARED-----------------------------------------------------------
 
@@ -315,17 +316,18 @@ private:
 
 	vmTaskPanel* clientTaskPanel;
 	vmTaskPanel* mainTaskPanel;
+	vmActionGroup* agClientOps, *agClientJobs, *agClientPays, *agClientBuys;
 
 	vmListWidget* clientsList;
 	vmListWidget* jobsList;
 	vmListWidget* paysList, *paysOverdueList, *paysOverdueClientList, *paysCurrentList;
 	vmListWidget* buysList, *buysJobList;
 
-	clientListItem* CLIENT_PREV_ITEM;
+	/*clientListItem* CLIENT_PREV_ITEM;
 	jobListItem* JOB_PREV_ITEM;
 	payListItem* PAY_PREV_ITEM;
 	buyListItem* BUY_PREV_ITEM;
-	buyListItem* BUY_JOB_PREV_ITEM;
+	buyListItem* BUY_JOB_PREV_ITEM;*/
 
 	vmActionGroup* grpClients;
 	vmActionGroup* grpJobs;

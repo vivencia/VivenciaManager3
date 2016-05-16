@@ -50,7 +50,6 @@ public:
 	void startUserInteface ();
 	void loadDataIntoMemory ();
 
-	const QString currentClientID () const;
 	const QString currentClientName () const;
 
 	Client* currentClient () const;
@@ -85,7 +84,7 @@ public:
 		return address.contains ( QLatin1Char ( '@' ) ) && address.contains ( CHR_DOT );
 	}
 
-	constexpr static int vmColorToRGB ( const VMColors vmcolor )
+	constexpr static int vmColorIndex ( const VMColors vmcolor )
 	{
 		int idx ( -1 );
 		switch ( vmcolor ) {

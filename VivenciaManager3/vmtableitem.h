@@ -16,56 +16,44 @@ class vmTableWidget;
 class vmTableItem : public QTableWidgetItem, public vmWidget
 {
 
-friend class vmTableWidget;
-
 public:
 	explicit vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
 						   const vmLineEdit::TEXT_TYPE ttype,
 						   const QString& text, const vmTableWidget* table );
 
-	~vmTableItem ();
+	vmTableItem ( const QString& text = QString::null ); // Simple item. No widgets. Not editable.
+	virtual ~vmTableItem ();
+	
+	inline vmTableWidget* table () const { return m_table; }
+	
 	void setEditable ( const bool editable );
 
-	inline vmWidget* widget () const {
-		return m_widget;
-	}
-	inline void setWidget ( vmWidget* widget ) {
-		m_widget = widget;
-	}
+	inline vmWidget* widget () const { return m_widget; }
+	inline void setWidget ( vmWidget* widget ) { m_widget = widget; }
 
 	void highlight ( const VMColors color, const QString& str = QString::null );
 
 	QVariant data ( const int role ) const;
 
-	inline QString text () const {
-		return mCache.toString ();
-	}
-	inline QString prevText () const {
-		return mprev_datacache.toString ();
-	}
+	inline QString text () const { return mCache.toString (); }
+	inline QString prevText () const { return mprev_datacache.toString (); }
 	//inline void setOriginalText ( const QString& text ) { mBackupData_cache = text; }
-	inline QString originalText () const {
-		return mBackupData_cache.toString ();
-	}
-	inline void setCellIsAltered ( const bool altered ) {
-		mb_CellAltered = altered;
-	}
-	inline bool cellIsAltered () const {
-		return mb_CellAltered;
-	}
+	inline QString originalText () const { return mBackupData_cache.toString (); }
+	inline void setCellIsAltered ( const bool altered ) { mb_CellAltered = altered; }
+	inline bool cellIsAltered () const { return mb_CellAltered; }
+	
 	inline void syncOriginalTextWithCurrent () {
 		mBackupData_cache = mCache;
 		mb_CellAltered = false;
 	}
 
-	inline void setText ( const QString& text, const bool force_notify = false ) {
-		return setText ( text, false, force_notify );	// avoid compiler (clang) error
+	inline void setText ( const QString& text = QString::null, const bool = false ) {
+		vmTableItem::setText ( text, false, false, false );
 	}
 	void setText ( const QString& text, const bool b_from_cell_itself = false,
 				   const bool force_notify = false, const bool b_formulaResult = false );
 	inline void setTextToDefault ( const bool force_notify = false ) {
-		setText ( mDefaultValue, false, force_notify );
-	}
+			setText ( mDefaultValue, false, force_notify ); }
 
 	void setDate ( const vmNumber& date );
 	vmNumber date ( const bool bCurText = true ) const;
@@ -102,7 +90,7 @@ public:
 	inline vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE buttonType () const { return m_btype; }
 
 	QString spreadItemToString () const;
-
+	
 private:
 	PREDEFINED_WIDGET_TYPES m_wtype;
 	vmWidget::TEXT_TYPE m_texttype;

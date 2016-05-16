@@ -21,16 +21,24 @@ static void decode_pos ( const QString& pos, int* const row, int* const col )
 vmTableItem::vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
 						   const vmLineEdit::TEXT_TYPE ttype, const QString& text, const vmTableWidget* table )
 	: QTableWidgetItem ( text ), vmWidget ( WT_TABLE_ITEM ),
-	  m_wtype ( wtype ), m_texttype ( ttype ), mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
+	  m_wtype ( wtype ), m_texttype ( ttype ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ), mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
 	  mb_CellAltered ( false ), mDefaultValue ( text ), mCache ( text ), m_table ( const_cast<vmTableWidget*> ( table ) ),
 	  m_targets ( 4 ), m_widget ( nullptr )
+{}
+
+vmTableItem::vmTableItem ( const QString& text )
+	: QTableWidgetItem ( text ), vmWidget ( WT_LISTITEM ),
+	  m_wtype ( WT_WIDGET_UNKNOWN ), m_texttype ( vmLineEdit::TT_TEXT ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ), mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
+	  mb_CellAltered ( false ), mDefaultValue ( text ), mCache ( text ), m_table ( nullptr ),
+	  m_targets ( 0 ), m_widget ( nullptr )
 {}
 
 vmTableItem::~vmTableItem () {}
 
 void vmTableItem::setEditable ( const bool editable )
 {
-	m_widget->setEditable ( editable );
+	if ( m_widget )
+		m_widget->setEditable ( editable );
 	vmWidget::setEditable ( editable );
 }
 
@@ -56,15 +64,16 @@ void vmTableItem::setText ( const QString& text, const bool b_from_cell_itself,
 	}
 
 	mCache = text;
-	m_table->setLastUsedRow ( row () );
+	if ( m_table )
+		m_table->setLastUsedRow ( row () );
 
 	for ( uint i ( 0 ); i < m_targets.count (); ++i )
 		m_targets.at ( i )->computeFormula ();
 
 	// The call to change the widget's text must be the last operation so that callbackers can
-	// take the item's text (if so the wish) when there is a signal call by the widget, and get
+	// take the item's text (if so they wish) when there is a signal call by the widget, and get
 	// the updated value, instead of the old one
-	if ( !b_from_cell_itself )
+	if ( !b_from_cell_itself && m_widget )
 		m_widget->setText ( text, force_notify );
 }
 
@@ -77,10 +86,8 @@ void vmTableItem::setDate ( const vmNumber& date )
 vmNumber vmTableItem::date ( const bool bCurText ) const
 {
 	if ( m_widget->type () == WT_DATEEDIT ) {
-		if ( bCurText )
-			static_cast<vmDateEdit*> ( m_widget )->date ();
-		else
-			return vmNumber ( originalText (), VMNT_DATE, vmNumber::VDF_HUMAN_DATE );
+		return bCurText ? static_cast<vmDateEdit*> ( m_widget )->date () :
+					vmNumber ( originalText (), VMNT_DATE, vmNumber::VDF_HUMAN_DATE );
 	}
 	return vmNumber::emptyNumber;
 }
@@ -110,8 +117,8 @@ void vmTableItem::highlight ( const VMColors color, const QString& )
 
 QVariant vmTableItem::data ( const int role ) const
 {
-	if ( row () >= 0 )
-		return QVariant (); // TEST
+	//if ( row () >= 0 )
+	//	return QVariant (); // TEST
 
 	switch ( role ) {
 		case Qt::DisplayRole:
@@ -119,9 +126,9 @@ QVariant vmTableItem::data ( const int role ) const
 		case Qt::EditRole:
 			return mCache;
 		break;
-		case Qt::TextAlignmentRole:
-			return static_cast<int> ( Qt::AlignCenter );
-		break;
+		//case Qt::TextAlignmentRole:
+		//	return static_cast<int> ( Qt::AlignCenter );
+		//break;
 		default:
 			return QTableWidgetItem::data ( role );
 		break;

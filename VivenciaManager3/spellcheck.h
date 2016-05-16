@@ -17,7 +17,7 @@ class spellCheck : public QObject
 {
 
 public:
-    ~spellCheck ();
+    virtual ~spellCheck ();
 
     static void init () {
         if ( !s_instance )

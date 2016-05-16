@@ -29,21 +29,20 @@ public:
 	virtual ~BackupDialog ();
 
 	void showWindow ();
-	bool doBackup ( const QString& filename, const QString& path, const bool bUserInteraction = false );
-    void doDayBackup ();
-	bool doExport ( const QString& prefix, const QString& path );
-
+	static bool doBackup ( const QString& filename, const QString& path, const bool bUserInteraction = false );
+    static void doDayBackup ();
+	bool doExport ( const QString& prefix, const QString& path, const bool bUserInteraction = false );
 	bool doRestore ( const QString& filepath );
 
-	void addToRestoreList ( const QString& filepath );
+	static void addToRestoreList ( const QString& filepath, BackupDialog* bDlg );
 	void readFromBackupList ();
-	void incrementProgress ();
+	static void incrementProgress ( BackupDialog* bDlg );
 
 	void showNoDatabaseOptionsWindow ();
 
 	inline bool actionSuccess () const { return mb_success; }
 
-	inline QString standardDefaultBackupFilename () const {
+	static inline QString standardDefaultBackupFilename () {
 		return QLatin1String ( "vmdb-" ) + vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ); }
 
 private:
@@ -79,9 +78,9 @@ private:
 
 	void initProgressBar ( const uint max );
 	void increaseProgressBar ( const uint accrete );
-	bool checkThatFileDoesNotExist ( const QString& filepath, const bool bUserInteraction );
-	bool checkDir ( const QString& dir ) const;
-	bool checkFile ( const QString& file ) const;
+	static bool checkThatFileDoesNotExist ( const QString& filepath, const bool bUserInteraction );
+	static bool checkDir ( const QString& dir );
+	static bool checkFile ( const QString& file );
 	void addDocuments ( const QString& tar_file );
 	void addImages ( const QString& tar_file );
 

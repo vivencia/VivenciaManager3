@@ -7,6 +7,7 @@
 #include "vmwidgets.h"
 #include "heapmanager.h"
 #include "vmcheckedtableitem.h"
+#include "vmtableutils.h"
 #include "vmnotify.h"
 #include "fast_library_functions.h"
 
@@ -38,44 +39,39 @@ constexpr uint PURCHASES_TABLE_COLS ( 7 );
 }*/
 //---------------------------------------------STATIC---------------------------------------------------------
 
-//---------------------------------------------TABLE WIDGET---------------------------------------------------------
 vmTableWidget::vmTableWidget ( QWidget* parent )
 	: QTableWidget ( parent ), vmWidget ( WT_TABLE ),
-	  mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_ncols ( 0 ), mAddedItems ( 0 ),
-	  mTableChanged ( false ), mbKeepModRec ( true ),
-	  mPlainTable ( false ), mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
+	  mTableChanged ( false ), mbKeepModRec ( true ), mbPlainTable ( false ), mbTableIsList ( false ), 
+	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( 10 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
-	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ),
-	  mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
-	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr ),
-	  searchPanelPlacement_func ( nullptr )
+	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ), m_filterPanel ( nullptr ),
+	  mLayoutUtilities ( nullptr ), mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
+	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr )
 {
 	sharedContructorsCode ();
 }
 
-vmTableWidget::vmTableWidget ( const uint rows, vmTableColumn** cols, QWidget* parent )
+vmTableWidget::vmTableWidget ( const uint rows, QWidget* parent )
 	: QTableWidget ( rows + 1, 0, parent ), vmWidget ( WT_TABLE, rows ),
-	  mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_ncols ( 0 ), mAddedItems ( 0 ),
-	  mTableChanged ( false ), mbKeepModRec ( true ),
-	  mPlainTable ( false ), mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
+	  mTableChanged ( false ), mbKeepModRec ( true ), mbPlainTable ( false ), mbTableIsList ( false ), 
+	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( rows + 1 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
-	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ),
-	  mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
-	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr ),
-	  searchPanelPlacement_func ( nullptr )
+	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ), m_filterPanel ( nullptr ),
+	  mLayoutUtilities ( nullptr ), mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
+	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr )
 {
 	sharedContructorsCode ();
-	initTable ( rows, cols );
+	initTable ( rows );
 }
 
 vmTableWidget::~vmTableWidget ()
 {
 	disconnect ( this, nullptr, nullptr, nullptr );
-	mSearchList.clear ( true );
-	modifiedRows.clear ();
-	heap_del ( m_searchPanel );
+	heap_dellarr ( mCols );
 	heap_del ( mCopyCellAction );
 	heap_del ( mCopyRowContents );
 	heap_del ( mInsertRowAction );
@@ -89,7 +85,14 @@ vmTableWidget::~vmTableWidget ()
 	heap_del ( mFormulaTitleAction );
 }
 
-void vmTableWidget::initTable ( const uint rows, vmTableColumn** cols )
+vmTableColumn* vmTableWidget::createColumns ( const uint nCols )
+{
+	mCols = new vmTableColumn[nCols];
+	m_ncols = nCols;
+	return mCols;
+}
+
+void vmTableWidget::initTable ( const uint rows )
 {
 	uint i_col ( 0 );
 	int i_row ( 0 );
@@ -97,89 +100,83 @@ void vmTableWidget::initTable ( const uint rows, vmTableColumn** cols )
 	uint colWidth ( 0 );
 	vmTableColumn* column ( nullptr );
 	vmTableItem* sheet_item ( nullptr );
-
 	QString col_header;
-	QFont titleFont ( font () );
-	titleFont.setBold ( true );
-	mTotalsRow = rows;
-	const int row_count ( rows + static_cast<uint>( !mPlainTable ) );
-	setRowCount ( row_count );
 
-	vmCheckedTableItem* headerItem ( new vmCheckedTableItem ( Qt::Horizontal, this ) );
-	headerItem->setCallbackForCheckStateChange ( [&] ( const uint col, const bool checked ) {
+	mTotalsRow = rows;
+	m_nVisibleRows = rows + static_cast<uint>( !mbPlainTable );
+	setRowCount ( m_nVisibleRows );
+
+	if ( !mbTableIsList ) {
+		QFont titleFont ( font () );
+		titleFont.setBold ( true );
+		vmCheckedTableItem* headerItem ( new vmCheckedTableItem ( Qt::Horizontal, this ) );
+		headerItem->setCallbackForCheckStateChange ( [&] ( const uint col, const bool checked ) {
 			return headerItemToggled ( col, checked ); } );
-	setHorizontalHeader ( headerItem );
+		setHorizontalHeader ( headerItem );
+	}
+	else
+		horizontalHeader ()->setVisible ( false );
 
 	do
 	{
-		column = cols[i_col];
-		if ( column != nullptr ) {
-			insertColumn ( i_col );
+		column = &mCols[i_col];
+		insertColumn ( i_col );
 
-			if ( !column->editable )
-				setBit ( readOnlyColumnsMask, i_col ); // bit is set? read only cell : cell can be cleared or other actions
+		if ( !column->editable )
+			setBit ( readOnlyColumnsMask, i_col ); // bit is set? read only cell : cell can be cleared or other actions
 
-			for ( i_row = 0; i_row < row_count; ++i_row ) {
-				if ( i_row != mTotalsRow || mPlainTable ) // last row, read-only, displays formulas like "sum" for the previous rows
-					sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
-				else
-					sheet_item = new vmTableItem ( WT_LINEEDIT, i_col != 0 ? column->text_type : vmWidget::TT_TEXT, emptyString, this );
-
-				setItem ( i_row, i_col, sheet_item );
-				sheet_item->setButtonType ( column->button_type );
-				sheet_item->setCompleterType ( column->completer_type );
-				setCellWidget ( sheet_item );
-				sheet_item->setEditable ( false );
-				if ( i_row == mTotalsRow && !mPlainTable ) {
-					if ( i_col == 0 )
-						sheet_item->setText ( tr ( "Total:" ), false, false );
-					else {
-						if ( column->text_type >= vmLineEdit::TT_PRICE ) {
-							col_header = QChar ( 'A' + i_col );
-							sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header +
-													 CHR_ZERO + CHR_SPACE + col_header + QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
-						}
+		for ( i_row = 0; i_row < (signed) m_nVisibleRows; ++i_row ) {
+			if ( !mbPlainTable && i_row != mTotalsRow ) // last row, read-only, displays formulas like "sum" for the previous rows
+				sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
+			else if ( !mbTableIsList )
+				sheet_item = new vmTableItem ( WT_LINEEDIT, i_col != 0 ? column->text_type : vmWidget::TT_TEXT, emptyString, this );
+			
+			setItem ( i_row, i_col, sheet_item );
+			sheet_item->setButtonType ( column->button_type );
+			sheet_item->setCompleterType ( column->completer_type );
+			setCellWidget ( sheet_item );
+			sheet_item->setEditable ( false );
+			if ( i_row == mTotalsRow && !mbPlainTable ) {
+				if ( i_col == 0 )
+					sheet_item->setText ( tr ( "Total:" ), false, false );
+				else {
+					if ( column->text_type >= vmLineEdit::TT_PRICE ) {
+						col_header = QChar ( 'A' + i_col );
+						sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header +
+												 CHR_ZERO + CHR_SPACE + col_header + QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
 					}
 				}
-				else { //i_row != mTotalsRow)
-					if ( !column->formula.isEmpty () )
-						sheet_item->setFormula ( column->formula, QString::number ( i_row ) );
-				}
 			}
-
-			setHorizontalHeaderItem ( i_col, new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
-			colWidth = column->width;
-			if ( colWidth == 0 ) {
-				switch ( column->wtype ) {
-					case WT_DATEEDIT:
-						colWidth = 180;
-					break;
-					case WT_LINEEDIT:
-						colWidth = ( column->text_type >= vmWidget::TT_PHONE ? 130 : 100 );
-					break;
-					case WT_LINEEDIT_WITH_BUTTON:
-						colWidth = 150;
-					default:
-						colWidth = 100;
-					break;
-				}
+			else { //i_row != mTotalsRow)
+				if ( !column->formula.isEmpty () )
+					sheet_item->setFormula ( column->formula, QString::number ( i_row ) );
 			}
-			setColumnWidth ( i_col, colWidth );
-			++i_col;
 		}
-		else
-			break;
-	}
-	while ( true );
 
-	m_ncols = unsigned ( columnCount () );
-	for ( --i_col; ; --i_col ) {
-		delete cols[i_col];
-		cols[i_col] = nullptr;
-		if ( i_col == 0 )
-			break;
+		if ( !mbTableIsList )
+			setHorizontalHeaderItem ( i_col, new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
+			
+		colWidth = column->width;
+		if ( colWidth == 0 ) {
+			switch ( column->wtype ) {
+				case WT_DATEEDIT:
+					colWidth = 180;
+				break;
+				case WT_LINEEDIT:
+					colWidth = ( column->text_type >= vmWidget::TT_PHONE ? 130 : 100 );
+				break;
+				case WT_LINEEDIT_WITH_BUTTON:
+					colWidth = 150;
+				default:
+					colWidth = 100;
+				break;
+			}
+		}
+		setColumnWidth ( i_col, colWidth );
+		++i_col;
 	}
-
+	while ( i_col < m_ncols );
+	
 	//All the items that could not have their formula calculated at the time of creation will now
 	for ( i_row = 0; i_row < (signed) m_itemsToReScan.count (); ++i_row )
 		m_itemsToReScan.at ( i_row )->targetsFromFormula ();
@@ -189,8 +186,8 @@ bool vmTableWidget::selectFound ( const vmTableItem* item )
 {
 	if ( item != nullptr ) {
 		scrollToItem ( item, QAbstractItemView::PositionAtCenter );
-		setCurrentItem ( const_cast<vmTableItem*>( item ), QItemSelectionModel::ClearAndSelect );
-		selectRow ( item->row () );
+		//setCurrentItem ( const_cast<vmTableItem*>( item ), QItemSelectionModel::ClearAndSelect );
+		//selectRow ( item->row () );
 		return true;
 	}
 	return false;
@@ -228,7 +225,7 @@ void vmTableWidget::searchCancel ()
 	for ( uint i ( 0 ); i < mSearchList.count (); ++i )
 		mSearchList.at ( i )->highlight ( vmDefault_Color );
 	static_cast<vmCheckedTableItem*> ( horizontalHeader () )->setCheckable ( false );
-	mSearchList.clearButKeepMemory ( true );
+	mSearchList.clearButKeepMemory ( false );
 	mSearchTerm.clear ();
 }
 
@@ -252,68 +249,55 @@ bool vmTableWidget::searchLast ()
 	return selectFound ( mSearchList.last () );
 }
 
-void vmTableWidget::showSearchPanel ()
-{
-	searchPanelPlacement_func ( true );
-	m_searchPanel->showPanel ();
-}
-
-void vmTableWidget::hideSearchPanel ()
-{
-	searchPanelPlacement_func ( false );
-	m_searchPanel->hide ();
-	setFocus ();
-}
-
 vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidget* parent )
 {
-	vmTableColumn* cols[PURCHASES_TABLE_COLS+1] = { nullptr };
+	vmTableColumn* cols ( table->createColumns ( PURCHASES_TABLE_COLS ) );
 	uint i ( 0 );
 	for ( ; i < PURCHASES_TABLE_COLS; ++i ) {
-		cols[i] = new vmTableColumn;
 		switch ( i ) {
 			case ISR_NAME:
-				cols[ISR_NAME]->completer_type = vmCompleters::PRODUCT_OR_SERVICE;
-				cols[ISR_NAME]->width = 280;
-				cols[ISR_NAME]->label = tr ( "Item" );
+				cols[ISR_NAME].completer_type = vmCompleters::PRODUCT_OR_SERVICE;
+				cols[ISR_NAME].width = 280;
+				cols[ISR_NAME].label = tr ( "Item" );
 			break;
 			case ISR_UNIT:
-				cols[ISR_UNIT]->label = tr ( "Unit" );
+				cols[ISR_UNIT].label = tr ( "Unit" );
 			break;
 			case ISR_BRAND:
-				cols[ISR_BRAND]->completer_type = vmCompleters::BRAND;
-				cols[ISR_BRAND]->text_type = vmWidget::TT_UPPERCASE;
-				cols[ISR_BRAND]->label = tr ( "Maker" );
+				cols[ISR_BRAND].completer_type = vmCompleters::BRAND;
+				cols[ISR_BRAND].text_type = vmWidget::TT_UPPERCASE;
+				cols[ISR_BRAND].label = tr ( "Maker" );
 			break;
 			case ISR_QUANTITY:
-				cols[ISR_QUANTITY]->text_type = vmLineEdit::TT_DOUBLE;
-				cols[ISR_QUANTITY]->label = tr ( "Quantity" );
+				cols[ISR_QUANTITY].text_type = vmLineEdit::TT_DOUBLE;
+				cols[ISR_QUANTITY].label = tr ( "Quantity" );
 			break;
 			case ISR_UNIT_PRICE:
-				cols[ISR_UNIT_PRICE]->text_type = vmLineEdit::TT_PRICE;
-				cols[ISR_UNIT_PRICE]->button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
-				cols[ISR_UNIT_PRICE]->label = tr ( "Unit price" );
+				cols[ISR_UNIT_PRICE].text_type = vmLineEdit::TT_PRICE;
+				cols[ISR_UNIT_PRICE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
+				cols[ISR_UNIT_PRICE].label = tr ( "Unit price" );
 			break;
 			case ISR_TOTAL_PRICE:
-				cols[ISR_TOTAL_PRICE]->text_type = vmLineEdit::TT_PRICE;
-				cols[ISR_TOTAL_PRICE]->formula = QStringLiteral ( "* D%1 E%1" );
-				cols[ISR_TOTAL_PRICE]->editable = false;
-				cols[ISR_TOTAL_PRICE]->label = tr ( "Total price" );
+				cols[ISR_TOTAL_PRICE].text_type = vmLineEdit::TT_PRICE;
+				cols[ISR_TOTAL_PRICE].formula = QStringLiteral ( "* D%1 E%1" );
+				cols[ISR_TOTAL_PRICE].editable = false;
+				cols[ISR_TOTAL_PRICE].label = tr ( "Total price" );
 			break;
 			case PURCHASES_TABLE_REG_COL:
-				cols[PURCHASES_TABLE_REG_COL]->wtype = WT_CHECKBOX;
-				cols[PURCHASES_TABLE_REG_COL]->width = 50;
-				cols[PURCHASES_TABLE_REG_COL]->default_value = CHR_ZERO;
-				cols[PURCHASES_TABLE_REG_COL]->label = tr ( "Register" );
+				cols[PURCHASES_TABLE_REG_COL].wtype = WT_CHECKBOX;
+				cols[PURCHASES_TABLE_REG_COL].width = 50;
+				cols[PURCHASES_TABLE_REG_COL].default_value = CHR_ZERO;
+				cols[PURCHASES_TABLE_REG_COL].label = tr ( "Register" );
 			break;
 		}
 	}
 
 	if ( table )
-		table->initTable ( 10, cols );
+		table->initTable ( 10 );
 	else
-		table = new vmTableWidget ( 10, cols, parent );
+		table = new vmTableWidget ( 10, parent );
 
+	table->setKeepModificationRecords ( false );
 	table->mIsPurchaseTable = true;
 	table->insertMonitoredCell ( table->totalsRow (), ISR_TOTAL_PRICE );
 	return table;
@@ -402,94 +386,92 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWidget* parent,
 		const PAY_HISTORY_RECORD last_column )
 {
-	vmTableColumn** cols ( new vmTableColumn*[last_column + 2] );
-	cols[static_cast<uint> ( last_column ) + 1] = nullptr;
+	vmTableColumn* cols ( table->createColumns ( last_column + 1 ) );
 
 	for ( uint i ( 0 ); i <= last_column; ++i ) {
 		switch ( i ) {
 			case PHR_DATE:
-				cols[PHR_DATE] = new vmTableColumn;
-				cols[PHR_DATE]->label = tr ( "Date" );
-				cols[PHR_DATE]->wtype = WT_DATEEDIT;
+				cols[PHR_DATE].label = tr ( "Date" );
+				cols[PHR_DATE].wtype = WT_DATEEDIT;
 			break;
 			case PHR_VALUE:
-				cols[PHR_VALUE] = new vmTableColumn;
-				cols[PHR_VALUE]->label = tr ( "Value" );
-				cols[PHR_VALUE]->button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
-				cols[PHR_VALUE]->text_type = vmLineEdit::TT_PRICE;
+				cols[PHR_VALUE].label = tr ( "Value" );
+				cols[PHR_VALUE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
+				cols[PHR_VALUE].text_type = vmLineEdit::TT_PRICE;
 			break;
 			case PHR_PAID:
-				cols[PHR_PAID] = new vmTableColumn;
-				cols[PHR_PAID]->label = tr ( "Paid?" );
-				cols[PHR_PAID]->wtype = WT_CHECKBOX;
-				cols[PHR_PAID]->width = 50;
+				cols[PHR_PAID].label = tr ( "Paid?" );
+				cols[PHR_PAID].wtype = WT_CHECKBOX;
+				cols[PHR_PAID].width = 50;
 			break;
 			case PHR_METHOD:
-				cols[PHR_METHOD] = new vmTableColumn;
-				cols[PHR_METHOD]->label = tr ( "Method" );
-				cols[PHR_METHOD]->completer_type = vmCompleters::PAYMENT_METHOD;
-				cols[PHR_METHOD]->text_type = vmWidget::TT_UPPERCASE;
-				cols[PHR_METHOD]->width = 200;
+				cols[PHR_METHOD].label = tr ( "Method" );
+				cols[PHR_METHOD].completer_type = vmCompleters::PAYMENT_METHOD;
+				cols[PHR_METHOD].text_type = vmWidget::TT_UPPERCASE;
+				cols[PHR_METHOD].width = 200;
 			break;
 			case PHR_ACCOUNT:
-				cols[PHR_ACCOUNT] = new vmTableColumn;
-				cols[PHR_ACCOUNT]->label = tr ( "Account" );
-				cols[PHR_ACCOUNT]->completer_type = vmCompleters::ACCOUNT;
-				cols[PHR_ACCOUNT]->width = 120;
+				cols[PHR_ACCOUNT].label = tr ( "Account" );
+				cols[PHR_ACCOUNT].completer_type = vmCompleters::ACCOUNT;
+				cols[PHR_ACCOUNT].width = 120;
 			break;
 			case PHR_USE_DATE:
-				cols[PHR_USE_DATE] = new vmTableColumn;
-				cols[PHR_USE_DATE]->label = tr ( "Use Date" );
-				cols[PHR_USE_DATE]->wtype = WT_DATEEDIT;
+				cols[PHR_USE_DATE].label = tr ( "Use Date" );
+				cols[PHR_USE_DATE].wtype = WT_DATEEDIT;
 			break;
 		}
 	}
 
 	if ( table )
-		table->initTable ( 5, cols );
+		table->initTable ( 5 );
 	else
-		table = new vmTableWidget ( 5, cols, parent );
+		table = new vmTableWidget ( 5, parent );
 
+	table->setKeepModificationRecords ( false );
+	/* insertMonitoredCell () assumes the totals row and columns are monitored. Se we setup the callback to nullptr
+	 * to avoid the c++ lib to throw a std::bad_function_call. Any pay history object that wishes to monitor changes to
+	 * those cells must simply call setCallbackForMonitoredCellChanged () when setting up the table, i.e. after the call
+	 * to this function.
+	*/
+	table->setCallbackForMonitoredCellChanged ( [&] ( const vmTableItem* const ) { return nullptr; } );
 	table->insertMonitoredCell ( table->totalsRow (), PHR_VALUE );
-	heap_del ( cols );
 	return table;
 }
 
 void vmTableWidget::insertRow ( const uint row, const uint n )
 {
-	if ( row <= (unsigned) rowCount () ) {
-		QString new_formula;
+	if ( row <= (unsigned) rowCount () )
+	{
 		int i_row ( 0 );
+		m_nVisibleRows += n;
 		uint i_col ( 0 );
+		QString new_formula;
 		vmTableItem* sheet_item ( nullptr ), *new_SheetItem ( nullptr );
-		const uint reference_row ( row == totalsRow () ? row - 1 : row );
-
-		for ( ; i_row < (signed) n; ++i_row ) { // Insert new rows accordingly, i.e., compute their formulas, if they have
+		for ( ; i_row < (signed) n; ++i_row )
+		{ // Insert new rows accordingly, i.e., compute their formulas, if they have
 			QTableWidget::insertRow ( row + i_row );
-			for ( i_col = 0; i_col < colCount (); ++i_col ) {
-				sheet_item = sheetItem ( reference_row + i_row, i_col ); // use row above as template
-				new_SheetItem = new vmTableItem ( sheet_item->widgetType (), sheet_item->textType (), sheet_item->defaultValue (), this );
-				new_SheetItem->setButtonType ( sheet_item->buttonType () );
-				new_SheetItem->setCompleterType ( sheet_item->completerType () );
+			for ( i_col = 0; i_col < colCount (); ++i_col )
+			{
+				new_SheetItem = new vmTableItem ( mCols[i_col].wtype, mCols[i_col].text_type, mCols[i_col].default_value, this );
+				new_SheetItem->setButtonType ( mCols[i_col].button_type );
+				new_SheetItem->setCompleterType ( mCols[i_col].completer_type );
 				setItem ( row + i_row, i_col, new_SheetItem );
-				if ( sheet_item->widget () )
-					setCellWidget ( new_SheetItem );
+				setCellWidget ( new_SheetItem );
 
 				/* The formula must be set for last because setFormula calls vmTableItem::targetsFromFormula ();
 				 * when inserting cells, that function might attempt to solve the formula using data from the previous
 				 * cell (i.e. before inserting) or, worse, from the totalsRow (), which will cause unpredicted (but fatal) results
 				 */
-				if ( sheet_item->hasFormula () ) {
-					new_formula = sheet_item->formulaTemplate ();
-					new_SheetItem->setFormula ( new_formula, QString::number ( row + i_row ) );
-				}
-				new_SheetItem->setEditable ( sheet_item->isEditable () );
+				if ( !mCols[i_col].formula.isEmpty () )
+					new_SheetItem->setFormula ( mCols[i_col].formula, QString::number ( row + i_row ) );
+				
+				new_SheetItem->setEditable ( isEditable () );
 			}
 		}
-		mTotalsRow += n;
 
-		// update all rows after the inserted ones, so that their formula reflects the row changes
-		if ( !mPlainTable ) {
+		if ( !mbPlainTable ) {
+			// update all rows after the inserted ones, so that their formula reflects the row changes
+			mTotalsRow += n;
 			for ( i_row = row + n; i_row < mTotalsRow; ++i_row ) {
 				for ( i_col = 0; i_col < colCount (); ++i_col ) {
 					sheet_item = sheetItem ( i_row, i_col );
@@ -500,22 +482,18 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 				}
 			}
 			fixTotalsRow ();
-		}
-
-		if ( m_lastUsedRow <= ( signed )( row + n ) )
-			m_lastUsedRow += n;
-
-		uint i ( 0 ), list_value ( 0 ), start_modification ( 0 );
-
-		const uint modified_rows ( modifiedRows.count () );
-		if ( modified_rows > 0 ) {
-			for ( i = 0; i < modified_rows; ++i ) {
-				if ( row < modifiedRows.at ( i ) ) break;
-				start_modification++; // modified above insertion start point are not affected
+		
+			const uint modified_rows ( modifiedRows.count () );
+			if ( modified_rows > 0 ) {
+				uint i ( 0 ), list_value ( 0 ), start_modification ( 0 );
+				for ( i = 0; i < modified_rows; ++i ) {
+					if ( row < modifiedRows.at ( i ) ) break;
+					start_modification++; // modified above insertion start point are not affected
 			}
-			for ( i = start_modification; i < modified_rows; ++i ) {
-				list_value = modifiedRows.at ( i );
-				modifiedRows.replace ( i, list_value + n ); // push down modified rows
+				for ( i = start_modification; i < modified_rows; ++i ) {
+					list_value = modifiedRows.at ( i );
+					modifiedRows.replace ( i, list_value + n ); // push down modified rows
+				}
 			}
 		}
 	}
@@ -524,57 +502,83 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 void vmTableWidget::removeRow ( const uint row, const uint n )
 {
 	if ( row < (unsigned) rowCount () ) {
-		QString new_formula;
-
 		int i_row ( 0 );
-		uint i_col ( 0 );
-
+		m_nVisibleRows -= n;
 		for ( ; i_row < (signed) n; ++i_row )
 			QTableWidget::removeRow ( row );
-		mTotalsRow -= n;
 
-		if ( !mPlainTable ) {
+		if ( ( signed )( row + n ) >= m_lastUsedRow )
+			m_lastUsedRow = row - 1;
+			
+		if ( !mbPlainTable )
+		{
+			mTotalsRow -= n;
 			vmTableItem* sheet_item ( nullptr );
-			for ( i_row = row; i_row < (signed) mTotalsRow; ++i_row ) {
-				for ( i_col = 0; i_col < colCount (); ++i_col ) {
+			uint i_col ( 0 );
+			QString new_formula;
+			for ( i_row = row; i_row < (signed) mTotalsRow; ++i_row )
+			{
+				for ( i_col = 0; i_col < colCount (); ++i_col )
+				{
 					sheet_item = sheetItem ( i_row, i_col );
-					if ( sheet_item->hasFormula () ) {
+					if ( sheet_item->hasFormula () )
+					{
 						new_formula = sheet_item->formulaTemplate ();
 						sheet_item->setFormula ( new_formula, QString::number ( i_row ) );
 					}
 				}
 			}
 			fixTotalsRow ();
-		}
-
-		if ( ( signed )( row + n ) >= m_lastUsedRow )
-			m_lastUsedRow -= n;
-
-		uint i ( 0 ), list_value ( 0 ), start_modification ( 0 );
-
-		const uint modified_rows ( modifiedRows.count () );
-		if ( modified_rows > 0 ) {
-			for ( i = 0 ; i < modifiedRows.count (); ++i ) {
-				if ( row < modifiedRows.at ( i ) ) break;
-				start_modification++; // modified rows above deletion start point are not affected
+			
+			const uint modified_rows ( modifiedRows.count () );
+			if ( modified_rows > 0 )
+			{
+				uint i ( 0 ), list_value ( 0 ), start_modification ( 0 );
+				for ( i = 0 ; i < modifiedRows.count (); ++i )
+				{
+					if ( row < modifiedRows.at ( i ) ) 
+						break;
+					start_modification++; // modified rows above deletion start point are not affected
+				}
+				for ( i = start_modification; i < modifiedRows.count (); ++i )
+				{
+					list_value = modifiedRows.at ( i );
+					modifiedRows.replace ( i, list_value - n ); // push up modified rows
+				}
+				modifiedRows.removeOne ( row, 0 );
 			}
-			for ( i = start_modification; i < modifiedRows.count (); ++i ) {
-				list_value = modifiedRows.at ( i );
-				modifiedRows.replace ( i, list_value - n ); // push up modified rows
-			}
 		}
-		modifiedRows.removeOne ( row, 0 );
+	}
+}
+
+void vmTableWidget::setRowVisible ( const uint row, const bool bVisible )
+{
+	const bool b_isVisible ( !isRowHidden ( row ) );
+	if ( !b_isVisible && bVisible )
+	{
+		++m_nVisibleRows;
+		QTableWidget::setRowHidden ( row, false );
+	}
+	else if ( b_isVisible && !bVisible )
+	{
+		--m_nVisibleRows;
+		QTableWidget::setRowHidden ( row, true );
 	}
 }
 
 void vmTableWidget::clearRow ( const uint row, const uint n )
 {
-	if ( isEditable () ) {
-		if ( ( signed )row <= m_lastUsedRow ) {
+	if ( isEditable () )
+	{
+		if ( ( signed )row <= m_lastUsedRow )
+		{
 			vmTableItem* item ( nullptr );
-			for ( uint i_row ( row ); i_row < row + n; ++i_row ) {
-				for ( uint i_col = 0; i_col <= ( colCount () - 1 ); ++i_col ) {
-					if ( !isBitSet ( readOnlyColumnsMask, i_col ) ) {
+			for ( uint i_row ( row ); i_row < row + n; ++i_row )
+			{
+				for ( uint i_col = 0; i_col <= ( colCount () - 1 ); ++i_col )
+				{
+					if ( !isBitSet ( readOnlyColumnsMask, i_col ) )
+					{
 						item = sheetItem ( i_row, i_col );
 						item->setTextToDefault ( true );
 						item->highlight ( vmDefault_Color );
@@ -591,9 +595,12 @@ void vmTableWidget::clear ( const bool force )
 	const int max_row ( force ? mTotalsRow - 1 : m_lastUsedRow );
 	uint i_col ( 0 );
 	vmTableItem* item ( nullptr );
-	for ( int i_row ( 0 ); i_row <= max_row; ++i_row ) {
-		for ( i_col = 0; i_col <= ( colCount () - 1 ); ++i_col ) {
-			if ( !isBitSet ( readOnlyColumnsMask, i_col ) ) {
+	for ( int i_row ( 0 ); i_row <= max_row; ++i_row )
+	{
+		for ( i_col = 0; i_col <= ( colCount () - 1 ); ++i_col )
+		{
+			if ( !isBitSet ( readOnlyColumnsMask, i_col ) )
+			{
 				item = sheetItem ( i_row, i_col );
 				item->setTextToDefault ( isEditable () );
 				item->highlight ( vmDefault_Color );
@@ -611,10 +618,10 @@ void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 {
 	if ( rowActivated_func ) {
 		if ( b_activate )
-			connect ( this, &QTableWidget::itemActivated, this, [&] ( QTableWidgetItem* current ) {
-				return rowActivated_func ( static_cast<vmTableItem*>( current ) ); } );
+			connect ( this, &QTableWidget::itemClicked, this, [&] ( QTableWidgetItem* current ) {
+				return rowActivated_func ( current->row () ); } );
 		else
-			disconnect ( this, &QTableWidget::currentItemChanged, nullptr, nullptr );
+			disconnect ( this, &QTableWidget::itemActivated, nullptr, nullptr );
 	}
 }
 
@@ -655,37 +662,38 @@ void vmTableWidget::rowData ( const uint row, spreadRow* s_row ) const
 
 void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 {
-	const uint row ( item->row () );
 	mTableChanged = true;
-	//if ( row < mTotalsRow ) {
-		if ( mbKeepModRec ) {
-			uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
-
-			for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i ) {
-				if ( unsigned ( row ) == modifiedRows.at ( i ) ) {
-					if ( cellChanged_func )
-						cellChanged_func ( item );
-					return;
-				}
-				else if ( unsigned ( row ) > modifiedRows.at ( i ) ) {
-					break;
-				}
-				else
-					--insert_pos;
+	if ( mbKeepModRec ) {
+		const uint row ( item->row () );
+		uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
+		for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i ) {
+			if ( unsigned ( row ) == modifiedRows.at ( i ) ) {
+				if ( cellChanged_func )
+					cellChanged_func ( item );
+				return;
 			}
-			modifiedRows.insert ( insert_pos, unsigned ( row ) );
+			else if ( unsigned ( row ) > modifiedRows.at ( i ) ) {
+				break;
+			}
+			else
+				--insert_pos;
 		}
-		if ( mIsPurchaseTable ) {
-			if ( item->column () == PURCHASES_TABLE_REG_COL )
-				setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
-		}
-		if ( cellChanged_func )
+		modifiedRows.insert ( insert_pos, unsigned ( row ) );
+	}
+	if ( mIsPurchaseTable ) {
+		if ( item->column () == PURCHASES_TABLE_REG_COL )
+			setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
+	}
+	if ( cellChanged_func )
+		cellChanged_func ( item );
+}
+
+void vmTableWidget::cellModified ( const vmTableItem* const item )
+{
+	if ( item ) {
+		if ( cellChanged_func != nullptr )
 			cellChanged_func ( item );
-	//}
-	//else {
-	//	if ( isCellMonitored ( item ) >= 0 && monitoredCellChanged_func )
-	//		monitoredCellChanged_func ( item );
-	//}
+	}
 }
 
 // Customize context menu
@@ -783,7 +791,7 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 {
 	vmWidget* widget ( nullptr );
 	// read only columns do not connect signals, do not need completers
-	const bool is_read_only ( isBitSet ( readOnlyColumnsMask, sheet_item->column () ) );
+	const bool is_read_only ( isBitSet ( readOnlyColumnsMask, sheet_item->column () ) || sheet_item->row () == (signed) totalsRow () );
 
 	switch ( sheet_item->widgetType () ) {
 		case WT_LINEEDIT:
@@ -844,31 +852,6 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 		return displayContextMenuForCell ( pos, vm_widget ); } );
 }
 
-void vmTableWidget::searchPanelPlacement_GridLayout ( const bool bShow )
-{
-	// A QGridLayout is not dynamic as a QVBoxLayout. A dummy widget must be placed
-	// before the table so that the search panel occupies its place
-	QGridLayout* glayout ( static_cast<QGridLayout*>( mParentLayout ) );
-	if ( bShow ) {
-		int row ( 0 ), col ( 0 ), rowSpan ( 0 ), colSpan ( 0 );
-		glayout->getItemPosition ( glayout->indexOf ( this ), &row, &col, &rowSpan, &colSpan );
-		glayout->addWidget ( m_searchPanel, row - 1, col, rowSpan, colSpan );
-	}
-	else
-		glayout->removeWidget( m_searchPanel );
-}
-
-void vmTableWidget::searchPanelPlacement_BoxLayout ( const bool bShow )
-{
-	QVBoxLayout* vblayout ( static_cast<QVBoxLayout*>( mParentLayout ) );
-	if ( bShow ) {
-		const int index ( vblayout->indexOf ( this ) );
-		vblayout->insertWidget( index, m_searchPanel, vblayout->stretch ( index ) );
-	}
-	else
-		vblayout->removeWidget( m_searchPanel );
-}
-
 void vmTableWidget::addToLayout ( QGridLayout* glayout, const uint row, const uint column )
 {
 	if ( setParentLayout ( glayout ) )
@@ -888,7 +871,6 @@ bool vmTableWidget::setParentLayout ( QGridLayout* glayout )
 	if ( mParentLayout != nullptr )
 		mParentLayout->removeWidget ( this );
 	mParentLayout = static_cast<QLayout*>( glayout );
-	searchPanelPlacement_func = [&] ( const bool bShow ) { return searchPanelPlacement_GridLayout ( bShow ); };
 	return true;
 }
 
@@ -899,8 +881,21 @@ bool vmTableWidget::setParentLayout ( QVBoxLayout* vblayout )
 	if ( mParentLayout != nullptr )
 		mParentLayout->removeWidget ( this );
 	mParentLayout = static_cast<QLayout*>( vblayout );
-	searchPanelPlacement_func = [&] ( const bool bShow ) { return searchPanelPlacement_BoxLayout ( bShow ); };
 	return true;
+}
+
+void vmTableWidget::setIsList ()
+{
+	mbTableIsList = true;
+	setIsPlainTable ();
+}
+
+void vmTableWidget::setIsPlainTable () 
+{ 
+	mbPlainTable = true;
+	setKeepModificationRecords ( false ); 
+	setSelectionMode ( QAbstractItemView::SingleSelection );
+	setSelectionBehavior ( QAbstractItemView::SelectRows );
 }
 
 /* For optimal results, when populating a table, set it readonly.
@@ -922,6 +917,10 @@ void vmTableWidget::setEditable ( const bool editable )
 	}
 
 	if ( editable ) {
+		if ( isPlainTable () ) {
+			connect ( this, &QTableWidget::itemChanged, this, [&] ( QTableWidgetItem *item ) { 
+					return ( cellModified ( static_cast<vmTableItem*>( item ) ) ); } );
+		}
 		if ( cellNavigation_func != nullptr ) {
 			connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
 				return cellNavigation_func ( static_cast<uint> ( row ), static_cast<uint> ( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } );
@@ -934,12 +933,13 @@ void vmTableWidget::setEditable ( const bool editable )
 		}
 	}
 	else {
+		if ( isPlainTable () )
+			disconnect ( this, &QTableWidget::itemChanged, nullptr, nullptr );
 		if ( cellNavigation_func != nullptr )
 			disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
 		if ( mIsPurchaseTable )
 			disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
 	}
-	rowActivatedConnection ( editable );
 	vmWidget::setEditable ( editable );
 }
 
@@ -1035,7 +1035,7 @@ int vmTableWidget::isCellMonitored ( const vmTableItem* const item )
 {
 	if ( item == nullptr )
 		return -2; // a null item is to be ignored, obviously. -2 will not be monitored
-	for ( uint i = 0; i < mMonitoredCells.count (); ++i ) {
+	for ( uint i ( 0 ); i < mMonitoredCells.count (); ++i ) {
 		if ( mMonitoredCells.at ( i ) == item )
 			return i;
 	}
@@ -1054,10 +1054,14 @@ void vmTableWidget::insertMonitoredCell ( const uint row, const uint col )
 		 * widget because vmTableItem already does it, and, in fact, monitoredCellChanged_func will be called by the setText method
 		 * of widget which, in turn, is called by vmTableItem::setText
 		*/
-		if ( isBitSet ( readOnlyColumnsMask, col ) )
-			item->widget ()->setCallbackForContentsAltered ( [&] ( const vmWidget* const widget ) {
-				return monitoredCellChanged_func ( widget->ownerItem () );
-		} );
+		if ( isBitSet ( readOnlyColumnsMask, col ) || row == totalsRow () ) {
+			if ( item->widget () ) { // call setCallbackForMonitoredCellChanged with nullptr as argument when you wish to handle the monitoring outside this class
+				item->widget ()->setCallbackForContentsAltered ( [&, item] ( const vmWidget* const ) {
+						return monitoredCellChanged_func ( item ); } );
+			}
+			else //callback for simple text cells (plain table)
+				cellChanged_func = monitoredCellChanged_func;
+		}
 	}
 }
 
@@ -1127,25 +1131,54 @@ void vmTableWidget::reHilightItems ( vmTableItem* next, vmTableItem* prev )
 	}
 }
 
-void vmTableWidget::mousePressEvent ( QMouseEvent* e )
-{
-	if ( e->button () & Qt::RightButton ) {
-		mContextMenuCell = static_cast<vmTableItem*> ( itemAt ( e->pos () ) );
-		if ( mContextMenuCell ) {
-			enableOrDisableActionsForCell ( mContextMenuCell );
-			e->accept();
-			mContextMenu->exec ( e->globalPos () );
-			mContextMenuCell = nullptr;
-			return;
-		}
-	}
-	e->ignore ();
-	QAbstractItemView::mousePressEvent ( e );
-}
-
 void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 {
 	const bool ctrlKey ( k->modifiers () & Qt::ControlModifier );
+	if ( ctrlKey ) {
+		bool b_accept ( false );
+		if ( k->key () == Qt::Key_F ) {
+			if ( !m_searchPanel ) 
+				m_searchPanel = new vmTableSearchPanel ( this );
+			if ( m_searchPanel->isVisible () ) {
+				mLayoutUtilities->removeWidget ( m_searchPanel );
+				m_searchPanel->setVisible ( false );
+			}
+			else {
+				mLayoutUtilities->addWidget ( m_searchPanel, 1 );
+				m_searchPanel->setVisible ( true );
+			}
+			b_accept = true;
+		}
+		if ( k->key () == Qt::Key_L ) {
+			if ( !m_filterPanel ) 
+				m_filterPanel = new vmTableFilterPanel ( this );
+			if ( m_filterPanel->isVisible () ) {
+				mLayoutUtilities->removeWidget ( m_filterPanel );
+				m_filterPanel->setVisible ( false );
+			}
+			else {
+				mLayoutUtilities->addWidget ( m_filterPanel, 1 );
+				m_filterPanel->setVisible ( true );
+			}
+			b_accept = true;
+		}
+		if ( k->key () == Qt::Key_Escape ) {
+			if ( m_searchPanel && m_searchPanel->isVisible () ) {
+				mLayoutUtilities->removeWidget ( m_searchPanel );
+				m_searchPanel->setVisible ( false );
+			}
+			if ( m_filterPanel && m_filterPanel->isVisible () ) {
+				mLayoutUtilities->removeWidget ( m_filterPanel );
+				m_filterPanel->setVisible ( false );
+			}
+			b_accept = true;
+		}
+		if ( b_accept ) {
+			k->setAccepted ( true );
+			return;
+		}
+	}
+	
 	if ( isEditable () ) {
 		if ( ctrlKey ) {
 			switch ( k->key () ) {
@@ -1153,12 +1186,7 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 				case Qt::Key_Return:
 					if ( keypressed_func )
 						keypressed_func ( k, this );
-				break;
-				case Qt::Key_F:
-					if ( !m_searchPanel )
-						m_searchPanel = new vmTableSearchPanel ( this );
-					showSearchPanel ();
-				break;
+				break;			
 				case Qt::Key_I:
 					insertRow_slot ();
 				break;
@@ -1187,11 +1215,6 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 		}
 		else { // no CTRL modifier
 			switch ( k->key () ) {
-				case Qt::Key_Escape:
-					if ( m_searchPanel && m_searchPanel->isVisible () ) {
-						hideSearchPanel ();
-						return;
-					}
 				case Qt::Key_Enter:
 				case Qt::Key_Return:
 					if ( keypressed_func )
@@ -1208,24 +1231,9 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 				default:
 				break;
 			}
-			QTableWidget::keyPressEvent ( k );
 		}
 	}
-	else {
-		if ( ctrlKey && k->key () == Qt::Key_F ) {
-			if ( !m_searchPanel )
-				m_searchPanel = new vmTableSearchPanel ( this );
-			showSearchPanel ();
-			return;
-		}
-		else if ( k->key () == Qt::Key_Escape ) {
-			if ( m_searchPanel && m_searchPanel->isVisible () ) {
-				hideSearchPanel ();
-				return;
-			}
-		}
-		QTableWidget::keyPressEvent ( k );
-	}
+	QTableWidget::keyPressEvent ( k );
 }
 
 void vmTableWidget::enableOrDisableActionsForCell ( const vmTableItem* sheetItem )
@@ -1394,8 +1402,8 @@ void vmTableWidget::copyCellContents ()
 	else {
 		const QModelIndexList selIndexes ( selectedIndexes () );
 		if ( selIndexes.count () > 0 ) {
-			QModelIndexList::const_iterator itr = selIndexes.constBegin ();
-			const QModelIndexList::const_iterator itr_end = selIndexes.constEnd ();
+			QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
+			const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 			for ( ; itr != itr_end; ++itr ) {
 				cell_text.append ( sheetItem ( static_cast<QModelIndex> ( *itr ).row (),
 											   static_cast<QModelIndex> ( *itr ).column () )->text () );
@@ -1415,22 +1423,19 @@ void vmTableWidget::copyRowContents ()
 	if ( mContextMenuCell != nullptr ) {
 		for ( ; i_col < colCount (); ++i_col )
 			rowText += sheetItem ( mContextMenuCell->row (), i_col )->text () + QLatin1Char ( '\t' );
-		//rowText.truncate ( rowText.length () - 1 ); // remove last tab character
 		rowText.chop ( 1 );
 	}
 	else {
 		const QModelIndexList selIndexes ( selectedIndexes () );
 		if ( selIndexes.count () > 0 ) {
-			QModelIndexList::const_iterator itr = selIndexes.constBegin ();
-			const QModelIndexList::const_iterator itr_end = selIndexes.constEnd ();
+			QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
+			const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 			for ( ; itr != itr_end; ++itr ) {
 				for ( i_col = 0; i_col < colCount (); ++i_col )
 					rowText += sheetItem ( static_cast<QModelIndex> ( *itr ).row (), i_col )->text () + QLatin1Char ( '\t' );
-				//rowText.truncate ( rowText.length () - 1 ); // remove last tab character
 				rowText.chop ( 1 );
 				rowText += CHR_NEWLINE;
 			}
-			//rowText.truncate ( rowText.length () - 1 ); // remove last new line character
 			rowText.chop ( 1 );
 		}
 	}
@@ -1446,8 +1451,8 @@ void vmTableWidget::insertRow_slot ()
 	else {
 		const QModelIndexList selIndexes ( selectedIndexes () );
 		if ( selIndexes.count () > 0 ) {
-			QModelIndexList::const_iterator itr = selIndexes.constBegin ();
-			const QModelIndexList::const_iterator itr_end = selIndexes.constEnd ();
+			QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
+			const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 			for ( ; itr != itr_end; ++itr )
 				insertRow ( static_cast<QModelIndex> ( *itr ).row () + 1 );
 		}
@@ -1469,8 +1474,8 @@ void vmTableWidget::removeRow_slot ()
 		const QModelIndexList selIndexes ( selectedIndexes () );
 		if ( selIndexes.count () > 0 ) {
 			// Move from last selected toward the first to avoid conflicts and errors
-			QModelIndexList::const_iterator itr = selIndexes.constEnd ();
-			const QModelIndexList::const_iterator itr_begin = selIndexes.constBegin ();
+			QModelIndexList::const_iterator itr ( selIndexes.constEnd () );
+			const QModelIndexList::const_iterator itr_begin ( selIndexes.constBegin () );
 			for ( --itr; ; --itr ) {
 				// Emit the signal before removing the row so that the slot(s) that catch the signal can retrieve information from the row
 				// (i.e. an ID, or name or anything to be used by the database ) before it disappears
@@ -1492,8 +1497,8 @@ void vmTableWidget::clearRow_slot ()
 		else {
 			const QModelIndexList selIndexes ( selectedIndexes () );
 			if ( selIndexes.count () > 0 ) {
-				QModelIndexList::const_iterator itr = selIndexes.constBegin ();
-				const QModelIndexList::const_iterator itr_end = selIndexes.constEnd ();
+				QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
+				const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 				for ( ; itr != itr_end; ++itr )
 					clearRow ( static_cast<QModelIndex> ( *itr ).row () );
 			}
@@ -1568,6 +1573,7 @@ void vmTableWidget::displayContextMenuForCell ( const QPoint& pos, const vmWidge
 {
 	if ( cellWidget->ownerItem () ) {
 		mContextMenuCell = const_cast<vmTableItem*> ( cellWidget->ownerItem () );
+		setCurrentItem ( mContextMenuCell, QItemSelectionModel::ClearAndSelect );
 		enableOrDisableActionsForCell ( mContextMenuCell );
 		Data::execMenuWithinWidget ( mContextMenu, cellWidget->toQWidget (), pos );
 		mContextMenuCell = nullptr;
@@ -1592,144 +1598,3 @@ void vmTableWidget::cellWidgetRelevantKeyPressed ( const QKeyEvent* const ke, co
 			keyPressEvent ( const_cast<QKeyEvent*> ( ke ) );
 	}
 }
-//---------------------------------------------TABLE WIDGET---------------------------------------------------
-
-//---------------------------------------------SEARCH-PANEL---------------------------------------------------
-vmTableSearchPanel::vmTableSearchPanel ( vmTableWidget* table )
-	: QFrame ( nullptr ), m_SearchedWord ( emptyString ), m_table ( table ),
-	  btnSearchNext ( nullptr ), btnSearchPrev ( nullptr ), btnSearchCancel ( nullptr )
-{
-	txtSearchTerm = new vmLineEdit;
-	txtSearchTerm->setEditable ( true );
-	txtSearchTerm->setCallbackForRelevantKeyPressed ( ( [&]( const QKeyEvent* ke, const vmWidget* const ) {
-		return txtSearchTerm_keyPressed ( ke ); } ) );
-	txtSearchTerm->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return searchTextChanged ( sender->text () ); } );
-
-	btnSearchStart = new QToolButton;
-	btnSearchStart->setIcon ( ICON ( "search.png" ) );
-	btnSearchStart->setEnabled ( false );
-	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } );
-
-	btnSearchPrev = new QToolButton;
-	btnSearchPrev->setIcon ( ICON ( "arrow-left.png" ) );
-	btnSearchPrev->setEnabled ( false );
-	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () { return searchPrev (); } );
-
-	btnSearchNext = new QToolButton;
-	btnSearchNext->setIcon ( ICON ( "arrow-right.png" ) );
-	btnSearchNext->setEnabled ( false );
-	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () { return searchNext (); } );
-
-	btnSearchCancel = new QToolButton;
-	btnSearchCancel->setIcon ( ICON ( "cancel.png" ) );
-	connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return searchCancel (); } );
-
-	chkSearchAllTable = new vmCheckBox ( tr ( "Search all fields" ) );
-	chkSearchAllTable->setChecked ( true );
-	chkSearchAllTable->setEditable ( true );
-	chkSearchAllTable->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return searchFieldsChanged (); } );
-
-	QHBoxLayout* mLayout ( new QHBoxLayout );
-	mLayout->setSpacing( 2 );
-	mLayout->setMargin ( 2 );
-	mLayout->addWidget ( txtSearchTerm, 3 );
-	mLayout->addWidget ( btnSearchStart );
-	mLayout->addWidget ( btnSearchPrev );
-	mLayout->addWidget ( btnSearchNext );
-	mLayout->addWidget ( btnSearchCancel );
-	mLayout->addStretch ( 2 );
-	mLayout->addWidget ( chkSearchAllTable, 0, Qt::AlignRight );
-	setLayout ( mLayout );
-}
-
-void vmTableSearchPanel::showPanel ()
-{
-	show ();
-	txtSearchTerm->setFocus ();
-}
-
-void vmTableSearchPanel::searchFieldsChanged ( const vmCheckBox* const )
-{
-	if ( chkSearchAllTable->isChecked () )
-		static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setCheckable ( false );
-	else {
-		static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setCheckable ( true );
-		for ( uint col ( 0 ); col < m_table->colCount (); ++col )
-			static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setChecked ( col, false );
-	}
-}
-
-bool vmTableSearchPanel::searchStart ()
-{
-	m_table->searchStart ( txtSearchTerm->text () );
-	const bool b_result ( m_table->searchFirst () );
-	btnSearchStart->setEnabled ( !b_result );
-	btnSearchNext->setEnabled ( b_result );
-	btnSearchPrev->setEnabled ( !b_result );
-	return b_result;
-}
-
-bool vmTableSearchPanel::searchNext ()
-{
-	const bool b_result ( m_table->searchNext () );
-	btnSearchNext->setEnabled ( b_result );
-	btnSearchPrev->setEnabled ( btnSearchPrev->isEnabled () | b_result );
-	return b_result;
-}
-
-bool vmTableSearchPanel::searchPrev ()
-{
-	const bool b_result ( m_table->searchPrev () );
-	btnSearchNext->setEnabled ( btnSearchNext->isEnabled () | b_result );
-	btnSearchPrev->setEnabled ( b_result );
-	return b_result;
-}
-
-void vmTableSearchPanel::searchCancel ()
-{
-	m_table->searchCancel ();
-	btnSearchNext->setEnabled ( false );
-	btnSearchPrev->setEnabled ( false );
-	txtSearchTerm->clear ();
-	m_table->hideSearchPanel ();
-}
-
-void vmTableSearchPanel::searchTextChanged ( const QString& text )
-{
-	if ( !text.isEmpty () ) {
-		const bool b_newsearch ( text != m_table->searchTerm () );
-		btnSearchStart->setEnabled ( b_newsearch );
-		btnSearchPrev->setEnabled ( false );
-		btnSearchNext->setEnabled ( false );
-	}
-}
-
-void vmTableSearchPanel::txtSearchTerm_keyPressed ( const QKeyEvent* ke )
-{
-	switch ( ke->key () ) {
-		case Qt::Key_Enter:
-		case Qt::Key_Return:
-			searchStart ();
-		break;
-		case Qt::Key_Escape:
-			if ( txtSearchTerm->text () != m_table->searchTerm () ) {
-				txtSearchTerm->setText ( m_table->searchTerm () );
-				btnSearchStart->setEnabled ( !txtSearchTerm->text ().isEmpty () );
-			}
-			else {
-				hide ();
-				m_table->setFocus ();
-			}
-		break;
-		case Qt::Key_F2:
-			searchPrev ();
-		break;
-		case Qt::Key_F3:
-			searchNext ();
-		break;
-		default:
-		break;
-	}
-}
-//---------------------------------------------SEARCH-PANEL---------------------------------------------------

@@ -97,8 +97,8 @@ QString passwordManager::getPassword ( const QString& id ) const
 
 QString passwordManager::getID ( const uint pos ) const
 {
-	QHash<QString,QString>::const_iterator ite_start ( mPairs.begin () );
-	const QHash<QString,QString>::const_iterator ite_end ( mPairs.end () );
+	QHash<QString,QString>::const_iterator ite_start ( mPairs.cbegin () );
+	const QHash<QString,QString>::const_iterator ite_end ( mPairs.cend () );
 	uint x ( 0 );
 	while ( x < pos && ite_start != ite_end ) {
 		++ite_start;
@@ -142,7 +142,7 @@ bool passwordManager::fromString ( const QString& hash_str, const bool overwrite
 		if ( !overwrite ) {
 			QHash<QString,QString> temp;
 			in_string >> temp;
-			const QHash<QString,QString>::const_iterator first ( temp.begin () );
+			const QHash<QString,QString>::const_iterator first ( temp.cbegin () );
 			ok = insert ( first.key (), first.value () );
 		}
 		else {
@@ -172,8 +172,8 @@ bool passwordManager::toFile ( QFile* file, const QString& id ) const
 		if ( file->open ( QIODevice::Truncate | QIODevice::WriteOnly ) ) {
 			QHash<QString,QString> temp;
 			if ( id.isEmpty () ) { // do not save root password into user's file
-				QHash<QString,QString>::const_iterator ite_start ( mPairs.begin () );
-				const QHash<QString,QString>::const_iterator ite_end ( mPairs.end () );
+				QHash<QString,QString>::const_iterator ite_start ( mPairs.cbegin () );
+				const QHash<QString,QString>::const_iterator ite_end ( mPairs.cend () );
 				while ( ite_start != ite_end ) {
 					if ( ite_start.key () != rootID )
 						temp.insert ( ite_start.key (), ite_start.value () );
@@ -208,7 +208,7 @@ bool passwordManager::fromFile ( QFile* const file, const bool overwrite )
 		if ( !overwrite ) {
 			QHash<QString,QString> temp;
 			in_string >> temp;
-			const QHash<QString,QString>::const_iterator first ( temp.begin () );
+			const QHash<QString,QString>::const_iterator first ( temp.cbegin () );
 			ok = insert ( first.key (), first.value () );
 		}
 		else {

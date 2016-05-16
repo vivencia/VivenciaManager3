@@ -34,7 +34,7 @@ bool deletePointerArray ( TIsNotPointerType*, T* ) {
 }
 
 template <typename T>
-inline void heap_del ( T x )
+inline void heap_del ( T& x )
 {
 	typename VMList<T>::template IsPointer<T>::Result r;
 	deletePointer ( &r, x );
@@ -42,7 +42,7 @@ inline void heap_del ( T x )
 }
 
 template <typename T>
-inline void heap_dellarr ( T x )
+inline void heap_dellarr ( T& x )
 {
 	typename VMList<T>::template IsPointer<T>::Result r;
 	if ( deletePointerArray ( &r, x ) )

@@ -6,7 +6,7 @@
 #include "completers.h"
 #include "global.h"
 #include "mainwindow.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "searchui.h"
 #include "cleanup.h"
 #include "heapmanager.h"
@@ -102,49 +102,48 @@ void dbSuppliesUI::createTable ()
 {
 	if ( m_table != nullptr ) return;
 
-	vmTableColumn *fields[SUPPLIES_FIELD_COUNT+1] = { nullptr };
+	m_table = new vmTableWidget;
+	vmTableColumn *fields ( m_table->createColumns( SUPPLIES_FIELD_COUNT ) );
 
 	for ( uint i ( 0 ); i < SUPPLIES_FIELD_COUNT; ++i ) {
-		fields[i] = new vmTableColumn;
-		fields[i]->label = VivenciaDB::getTableColumnLabel ( &supplies_rec->t_info, i );
+		fields[i].label = VivenciaDB::getTableColumnLabel ( &supplies_rec->t_info, i );
 
 		switch ( i ) {
 			case FLD_SUPPLIES_ID:
-				fields[FLD_SUPPLIES_ID]->editable = false;
-				fields[FLD_SUPPLIES_ID]->width = 40;
+				fields[FLD_SUPPLIES_ID].editable = false;
+				fields[FLD_SUPPLIES_ID].width = 40;
 			break;
 			case FLD_SUPPLIES_ITEM:
-				fields[FLD_SUPPLIES_ITEM]->completer_type = vmCompleters::ITEM_NAMES;
-				fields[FLD_SUPPLIES_ITEM]->width = 250;
+				fields[FLD_SUPPLIES_ITEM].completer_type = vmCompleters::ITEM_NAMES;
+				fields[FLD_SUPPLIES_ITEM].width = 250;
 			break;
 			case FLD_SUPPLIES_BRAND:
-				fields[FLD_SUPPLIES_BRAND]->completer_type = vmCompleters::BRAND;
-				fields[FLD_SUPPLIES_BRAND]->text_type = vmWidget::TT_UPPERCASE;
-				fields[FLD_SUPPLIES_BRAND]->width = 120;
+				fields[FLD_SUPPLIES_BRAND].completer_type = vmCompleters::BRAND;
+				fields[FLD_SUPPLIES_BRAND].text_type = vmWidget::TT_UPPERCASE;
+				fields[FLD_SUPPLIES_BRAND].width = 120;
 			break;
 			case FLD_SUPPLIES_TYPE:
-				fields[FLD_SUPPLIES_TYPE]->completer_type = vmCompleters::STOCK_TYPE;
-				fields[FLD_SUPPLIES_TYPE]->width = 120;
+				fields[FLD_SUPPLIES_TYPE].completer_type = vmCompleters::STOCK_TYPE;
+				fields[FLD_SUPPLIES_TYPE].width = 120;
 			break;
 			case FLD_SUPPLIES_SUPPLIER:
-				fields[FLD_SUPPLIES_SUPPLIER]->completer_type = vmCompleters::SUPPLIER;
-				fields[FLD_SUPPLIES_SUPPLIER]->width = 150;
+				fields[FLD_SUPPLIES_SUPPLIER].completer_type = vmCompleters::SUPPLIER;
+				fields[FLD_SUPPLIES_SUPPLIER].width = 150;
 			break;
 			case FLD_SUPPLIES_UNIT:
-				fields[FLD_SUPPLIES_UNIT]->width = 40;
+				fields[FLD_SUPPLIES_UNIT].width = 40;
 			break;
 			case FLD_SUPPLIES_PRICE:
-				fields[FLD_SUPPLIES_PRICE]->text_type = vmLineEdit::TT_PRICE;
+				fields[FLD_SUPPLIES_PRICE].text_type = vmLineEdit::TT_PRICE;
 			break;
 			case FLD_SUPPLIES_DATE_IN:
-				fields[FLD_SUPPLIES_DATE_IN]->wtype = WT_DATEEDIT;
+				fields[FLD_SUPPLIES_DATE_IN].wtype = WT_DATEEDIT;
 			default:
 			break;
 		}
 	}
-
-	m_table = new vmTableWidget ( 100, fields );
 	m_table->setKeepModificationRecords ( false );
+	m_table->initTable ( 500 );
 
 	// ignore FLD_SUPPLIES_PLACE and FLD_SUPPLIES_QUANTITY in the UI, but keep them in the base class so that VivenciaDB will have no problems distinguishing between the two classes
 	m_table->setColumnHidden ( FLD_SUPPLIES_QUANTITY, true );

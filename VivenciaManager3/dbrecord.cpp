@@ -46,9 +46,12 @@ DBRecord::~DBRecord () {}
 
 bool DBRecord::operator== ( const DBRecord& other ) const
 {
-	if ( other.t_info == this->t_info ) {
-		if ( other.fld_count == this->fld_count ) {
-			for ( uint i ( 0 ); i < fld_count; ++i ) {
+	if ( other.t_info == this->t_info )
+	{
+		if ( other.fld_count == this->fld_count )
+		{
+			for ( uint i ( 0 ); i < fld_count; ++i )
+			{
 				if ( recordFieldsCompare_pod ( other.m_RECFIELDS[i], this->m_RECFIELDS[i] ) != 0 )
 					return false;
 				if ( QString::compare ( other.m_RECFIELDS[i].str_field[0], this->m_RECFIELDS[i].str_field[0] ) != 0 )
@@ -63,7 +66,8 @@ bool DBRecord::operator== ( const DBRecord& other ) const
 
 const DBRecord& DBRecord::operator= ( const DBRecord& other )
 {
-	if ( *this != &other ) {
+	if ( *this != &other )
+	{
 		if ( t_info != other.t_info)
 			helperFunction = nullptr;
 		copy ( other );
@@ -80,7 +84,8 @@ void DBRecord::copy ( const DBRecord& dbrec )
 	mb_completerUpdated = dbrec.mb_completerUpdated;
 	m_action = dbrec.m_action;
 
-	for ( uint i ( 0 ); i < fld_count; ++i ) {
+	for ( uint i ( 0 ); i < fld_count; ++i )
+	{
 		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_ACTUAL] = dbrec.m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_ACTUAL];
 		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_TEMP] = dbrec.m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_TEMP];
 		m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_ACTUAL] = dbrec.m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_ACTUAL];
@@ -98,10 +103,13 @@ void DBRecord::setHelperFunction ( const uint field, void ( *helperFunc ) ( cons
 
 void DBRecord::callHelperFunctions ()
 {
-	if ( helperFunction != nullptr ) {
+	if ( helperFunction != nullptr )
+	{
 		uint i ( 1 ); // any field but ID can have a helper function
-		do {
-			if ( isModified ( i ) || action () == ACTION_DEL ) {
+		do
+		{
+			if ( isModified ( i ) || action () == ACTION_DEL )
+			{
 				if ( helperFunction[i] )
 					( *helperFunction[i] ) ( this );
 			}
@@ -118,7 +126,8 @@ void DBRecord::callHelperFunctions ()
 
 bool DBRecord::readRecord ( const int id, const bool load_data )
 {
-	if ( id >= 1 && id != actualRecordInt ( 0 ) ) {
+	if ( id >= 1 && id != actualRecordInt ( 0 ) )
+	{
 		setIntValue ( 0, id );
 		setBackupValue ( 0, QString::number ( id ) );
 		return VDB ()->getDBRecord ( this, 0, load_data );
@@ -131,7 +140,8 @@ bool DBRecord::readRecord ( const uint field, const QString& search, const bool 
 	if ( search.isEmpty () )
 		return false;
 
-	if ( signed ( field ) != stquery.field || search != stquery.search ) {
+	if ( signed ( field ) != stquery.field || search != stquery.search )
+	{
 		stquery.reset = true;
 		stquery.field = field;
 		stquery.search = search;
@@ -181,16 +191,20 @@ bool DBRecord::readLastRecord ( const int field, const QString& search, const bo
 // We browse by position, but the indexes might not be the same as the positions due to records removal
 bool DBRecord::readNextRecord ( const bool follow_search, const bool load_data )
 {
-	if ( !follow_search ) {
+	if ( !follow_search )
+	{
 		const int last_id ( VDB ()->lastDBRecord ( t_info->table_order ) );
-		if ( last_id >= 1 && actualRecordInt ( 0 ) < last_id ) {
-			do {
+		if ( last_id >= 1 && actualRecordInt ( 0 ) < last_id )
+		{
+			do
+			{
 				if ( readRecord ( actualRecordInt ( 0 ) + 1, load_data ) )
 					return true;
 			} while ( actualRecordInt ( 0 ) <= last_id );
 		}
 	}
-	else {
+	else
+	{
 		stquery.forward = true;
 		return VDB ()->getDBRecord ( this, stquery, load_data );
 	}
@@ -199,16 +213,20 @@ bool DBRecord::readNextRecord ( const bool follow_search, const bool load_data )
 
 bool DBRecord::readPrevRecord ( const bool follow_search, const bool load_data )
 {
-	if ( !follow_search ) {
+	if ( !follow_search )
+	{
 		const int first_id ( VDB ()->firstDBRecord ( t_info->table_order ) );
-		if ( first_id >= 0 && actualRecordInt ( 0 ) > 0 ) {
-			do {
+		if ( first_id >= 0 && actualRecordInt ( 0 ) > 0 )
+		{
+			do
+			{
 				if ( readRecord ( actualRecordInt ( 0 ) - 1, load_data ) )
 					return true;
 			} while ( actualRecordInt ( 0 ) >= 0 );
 		}
 	}
-	else {
+	else
+	{
 		stquery.forward = false;
 		return VDB ()->getDBRecord ( this, stquery, load_data );
 	}
@@ -222,10 +240,13 @@ bool DBRecord::readPrevRecord ( const bool follow_search, const bool load_data )
  */
 bool DBRecord::deleteRecord ()
 {
-	if ( actualRecordInt ( 0 ) >= 1 ) {
+	if ( actualRecordInt ( 0 ) >= 1 )
+	{
 		setAction ( ACTION_DEL );
 		callHelperFunctions ();
-		if ( VDB ()->removeRecord ( this ) ) {
+		if ( VDB ()->removeRecord ( this ) )
+		{
+			DBRecord::removeFromTemporaryRecords ( this );
 			clearAll ();
 			setAction ( ACTION_READ );
 			return true;
@@ -246,7 +267,8 @@ bool DBRecord::saveRecord ()
 	// the completer must be updated again. It is just faster and cleaner to do it here, just once, than
 	// anywhere else. The mb_completerUpdated flag is just used to speedup execution by not doing the same thing over for
 	// all the fields in the respective record that comprise the product´s completer for it
-	if ( ret ) {
+	if ( ret )
+	{
 		if ( m_action == ACTION_ADD )
 			DBRecord::removeFromTemporaryRecords ( this );
 		callHelperFunctions ();
@@ -272,7 +294,8 @@ void DBRecord::setModified ( const uint field, const bool modified )
 void DBRecord::setAllModified ( const bool modified )
 {
 	uint i ( 1 );
-	do {
+	do
+	{
 		m_RECFIELDS[i].was_modified = m_RECFIELDS[i].modified;
 		m_RECFIELDS[i].modified = modified;
 	} while ( ++i < fld_count );
@@ -282,7 +305,8 @@ void DBRecord::setAllModified ( const bool modified )
 void DBRecord::clearAll ()
 {
 	uint i ( 0 );
-	do {
+	do
+	{
 		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_ACTUAL].clear ();
 		m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_ACTUAL] = 0;
 		m_RECFIELDS[i].modified = false;
@@ -294,15 +318,18 @@ void DBRecord::clearAll ()
 
 void DBRecord::setAction ( const RECORD_ACTION action )
 {
-	if ( action != m_action ) {
+	if ( action != m_action )
+	{
 		m_prevaction = m_action;
 		m_action = action;
-		if ( m_action != ACTION_DEL ) {
-			switch ( action ) {
-            case ACTION_READ:
-                // copy temp values into actual after a save operation. Canceled edits must not be synced
-                if ( !inSync () )
-                    sync ( RECORD_FIELD::IDX_TEMP, false );
+		if ( m_action != ACTION_DEL )
+		{
+			switch ( action )
+			{
+				case ACTION_READ:
+					// copy temp values into actual after a save operation. Canceled edits must not be synced
+					if ( !inSync () )
+						sync ( RECORD_FIELD::IDX_TEMP, false );
                 case ACTION_REVERT:
                     *const_cast<RECORD_ACTION*>( &m_action ) = ACTION_READ;
                     mb_synced = true;
@@ -338,6 +365,7 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 
 void DBRecord::addToTemporaryRecords ( DBRecord* dbrec )
 {
+	//TODO only one item must access here. Only RLI_CLIENTITEM but that info is not available to a DBRecord
 	const uint table ( dbrec->t_info->table_order );
 	uint id ( 0 );
 	if ( DBRecord::tempNewRecs[table].isEmpty () )
@@ -353,21 +381,22 @@ void DBRecord::removeFromTemporaryRecords ( DBRecord* dbrec )
 {
 	const uint table ( dbrec->t_info->table_order );
 	int pos ( DBRecord::tempNewRecs[table].contains ( dbrec ) );
-	if ( pos >= 0 ) {
-		DBRecord::tempNewRecs[table].remove ( pos );
-		if ( (unsigned) pos < DBRecord::tempNewRecs[table].count () ) {
-			uint id ( VDB ()->getNextID ( table ) );
-			for ( uint i ( 0 ); i < DBRecord::tempNewRecs[table].count (); ++i )
-				DBRecord::tempNewRecs[table][i]->setIntValue ( 0, id++ );
-		}
+	if ( DBRecord::tempNewRecs[table].remove ( pos ) >= 0 )
+	{
+		uint id ( VDB ()->getNextID ( table ) );
+		for ( uint i ( 0 ); i < DBRecord::tempNewRecs[table].count (); ++i )
+			DBRecord::tempNewRecs[table][i]->setIntValue ( 0, id++ );
 	}
 }
 
 void DBRecord::sync ( const int src_index, const bool b_force )
 {
-	for ( uint i ( 1 ); i < fld_count; ++i ) {
-		if ( isModified ( i ) || b_force ) {
-            if ( m_RECFIELDS[i].str_field[!src_index] != m_RECFIELDS[i].str_field[src_index] ) {
+	for ( uint i ( 1 ); i < fld_count; ++i )
+	{
+		if ( isModified ( i ) || b_force )
+		{
+            if ( m_RECFIELDS[i].str_field[!src_index] != m_RECFIELDS[i].str_field[src_index] )
+			{
 				m_RECFIELDS[i].str_field[!src_index] = m_RECFIELDS[i].str_field[src_index];
                 m_RECFIELDS[i].i_field[!src_index] = m_RECFIELDS[i].i_field[src_index];
             }
@@ -398,11 +427,13 @@ void DBRecord::fromStringRecord ( const stringRecord& str_rec, const uint fromFi
 	else
 		ok = str_rec.first ();
 
-	if ( ok ) {
+	if ( ok )
+	{
 		setRecValue ( this, 0, str_rec.curValue () );
 		setRecIntValue ( this, 0, recStrValue ( this, 0 ).toInt () );
 		uint i ( 1 );
-		do {
+		do
+		{
 			if ( str_rec.next () )
 				setRecValue ( this, i++, str_rec.curValue () );
 			else
@@ -414,7 +445,8 @@ void DBRecord::fromStringRecord ( const stringRecord& str_rec, const uint fromFi
 void DBRecord::contains ( const QString& value, podList<uint>& fields ) const
 {
 	fields.clearButKeepMemory ();
-	for ( uint i ( 0 ); i < t_info->field_count; ++i ) {
+	for ( uint i ( 0 ); i < t_info->field_count; ++i )
+	{
 		if ( recStrValue ( this, i ).contains ( value, Qt::CaseInsensitive ) )
 			fields.append ( i );
 	}

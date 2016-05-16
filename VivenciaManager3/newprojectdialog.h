@@ -1,7 +1,7 @@
 #ifndef NEWPROJECTDIALOG_H
 #define NEWPROJECTDIALOG_H
 
-#include "listitems.h"
+#include "vmlistitem.h"
 
 #include <QDialog>
 
@@ -23,11 +23,11 @@ public:
 
     inline const QString& projectPath () const { return mProjectPath; }
     inline const QString& projectID () const { return mProjectID; }
-    inline jobListItem* jobItem () const { return static_cast<jobListItem*>( mJobItem->item_related[RLI_JOBPARENT] ); }
+    inline jobListItem* jobItem () const { return mJobItem; }
     inline bool resultAccepted () const { return bresult; }
 
 private:
-    void jobTypeItemSelected ( vmListItem* item, vmListItem* );
+    void jobTypeItemSelected ( vmListItem* item );
     void txtProjectNameAltered ( const vmWidget* const );
     void btnChooseExistingDir_clicked ();
     void chkUseDefaultName_checked ();

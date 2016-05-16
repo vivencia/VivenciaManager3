@@ -67,18 +67,14 @@ void fixDatabaseUI::setupUI ()
     if ( tablesView )
         return;
 
-    vmTableColumn* cols[5] = { nullptr };
-    cols[0] = new vmTableColumn;
-    cols[0]->label = tr ( "Table" );
-    cols[1] = new vmTableColumn;
-    cols[1]->label = tr ( "Status" );
-    cols[2] = new vmTableColumn;
-    cols[2]->label = tr ( "Error message" );
-    cols[3] = new vmTableColumn;
-    cols[3]->label = tr ( "Fix ?" );
-    cols[3]->wtype = WT_CHECKBOX;
+    vmTableColumn* cols ( tablesView->createColumns ( 4 ) );
+    cols[0].label = tr ( "Table" );
+    cols[1].label = tr ( "Status" );
+    cols[2].label = tr ( "Error message" );
+    cols[3].label = tr ( "Fix ?" );
+    cols[3].wtype = WT_CHECKBOX;
 
-    tablesView = new vmTableWidget ( TABLES_IN_DB, cols, this );
+    tablesView = new vmTableWidget ( TABLES_IN_DB, this );
     tablesView->setEditable ( false );
     populateTable ();
 

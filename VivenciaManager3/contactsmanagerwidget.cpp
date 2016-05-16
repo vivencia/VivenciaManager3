@@ -66,7 +66,8 @@ void contactsManagerWidget::initInterface ()
 	mainLayout->addWidget ( btnAdd );
 	mainLayout->addWidget ( btnDel );
 
-	if ( m_contact_type == CMW_EMAIL ) {
+	if ( m_contact_type == CMW_EMAIL )
+	{
 		btnExtra = new QToolButton ( this );
 		btnExtra->setIcon ( ICON ( "email.png" ) );
 		connect ( btnExtra, &QToolButton::clicked, this, [&] () {
@@ -79,12 +80,14 @@ void contactsManagerWidget::initInterface ()
 
 void contactsManagerWidget::setEditable ( const bool editable )
 {
-	if ( !editable ) {
+	if ( !editable )
+	{
 		btnAdd->setChecked ( false );
 		btnAdd->setToolTip ( BTN_ADD_TOOLTIP_CHECKED[static_cast<uint> ( m_contact_type )] );
 		btnDel->setToolTip ( BTN_DEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
 	}
-	else {
+	else
+	{
 		btnAdd->setChecked ( cboInfoData->currentText ().isEmpty () ? false : cboInfoData->findText ( cboInfoData->currentText () ) == -1 );
 		btnAdd->setToolTip ( BTN_ADD_TOOLTIP_UNCHECKED[static_cast<uint> ( m_contact_type )] );
 		btnDel->setToolTip ( btnAdd->isChecked () ? BTN_CANCEL_TOOLTIP[static_cast<uint> ( m_contact_type )] : BTN_DEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
@@ -99,13 +102,15 @@ void contactsManagerWidget::cbo_textAltered ( const QString& text )
 {
 	bool input_ok ( false );
 	QString new_text;
-	if ( m_contact_type == CMW_PHONES ) {
+	if ( m_contact_type == CMW_PHONES )
+	{
 		const vmNumber phone ( cboInfoData->text (), VMNT_PHONE );
 		input_ok = phone.isPhone ();
 		if ( input_ok )
 			new_text = phone.toPhone ();
 	}
-	else {
+	else
+	{
 		input_ok = Data::isEmailAddress ( text );
 		if ( input_ok )
 			new_text = text.toLower ();
@@ -123,26 +128,31 @@ void contactsManagerWidget::keyPressedSelector ( const QKeyEvent* const ke, cons
 void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 {
 	cboInfoData->setEditable ( checked );
-	if ( checked ) {
+	if ( checked )
+	{
 		cboInfoData->setText ( emptyString );
 		cboInfoData->setFocus ();
 		btnAdd->setToolTip ( tr ( BTN_ADD_TOOLTIP_CHECKED[static_cast<uint> ( m_contact_type )] ) );
 		btnDel->setToolTip ( BTN_CANCEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
 		btnDel->setEnabled ( true );
 	}
-	else {
+	else
+	{
 		cboInfoData->editor ()->updateText ();
 		bool input_ok ( false );
-		if ( m_contact_type == CMW_PHONES ) {
+		if ( m_contact_type == CMW_PHONES )
+		{
 			const vmNumber phone ( cboInfoData->text (), VMNT_PHONE );
 			input_ok = phone.isPhone ();
 		}
-		else {
+		else
+		{
 			input_ok = Data::isEmailAddress ( cboInfoData->text () );
 			if ( input_ok )
 				cboInfoData->setText ( cboInfoData->text () );
 		}
-		if ( input_ok ) {
+		if ( input_ok )
+		{
 			btnDel->setToolTip ( BTN_DEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
 			btnDel->setEnabled ( true );
 			btnAdd->setToolTip ( tr ( BTN_ADD_TOOLTIP_UNCHECKED[static_cast<uint> ( m_contact_type )] ) );
@@ -150,7 +160,8 @@ void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 			if ( insertFunc )
 				insertFunc ( cboInfoData->text (), this );
 		}
-		else {
+		else
+		{
 			VM_NOTIFY ()->notifyMessage ( tr ( "Error" ), cboInfoData->text () + tr ( "is not a valid " ) +
 										  ( m_contact_type == CMW_PHONES ? tr ( "phone number." ) : tr ( "email or site address." ) ) +
 										  tr ( "\nCannot add it." ) );
@@ -161,14 +172,16 @@ void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 
 void contactsManagerWidget::btnDel_clicked ()
 {
-	if ( cboInfoData->vmWidget::isEditable () ) { // now adding, then do cancel operation
+	if ( cboInfoData->vmWidget::isEditable () )
+	{ // now adding, then do cancel operation
 		cboInfoData->setEditable ( false );
 		cboInfoData->setCurrentIndex ( 0 );
 		btnAdd->setChecked ( false );
 		btnAdd->setToolTip ( BTN_ADD_TOOLTIP_UNCHECKED[static_cast<uint> ( m_contact_type )] );
 		btnDel->setToolTip ( BTN_DEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
 	}
-	else { // now viewing, then do del operation
+	else
+	{ // now viewing, then do del operation
 		int removed_idx ( -1 );
 		const bool ok ( removeCurrent ( removed_idx ) );
 		btnDel->setEnabled ( cboInfoData->count () > 0 );
@@ -179,11 +192,12 @@ void contactsManagerWidget::btnDel_clicked ()
 
 void contactsManagerWidget::btnExtra_clicked ()
 {
-	switch ( m_contact_type ) {
-	case CMW_PHONES:
+	switch ( m_contact_type )
+	{
+		case CMW_PHONES:
 		break;
-	case CMW_EMAIL:
-		fileOps::openAddress ( cboInfoData->currentText () );
+		case CMW_EMAIL:
+			fileOps::openAddress ( cboInfoData->currentText () );
 		break;
 	}
 }
@@ -191,13 +205,17 @@ void contactsManagerWidget::btnExtra_clicked ()
 void contactsManagerWidget::decodePhones ( const stringRecord& phones, const bool bClear )
 {
     if ( bClear )
+	{
         clearAll ();
-	if ( !phones.isNull () ) {
+	}
+	if ( !phones.isNull () )
+	{
 		phones.first ();
 		vmNumber phone ( phones.curValue (), VMNT_PHONE, 1 );
 		cboInfoData->setIgnoreChanges ( true );
 		cboInfoData->setEditText ( phone.toPhone () );
-		do {
+		do
+		{
 			cboInfoData->addItem ( phone.toPhone () );
 			if ( phones.next () )
 				phone.fromTrustedStrPhone ( phones.curValue () );
@@ -211,10 +229,14 @@ void contactsManagerWidget::decodePhones ( const stringRecord& phones, const boo
 void contactsManagerWidget::decodeEmails ( const stringRecord& emails, const bool bClear )
 {
     if ( bClear )
+	{
         clearAll ();
-	if ( emails.first () ) {
+	}
+	if ( emails.first () )
+	{
 		cboInfoData->setIgnoreChanges ( true );
-		do {
+		do
+		{
 			cboInfoData->addItem ( emails.curValue () );
 		} while ( emails.next () );
 		cboInfoData->setIgnoreChanges ( false );
@@ -236,7 +258,8 @@ void contactsManagerWidget::insertItem ()
 bool contactsManagerWidget::removeCurrent ( int& removed_idx )
 {
 	removed_idx = cboInfoData->currentIndex ();
-	if ( removed_idx >= 0 ) {
+	if ( removed_idx >= 0 )
+	{
 		cboInfoData->setIgnoreChanges ( true );
 		cboInfoData->removeItem ( removed_idx );
 		if ( btnExtra )

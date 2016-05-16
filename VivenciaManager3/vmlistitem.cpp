@@ -1,4 +1,5 @@
-#include "listitems.h"
+#include "vmlistitem.h"
+#include "vmlistwidget.h"
 #include "client.h"
 #include "job.h"
 #include "payment.h"
@@ -6,7 +7,6 @@
 #include "global_enums.h"
 #include "data.h"
 #include "crashrestore.h"
-#include "vmwidgets.h"
 #include "heapmanager.h"
 #include "stringrecord.h"
 
@@ -26,19 +26,28 @@ static const QString actionSuffix[4] = {
 const Qt::GlobalColor COLORS[4] = { Qt::white, Qt::red, Qt::green, Qt::blue };
 
 vmListItem::vmListItem ( const uint type_id, const uint nbadInputs, bool* const badinputs_ptr )
-	: QListWidgetItem (), vmWidget ( WT_LISTITEM, type_id ),
-	  item_related { nullptr, nullptr, nullptr, nullptr },
-			   m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ), searchFields ( nullptr ),
-			   m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( badinputs_ptr ),
-			   n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false )
+	: vmTableItem (), m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ), 
+		searchFields ( nullptr ), item_related { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
+		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( badinputs_ptr ),
+		n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false )
 {
+	setSubType ( type_id );
 	setAction ( ACTION_READ, true );
+}
+
+vmListItem::vmListItem ( const QString& label )
+	: vmTableItem ( label ), m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ),
+		searchFields ( nullptr ), item_related { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
+		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( nullptr ),
+		n_badInputs ( 0 ), mTotal_badInputs ( 0 ), mbSearchCreated ( false )
+{
+	setAction ( ACTION_READ );
 }
 
 vmListItem::~vmListItem ()
 {
 	if ( !EXITING_PROGRAM )
-		disconnectRelation ( RLI_CLIENTITEM, this );
+		disconnectRelation ( static_cast<int>( RLI_CLIENTITEM ), this );
 	if ( mbSearchCreated )
 		delete[] searchFields;
 }
@@ -49,36 +58,37 @@ QString vmListItem::defaultStyleSheet () const
 	if ( !listWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
 	else {
+		listWidget ()->setIgnoreChanges ( true );
 		vmListItem* item ( new vmListItem ( 1000 ) );
-		listWidget ()->addItem ( item );
+		item->addToList ( listWidget () );
 		colorstr = item->backgroundColor ().name ();
-		listWidget ()->removeItemWidget ( item );
-		delete item;
+		listWidget ()->removeItem ( item, true );
+		listWidget ()->setIgnoreChanges ( false );
 	}
 	return ( colorstr );
 }
 
 void vmListItem::highlight ( const VMColors vm_color, const QString& )
 {
-	setBackgroundColor ( QColor ( vm_color == vmDefault_Color ?
-		vmListItem::defaultStyleSheet () : colorsStr[Data::vmColorToRGB ( vm_color )] ) );
+	setBackground ( QBrush ( vm_color == vmDefault_Color ? QColor ( defaultStyleSheet () ) : 
+			QColor ( vmColorToQt[Data::vmColorIndex ( vm_color )] ) ) );
 }
 
 void vmListItem::setRelation ( const RELATED_LIST_ITEMS relation )
 {
 	mRelation = relation;
-	item_related[static_cast<int> ( relation )] = this;
+	setRelatedItem ( relation, this );
 	relationActions ();
 }
 
 void vmListItem::disconnectRelation ( const uint start_relation, vmListItem* item )
 {
 	for ( uint i ( start_relation ); i <= RLI_EXTRAITEM; ++i ) {
-		if ( item_related[i] == item )
-			item_related[i] = nullptr;
+		if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) == item )
+			setRelatedItem ( static_cast<RELATED_LIST_ITEMS>( i ), nullptr );
 		else {
-			if ( item_related[i] != nullptr )
-				item_related[i]->disconnectRelation ( i+1, item );
+			if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+				relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->disconnectRelation ( i+1, item );
 		}
 	}
 }
@@ -88,18 +98,23 @@ void vmListItem::syncSiblingWithThis ( vmListItem* sibling )
 	if ( mRelation != sibling->mRelation ) {
 		sibling->setDBRecID ( dbRecID () );
 		sibling->setDBRec ( dbRec (), true );
-		this->item_related[sibling->mRelation] = sibling;
+		this->setRelatedItem ( sibling->mRelation, sibling );
 		relationActions ( sibling );
 		for ( uint i ( 0 ); i <= RLI_EXTRAITEM; ++i )
-			sibling->item_related[i] = this->item_related[i];
+			sibling->setRelatedItem ( static_cast<RELATED_LIST_ITEMS>( i ), this->relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) );
 		sibling->setAction ( action (), false, true );
 	}
 }
 
 void vmListItem::addToList ( vmListWidget* const w_list )
 {
+	if ( m_list != w_list )
+	{
+		if ( m_list != nullptr )
+			m_list->removeItem ( this );
+		m_list = w_list;
+	}
 	w_list->addItem ( this );
-	m_list = w_list;
 }
 
 void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, const bool bSelfOnly )
@@ -116,18 +131,18 @@ void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 		if ( m_dbrec && bSetDBRec )
 			m_dbrec->setAction ( action );
 
-		// update all related items, except self. Call setAction with self_only to true so that we don't enter infinite recurssion.
-		if ( !bSelfOnly ) {
-			for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i ) {
-				if ( ( static_cast<uint> ( mRelation ) != i ) && item_related[i] != nullptr )
-					item_related[i]->setAction ( m_action, false, true );
-			}
-			update ( false );
-		}
-
+		update ();
 		n_badInputs = action == ACTION_ADD ? mTotal_badInputs : 0;
 		for ( uint i ( 0 ); i < mTotal_badInputs; ++i )
 			badInputs_ptr[i] = action == ACTION_ADD ? false : true;
+		
+		// update all related items, except self. Call setAction with self_only to true so that we don't enter infinite recurssion.
+		if ( !bSelfOnly ) {
+			for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i ) {
+				if ( ( static_cast<uint> ( mRelation ) != i ) && relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+					relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setAction ( m_action, i == RLI_CLIENTITEM, true );
+			}
+		}
 	}
 }
 
@@ -137,8 +152,8 @@ void vmListItem::setDBRec ( DBRecord* dbrec, const bool self_only )
 	if ( !self_only ) {
 		for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i ) {
 			//if ( ( static_cast<uint> ( mRelation ) != i ) && item_related[i] != nullptr )
-			if ( item_related[i] != nullptr )
-				item_related[i]->m_dbrec = dbrec;
+			if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+				relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->m_dbrec = dbrec;
 		}
 	}
 	else
@@ -171,16 +186,24 @@ bool vmListItem::loadData ()
 	return false;
 }
 
-void vmListItem::update ( const bool bQtCall )
+void vmListItem::update ()
 {
-	/* bQtCall: Qt makes frequent calls to update. It is not necessary. By default, we ignore
-	 * their calls. When needed, we will use the update method, but it shall be at our discretion.
-	 * This is the main reason to name a method exactly like the parent's instead
-	 */
-	if ( !bQtCall ) {
-		setData ( Qt::ToolTipRole, QString ( m_strBodyText + actionSuffix[action()] ) );
-		QListWidgetItem::setText ( m_strBodyText + actionSuffix[action()] );
-	}
+	setText ( text () + actionSuffix[action()], false, false, false );
+}
+
+void vmListItem::setRelatedItem ( const RELATED_LIST_ITEMS rel_idx, vmListItem* const item )
+{
+	item_related[rel_idx] = item;
+}
+
+vmListItem* vmListItem::relatedItem ( const RELATED_LIST_ITEMS rel_idx ) const
+{
+	return item_related[rel_idx];
+}
+
+void vmListItem::deleteRelatedItem ( const RELATED_LIST_ITEMS rel_idx )
+{
+	heap_del ( item_related[rel_idx] );
 }
 
 uint vmListItem::translatedInputFieldIntoBadInputField ( const uint field ) const
@@ -202,9 +225,9 @@ void vmListItem::saveCrashInfo ( crashRestore* crash )
 {
 	stringRecord state_info;
 	state_info.fastAppendValue ( QString::number ( subType () ) ); // CF_SUBTYPE - client, job, pay or buy
-	state_info.fastAppendValue ( QString::number ( item_related[static_cast<int>( RLI_CLIENTPARENT )]->dbRecID () ) ); //CF_CLIENTID
-	state_info.fastAppendValue ( item_related[static_cast<int>( RLI_JOBPARENT )] != nullptr ?
-		QString::number ( item_related[static_cast<int>( RLI_JOBPARENT )]->dbRecID () ) : QStringLiteral ( "-1" ) ); //CF_JOBID - a client does not have a JOBPARENT
+	state_info.fastAppendValue ( QString::number ( relatedItem ( RLI_CLIENTPARENT )->dbRecID () ) ); //CF_CLIENTID
+	state_info.fastAppendValue ( relatedItem ( RLI_JOBPARENT ) != nullptr ?
+		QString::number ( relatedItem ( RLI_JOBPARENT )->dbRecID () ) : QStringLiteral ( "-1" ) ); //CF_JOBID - a client does not have a JOBPARENT
 	state_info.fastAppendValue ( QString::number ( dbRecID () ) ); //CF_ID
 	state_info.fastAppendValue ( QString::number ( m_action ) ); //CF_ACTION
 	state_info.appendStrRecord ( m_dbrec->toStringRecord () ); //CF_DBRECORD
@@ -213,7 +236,8 @@ void vmListItem::saveCrashInfo ( crashRestore* crash )
 
 void vmListItem::setSearchArray ()
 {
-	if ( m_dbrec != nullptr ) {
+	if ( m_dbrec != nullptr )
+	{
 		searchFields = new triStateType[m_dbrec->fieldCount ()];
 		mbSearchCreated = true;
 	}
@@ -221,8 +245,9 @@ void vmListItem::setSearchArray ()
 
 clientListItem::~clientListItem ()
 {
-	if ( mRelation == RLI_CLIENTITEM ) {
-		heap_del ( CLIENT_REC );
+	if ( mRelation == RLI_CLIENTITEM )
+	{
+		heap_del ( m_dbrec );
 		heap_del ( jobs );
 		heap_del ( pays );
 		heap_del ( buys );
@@ -230,11 +255,12 @@ clientListItem::~clientListItem ()
 	vmListItem::m_dbrec = nullptr;
 }
 
-void clientListItem::update ( const bool bQtCall )
+void clientListItem::update ()
 {
-	if ( !bQtCall && m_dbrec ) {
-		m_strBodyText = recStrValue ( CLIENT_REC, FLD_CLIENT_NAME );
-		vmListItem::update ( false );
+	if ( m_dbrec )
+	{
+		setText ( recStrValue ( CLIENT_REC, FLD_CLIENT_NAME ), false, false, false );
+		vmListItem::update ();
 	}
 }
 
@@ -276,17 +302,15 @@ void clientListItem::relationActions ( vmListItem* subordinateItem )
 jobListItem::~jobListItem ()
 {
 	if ( mRelation == RLI_CLIENTITEM ) {
-		heap_del ( JOB_REC );
-		buys->clear ();
+		heap_del ( m_dbrec );
 		heap_del ( buys );
-		daysList->clear ();
 		heap_del ( daysList );
 		if ( mSearchSubFields != nullptr ) {
 			mSearchSubFields->clear ();
 			delete mSearchSubFields;
 		}
+		vmListItem::m_dbrec = nullptr;
 	}
-	vmListItem::m_dbrec = nullptr;
 }
 
 uint jobListItem::translatedInputFieldIntoBadInputField ( const uint field ) const
@@ -318,30 +342,33 @@ bool jobListItem::loadData ()
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
-void jobListItem::update ( const bool bQtCall )
+void jobListItem::update ()
 {
-	if ( bQtCall ) return;
-
-	if ( m_dbrec ) {
-		if ( mRelation == RLI_CLIENTITEM ) {
-			m_strBodyText = recStrValue ( JOB_REC, FLD_JOB_TYPE );
-			if ( !m_strBodyText.isEmpty () )
-				m_strBodyText += QLatin1String ( " - " ) + recStrValue ( JOB_REC, FLD_JOB_STARTDATE );
+	if ( m_dbrec )
+	{
+		if ( mRelation == RLI_CLIENTITEM )
+		{
+			setText ( recStrValue ( JOB_REC, FLD_JOB_TYPE ), false, false, false );
+			if ( !text ().isEmpty () )
+				setText ( text () + QLatin1String ( " - " ) + recStrValue ( JOB_REC, FLD_JOB_STARTDATE ), false, false, false );
 		}
 	}
-	else
-		m_strBodyText = CHR_QUESTION_MARK;
-	vmListItem::update ( false );
+	vmListItem::update ();
 }
 
 void jobListItem::relationActions ( vmListItem* subordinateItem )
 {
-	if ( mRelation == RLI_CLIENTITEM ) {
-		if ( subordinateItem == nullptr ) {
+	if ( mRelation == RLI_CLIENTITEM )
+	{
+		if ( subordinateItem == nullptr )
+		{
 			buys = new PointersList<buyListItem*> ( 50 );
+			buys->setAutoDeleteItem ( true );
 			daysList = new PointersList<vmListItem*> ( 10 );
+			daysList->setAutoDeleteItem ( true );
 		}
-		else {
+		else
+		{
 			static_cast<jobListItem*>( subordinateItem )->buys = this->buys;
 			static_cast<jobListItem*>( subordinateItem )->daysList = this->daysList;
 		}
@@ -362,53 +389,54 @@ void jobListItem::setReportSearchFieldFound ( const uint report_field, const uin
 
 payListItem::~payListItem ()
 {
-	if ( mRelation == RLI_CLIENTITEM ) {
-		heap_del ( item_related[RLI_JOBITEM] );
-		heap_del ( item_related[RLI_EXTRAITEM] );
-		heap_del ( PAY_REC );
+	if ( mRelation == RLI_CLIENTITEM )
+	{
+		deleteRelatedItem ( RLI_JOBITEM );
+		deleteRelatedItem ( RLI_EXTRAITEM );
+		heap_del ( m_dbrec );
 		vmListItem::m_dbrec = nullptr;
 	}
 	else
-		item_related[RLI_CLIENTITEM]->item_related[mRelation] = nullptr;
+		relatedItem ( RLI_CLIENTITEM )->setRelatedItem ( mRelation, nullptr );
 }
 
-void payListItem::update ( const bool bQtCall )
+void payListItem::update ()
 {
-	if ( bQtCall ) return;
-
-	if ( m_dbrec ) {
-		if ( item_related[RLI_CLIENTITEM] != nullptr ) {
+	if ( m_dbrec )
+	{
+		if ( relatedItem ( RLI_CLIENTITEM ) != nullptr )
+		{
 			if ( action () == ACTION_ADD )
-				item_related[RLI_CLIENTITEM]->m_strBodyText = APP_TR_FUNC ( "Automatically generated payment info - edit it after saving job" );
-			else {
-				if ( !recStrValue ( PAY_REC, FLD_PAY_PRICE ).isEmpty () ) {
-					item_related[RLI_CLIENTITEM]->m_strBodyText = PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
-						PAY_REC->price ( FLD_PAY_TOTALPAID ).toPrice () + CHR_R_PARENTHESIS;
+				relatedItem ( RLI_CLIENTITEM )->setText ( APP_TR_FUNC ( "Automatically generated payment info - edit it after saving job" ), false, false, false );
+			else
+			{
+				if ( !recStrValue ( PAY_REC, FLD_PAY_PRICE ).isEmpty () )
+				{
+					relatedItem ( RLI_CLIENTITEM )->setText ( PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
+						PAY_REC->price ( FLD_PAY_TOTALPAID ).toPrice () + CHR_R_PARENTHESIS, false, false, false );
 				}
 				else
-					item_related[RLI_CLIENTITEM]->m_strBodyText = APP_TR_FUNC ( "No payment yet for job" );
+					relatedItem ( RLI_CLIENTITEM )->setText ( APP_TR_FUNC ( "No payment yet for job" ), false, false, false );
 			}
-			item_related[RLI_CLIENTITEM]->vmListItem::update ( false );
+			relatedItem ( RLI_CLIENTITEM )->vmListItem::update ();
 
-			if ( item_related[RLI_EXTRAITEM] != nullptr ) {
-				item_related[RLI_EXTRAITEM]->m_strBodyText = recStrValue ( static_cast<clientListItem*> (
-					item_related[RLI_CLIENTPARENT] )->clientRecord (), FLD_CLIENT_NAME ) +
+			if ( relatedItem ( RLI_EXTRAITEM ) != nullptr )
+			{
+				relatedItem ( RLI_EXTRAITEM )->setText ( recStrValue ( static_cast<clientListItem*> (
+					relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) +
 					CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
-					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS;
-				item_related[RLI_EXTRAITEM]->vmListItem::update ( false );
+					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS, false, false, false );
+				relatedItem ( RLI_EXTRAITEM )->vmListItem::update ();
 			}
-			if ( item_related[RLI_DATEITEM] != nullptr ) {
-				item_related[RLI_DATEITEM]->m_strBodyText = recStrValue ( static_cast<clientListItem*> (
-					item_related[RLI_CLIENTPARENT] )->clientRecord (), FLD_CLIENT_NAME ) +
+			if ( relatedItem ( RLI_DATEITEM ) != nullptr )
+			{
+				relatedItem ( RLI_DATEITEM )->setText (recStrValue ( static_cast<clientListItem*> (
+					relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) +
 					CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
-					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS;
-				item_related[RLI_DATEITEM]->vmListItem::update ( false );
+					CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS, false, false, false );
+				relatedItem ( RLI_DATEITEM )->vmListItem::update ();
 			}
 		}
-	}
-	else {
-		m_strBodyText = CHR_QUESTION_MARK;
-		vmListItem::update ( false );
 	}
 }
 
@@ -457,48 +485,35 @@ uint payListItem::translatedInputFieldIntoBadInputField ( const uint field ) con
 
 buyListItem::~buyListItem ()
 {
-	/* CLIENTITEM will delete all the dependants that have not been deleted
-	 * When cleaning up an item that has dependants, begin by removing those depedants
-	 * and for last delete the parent. This will ensure that code bound to those dependants
-	 * gets called without crash for trying to refer to a pointer that is no more. If you are
-	 * certain no code depends on the dependants, cleaning the master is the fastest way to go
-	 */
 	if ( mRelation == RLI_CLIENTITEM ) {
-		heap_del ( item_related[RLI_EXTRAITEM] );
-		heap_del ( item_related[RLI_DATEITEM] );
-		heap_del ( item_related[RLI_JOBITEM] );
-		heap_del ( BUY_REC );
+		deleteRelatedItem ( RLI_EXTRAITEM );
+		deleteRelatedItem ( RLI_JOBITEM );
+		heap_del ( m_dbrec );
 		vmListItem::m_dbrec = nullptr;
 	}
 	else
-		item_related[RLI_CLIENTITEM]->item_related[mRelation] = nullptr;
+		relatedItem ( RLI_CLIENTITEM )->setRelatedItem ( mRelation, nullptr );
 }
 
-void buyListItem::update ( const bool bQtCall )
+void buyListItem::update ()
 {
-	if ( bQtCall ) return;
-
 	if ( m_dbrec ) {
 		const QString strBodyText ( recStrValue ( BUY_REC, FLD_BUY_DATE ) + QLatin1String ( " - " ) +
 						recStrValue ( BUY_REC, FLD_BUY_PRICE ) + QLatin1String ( " (" ) );
 
 		if ( mRelation != RLI_EXTRAITEM ) { //EXTRAITEM does not produce changes on other items, so we do not need to waste time updating the others when updating it
-			item_related[RLI_CLIENTITEM]->m_strBodyText = strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS;
-			item_related[RLI_CLIENTITEM]->vmListItem::update ( false );
+			relatedItem ( RLI_CLIENTITEM )->setText ( strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS, false, false, false );
+			relatedItem ( RLI_CLIENTITEM )->vmListItem::update ();
 
-			if ( item_related[RLI_JOBITEM] != nullptr ) {
-				item_related[RLI_JOBITEM]->m_strBodyText = item_related[RLI_CLIENTITEM]->m_strBodyText;
-				item_related[RLI_JOBITEM]->vmListItem::update ( false );
+			if ( relatedItem ( RLI_JOBITEM ) != nullptr ) {
+				relatedItem ( RLI_JOBITEM )->setText ( strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS, false, false, false );
+				relatedItem ( RLI_JOBITEM )->vmListItem::update ();
 			}
 		}
-		if ( item_related[RLI_EXTRAITEM] != nullptr ) {
-			item_related[RLI_EXTRAITEM]->m_strBodyText = strBodyText + Client::clientName ( recStrValue ( BUY_REC, FLD_BUY_CLIENTID ) ) + CHR_R_PARENTHESIS;
-			item_related[RLI_EXTRAITEM]->vmListItem::update ( false );
+		if ( relatedItem ( RLI_EXTRAITEM ) != nullptr ) {
+			relatedItem ( RLI_EXTRAITEM )->setText ( strBodyText + Client::clientName ( recStrValue ( BUY_REC, FLD_BUY_CLIENTID ) ) + CHR_R_PARENTHESIS, false, false, false );
+			relatedItem ( RLI_EXTRAITEM )->vmListItem::update ();
 		}
-	}
-	else {
-		m_strBodyText = CHR_QUESTION_MARK;
-		vmListItem::update ( false );
 	}
 }
 

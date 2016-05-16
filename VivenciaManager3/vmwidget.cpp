@@ -34,7 +34,7 @@ QString vmWidget::widgetToString () const
 void vmWidget::highlight ( const VMColors vm_color, const QString& )
 {
 	toQWidget ()->setStyleSheet ( vm_color == vmDefault_Color ? defaultStyleSheet () :
-			qtClassName () + QLatin1String ( " { background-color: rgb(" ) + colorsStr[Data::vmColorToRGB (vm_color)] + QLatin1String ( " ) }" ) );
+			qtClassName () + QLatin1String ( " { background-color: rgb(" ) + colorsStr[Data::vmColorIndex (vm_color)] + QLatin1String ( " ) }" ) );
 }
 
 vmWidget* vmWidget::stringToWidget ( const QString& /*str_widget*/ )
@@ -127,5 +127,6 @@ void vmWidget::setCallbackForContextMenu
 
 void vmWidget::showContextMenu ( const QPoint& pos )
 {
-	contextmenu_func ( pos, this );
+	if ( contextmenu_func )
+		contextmenu_func ( pos, this );
 }

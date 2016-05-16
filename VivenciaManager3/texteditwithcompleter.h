@@ -35,7 +35,7 @@ public:
 		return document ()->objectName () == QLatin1String ( "np" );
 	}
 
-	void showHideSearchPanel ();
+	void showhideUtilityPanel ();
 	void createContextMenu ();
 	void insertCustomActionToContextMenu ( QAction* action );
 

@@ -7,16 +7,16 @@
 
 extern "C"
 {
-#include <alloca.h>
+	#include <alloca.h>
 }
 
-static const QString HEADER_ID ( "#!VMFILE" );
-static const QString CFG_TYPE_LINE ( "@CFG,%1\n" );
-static const QString DATA_TYPE_LINE ( "@CSV,%1\n" );
+static const QString HEADER_ID ( QStringLiteral ( "#!VMFILE" ) );
+static const QString CFG_TYPE_LINE ( QStringLiteral ( "@CFG,%1\n" ) );
+static const QString DATA_TYPE_LINE ( QStringLiteral ( "@CSV,%1\n" ) );
 
 // Must use a different separator character because, when exporting the tables to a csv file, using the same char everywhere
 // would lead to irreparable confusion
-static const QChar csv_sep = QChar ( char ( 29 ) );
+static const QChar csv_sep ( QChar ( char ( 29 ) ) );
 
 //--------------------------------------------TEXT-FILE--------------------------------
 textFile::textFile ()
@@ -51,12 +51,14 @@ bool textFile::isTextFile ( const QString& filename, const TF_TYPE type )
 	bool ret ( false );
 
 	n_chars = file.readLine ( buf, sizeof ( buf ) );
-	if ( n_chars != -1 ) {
+	if ( n_chars != -1 )
+	{
 		data = QString::fromUtf8 ( buf, strlen ( buf ) - 1 );
-		if ( data.contains ( HEADER_ID ) ) {
-			if ( type == TF_CONFIG && data.contains ( "@CFG" ) )
+		if ( data.contains ( HEADER_ID ) )
+		{
+			if ( type == TF_CONFIG && data.contains ( QStringLiteral( "@CFG" ) ) )
 				ret = true;
-			else if ( type == TF_DATA && data.contains ( "@CSV" ) )
+			else if ( type == TF_DATA && data.contains ( QStringLiteral ("@CSV" ) ) )
 				ret = true;
 		}
 		else
@@ -82,11 +84,13 @@ void textFile::clear ()
 
 bool textFile::open ()
 {
-	if ( m_file.fileName () != m_filename ) {
+	if ( m_file.fileName () != m_filename )
+	{
 		clear ();
 		m_file.setFileName ( m_filename );
 	}
-	else {
+	else
+	{
 		if ( m_file.isOpen () )
 			return true;
 	}
@@ -94,14 +98,17 @@ bool textFile::open ()
 	QIODevice::OpenModeFlag openflag ( QIODevice::ReadWrite );
 
     if ( !fileOps::canWrite ( m_filename ).isOn () )
+	{
         openflag = QIODevice::ReadOnly;
+	}
 	m_open = m_file.open ( openflag|QIODevice::Text );
 	return m_open;
 }
 
 void textFile::readType ()
 {
-	if ( m_open ) {
+	if ( m_open )
+	{
 		char buf[20] = { '\0' };
 		int n_chars;
 		QString data;
@@ -128,7 +135,8 @@ void textFile::readType ()
 
 bool textFile::load ()
 {
-	if ( !m_open ) {
+	if ( !m_open )
+	{
 		if ( !open () )
 			return false;
 	}
@@ -149,7 +157,8 @@ bool textFile::overwrite ()
 
 void textFile::writeHeader ()
 {
-	if ( m_type != TF_TEXT ) {
+	if ( m_type != TF_TEXT )
+	{
 		QString str;
 		str = HEADER_ID + ( m_type == TF_CONFIG ? CFG_TYPE_LINE : DATA_TYPE_LINE )
 			  .arg ( QString::number ( m_buffersize ) );
@@ -164,7 +173,8 @@ void textFile::commit ()
 	if ( !overwrite () ) return;
 	writeHeader ();
 
-	if ( writeData () ) {
+	if ( writeData () )
+	{
 		m_file.flush ();
 		m_needsaving = false;
 	}
@@ -223,8 +233,10 @@ configFile::~configFile ()
 bool configFile::setWorkingSection ( const QString& section_name )
 {
 	bool ret ( false );
-	for ( uint i ( 0 ); i < cfgData.count (); ++i ) {
-		if ( cfgData.at ( i )->section_name == section_name ) {
+	for ( uint i ( 0 ); i < cfgData.count (); ++i )
+	{
+		if ( cfgData.at ( i )->section_name == section_name )
+		{
 			cfgData.setCurrent ( i );
 			ret = true;
 			break;
@@ -236,7 +248,8 @@ bool configFile::setWorkingSection ( const QString& section_name )
 bool configFile::setWorkingSection ( const uint section_pos )
 {
 	bool ret ( false );
-	if ( section_pos < cfgData.count () ) {
+	if ( section_pos < cfgData.count () )
+	{
 		cfgData.setCurrent ( section_pos );
 		ret = true;
 	}
@@ -253,7 +266,8 @@ const QString& configFile::fieldValue ( const QString& field_name ) const
 
 const QString& configFile::fieldValue ( const uint field_index ) const
 {
-	if ( cfgData.currentIndex () != -1 ) {
+	if ( cfgData.currentIndex () != -1 )
+	{
 		if ( field_index < unsigned ( cfgData.current ()->values.count () ) )
 			return cfgData.current ()->values.at ( field_index );
 	}
@@ -263,11 +277,14 @@ const QString& configFile::fieldValue ( const uint field_index ) const
 int configFile::fieldIndex ( const QString& field_name ) const
 {
 	int ret ( -1 );
-	if ( cfgData.currentIndex () != -1 ) {
+	if ( cfgData.currentIndex () != -1 )
+	{
 		configFile_st* section_info ( cfgData.current () );
 		const int n_fields ( section_info->fields.count () );
-		for ( int i ( 0 ); i < n_fields; ++i ) {
-			if ( section_info->fields.at ( i ) == field_name ) {
+		for ( int i ( 0 ); i < n_fields; ++i )
+		{
+			if ( section_info->fields.at ( i ) == field_name )
+			{
 				ret = i;
 				break;
 			}
@@ -278,7 +295,8 @@ int configFile::fieldIndex ( const QString& field_name ) const
 
 void configFile::insertNewSection ( const QString& section_name, const bool b_makecurrent )
 {
-	if ( !section_name.isEmpty () ) {
+	if ( !section_name.isEmpty () )
+	{
 		configFile_st* section_info ( new configFile_st );
 		section_info->section_name = section_name;
 		if ( b_makecurrent )
@@ -292,9 +310,12 @@ void configFile::insertNewSection ( const QString& section_name, const bool b_ma
 
 void configFile::deleteSection ( const QString& section_name )
 {
-	if ( !section_name.isEmpty () ) {
-		for ( uint i ( 0 ); i < cfgData.count (); ++i ) {
-			if ( cfgData.at ( i )->section_name == section_name ) {
+	if ( !section_name.isEmpty () )
+	{
+		for ( uint i ( 0 ); i < cfgData.count (); ++i )
+		{
+			if ( cfgData.at ( i )->section_name == section_name )
+			{
 				if ( cfgData.currentIndex () == signed ( i ) )
 					cfgData.setCurrent ( -1 );
 				cfgData.remove ( i, true );
@@ -307,7 +328,8 @@ void configFile::deleteSection ( const QString& section_name )
 
 void configFile::insertField ( const QString& field_name, const QString& value )
 {
-	if ( cfgData.currentIndex () != -1 ) {
+	if ( cfgData.currentIndex () != -1 )
+	{
 		configFile_st* section_info ( cfgData.current () );
 		section_info->fields.append ( field_name );
 		section_info->values.append ( value );
@@ -320,11 +342,14 @@ void configFile::insertField ( const QString& field_name, const QString& value )
 
 void configFile::deleteField ( const QString& field_name )
 {
-	if ( cfgData.currentIndex () != -1 ) {
+	if ( cfgData.currentIndex () != -1 )
+	{
 		configFile_st* section_info ( cfgData.current () );
 		const int n_fields ( section_info->fields.count () );
-		for ( int i ( 0 ); i < n_fields; ++i ) {
-			if ( section_info->fields.at ( i ) == field_name ) {
+		for ( int i ( 0 ); i < n_fields; ++i )
+		{
+			if ( section_info->fields.at ( i ) == field_name )
+			{
 				section_info->fields.removeAt ( i );
 				section_info->values.removeAt ( i );
 				m_needsaving = true;
@@ -336,10 +361,12 @@ void configFile::deleteField ( const QString& field_name )
 
 bool configFile::setFieldValue ( const QString& field_name, const QString& value )
 {
-	if ( cfgData.currentIndex () != -1 ) {
+	if ( cfgData.currentIndex () != -1 )
+	{
 		configFile_st* section_info ( cfgData.current () );
 		const int idx ( fieldIndex ( field_name ) );
-		if ( idx != -1 ) {
+		if ( idx != -1 )
+		{
 			section_info->values[idx] = value;
 			const int line_len ( field_name.count () + value.count () );
 			if ( ( signed ) m_buffersize < line_len )
@@ -353,9 +380,11 @@ bool configFile::setFieldValue ( const QString& field_name, const QString& value
 
 bool configFile::setFieldValue ( const uint field_index, const QString& value )
 {
-	if ( cfgData.currentIndex () != -1 ) {
+	if ( cfgData.currentIndex () != -1 )
+	{
 		configFile_st* section_info ( cfgData.current () );
-		if ( field_index < unsigned ( section_info->values.count () ) ) {
+		if ( field_index < unsigned ( section_info->values.count () ) )
+		{
 			section_info->values[field_index] = value;
 			const int line_len ( section_info->fields.at ( field_index ).count () + value.count () );
 			if ( ( signed ) m_buffersize < line_len )
@@ -378,7 +407,8 @@ bool configFile::loadData ()
 	bool b_skiplineread ( false );
 
 	do {
-		if ( !b_skiplineread ) {
+		if ( !b_skiplineread )
+		{
 			n_chars = m_file.readLine ( buf, buf_size );
 			if ( n_chars <= 2 ) continue;
 			line = QString::fromUtf8 ( buf, n_chars - 1 );
@@ -387,22 +417,27 @@ bool configFile::loadData ()
 			b_skiplineread = false;
 
 		idx = line.indexOf ( CHR_L_BRACKET );
-		if ( idx != -1 ) {
+		if ( idx != -1 )
+		{
 			idx2 = line.indexOf ( CHR_R_BRACKET, ++idx );
-			if ( idx2 != -1 ) {
+			if ( idx2 != -1 )
+			{
 				section_info = new configFile_st;
 				section_info->section_name = line.mid ( idx, idx2 - idx );
 				do {
 					n_chars = m_file.readLine ( buf, buf_size );
-					if ( n_chars >= 3 ) {
+					if ( n_chars >= 3 )
+					{
 						line = QString::fromUtf8 ( buf, n_chars - 1 );
 						idx = line.indexOf ( CHR_EQUAL );
 						if ( idx != -1 ) {
 							section_info->fields.append ( line.left ( idx ) );
 							section_info->values.append ( line.mid ( idx + 1, n_chars - idx - 1 ) );
 						}
-						else {
-							if ( line.contains ( CHR_L_BRACKET ) ) { // file was recorded without blank lines between this session
+						else
+						{
+							if ( line.contains ( CHR_L_BRACKET ) )
+							{ // file was recorded without blank lines between this session
 								b_skiplineread = true;
 								break;
 							}
@@ -425,7 +460,8 @@ bool configFile::writeData ()
 	configFile_st* section_info ( nullptr );
 	int n_fields ( 0 );
 	int written ( 0 );
-	for ( uint i ( 0 ); i < cfgData.count (); ++i ) {
+	for ( uint i ( 0 ); i < cfgData.count (); ++i )
+	{
 		section_info = cfgData.at ( i );
 		line = CHR_L_BRACKET + section_info->section_name + CHR_R_BRACKET + CHR_NEWLINE;
 		n_fields = section_info->fields.count ();
@@ -464,7 +500,8 @@ dataFile::~dataFile ()
 
 void dataFile::insertRecord ( const int pos, const stringRecord& rec )
 {
-	if ( pos >= 0 ) {
+	if ( pos >= 0 )
+	{
 		recData.insertRecord ( pos, rec );
 		if ( rec.toString ().count () > ( signed ) m_buffersize )
 			m_buffersize = rec.toString ().count () + 1;
@@ -474,7 +511,8 @@ void dataFile::insertRecord ( const int pos, const stringRecord& rec )
 
 void dataFile::changeRecord ( const int pos, const stringRecord& rec )
 {
-	if ( pos >= 0 && pos < ( signed ) recData.countRecords () ) {
+	if ( pos >= 0 && pos < ( signed ) recData.countRecords () )
+	{
 		recData.changeRecord ( pos, rec );
 		if ( rec.toString ().count () > ( signed ) m_buffersize )
 			m_buffersize = rec.toString ().count () + 1;
@@ -484,7 +522,8 @@ void dataFile::changeRecord ( const int pos, const stringRecord& rec )
 
 void dataFile::deleteRecord ( const int pos )
 {
-	if ( pos >= 0 && pos < ( signed ) recData.countRecords () ) {
+	if ( pos >= 0 && pos < ( signed ) recData.countRecords () )
+	{
 		recData.removeRecord ( pos );
 		m_needsaving = true;
 	}
@@ -500,7 +539,8 @@ void dataFile::appendRecord ( const stringRecord& rec )
 
 bool dataFile::getRecord ( stringRecord& rec, const int pos ) const
 {
-	if ( pos >= 0 && pos < ( signed ) recData.countRecords () ) {
+	if ( pos >= 0 && pos < ( signed ) recData.countRecords () )
+	{
 		rec = recData.readRecord ( pos );
 		return true;
 	}
@@ -510,7 +550,8 @@ bool dataFile::getRecord ( stringRecord& rec, const int pos ) const
 bool dataFile::getRecord ( stringRecord& rec, const QString& value, const int field ) const
 {
 	const int row ( recData.findRecordRowByFieldValue ( value, field ) );
-	if ( row >= 0 ) {
+	if ( row >= 0 )
+	{
 		rec = recData.readRecord ( row );
 		return rec.isOK ();
 	}
@@ -542,7 +583,8 @@ bool dataFile::loadData ()
 bool dataFile::writeData ()
 {
 	int written ( 0 );
-	if ( recData.isOK () ) {
+	if ( recData.isOK () )
+	{
 		QByteArray data ( recData.first ().toString ().toLocal8Bit () );
 		do {
 			written += m_file.write ( data, data.size () );

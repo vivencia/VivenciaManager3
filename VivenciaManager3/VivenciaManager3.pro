@@ -37,7 +37,6 @@ SOURCES += main.cpp \
 	documenteditor.cpp \
 	documenteditorwindow.cpp \
 	texteditor.cpp \
-	listitems.cpp \
 	usermanagement.cpp \
 	quickprojectui.cpp \
 	emailconfigdialog.cpp \
@@ -77,7 +76,11 @@ SOURCES += main.cpp \
     vmtablewidget.cpp \
     vmtableitem.cpp \
     vmcheckedtableitem.cpp \
-    newprojectdialog.cpp
+    newprojectdialog.cpp \
+    vmlistwidget.cpp \
+    vmtableutils.cpp \
+    vmlistitem.cpp \
+    vmlinefilter.cpp
 
 HEADERS += dbrecord.h \
 	vmnumberformats.h \
@@ -98,7 +101,6 @@ HEADERS += dbrecord.h \
 	servicesofferedui.h \
 	generaltable.h \
 	userrecord.h \
-	listitems.h \
 	db_image.h \
 	global.h \
 	suppliersdlg.h \
@@ -156,7 +158,11 @@ HEADERS += dbrecord.h \
     vmcheckedtableitem.h \
     fast_library_functions.h \
     newprojectdialog.h \
-    singleapp.h
+    singleapp.h \
+    vmlistwidget.h \
+    vmtableutils.h \
+    vmlistitem.h \
+    vmlinefilter.h
 FORMS += mainwindow.ui \
 	backupdialog.ui \
     companypurchasesui.ui \
@@ -165,7 +171,7 @@ RESOURCES += resources.qrc
 LIBS += -L/usr/lib -lhunspell -lbz2
 DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS TRANSITION_PERIOD
 INCLUDEPATH += -I/usr/include
-QMAKE_CXXFLAGS_RELEASE += -march=haswell -mtune=haswell -fomit-frame-pointer -funroll-loops -Ofast
+QMAKE_CXXFLAGS_RELEASE += -march=native -fomit-frame-pointer -funroll-loops -Ofast
 #QMAKE_CXXFLAGS_DEBUG += -g -fvar-tracking-assignments-toggle
 QMAKE_CXXFLAGS_DEBUG += -g
 #QMAKE_CXXFLAGS += -g -fvar-tracking-assignments-toggle

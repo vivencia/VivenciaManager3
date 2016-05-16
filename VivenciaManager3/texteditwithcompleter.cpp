@@ -108,7 +108,7 @@ void textEditWithCompleter::setPreview ( const bool preview )
 	}
 }
 
-void textEditWithCompleter::showHideSearchPanel ()
+void textEditWithCompleter::showhideUtilityPanel ()
 {
 	if ( !m_searchPanel )
 		m_searchPanel = new searchWordPanel ( this );
@@ -128,7 +128,7 @@ void textEditWithCompleter::createContextMenu ()
         return m_highlighter->enableSpellChecking ( b_spell_enabled ); } );
     mContextMenu->addSeparator ();
     QAction* findAction ( new QAction ( TR_FUNC ( "Find... (CTRL+F)" ), nullptr ) );
-    connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showHideSearchPanel (); } );
+    connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showhideUtilityPanel (); } );
     mContextMenu->addAction ( findAction );
 	mContextMenu->addSeparator ();
 }
@@ -265,7 +265,7 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 		e->accept (); // do not propagate
 		if ( e->modifiers () & Qt::ControlModifier ) {
 			if ( e->key () == Qt::Key_F )
-				showHideSearchPanel ();
+				showhideUtilityPanel ();
 		}
 		return;
 	}
@@ -290,7 +290,7 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
                     keypressed_func ( e, this );
 			break;
             case Qt::Key_F:
-                showHideSearchPanel ();
+                showhideUtilityPanel ();
 			break;
             case Qt::Key_S:
                 focusOutEvent ( nullptr );
@@ -463,7 +463,7 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 
 QString textEditWithCompleter::textUnderCursor () const
 {
-	QTextCursor tc = textCursor ();
+	QTextCursor tc ( textCursor () );
 	tc.select ( QTextCursor::WordUnderCursor );
 	return tc.selectedText ();
 }

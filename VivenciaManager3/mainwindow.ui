@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>890</width>
+    <width>1633</width>
     <height>700</height>
    </rect>
   </property>
@@ -34,13 +34,13 @@
      <number>5</number>
     </property>
     <property name="rightMargin">
-     <number>0</number>
+     <number>5</number>
     </property>
     <property name="bottomMargin">
-     <number>0</number>
+     <number>5</number>
     </property>
     <property name="spacing">
-     <number>3</number>
+     <number>2</number>
     </property>
     <item row="0" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -190,7 +190,7 @@
           <normaloff>:/resources/companypurchases.png</normaloff>:/resources/companypurchases.png</iconset>
         </property>
         <property name="checkable">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -363,8 +363,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>240</width>
-              <height>632</height>
+              <width>344</width>
+              <height>628</height>
              </rect>
             </property>
            </widget>
@@ -390,7 +390,7 @@
         <enum>QTabWidget::East</enum>
        </property>
        <property name="currentIndex">
-        <number>4</number>
+        <number>7</number>
        </property>
        <property name="usesScrollButtons">
         <bool>true</bool>
@@ -416,10 +416,10 @@
           <number>0</number>
          </property>
          <property name="rightMargin">
-          <number>0</number>
+          <number>5</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>5</number>
          </property>
          <item>
           <widget class="QScrollArea" name="scrollWorkFlow">
@@ -446,8 +446,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>613</width>
-              <height>632</height>
+              <width>100</width>
+              <height>30</height>
              </rect>
             </property>
            </widget>
@@ -648,7 +648,7 @@
                         <x>0</x>
                         <y>0</y>
                         <width>227</width>
-                        <height>274</height>
+                        <height>162</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -687,17 +687,7 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="vmListWidget" name="lstCalJobsDay">
-                         <property name="showDropIndicator" stdset="0">
-                          <bool>false</bool>
-                         </property>
-                         <property name="alternatingRowColors">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sortingEnabled">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
+                        <widget class="vmListWidget" name="lstCalJobsDay"/>
                        </item>
                       </layout>
                      </widget>
@@ -707,7 +697,7 @@
                         <x>0</x>
                         <y>0</y>
                         <width>237</width>
-                        <height>151</height>
+                        <height>162</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -749,17 +739,7 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="vmListWidget" name="lstCalJobsWeek">
-                         <property name="showDropIndicator" stdset="0">
-                          <bool>false</bool>
-                         </property>
-                         <property name="alternatingRowColors">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sortingEnabled">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
+                        <widget class="vmListWidget" name="lstCalJobsWeek"/>
                        </item>
                       </layout>
                      </widget>
@@ -769,7 +749,7 @@
                         <x>0</x>
                         <y>0</y>
                         <width>247</width>
-                        <height>151</height>
+                        <height>162</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -808,17 +788,7 @@
                         </widget>
                        </item>
                        <item>
-                        <widget class="vmListWidget" name="lstCalJobsMonth">
-                         <property name="showDropIndicator" stdset="0">
-                          <bool>false</bool>
-                         </property>
-                         <property name="alternatingRowColors">
-                          <bool>true</bool>
-                         </property>
-                         <property name="sortingEnabled">
-                          <bool>true</bool>
-                         </property>
-                        </widget>
+                        <widget class="vmListWidget" name="lstCalJobsMonth"/>
                        </item>
                       </layout>
                      </widget>
@@ -844,8 +814,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>200</width>
-                     <height>288</height>
+                     <width>199</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -879,17 +849,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="vmListWidget" name="lstCalPaysDay">
-                      <property name="showDropIndicator" stdset="0">
-                       <bool>false</bool>
-                      </property>
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <property name="sortingEnabled">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="vmListWidget" name="lstCalPaysDay"/>
                     </item>
                    </layout>
                   </widget>
@@ -899,7 +859,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>210</width>
-                     <height>151</height>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -933,17 +893,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="vmListWidget" name="lstCalPaysWeek">
-                      <property name="showDropIndicator" stdset="0">
-                       <bool>false</bool>
-                      </property>
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <property name="sortingEnabled">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="vmListWidget" name="lstCalPaysWeek"/>
                     </item>
                    </layout>
                   </widget>
@@ -953,7 +903,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>219</width>
-                     <height>151</height>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -987,14 +937,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="vmListWidget" name="lstCalPaysMonth">
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <property name="sortingEnabled">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="vmListWidget" name="lstCalPaysMonth"/>
                     </item>
                    </layout>
                   </widget>
@@ -1017,8 +960,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>200</width>
-                     <height>288</height>
+                     <width>174</width>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1052,17 +995,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="vmListWidget" name="lstCalBuysDay">
-                      <property name="showDropIndicator" stdset="0">
-                       <bool>false</bool>
-                      </property>
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <property name="sortingEnabled">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="vmListWidget" name="lstCalBuysDay"/>
                     </item>
                    </layout>
                   </widget>
@@ -1072,7 +1005,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>184</width>
-                     <height>151</height>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1106,17 +1039,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="vmListWidget" name="lstCalBuysWeek">
-                      <property name="showDropIndicator" stdset="0">
-                       <bool>false</bool>
-                      </property>
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <property name="sortingEnabled">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="vmListWidget" name="lstCalBuysWeek"/>
                     </item>
                    </layout>
                   </widget>
@@ -1126,7 +1049,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>194</width>
-                     <height>151</height>
+                     <height>162</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1160,17 +1083,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="vmListWidget" name="lstCalBuysMonth">
-                      <property name="showDropIndicator" stdset="0">
-                       <bool>false</bool>
-                      </property>
-                      <property name="alternatingRowColors">
-                       <bool>true</bool>
-                      </property>
-                      <property name="sortingEnabled">
-                       <bool>true</bool>
-                      </property>
-                     </widget>
+                     <widget class="vmListWidget" name="lstCalBuysMonth"/>
                     </item>
                    </layout>
                   </widget>
@@ -1224,8 +1137,33 @@
             <property name="spacing">
              <number>2</number>
             </property>
-            <item row="4" column="3">
-             <widget class="vmLineEdit" name="txtPayTotalPrice">
+            <item row="2" column="6">
+             <widget class="QLabel" name="lblPayID">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>ID:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="5">
+             <widget class="vmLineEdit" name="txtPayTotalPayments">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1234,19 +1172,232 @@
               </property>
               <property name="maximumSize">
                <size>
-                <width>180</width>
+                <width>50</width>
                 <height>16777215</height>
                </size>
               </property>
               <property name="inputMethodHints">
-               <set>Qt::ImhDigitsOnly|Qt::ImhNoPredictiveText</set>
+               <set>Qt::ImhFormattedNumbersOnly</set>
               </property>
               <property name="readOnly">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="1" column="0" rowspan="5">
+            <item row="1" column="2" colspan="5">
+             <widget class="vmTableWidget" name="tablePayments">
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <property name="lineWidth">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="6">
+             <widget class="vmLineEdit" name="txtPayID">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>120</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="5">
+             <widget class="QLabel" name="lblTotalPayments">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>Pays</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" rowspan="6">
+             <widget class="QFrame" name="frmClientToolbar">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>30</width>
+                <height>200</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_20">
+               <property name="spacing">
+                <number>2</number>
+               </property>
+               <property name="leftMargin">
+                <number>2</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>2</number>
+               </property>
+               <property name="bottomMargin">
+                <number>2</number>
+               </property>
+               <item>
+                <widget class="QToolButton" name="btnClientAdd">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnClientEdit">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnClientDel">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnClientSave">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/document-save.png</normaloff>:/resources/document-save.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnClientCancel">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/cancel.png</normaloff>:/resources/cancel.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="5" column="5" colspan="2">
+             <widget class="vmCheckBox" name="chkPayOverdue">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2" colspan="5">
+             <widget class="QFrame" name="frmPayTableUtilities">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <layout class="QVBoxLayout" name="layoutPayUtilities">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="0" rowspan="6">
              <widget class="QFrame" name="frmPayToolbar">
               <property name="minimumSize">
                <size>
@@ -1435,298 +1586,7 @@
               </layout>
              </widget>
             </item>
-            <item row="4" column="6">
-             <widget class="vmLineEdit" name="txtPayID">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>120</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="5">
-             <widget class="QLabel" name="lblTotalPayments">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>40</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>Pays</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="4">
-             <widget class="vmLineEdit" name="txtPayObs">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="frame">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="3">
-             <widget class="QLabel" name="lblPayObs">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>40</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>Observations:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2" colspan="5">
-             <widget class="vmTableWidget" name="tablePayments">
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <property name="lineWidth">
-               <number>1</number>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="4">
-             <widget class="vmLineEdit" name="txtPayTotalPaid">
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="6">
-             <widget class="QLabel" name="lblPayID">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>ID:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="5" colspan="2">
-             <widget class="vmCheckBox" name="chkPayOverdue">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1" rowspan="5">
-             <widget class="QFrame" name="frmClientToolbar">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>30</width>
-                <height>200</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_20">
-               <property name="spacing">
-                <number>2</number>
-               </property>
-               <property name="leftMargin">
-                <number>2</number>
-               </property>
-               <property name="topMargin">
-                <number>2</number>
-               </property>
-               <property name="rightMargin">
-                <number>2</number>
-               </property>
-               <property name="bottomMargin">
-                <number>2</number>
-               </property>
-               <item>
-                <widget class="QToolButton" name="btnClientAdd">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnClientEdit">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnClientDel">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnClientSave">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/document-save.png</normaloff>:/resources/document-save.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnClientCancel">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/cancel.png</normaloff>:/resources/cancel.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_4">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="4" column="5">
-             <widget class="vmLineEdit" name="txtPayTotalPayments">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="inputMethodHints">
-               <set>Qt::ImhFormattedNumbersOnly</set>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="4">
-             <widget class="QLabel" name="lblPayTotalPaid">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Total paid:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <widget class="QWidget" name="widget" native="true"/>
-            </item>
-            <item row="3" column="3">
+            <item row="2" column="2">
              <widget class="QLabel" name="lblTotalPay">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1757,6 +1617,89 @@
               </property>
               <property name="textFormat">
                <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="vmLineEdit" name="txtPayTotalPrice">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>180</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="inputMethodHints">
+               <set>Qt::ImhDigitsOnly|Qt::ImhNoPredictiveText</set>
+              </property>
+              <property name="readOnly">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="vmLineEdit" name="txtPayTotalPaid">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QLabel" name="lblPayTotalPaid">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Total paid:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QLabel" name="lblPayObs">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>Observations:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="vmLineEdit" name="txtPayObs">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="frame">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -2792,6 +2735,10 @@
                    <property name="text">
                     <string>...</string>
                    </property>
+                   <property name="icon">
+                    <iconset resource="resources.qrc">
+                     <normaloff>:/resources/project-nbr.png</normaloff>:/resources/project-nbr.png</iconset>
+                   </property>
                   </widget>
                  </item>
                 </layout>
@@ -2993,7 +2940,7 @@
            <property name="midLineWidth">
             <number>0</number>
            </property>
-           <layout class="QGridLayout" name="gLayoutJobExtraInfo" rowstretch="1,0,0,0,0,0,0,0,0,0" columnstretch="0,0,0,0,0,0,0,0">
+           <layout class="QGridLayout" name="gLayoutJobExtraInfo" rowstretch="1,0,0,0,0,0,0,0,0,0" columnstretch="0,0,0,0,0,0,0,0,0">
             <property name="leftMargin">
              <number>2</number>
             </property>
@@ -3009,7 +2956,7 @@
             <property name="spacing">
              <number>2</number>
             </property>
-            <item row="2" column="1" colspan="3">
+            <item row="2" column="2" colspan="3">
              <widget class="QGroupBox" name="grpJobTotalTime">
               <property name="title">
                <string>Total time:</string>
@@ -3097,21 +3044,21 @@
               </layout>
              </widget>
             </item>
-            <item row="0" column="5">
+            <item row="0" column="6">
              <widget class="QLabel" name="lblJobReport">
               <property name="text">
                <string>Report:</string>
               </property>
              </widget>
             </item>
-            <item row="7" column="0">
+            <item row="7" column="1">
              <widget class="QLabel" name="lblJobPictures">
               <property name="text">
                <string>Job pictures path:</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="3">
+            <item row="0" column="4">
              <widget class="QLabel" name="lblJobEndTime">
               <property name="maximumSize">
                <size>
@@ -3124,10 +3071,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
+            <item row="1" column="4">
              <widget class="vmTimeEdit" name="timeJobEnd"/>
             </item>
-            <item row="5" column="0" rowspan="2" colspan="5">
+            <item row="5" column="1" rowspan="2" colspan="5">
              <widget class="QFrame" name="frmJobReportControls">
               <property name="frameShape">
                <enum>QFrame::NoFrame</enum>
@@ -3260,7 +3207,7 @@
               </layout>
              </widget>
             </item>
-            <item row="1" column="5" rowspan="6" colspan="3">
+            <item row="1" column="6" rowspan="6" colspan="3">
              <widget class="textEditWithCompleter" name="txtJobReport">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -3270,10 +3217,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="1" column="2">
              <widget class="vmTimeEdit" name="timeJobStart"/>
             </item>
-            <item row="0" column="7">
+            <item row="0" column="8">
              <widget class="QToolButton" name="btnJobSeparateReportWindow">
               <property name="toolTip">
                <string>View report in a separate window</string>
@@ -3290,7 +3237,7 @@
               </property>
              </widget>
             </item>
-            <item row="8" column="0" colspan="8">
+            <item row="8" column="1" colspan="8">
              <widget class="QFrame" name="frmJobPicturesControls">
               <property name="frameShape">
                <enum>QFrame::NoFrame</enum>
@@ -3494,7 +3441,7 @@
               </layout>
              </widget>
             </item>
-            <item row="9" column="0" colspan="8">
+            <item row="9" column="1" colspan="8">
              <layout class="QHBoxLayout" name="hLayoutImgViewer" stretch="1,2,1">
               <property name="spacing">
                <number>0</number>
@@ -3546,7 +3493,7 @@
               </item>
              </layout>
             </item>
-            <item row="0" column="1">
+            <item row="0" column="2">
              <widget class="QLabel" name="lblJobStartTime">
               <property name="maximumSize">
                <size>
@@ -3559,10 +3506,10 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="1" colspan="3">
+            <item row="4" column="2" colspan="3">
              <widget class="vmLineEdit" name="txtJobWheather"/>
             </item>
-            <item row="3" column="1">
+            <item row="3" column="2">
              <widget class="QLabel" name="lblWeatherConditions">
               <property name="maximumSize">
                <size>
@@ -3575,17 +3522,14 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0" rowspan="5">
-             <widget class="vmListWidget" name="lstJobDayReport">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+            <item row="7" column="2" colspan="7">
+             <widget class="vmLineEdit" name="txtJobPicturesPath">
+              <property name="frame">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
-            <item row="0" column="6">
+            <item row="0" column="7">
              <widget class="QToolButton" name="btnJobMachines">
               <property name="toolTip">
                <string>Machines use</string>
@@ -3599,12 +3543,8 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="1" colspan="7">
-             <widget class="vmLineEdit" name="txtJobPicturesPath">
-              <property name="frame">
-               <bool>false</bool>
-              </property>
-             </widget>
+            <item row="0" column="1" rowspan="5">
+             <widget class="vmListWidget" name="lstJobDayReport"/>
             </item>
            </layout>
           </widget>
@@ -3620,8 +3560,8 @@
           <rect>
            <x>7</x>
            <y>7</y>
-           <width>966</width>
-           <height>713</height>
+           <width>905</width>
+           <height>712</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -3939,7 +3879,7 @@
             <number>2</number>
            </property>
            <item>
-            <layout class="QGridLayout" name="gLayoutBuyForms" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="1,0,0,0">
+            <layout class="QGridLayout" name="gLayoutBuyForms" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="1,0,0,0">
              <property name="leftMargin">
               <number>2</number>
              </property>
@@ -3955,7 +3895,40 @@
              <property name="spacing">
               <number>2</number>
              </property>
-             <item row="9" column="3">
+             <item row="8" column="0" colspan="4">
+              <widget class="QFrame" name="frmBuyItemsUtilities">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="layoutBuyItemsUtilities">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+               </layout>
+              </widget>
+             </item>
+             <item row="10" column="3">
               <widget class="vmLineEdit" name="txtBuyTotalPrice"/>
              </item>
              <item row="6" column="3">
@@ -4027,6 +4000,9 @@
              <item row="1" column="0">
               <widget class="vmDateEdit" name="dteBuyDate" native="true"/>
              </item>
+             <item row="3" column="0">
+              <widget class="vmDateEdit" name="dteBuyDeliveryDate" native="true"/>
+             </item>
              <item row="3" column="1" colspan="3">
               <widget class="vmLineEdit" name="txtBuyDeliveryMethod">
                <property name="minimumSize">
@@ -4034,16 +4010,6 @@
                  <width>0</width>
                  <height>30</height>
                 </size>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
-              <widget class="vmDateEdit" name="dteBuyDeliveryDate" native="true"/>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="lblBuyPayments">
-               <property name="text">
-                <string>Descrimination:</string>
                </property>
               </widget>
              </item>
@@ -4057,7 +4023,7 @@
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>120</width>
+                 <width>16777215</width>
                  <height>30</height>
                 </size>
                </property>
@@ -4069,7 +4035,14 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="0" colspan="4">
+             <item row="6" column="0">
+              <widget class="QLabel" name="lblBuyPayments">
+               <property name="text">
+                <string>Descrimination:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0" colspan="4">
               <widget class="vmTableWidget" name="tableBuyItems">
                <property name="minimumSize">
                 <size>
@@ -4085,7 +4058,7 @@
                </property>
               </widget>
              </item>
-             <item row="10" column="0">
+             <item row="11" column="0">
               <widget class="QLabel" name="lblBuyItems">
                <property name="text">
                 <string>Payments:</string>
@@ -4127,7 +4100,13 @@
                </property>
               </widget>
              </item>
-             <item row="12" column="0" colspan="4">
+             <item row="7" column="0">
+              <widget class="QWidget" name="widget_2" native="true"/>
+             </item>
+             <item row="12" column="0">
+              <widget class="QWidget" name="widget_3" native="true"/>
+             </item>
+             <item row="14" column="0" colspan="4">
               <widget class="vmTableWidget" name="tableBuyPayments">
                <property name="minimumSize">
                 <size>
@@ -4143,20 +4122,14 @@
                </property>
               </widget>
              </item>
-             <item row="11" column="0">
-              <widget class="QWidget" name="widget_3" native="true"/>
-             </item>
-             <item row="7" column="0">
-              <widget class="QWidget" name="widget_2" native="true"/>
-             </item>
-             <item row="9" column="0">
+             <item row="10" column="0">
               <widget class="QLabel" name="lblBuyTotalPrice">
                <property name="text">
                 <string>Total price:</string>
                </property>
               </widget>
              </item>
-             <item row="13" column="0">
+             <item row="15" column="0">
               <widget class="QLabel" name="lblBuyTotalPaid">
                <property name="text">
                 <string>Total paid:</string>
@@ -4191,7 +4164,7 @@
                </property>
               </widget>
              </item>
-             <item row="13" column="3">
+             <item row="15" column="3">
               <widget class="vmLineEditWithButton" name="txtBuyTotalPaid" native="true">
                <property name="inputMethodHints">
                 <set>Qt::ImhFormattedNumbersOnly</set>
@@ -4218,6 +4191,39 @@
                <property name="textFormat">
                 <enum>Qt::PlainText</enum>
                </property>
+              </widget>
+             </item>
+             <item row="13" column="0" colspan="4">
+              <widget class="QFrame" name="frmBuyPaymentsUtilities">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="layoutBuyPaymentsUtilities">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -4469,8 +4475,8 @@ p, li { white-space: pre-wrap; }
   </customwidget>
   <customwidget>
    <class>vmListWidget</class>
-   <extends>QListWidget</extends>
-   <header location="global">vmwidgets.h</header>
+   <extends>vmTableWidget</extends>
+   <header location="global">vmlistwidget.h</header>
   </customwidget>
   <customwidget>
    <class>textEditWithCompleter</class>
@@ -4525,7 +4531,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnQuickProject</tabstop>
   <tabstop>btnJobSelectJob</tabstop>
   <tabstop>txtJobPrice</tabstop>
-  <tabstop>lstJobDayReport</tabstop>
   <tabstop>btnJobPrevDay</tabstop>
   <tabstop>btnJobNextDay</tabstop>
   <tabstop>btnJobAddDay</tabstop>
@@ -4559,11 +4564,8 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnPayPaymentsReportOnlyUnPaid</tabstop>
   <tabstop>btnPayPaymentsReport</tabstop>
   <tabstop>tablePayments</tabstop>
-  <tabstop>txtPayTotalPrice</tabstop>
-  <tabstop>txtPayTotalPaid</tabstop>
   <tabstop>txtPayTotalPayments</tabstop>
   <tabstop>txtPayID</tabstop>
-  <tabstop>txtPayObs</tabstop>
   <tabstop>chkPayOverdue</tabstop>
   <tabstop>btnBuyAdd</tabstop>
   <tabstop>btnBuyEdit</tabstop>

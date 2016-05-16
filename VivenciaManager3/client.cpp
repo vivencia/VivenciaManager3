@@ -1,5 +1,5 @@
 #include "client.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "completers.h"
 #include "configops.h"
 #include "fileops.h"

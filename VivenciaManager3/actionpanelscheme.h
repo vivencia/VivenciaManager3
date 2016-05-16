@@ -23,7 +23,9 @@ public:
     {
         PANEL_NONE,
         PANEL_DEFAULT,
-        PANEL_VISTA
+		PANEL_DEFAULT_2,
+        PANEL_VISTA,
+		PANEL_XP_1, PANEL_XP_2
     };
 
     ActionPanelScheme ( const PanelStyle style = PANEL_DEFAULT );
@@ -31,9 +33,7 @@ public:
     /** Returns a pointer to the default scheme object.
     Must be reimplemented in the own schemes.
     */
-    static ActionPanelScheme* noScheme ();
     static ActionPanelScheme* defaultScheme ();
-    static ActionPanelScheme* vistaScheme ();
 
     /// Height of the header in pixels.
     int headerSize;

@@ -2,7 +2,7 @@
 #include "global.h"
 #include "data.h"
 #include "mainwindow.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "vivenciadb.h"
 #include "vmnumberformats.h"
 #include "vmwidgets.h"

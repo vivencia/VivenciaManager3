@@ -34,6 +34,7 @@
 #include <contactsmanagerwidget.h>
 #include <db_image.h>
 #include <texteditwithcompleter.h>
+#include <vmlistwidget.h>
 #include <vmtablewidget.h>
 #include <vmwidgets.h>
 
@@ -131,7 +132,22 @@ public:
     QVBoxLayout *verticalLayout_3;
     QFrame *frmPayInfo;
     QGridLayout *gLayoutPayForms;
-    vmLineEdit *txtPayTotalPrice;
+    QLabel *lblPayID;
+    vmLineEdit *txtPayTotalPayments;
+    vmTableWidget *tablePayments;
+    vmLineEdit *txtPayID;
+    QLabel *lblTotalPayments;
+    QFrame *frmClientToolbar;
+    QVBoxLayout *verticalLayout_20;
+    QToolButton *btnClientAdd;
+    QToolButton *btnClientEdit;
+    QToolButton *btnClientDel;
+    QToolButton *btnClientSave;
+    QToolButton *btnClientCancel;
+    QSpacerItem *verticalSpacer_4;
+    vmCheckBox *chkPayOverdue;
+    QFrame *frmPayTableUtilities;
+    QVBoxLayout *layoutPayUtilities;
     QFrame *frmPayToolbar;
     QVBoxLayout *verticalLayout_14;
     QToolButton *btnPayInfoEdit;
@@ -142,26 +158,12 @@ public:
     QToolButton *btnPayPaymentsReportOnlyUnPaid;
     QToolButton *btnPayPaymentsReport;
     QSpacerItem *verticalSpacer_2;
-    vmLineEdit *txtPayID;
-    QLabel *lblTotalPayments;
-    vmLineEdit *txtPayObs;
-    QLabel *lblPayObs;
-    vmTableWidget *tablePayments;
-    vmLineEdit *txtPayTotalPaid;
-    QLabel *lblPayID;
-    vmCheckBox *chkPayOverdue;
-    QFrame *frmClientToolbar;
-    QVBoxLayout *verticalLayout_20;
-    QToolButton *btnClientAdd;
-    QToolButton *btnClientEdit;
-    QToolButton *btnClientDel;
-    QToolButton *btnClientSave;
-    QToolButton *btnClientCancel;
-    QSpacerItem *verticalSpacer_4;
-    vmLineEdit *txtPayTotalPayments;
-    QLabel *lblPayTotalPaid;
-    QWidget *widget;
     QLabel *lblTotalPay;
+    vmLineEdit *txtPayTotalPrice;
+    vmLineEdit *txtPayTotalPaid;
+    QLabel *lblPayTotalPaid;
+    QLabel *lblPayObs;
+    vmLineEdit *txtPayObs;
     QFrame *frmClientInfo;
     QGridLayout *gridLayout_3;
     vmLineEdit *txtClientDistrict;
@@ -280,9 +282,9 @@ public:
     QLabel *lblJobStartTime;
     vmLineEdit *txtJobWheather;
     QLabel *lblWeatherConditions;
-    vmListWidget *lstJobDayReport;
-    QToolButton *btnJobMachines;
     vmLineEdit *txtJobPicturesPath;
+    QToolButton *btnJobMachines;
+    vmListWidget *lstJobDayReport;
     QWidget *tabDesign_4;
     QSplitter *splitterBuyInfo;
     QFrame *frmBuyJobList;
@@ -312,27 +314,31 @@ public:
     QFrame *frmBuyInfo;
     QHBoxLayout *horizontalLayout;
     QGridLayout *gLayoutBuyForms;
+    QFrame *frmBuyItemsUtilities;
+    QVBoxLayout *layoutBuyItemsUtilities;
     vmLineEdit *txtBuyTotalPrice;
     QToolButton *btnBuyCopyRows;
     QLabel *lblBuyID_2;
     vmLineEdit *txtBuyNotes;
     vmDateEdit *dteBuyDate;
-    vmLineEdit *txtBuyDeliveryMethod;
     vmDateEdit *dteBuyDeliveryDate;
-    QLabel *lblBuyPayments;
+    vmLineEdit *txtBuyDeliveryMethod;
     vmLineEdit *txtBuyID;
+    QLabel *lblBuyPayments;
     vmTableWidget *tableBuyItems;
     QLabel *lblBuyItems;
     QLabel *lblBuyDeliverDate;
     QLabel *lblBuyNotes_2;
-    vmTableWidget *tableBuyPayments;
-    QWidget *widget_3;
     QWidget *widget_2;
+    QWidget *widget_3;
+    vmTableWidget *tableBuyPayments;
     QLabel *lblBuyTotalPrice;
     QLabel *lblBuyTotalPaid;
     QLabel *lblBuyDeliverMethod_2;
     vmLineEditWithButton *txtBuyTotalPaid;
     QLabel *lblBuyDate_2;
+    QFrame *frmBuyPaymentsUtilities;
+    QVBoxLayout *layoutBuyPaymentsUtilities;
     QHBoxLayout *horizontalLayout_8;
     QLabel *lblCurInfoClient;
     QFrame *line_2;
@@ -353,16 +359,16 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(890, 700);
+        MainWindow->resize(1633, 700);
         MainWindow->setMinimumSize(QSize(890, 700));
         MainWindow->setStyleSheet(QStringLiteral(""));
         MainWindow->setDockNestingEnabled(false);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
         gridLayout = new QGridLayout(centralwidget);
-        gridLayout->setSpacing(3);
+        gridLayout->setSpacing(2);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
-        gridLayout->setContentsMargins(5, 5, 0, 0);
+        gridLayout->setContentsMargins(5, 5, 5, 5);
         horizontalLayout_7 = new QHBoxLayout();
         horizontalLayout_7->setSpacing(2);
         horizontalLayout_7->setObjectName(QStringLiteral("horizontalLayout_7"));
@@ -424,7 +430,7 @@ public:
         QIcon icon5;
         icon5.addFile(QStringLiteral(":/resources/companypurchases.png"), QSize(), QIcon::Normal, QIcon::Off);
         btnCompanyPurchases->setIcon(icon5);
-        btnCompanyPurchases->setCheckable(true);
+        btnCompanyPurchases->setCheckable(false);
 
         horizontalLayout_7->addWidget(btnCompanyPurchases);
 
@@ -498,7 +504,7 @@ public:
         scrollLeftPanel->setAlignment(Qt::AlignJustify|Qt::AlignTop);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setObjectName(QStringLiteral("scrollAreaWidgetContents"));
-        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 240, 632));
+        scrollAreaWidgetContents->setGeometry(QRect(0, 0, 344, 628));
         scrollLeftPanel->setWidget(scrollAreaWidgetContents);
         splitterClient->addWidget(scrollLeftPanel);
 
@@ -518,7 +524,7 @@ public:
         horizontalLayout_5 = new QHBoxLayout(tabWorkFlow);
         horizontalLayout_5->setSpacing(0);
         horizontalLayout_5->setObjectName(QStringLiteral("horizontalLayout_5"));
-        horizontalLayout_5->setContentsMargins(0, 0, 0, 0);
+        horizontalLayout_5->setContentsMargins(0, 0, 5, 5);
         scrollWorkFlow = new QScrollArea(tabWorkFlow);
         scrollWorkFlow->setObjectName(QStringLiteral("scrollWorkFlow"));
         scrollWorkFlow->setFrameShape(QFrame::NoFrame);
@@ -529,7 +535,7 @@ public:
         scrollWorkFlow->setAlignment(Qt::AlignJustify|Qt::AlignVCenter);
         scrollAreaWidgetContents_2 = new QWidget();
         scrollAreaWidgetContents_2->setObjectName(QStringLiteral("scrollAreaWidgetContents_2"));
-        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 613, 632));
+        scrollAreaWidgetContents_2->setGeometry(QRect(0, 0, 100, 30));
         scrollWorkFlow->setWidget(scrollAreaWidgetContents_2);
 
         horizontalLayout_5->addWidget(scrollWorkFlow);
@@ -603,7 +609,7 @@ public:
         tboxCalJobs->setFrameShadow(QFrame::Plain);
         tboxPageJobDay = new QWidget();
         tboxPageJobDay->setObjectName(QStringLiteral("tboxPageJobDay"));
-        tboxPageJobDay->setGeometry(QRect(0, 0, 227, 274));
+        tboxPageJobDay->setGeometry(QRect(0, 0, 227, 162));
         verticalLayout_6 = new QVBoxLayout(tboxPageJobDay);
         verticalLayout_6->setObjectName(QStringLiteral("verticalLayout_6"));
         lblCalPriceJobDay = new QLabel(tboxPageJobDay);
@@ -628,16 +634,13 @@ public:
 
         lstCalJobsDay = new vmListWidget(tboxPageJobDay);
         lstCalJobsDay->setObjectName(QStringLiteral("lstCalJobsDay"));
-        lstCalJobsDay->setProperty("showDropIndicator", QVariant(false));
-        lstCalJobsDay->setAlternatingRowColors(true);
-        lstCalJobsDay->setSortingEnabled(true);
 
         verticalLayout_6->addWidget(lstCalJobsDay);
 
         tboxCalJobs->addItem(tboxPageJobDay, QStringLiteral("Jobs"));
         tboxPageJobWeek = new QWidget();
         tboxPageJobWeek->setObjectName(QStringLiteral("tboxPageJobWeek"));
-        tboxPageJobWeek->setGeometry(QRect(0, 0, 237, 151));
+        tboxPageJobWeek->setGeometry(QRect(0, 0, 237, 162));
         verticalLayout_21 = new QVBoxLayout(tboxPageJobWeek);
         verticalLayout_21->setObjectName(QStringLiteral("verticalLayout_21"));
         lblCalPriceJobWeek = new QLabel(tboxPageJobWeek);
@@ -658,16 +661,13 @@ public:
 
         lstCalJobsWeek = new vmListWidget(tboxPageJobWeek);
         lstCalJobsWeek->setObjectName(QStringLiteral("lstCalJobsWeek"));
-        lstCalJobsWeek->setProperty("showDropIndicator", QVariant(false));
-        lstCalJobsWeek->setAlternatingRowColors(true);
-        lstCalJobsWeek->setSortingEnabled(true);
 
         verticalLayout_21->addWidget(lstCalJobsWeek);
 
         tboxCalJobs->addItem(tboxPageJobWeek, QStringLiteral("Jobs"));
         tboxPageJobMonth = new QWidget();
         tboxPageJobMonth->setObjectName(QStringLiteral("tboxPageJobMonth"));
-        tboxPageJobMonth->setGeometry(QRect(0, 0, 247, 151));
+        tboxPageJobMonth->setGeometry(QRect(0, 0, 247, 162));
         verticalLayout_22 = new QVBoxLayout(tboxPageJobMonth);
         verticalLayout_22->setObjectName(QStringLiteral("verticalLayout_22"));
         lblCalPriceJobMonth = new QLabel(tboxPageJobMonth);
@@ -687,9 +687,6 @@ public:
 
         lstCalJobsMonth = new vmListWidget(tboxPageJobMonth);
         lstCalJobsMonth->setObjectName(QStringLiteral("lstCalJobsMonth"));
-        lstCalJobsMonth->setProperty("showDropIndicator", QVariant(false));
-        lstCalJobsMonth->setAlternatingRowColors(true);
-        lstCalJobsMonth->setSortingEnabled(true);
 
         verticalLayout_22->addWidget(lstCalJobsMonth);
 
@@ -705,7 +702,7 @@ public:
         tboxCalPays->setFrameShadow(QFrame::Plain);
         tboxPagePayDay = new QWidget();
         tboxPagePayDay->setObjectName(QStringLiteral("tboxPagePayDay"));
-        tboxPagePayDay->setGeometry(QRect(0, 0, 200, 288));
+        tboxPagePayDay->setGeometry(QRect(0, 0, 199, 162));
         verticalLayout_5 = new QVBoxLayout(tboxPagePayDay);
         verticalLayout_5->setObjectName(QStringLiteral("verticalLayout_5"));
         lblCalPricePayDay = new QLabel(tboxPagePayDay);
@@ -724,16 +721,13 @@ public:
 
         lstCalPaysDay = new vmListWidget(tboxPagePayDay);
         lstCalPaysDay->setObjectName(QStringLiteral("lstCalPaysDay"));
-        lstCalPaysDay->setProperty("showDropIndicator", QVariant(false));
-        lstCalPaysDay->setAlternatingRowColors(true);
-        lstCalPaysDay->setSortingEnabled(true);
 
         verticalLayout_5->addWidget(lstCalPaysDay);
 
         tboxCalPays->addItem(tboxPagePayDay, QStringLiteral("Payment"));
         tboxPagePayWeek = new QWidget();
         tboxPagePayWeek->setObjectName(QStringLiteral("tboxPagePayWeek"));
-        tboxPagePayWeek->setGeometry(QRect(0, 0, 210, 151));
+        tboxPagePayWeek->setGeometry(QRect(0, 0, 210, 162));
         verticalLayout_17 = new QVBoxLayout(tboxPagePayWeek);
         verticalLayout_17->setObjectName(QStringLiteral("verticalLayout_17"));
         lblCalPricePayWeek = new QLabel(tboxPagePayWeek);
@@ -752,16 +746,13 @@ public:
 
         lstCalPaysWeek = new vmListWidget(tboxPagePayWeek);
         lstCalPaysWeek->setObjectName(QStringLiteral("lstCalPaysWeek"));
-        lstCalPaysWeek->setProperty("showDropIndicator", QVariant(false));
-        lstCalPaysWeek->setAlternatingRowColors(true);
-        lstCalPaysWeek->setSortingEnabled(true);
 
         verticalLayout_17->addWidget(lstCalPaysWeek);
 
         tboxCalPays->addItem(tboxPagePayWeek, QStringLiteral("Payment"));
         tboxPagePayMonth = new QWidget();
         tboxPagePayMonth->setObjectName(QStringLiteral("tboxPagePayMonth"));
-        tboxPagePayMonth->setGeometry(QRect(0, 0, 219, 151));
+        tboxPagePayMonth->setGeometry(QRect(0, 0, 219, 162));
         verticalLayout_18 = new QVBoxLayout(tboxPagePayMonth);
         verticalLayout_18->setObjectName(QStringLiteral("verticalLayout_18"));
         lblCalPricePayMonth = new QLabel(tboxPagePayMonth);
@@ -780,8 +771,6 @@ public:
 
         lstCalPaysMonth = new vmListWidget(tboxPagePayMonth);
         lstCalPaysMonth->setObjectName(QStringLiteral("lstCalPaysMonth"));
-        lstCalPaysMonth->setAlternatingRowColors(true);
-        lstCalPaysMonth->setSortingEnabled(true);
 
         verticalLayout_18->addWidget(lstCalPaysMonth);
 
@@ -794,7 +783,7 @@ public:
         tboxCalBuys->setFrameShadow(QFrame::Plain);
         tboxPageBuyDay = new QWidget();
         tboxPageBuyDay->setObjectName(QStringLiteral("tboxPageBuyDay"));
-        tboxPageBuyDay->setGeometry(QRect(0, 0, 200, 288));
+        tboxPageBuyDay->setGeometry(QRect(0, 0, 174, 162));
         verticalLayout_8 = new QVBoxLayout(tboxPageBuyDay);
         verticalLayout_8->setObjectName(QStringLiteral("verticalLayout_8"));
         lblCalPriceBuyDay = new QLabel(tboxPageBuyDay);
@@ -813,16 +802,13 @@ public:
 
         lstCalBuysDay = new vmListWidget(tboxPageBuyDay);
         lstCalBuysDay->setObjectName(QStringLiteral("lstCalBuysDay"));
-        lstCalBuysDay->setProperty("showDropIndicator", QVariant(false));
-        lstCalBuysDay->setAlternatingRowColors(true);
-        lstCalBuysDay->setSortingEnabled(true);
 
         verticalLayout_8->addWidget(lstCalBuysDay);
 
         tboxCalBuys->addItem(tboxPageBuyDay, QStringLiteral("Purchase"));
         tboxPageBuyWeek = new QWidget();
         tboxPageBuyWeek->setObjectName(QStringLiteral("tboxPageBuyWeek"));
-        tboxPageBuyWeek->setGeometry(QRect(0, 0, 184, 151));
+        tboxPageBuyWeek->setGeometry(QRect(0, 0, 184, 162));
         verticalLayout_23 = new QVBoxLayout(tboxPageBuyWeek);
         verticalLayout_23->setObjectName(QStringLiteral("verticalLayout_23"));
         lblCalPriceBuyWeek = new QLabel(tboxPageBuyWeek);
@@ -841,16 +827,13 @@ public:
 
         lstCalBuysWeek = new vmListWidget(tboxPageBuyWeek);
         lstCalBuysWeek->setObjectName(QStringLiteral("lstCalBuysWeek"));
-        lstCalBuysWeek->setProperty("showDropIndicator", QVariant(false));
-        lstCalBuysWeek->setAlternatingRowColors(true);
-        lstCalBuysWeek->setSortingEnabled(true);
 
         verticalLayout_23->addWidget(lstCalBuysWeek);
 
         tboxCalBuys->addItem(tboxPageBuyWeek, QStringLiteral("Purchase"));
         tboxPageBuyMonth = new QWidget();
         tboxPageBuyMonth->setObjectName(QStringLiteral("tboxPageBuyMonth"));
-        tboxPageBuyMonth->setGeometry(QRect(0, 0, 194, 151));
+        tboxPageBuyMonth->setGeometry(QRect(0, 0, 194, 162));
         verticalLayout_24 = new QVBoxLayout(tboxPageBuyMonth);
         verticalLayout_24->setObjectName(QStringLiteral("verticalLayout_24"));
         lblCalPriceBuyMonth = new QLabel(tboxPageBuyMonth);
@@ -869,9 +852,6 @@ public:
 
         lstCalBuysMonth = new vmListWidget(tboxPageBuyMonth);
         lstCalBuysMonth->setObjectName(QStringLiteral("lstCalBuysMonth"));
-        lstCalBuysMonth->setProperty("showDropIndicator", QVariant(false));
-        lstCalBuysMonth->setAlternatingRowColors(true);
-        lstCalBuysMonth->setSortingEnabled(true);
 
         verticalLayout_24->addWidget(lstCalBuysMonth);
 
@@ -906,100 +886,38 @@ public:
         gLayoutPayForms->setSpacing(2);
         gLayoutPayForms->setObjectName(QStringLiteral("gLayoutPayForms"));
         gLayoutPayForms->setContentsMargins(2, 2, 2, 2);
-        txtPayTotalPrice = new vmLineEdit(frmPayInfo);
-        txtPayTotalPrice->setObjectName(QStringLiteral("txtPayTotalPrice"));
-        txtPayTotalPrice->setMinimumSize(QSize(0, 0));
-        txtPayTotalPrice->setMaximumSize(QSize(180, 16777215));
-        txtPayTotalPrice->setInputMethodHints(Qt::ImhDigitsOnly|Qt::ImhNoPredictiveText);
-        txtPayTotalPrice->setReadOnly(false);
-
-        gLayoutPayForms->addWidget(txtPayTotalPrice, 4, 3, 1, 1);
-
-        frmPayToolbar = new QFrame(frmPayInfo);
-        frmPayToolbar->setObjectName(QStringLiteral("frmPayToolbar"));
-        frmPayToolbar->setMinimumSize(QSize(30, 0));
-        frmPayToolbar->setFrameShape(QFrame::NoFrame);
-        frmPayToolbar->setFrameShadow(QFrame::Plain);
-        frmPayToolbar->setLineWidth(3);
-        verticalLayout_14 = new QVBoxLayout(frmPayToolbar);
-        verticalLayout_14->setSpacing(2);
-        verticalLayout_14->setObjectName(QStringLiteral("verticalLayout_14"));
-        verticalLayout_14->setContentsMargins(2, 2, 2, 2);
-        btnPayInfoEdit = new QToolButton(frmPayToolbar);
-        btnPayInfoEdit->setObjectName(QStringLiteral("btnPayInfoEdit"));
-        btnPayInfoEdit->setMinimumSize(QSize(0, 0));
-        QIcon icon8;
-        icon8.addFile(QStringLiteral(":/resources/browse-controls/edit.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayInfoEdit->setIcon(icon8);
-
-        verticalLayout_14->addWidget(btnPayInfoEdit);
-
-        btnPayInfoDel = new QToolButton(frmPayToolbar);
-        btnPayInfoDel->setObjectName(QStringLiteral("btnPayInfoDel"));
-        btnPayInfoDel->setMinimumSize(QSize(0, 0));
-        QIcon icon9;
-        icon9.addFile(QStringLiteral(":/resources/browse-controls/remove.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayInfoDel->setIcon(icon9);
-
-        verticalLayout_14->addWidget(btnPayInfoDel);
-
-        btnPayInfoSave = new QToolButton(frmPayToolbar);
-        btnPayInfoSave->setObjectName(QStringLiteral("btnPayInfoSave"));
-        btnPayInfoSave->setMinimumSize(QSize(0, 0));
-        QIcon icon10;
-        icon10.addFile(QStringLiteral(":/resources/document-save.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayInfoSave->setIcon(icon10);
-
-        verticalLayout_14->addWidget(btnPayInfoSave);
-
-        btnPayInfoCancel = new QToolButton(frmPayToolbar);
-        btnPayInfoCancel->setObjectName(QStringLiteral("btnPayInfoCancel"));
-        btnPayInfoCancel->setMinimumSize(QSize(0, 0));
-        QIcon icon11;
-        icon11.addFile(QStringLiteral(":/resources/cancel.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayInfoCancel->setIcon(icon11);
-
-        verticalLayout_14->addWidget(btnPayInfoCancel);
-
-        btnPayPayReceipt = new QToolButton(frmPayToolbar);
-        btnPayPayReceipt->setObjectName(QStringLiteral("btnPayPayReceipt"));
-        btnPayPayReceipt->setMinimumSize(QSize(0, 0));
-        QIcon icon12;
-        icon12.addFile(QStringLiteral(":/resources/generate_paystub.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayPayReceipt->setIcon(icon12);
-
-        verticalLayout_14->addWidget(btnPayPayReceipt);
-
-        btnPayPaymentsReportOnlyUnPaid = new QToolButton(frmPayToolbar);
-        btnPayPaymentsReportOnlyUnPaid->setObjectName(QStringLiteral("btnPayPaymentsReportOnlyUnPaid"));
-        btnPayPaymentsReportOnlyUnPaid->setMinimumSize(QSize(0, 0));
-        QIcon icon13;
-        icon13.addFile(QStringLiteral(":/resources/generate_report_unpaid.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayPaymentsReportOnlyUnPaid->setIcon(icon13);
-
-        verticalLayout_14->addWidget(btnPayPaymentsReportOnlyUnPaid);
-
-        btnPayPaymentsReport = new QToolButton(frmPayToolbar);
-        btnPayPaymentsReport->setObjectName(QStringLiteral("btnPayPaymentsReport"));
-        btnPayPaymentsReport->setMinimumSize(QSize(0, 0));
-        QIcon icon14;
-        icon14.addFile(QStringLiteral(":/resources/generate_report.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnPayPaymentsReport->setIcon(icon14);
-
-        verticalLayout_14->addWidget(btnPayPaymentsReport);
-
-        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-        verticalLayout_14->addItem(verticalSpacer_2);
-
-
-        gLayoutPayForms->addWidget(frmPayToolbar, 1, 0, 5, 1);
-
-        txtPayID = new vmLineEdit(frmPayInfo);
-        txtPayID->setObjectName(QStringLiteral("txtPayID"));
+        lblPayID = new QLabel(frmPayInfo);
+        lblPayID->setObjectName(QStringLiteral("lblPayID"));
         QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
+        sizePolicy1.setHeightForWidth(lblPayID->sizePolicy().hasHeightForWidth());
+        lblPayID->setSizePolicy(sizePolicy1);
+        lblPayID->setMaximumSize(QSize(50, 16777215));
+
+        gLayoutPayForms->addWidget(lblPayID, 2, 6, 1, 1);
+
+        txtPayTotalPayments = new vmLineEdit(frmPayInfo);
+        txtPayTotalPayments->setObjectName(QStringLiteral("txtPayTotalPayments"));
+        sizePolicy1.setHeightForWidth(txtPayTotalPayments->sizePolicy().hasHeightForWidth());
+        txtPayTotalPayments->setSizePolicy(sizePolicy1);
+        txtPayTotalPayments->setMinimumSize(QSize(0, 0));
+        txtPayTotalPayments->setMaximumSize(QSize(50, 16777215));
+        txtPayTotalPayments->setInputMethodHints(Qt::ImhFormattedNumbersOnly);
+        txtPayTotalPayments->setReadOnly(true);
+
+        gLayoutPayForms->addWidget(txtPayTotalPayments, 4, 5, 1, 1);
+
+        tablePayments = new vmTableWidget(frmPayInfo);
+        tablePayments->setObjectName(QStringLiteral("tablePayments"));
+        tablePayments->setFrameShape(QFrame::StyledPanel);
+        tablePayments->setFrameShadow(QFrame::Raised);
+        tablePayments->setLineWidth(1);
+
+        gLayoutPayForms->addWidget(tablePayments, 1, 2, 1, 5);
+
+        txtPayID = new vmLineEdit(frmPayInfo);
+        txtPayID->setObjectName(QStringLiteral("txtPayID"));
         sizePolicy1.setHeightForWidth(txtPayID->sizePolicy().hasHeightForWidth());
         txtPayID->setSizePolicy(sizePolicy1);
         txtPayID->setMaximumSize(QSize(120, 16777215));
@@ -1019,50 +937,6 @@ public:
 
         gLayoutPayForms->addWidget(lblTotalPayments, 2, 5, 1, 1);
 
-        txtPayObs = new vmLineEdit(frmPayInfo);
-        txtPayObs->setObjectName(QStringLiteral("txtPayObs"));
-        txtPayObs->setMinimumSize(QSize(0, 0));
-        txtPayObs->setFrame(false);
-
-        gLayoutPayForms->addWidget(txtPayObs, 5, 4, 1, 1);
-
-        lblPayObs = new QLabel(frmPayInfo);
-        lblPayObs->setObjectName(QStringLiteral("lblPayObs"));
-        lblPayObs->setMinimumSize(QSize(0, 30));
-        lblPayObs->setMaximumSize(QSize(16777215, 40));
-        lblPayObs->setFrameShape(QFrame::NoFrame);
-        lblPayObs->setFrameShadow(QFrame::Plain);
-        lblPayObs->setTextFormat(Qt::PlainText);
-
-        gLayoutPayForms->addWidget(lblPayObs, 5, 3, 1, 1);
-
-        tablePayments = new vmTableWidget(frmPayInfo);
-        tablePayments->setObjectName(QStringLiteral("tablePayments"));
-        tablePayments->setFrameShape(QFrame::StyledPanel);
-        tablePayments->setFrameShadow(QFrame::Raised);
-        tablePayments->setLineWidth(1);
-
-        gLayoutPayForms->addWidget(tablePayments, 1, 2, 1, 5);
-
-        txtPayTotalPaid = new vmLineEdit(frmPayInfo);
-        txtPayTotalPaid->setObjectName(QStringLiteral("txtPayTotalPaid"));
-        txtPayTotalPaid->setReadOnly(true);
-
-        gLayoutPayForms->addWidget(txtPayTotalPaid, 4, 4, 1, 1);
-
-        lblPayID = new QLabel(frmPayInfo);
-        lblPayID->setObjectName(QStringLiteral("lblPayID"));
-        sizePolicy1.setHeightForWidth(lblPayID->sizePolicy().hasHeightForWidth());
-        lblPayID->setSizePolicy(sizePolicy1);
-        lblPayID->setMaximumSize(QSize(50, 16777215));
-
-        gLayoutPayForms->addWidget(lblPayID, 2, 6, 1, 1);
-
-        chkPayOverdue = new vmCheckBox(frmPayInfo);
-        chkPayOverdue->setObjectName(QStringLiteral("chkPayOverdue"));
-
-        gLayoutPayForms->addWidget(chkPayOverdue, 5, 5, 1, 2);
-
         frmClientToolbar = new QFrame(frmPayInfo);
         frmClientToolbar->setObjectName(QStringLiteral("frmClientToolbar"));
         QSizePolicy sizePolicy2(QSizePolicy::Fixed, QSizePolicy::Preferred);
@@ -1079,33 +953,41 @@ public:
         verticalLayout_20->setContentsMargins(2, 2, 2, 2);
         btnClientAdd = new QToolButton(frmClientToolbar);
         btnClientAdd->setObjectName(QStringLiteral("btnClientAdd"));
-        QIcon icon15;
-        icon15.addFile(QStringLiteral(":/resources/browse-controls/add.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnClientAdd->setIcon(icon15);
+        QIcon icon8;
+        icon8.addFile(QStringLiteral(":/resources/browse-controls/add.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnClientAdd->setIcon(icon8);
 
         verticalLayout_20->addWidget(btnClientAdd);
 
         btnClientEdit = new QToolButton(frmClientToolbar);
         btnClientEdit->setObjectName(QStringLiteral("btnClientEdit"));
-        btnClientEdit->setIcon(icon8);
+        QIcon icon9;
+        icon9.addFile(QStringLiteral(":/resources/browse-controls/edit.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnClientEdit->setIcon(icon9);
 
         verticalLayout_20->addWidget(btnClientEdit);
 
         btnClientDel = new QToolButton(frmClientToolbar);
         btnClientDel->setObjectName(QStringLiteral("btnClientDel"));
-        btnClientDel->setIcon(icon9);
+        QIcon icon10;
+        icon10.addFile(QStringLiteral(":/resources/browse-controls/remove.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnClientDel->setIcon(icon10);
 
         verticalLayout_20->addWidget(btnClientDel);
 
         btnClientSave = new QToolButton(frmClientToolbar);
         btnClientSave->setObjectName(QStringLiteral("btnClientSave"));
-        btnClientSave->setIcon(icon10);
+        QIcon icon11;
+        icon11.addFile(QStringLiteral(":/resources/document-save.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnClientSave->setIcon(icon11);
 
         verticalLayout_20->addWidget(btnClientSave);
 
         btnClientCancel = new QToolButton(frmClientToolbar);
         btnClientCancel->setObjectName(QStringLiteral("btnClientCancel"));
-        btnClientCancel->setIcon(icon11);
+        QIcon icon12;
+        icon12.addFile(QStringLiteral(":/resources/cancel.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnClientCancel->setIcon(icon12);
 
         verticalLayout_20->addWidget(btnClientCancel);
 
@@ -1114,36 +996,102 @@ public:
         verticalLayout_20->addItem(verticalSpacer_4);
 
 
-        gLayoutPayForms->addWidget(frmClientToolbar, 1, 1, 5, 1);
+        gLayoutPayForms->addWidget(frmClientToolbar, 0, 1, 6, 1);
 
-        txtPayTotalPayments = new vmLineEdit(frmPayInfo);
-        txtPayTotalPayments->setObjectName(QStringLiteral("txtPayTotalPayments"));
-        sizePolicy1.setHeightForWidth(txtPayTotalPayments->sizePolicy().hasHeightForWidth());
-        txtPayTotalPayments->setSizePolicy(sizePolicy1);
-        txtPayTotalPayments->setMinimumSize(QSize(0, 0));
-        txtPayTotalPayments->setMaximumSize(QSize(50, 16777215));
-        txtPayTotalPayments->setInputMethodHints(Qt::ImhFormattedNumbersOnly);
-        txtPayTotalPayments->setReadOnly(true);
+        chkPayOverdue = new vmCheckBox(frmPayInfo);
+        chkPayOverdue->setObjectName(QStringLiteral("chkPayOverdue"));
 
-        gLayoutPayForms->addWidget(txtPayTotalPayments, 4, 5, 1, 1);
+        gLayoutPayForms->addWidget(chkPayOverdue, 5, 5, 1, 2);
 
-        lblPayTotalPaid = new QLabel(frmPayInfo);
-        lblPayTotalPaid->setObjectName(QStringLiteral("lblPayTotalPaid"));
-        QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        sizePolicy3.setHorizontalStretch(0);
-        sizePolicy3.setVerticalStretch(0);
-        sizePolicy3.setHeightForWidth(lblPayTotalPaid->sizePolicy().hasHeightForWidth());
-        lblPayTotalPaid->setSizePolicy(sizePolicy3);
+        frmPayTableUtilities = new QFrame(frmPayInfo);
+        frmPayTableUtilities->setObjectName(QStringLiteral("frmPayTableUtilities"));
+        frmPayTableUtilities->setMinimumSize(QSize(0, 0));
+        frmPayTableUtilities->setFrameShape(QFrame::NoFrame);
+        frmPayTableUtilities->setFrameShadow(QFrame::Plain);
+        layoutPayUtilities = new QVBoxLayout(frmPayTableUtilities);
+        layoutPayUtilities->setSpacing(0);
+        layoutPayUtilities->setObjectName(QStringLiteral("layoutPayUtilities"));
+        layoutPayUtilities->setContentsMargins(0, 0, 0, 0);
 
-        gLayoutPayForms->addWidget(lblPayTotalPaid, 2, 4, 1, 1);
+        gLayoutPayForms->addWidget(frmPayTableUtilities, 0, 2, 1, 5);
 
-        widget = new QWidget(frmPayInfo);
-        widget->setObjectName(QStringLiteral("widget"));
+        frmPayToolbar = new QFrame(frmPayInfo);
+        frmPayToolbar->setObjectName(QStringLiteral("frmPayToolbar"));
+        frmPayToolbar->setMinimumSize(QSize(30, 0));
+        frmPayToolbar->setFrameShape(QFrame::NoFrame);
+        frmPayToolbar->setFrameShadow(QFrame::Plain);
+        frmPayToolbar->setLineWidth(3);
+        verticalLayout_14 = new QVBoxLayout(frmPayToolbar);
+        verticalLayout_14->setSpacing(2);
+        verticalLayout_14->setObjectName(QStringLiteral("verticalLayout_14"));
+        verticalLayout_14->setContentsMargins(2, 2, 2, 2);
+        btnPayInfoEdit = new QToolButton(frmPayToolbar);
+        btnPayInfoEdit->setObjectName(QStringLiteral("btnPayInfoEdit"));
+        btnPayInfoEdit->setMinimumSize(QSize(0, 0));
+        btnPayInfoEdit->setIcon(icon9);
 
-        gLayoutPayForms->addWidget(widget, 0, 3, 1, 1);
+        verticalLayout_14->addWidget(btnPayInfoEdit);
+
+        btnPayInfoDel = new QToolButton(frmPayToolbar);
+        btnPayInfoDel->setObjectName(QStringLiteral("btnPayInfoDel"));
+        btnPayInfoDel->setMinimumSize(QSize(0, 0));
+        btnPayInfoDel->setIcon(icon10);
+
+        verticalLayout_14->addWidget(btnPayInfoDel);
+
+        btnPayInfoSave = new QToolButton(frmPayToolbar);
+        btnPayInfoSave->setObjectName(QStringLiteral("btnPayInfoSave"));
+        btnPayInfoSave->setMinimumSize(QSize(0, 0));
+        btnPayInfoSave->setIcon(icon11);
+
+        verticalLayout_14->addWidget(btnPayInfoSave);
+
+        btnPayInfoCancel = new QToolButton(frmPayToolbar);
+        btnPayInfoCancel->setObjectName(QStringLiteral("btnPayInfoCancel"));
+        btnPayInfoCancel->setMinimumSize(QSize(0, 0));
+        btnPayInfoCancel->setIcon(icon12);
+
+        verticalLayout_14->addWidget(btnPayInfoCancel);
+
+        btnPayPayReceipt = new QToolButton(frmPayToolbar);
+        btnPayPayReceipt->setObjectName(QStringLiteral("btnPayPayReceipt"));
+        btnPayPayReceipt->setMinimumSize(QSize(0, 0));
+        QIcon icon13;
+        icon13.addFile(QStringLiteral(":/resources/generate_paystub.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnPayPayReceipt->setIcon(icon13);
+
+        verticalLayout_14->addWidget(btnPayPayReceipt);
+
+        btnPayPaymentsReportOnlyUnPaid = new QToolButton(frmPayToolbar);
+        btnPayPaymentsReportOnlyUnPaid->setObjectName(QStringLiteral("btnPayPaymentsReportOnlyUnPaid"));
+        btnPayPaymentsReportOnlyUnPaid->setMinimumSize(QSize(0, 0));
+        QIcon icon14;
+        icon14.addFile(QStringLiteral(":/resources/generate_report_unpaid.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnPayPaymentsReportOnlyUnPaid->setIcon(icon14);
+
+        verticalLayout_14->addWidget(btnPayPaymentsReportOnlyUnPaid);
+
+        btnPayPaymentsReport = new QToolButton(frmPayToolbar);
+        btnPayPaymentsReport->setObjectName(QStringLiteral("btnPayPaymentsReport"));
+        btnPayPaymentsReport->setMinimumSize(QSize(0, 0));
+        QIcon icon15;
+        icon15.addFile(QStringLiteral(":/resources/generate_report.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnPayPaymentsReport->setIcon(icon15);
+
+        verticalLayout_14->addWidget(btnPayPaymentsReport);
+
+        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        verticalLayout_14->addItem(verticalSpacer_2);
+
+
+        gLayoutPayForms->addWidget(frmPayToolbar, 0, 0, 6, 1);
 
         lblTotalPay = new QLabel(frmPayInfo);
         lblTotalPay->setObjectName(QStringLiteral("lblTotalPay"));
+        QSizePolicy sizePolicy3(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        sizePolicy3.setHorizontalStretch(0);
+        sizePolicy3.setVerticalStretch(0);
         sizePolicy3.setHeightForWidth(lblTotalPay->sizePolicy().hasHeightForWidth());
         lblTotalPay->setSizePolicy(sizePolicy3);
         lblTotalPay->setMinimumSize(QSize(0, 0));
@@ -1152,7 +1100,46 @@ public:
         lblTotalPay->setFrameShadow(QFrame::Plain);
         lblTotalPay->setTextFormat(Qt::PlainText);
 
-        gLayoutPayForms->addWidget(lblTotalPay, 3, 3, 1, 1);
+        gLayoutPayForms->addWidget(lblTotalPay, 2, 2, 1, 1);
+
+        txtPayTotalPrice = new vmLineEdit(frmPayInfo);
+        txtPayTotalPrice->setObjectName(QStringLiteral("txtPayTotalPrice"));
+        txtPayTotalPrice->setMinimumSize(QSize(0, 0));
+        txtPayTotalPrice->setMaximumSize(QSize(180, 16777215));
+        txtPayTotalPrice->setInputMethodHints(Qt::ImhDigitsOnly|Qt::ImhNoPredictiveText);
+        txtPayTotalPrice->setReadOnly(false);
+
+        gLayoutPayForms->addWidget(txtPayTotalPrice, 4, 2, 1, 1);
+
+        txtPayTotalPaid = new vmLineEdit(frmPayInfo);
+        txtPayTotalPaid->setObjectName(QStringLiteral("txtPayTotalPaid"));
+        txtPayTotalPaid->setReadOnly(true);
+
+        gLayoutPayForms->addWidget(txtPayTotalPaid, 4, 3, 1, 1);
+
+        lblPayTotalPaid = new QLabel(frmPayInfo);
+        lblPayTotalPaid->setObjectName(QStringLiteral("lblPayTotalPaid"));
+        sizePolicy3.setHeightForWidth(lblPayTotalPaid->sizePolicy().hasHeightForWidth());
+        lblPayTotalPaid->setSizePolicy(sizePolicy3);
+
+        gLayoutPayForms->addWidget(lblPayTotalPaid, 2, 3, 1, 1);
+
+        lblPayObs = new QLabel(frmPayInfo);
+        lblPayObs->setObjectName(QStringLiteral("lblPayObs"));
+        lblPayObs->setMinimumSize(QSize(0, 30));
+        lblPayObs->setMaximumSize(QSize(16777215, 40));
+        lblPayObs->setFrameShape(QFrame::NoFrame);
+        lblPayObs->setFrameShadow(QFrame::Plain);
+        lblPayObs->setTextFormat(Qt::PlainText);
+
+        gLayoutPayForms->addWidget(lblPayObs, 5, 2, 1, 1);
+
+        txtPayObs = new vmLineEdit(frmPayInfo);
+        txtPayObs->setObjectName(QStringLiteral("txtPayObs"));
+        txtPayObs->setMinimumSize(QSize(0, 0));
+        txtPayObs->setFrame(false);
+
+        gLayoutPayForms->addWidget(txtPayObs, 5, 3, 1, 1);
 
 
         verticalLayout_3->addWidget(frmPayInfo);
@@ -1557,31 +1544,31 @@ public:
         verticalLayout_13->setContentsMargins(2, 2, 2, 2);
         btnJobAdd = new QToolButton(frmJobToolbar);
         btnJobAdd->setObjectName(QStringLiteral("btnJobAdd"));
-        btnJobAdd->setIcon(icon15);
+        btnJobAdd->setIcon(icon8);
 
         verticalLayout_13->addWidget(btnJobAdd);
 
         btnJobEdit = new QToolButton(frmJobToolbar);
         btnJobEdit->setObjectName(QStringLiteral("btnJobEdit"));
-        btnJobEdit->setIcon(icon8);
+        btnJobEdit->setIcon(icon9);
 
         verticalLayout_13->addWidget(btnJobEdit);
 
         btnJobDel = new QToolButton(frmJobToolbar);
         btnJobDel->setObjectName(QStringLiteral("btnJobDel"));
-        btnJobDel->setIcon(icon9);
+        btnJobDel->setIcon(icon10);
 
         verticalLayout_13->addWidget(btnJobDel);
 
         btnJobSave = new QToolButton(frmJobToolbar);
         btnJobSave->setObjectName(QStringLiteral("btnJobSave"));
-        btnJobSave->setIcon(icon10);
+        btnJobSave->setIcon(icon11);
 
         verticalLayout_13->addWidget(btnJobSave);
 
         btnJobCancel = new QToolButton(frmJobToolbar);
         btnJobCancel->setObjectName(QStringLiteral("btnJobCancel"));
-        btnJobCancel->setIcon(icon11);
+        btnJobCancel->setIcon(icon12);
 
         verticalLayout_13->addWidget(btnJobCancel);
 
@@ -1591,6 +1578,9 @@ public:
 
         btnJobSelectJob = new QToolButton(frmJobToolbar);
         btnJobSelectJob->setObjectName(QStringLiteral("btnJobSelectJob"));
+        QIcon icon20;
+        icon20.addFile(QStringLiteral(":/resources/project-nbr.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobSelectJob->setIcon(icon20);
 
         verticalLayout_13->addWidget(btnJobSelectJob);
 
@@ -1741,28 +1731,28 @@ public:
         gridLayout_4->addWidget(txtJobTotalDayTime, 0, 1, 1, 1);
 
 
-        gLayoutJobExtraInfo->addWidget(grpJobTotalTime, 2, 1, 1, 3);
+        gLayoutJobExtraInfo->addWidget(grpJobTotalTime, 2, 2, 1, 3);
 
         lblJobReport = new QLabel(frmJobInfo_2);
         lblJobReport->setObjectName(QStringLiteral("lblJobReport"));
 
-        gLayoutJobExtraInfo->addWidget(lblJobReport, 0, 5, 1, 1);
+        gLayoutJobExtraInfo->addWidget(lblJobReport, 0, 6, 1, 1);
 
         lblJobPictures = new QLabel(frmJobInfo_2);
         lblJobPictures->setObjectName(QStringLiteral("lblJobPictures"));
 
-        gLayoutJobExtraInfo->addWidget(lblJobPictures, 7, 0, 1, 1);
+        gLayoutJobExtraInfo->addWidget(lblJobPictures, 7, 1, 1, 1);
 
         lblJobEndTime = new QLabel(frmJobInfo_2);
         lblJobEndTime->setObjectName(QStringLiteral("lblJobEndTime"));
         lblJobEndTime->setMaximumSize(QSize(16777215, 16777215));
 
-        gLayoutJobExtraInfo->addWidget(lblJobEndTime, 0, 3, 1, 1);
+        gLayoutJobExtraInfo->addWidget(lblJobEndTime, 0, 4, 1, 1);
 
         timeJobEnd = new vmTimeEdit(frmJobInfo_2);
         timeJobEnd->setObjectName(QStringLiteral("timeJobEnd"));
 
-        gLayoutJobExtraInfo->addWidget(timeJobEnd, 1, 3, 1, 1);
+        gLayoutJobExtraInfo->addWidget(timeJobEnd, 1, 4, 1, 1);
 
         frmJobReportControls = new QFrame(frmJobInfo_2);
         frmJobReportControls->setObjectName(QStringLiteral("frmJobReportControls"));
@@ -1774,17 +1764,17 @@ public:
         horizontalLayout_13->setContentsMargins(0, 2, 0, 2);
         btnJobPrevDay = new QToolButton(frmJobReportControls);
         btnJobPrevDay->setObjectName(QStringLiteral("btnJobPrevDay"));
-        QIcon icon20;
-        icon20.addFile(QStringLiteral(":/resources/browse-controls/prev_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobPrevDay->setIcon(icon20);
+        QIcon icon21;
+        icon21.addFile(QStringLiteral(":/resources/browse-controls/prev_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobPrevDay->setIcon(icon21);
 
         horizontalLayout_13->addWidget(btnJobPrevDay);
 
         btnJobNextDay = new QToolButton(frmJobReportControls);
         btnJobNextDay->setObjectName(QStringLiteral("btnJobNextDay"));
-        QIcon icon21;
-        icon21.addFile(QStringLiteral(":/resources/browse-controls/next_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobNextDay->setIcon(icon21);
+        QIcon icon22;
+        icon22.addFile(QStringLiteral(":/resources/browse-controls/next_rec.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobNextDay->setIcon(icon22);
 
         horizontalLayout_13->addWidget(btnJobNextDay);
 
@@ -1801,33 +1791,33 @@ public:
         btnJobAddDay = new QToolButton(frmJobReportControls);
         btnJobAddDay->setObjectName(QStringLiteral("btnJobAddDay"));
         btnJobAddDay->setMaximumSize(QSize(16777215, 16777215));
-        btnJobAddDay->setIcon(icon15);
+        btnJobAddDay->setIcon(icon8);
 
         horizontalLayout_13->addWidget(btnJobAddDay);
 
         btnJobEditDay = new QToolButton(frmJobReportControls);
         btnJobEditDay->setObjectName(QStringLiteral("btnJobEditDay"));
         btnJobEditDay->setMaximumSize(QSize(16777215, 16777215));
-        btnJobEditDay->setIcon(icon8);
+        btnJobEditDay->setIcon(icon9);
 
         horizontalLayout_13->addWidget(btnJobEditDay);
 
         btnJobDelDay = new QToolButton(frmJobReportControls);
         btnJobDelDay->setObjectName(QStringLiteral("btnJobDelDay"));
-        btnJobDelDay->setIcon(icon9);
+        btnJobDelDay->setIcon(icon10);
 
         horizontalLayout_13->addWidget(btnJobDelDay);
 
         btnJobCancelDelDay = new QToolButton(frmJobReportControls);
         btnJobCancelDelDay->setObjectName(QStringLiteral("btnJobCancelDelDay"));
-        QIcon icon22;
-        icon22.addFile(QStringLiteral(":/resources/cancel_remove.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobCancelDelDay->setIcon(icon22);
+        QIcon icon23;
+        icon23.addFile(QStringLiteral(":/resources/cancel_remove.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobCancelDelDay->setIcon(icon23);
 
         horizontalLayout_13->addWidget(btnJobCancelDelDay);
 
 
-        gLayoutJobExtraInfo->addWidget(frmJobReportControls, 5, 0, 2, 5);
+        gLayoutJobExtraInfo->addWidget(frmJobReportControls, 5, 1, 2, 5);
 
         txtJobReport = new textEditWithCompleter(frmJobInfo_2);
         txtJobReport->setObjectName(QStringLiteral("txtJobReport"));
@@ -1837,21 +1827,21 @@ public:
         sizePolicy6.setHeightForWidth(txtJobReport->sizePolicy().hasHeightForWidth());
         txtJobReport->setSizePolicy(sizePolicy6);
 
-        gLayoutJobExtraInfo->addWidget(txtJobReport, 1, 5, 6, 3);
+        gLayoutJobExtraInfo->addWidget(txtJobReport, 1, 6, 6, 3);
 
         timeJobStart = new vmTimeEdit(frmJobInfo_2);
         timeJobStart->setObjectName(QStringLiteral("timeJobStart"));
 
-        gLayoutJobExtraInfo->addWidget(timeJobStart, 1, 1, 1, 1);
+        gLayoutJobExtraInfo->addWidget(timeJobStart, 1, 2, 1, 1);
 
         btnJobSeparateReportWindow = new QToolButton(frmJobInfo_2);
         btnJobSeparateReportWindow->setObjectName(QStringLiteral("btnJobSeparateReportWindow"));
-        QIcon icon23;
-        icon23.addFile(QStringLiteral(":/resources/separate_window.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobSeparateReportWindow->setIcon(icon23);
+        QIcon icon24;
+        icon24.addFile(QStringLiteral(":/resources/separate_window.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobSeparateReportWindow->setIcon(icon24);
         btnJobSeparateReportWindow->setCheckable(true);
 
-        gLayoutJobExtraInfo->addWidget(btnJobSeparateReportWindow, 0, 7, 1, 1);
+        gLayoutJobExtraInfo->addWidget(btnJobSeparateReportWindow, 0, 8, 1, 1);
 
         frmJobPicturesControls = new QFrame(frmJobInfo_2);
         frmJobPicturesControls->setObjectName(QStringLiteral("frmJobPicturesControls"));
@@ -1879,33 +1869,33 @@ public:
 
         btnJobPrevPicture = new QToolButton(frmJobPicturesControls);
         btnJobPrevPicture->setObjectName(QStringLiteral("btnJobPrevPicture"));
-        QIcon icon24;
-        icon24.addFile(QStringLiteral(":/resources/arrow-left.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobPrevPicture->setIcon(icon24);
+        QIcon icon25;
+        icon25.addFile(QStringLiteral(":/resources/arrow-left.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobPrevPicture->setIcon(icon25);
 
         horizontalLayout_23->addWidget(btnJobPrevPicture);
 
         btnJobNextPicture = new QToolButton(frmJobPicturesControls);
         btnJobNextPicture->setObjectName(QStringLiteral("btnJobNextPicture"));
-        QIcon icon25;
-        icon25.addFile(QStringLiteral(":/resources/arrow-right.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobNextPicture->setIcon(icon25);
+        QIcon icon26;
+        icon26.addFile(QStringLiteral(":/resources/arrow-right.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobNextPicture->setIcon(icon26);
 
         horizontalLayout_23->addWidget(btnJobNextPicture);
 
         btnJobReloadPictures = new QToolButton(frmJobPicturesControls);
         btnJobReloadPictures->setObjectName(QStringLiteral("btnJobReloadPictures"));
-        QIcon icon26;
-        icon26.addFile(QStringLiteral(":/resources/reload.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobReloadPictures->setIcon(icon26);
+        QIcon icon27;
+        icon27.addFile(QStringLiteral(":/resources/reload.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobReloadPictures->setIcon(icon27);
 
         horizontalLayout_23->addWidget(btnJobReloadPictures);
 
         btnJobRenamePicture = new QToolButton(frmJobPicturesControls);
         btnJobRenamePicture->setObjectName(QStringLiteral("btnJobRenamePicture"));
-        QIcon icon27;
-        icon27.addFile(QStringLiteral(":/resources/edit-rename.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobRenamePicture->setIcon(icon27);
+        QIcon icon28;
+        icon28.addFile(QStringLiteral(":/resources/edit-rename.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobRenamePicture->setIcon(icon28);
         btnJobRenamePicture->setCheckable(true);
 
         horizontalLayout_23->addWidget(btnJobRenamePicture);
@@ -1919,9 +1909,9 @@ public:
 
         btnJobOpenPictureEditor = new QToolButton(frmJobPicturesControls);
         btnJobOpenPictureEditor->setObjectName(QStringLiteral("btnJobOpenPictureEditor"));
-        QIcon icon28;
-        icon28.addFile(QStringLiteral(":/resources/gimp.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenPictureEditor->setIcon(icon28);
+        QIcon icon29;
+        icon29.addFile(QStringLiteral(":/resources/gimp.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenPictureEditor->setIcon(icon29);
 
         horizontalLayout_23->addWidget(btnJobOpenPictureEditor);
 
@@ -1933,9 +1923,9 @@ public:
 
         btnJobOpenPictureViewer = new QToolButton(frmJobPicturesControls);
         btnJobOpenPictureViewer->setObjectName(QStringLiteral("btnJobOpenPictureViewer"));
-        QIcon icon29;
-        icon29.addFile(QStringLiteral(":/resources/gwenview.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobOpenPictureViewer->setIcon(icon29);
+        QIcon icon30;
+        icon30.addFile(QStringLiteral(":/resources/gwenview.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobOpenPictureViewer->setIcon(icon30);
 
         horizontalLayout_23->addWidget(btnJobOpenPictureViewer);
 
@@ -1948,9 +1938,9 @@ public:
 
         btnJobClientsYearPictures = new QToolButton(frmJobPicturesControls);
         btnJobClientsYearPictures->setObjectName(QStringLiteral("btnJobClientsYearPictures"));
-        QIcon icon30;
-        icon30.addFile(QStringLiteral(":/resources/clients-year-pictures.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobClientsYearPictures->setIcon(icon30);
+        QIcon icon31;
+        icon31.addFile(QStringLiteral(":/resources/clients-year-pictures.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobClientsYearPictures->setIcon(icon31);
 
         horizontalLayout_23->addWidget(btnJobClientsYearPictures);
 
@@ -1967,14 +1957,14 @@ public:
 
         btnJobSeparatePicture = new QToolButton(frmJobPicturesControls);
         btnJobSeparatePicture->setObjectName(QStringLiteral("btnJobSeparatePicture"));
-        btnJobSeparatePicture->setIcon(icon23);
+        btnJobSeparatePicture->setIcon(icon24);
         btnJobSeparatePicture->setCheckable(true);
 
         horizontalLayout_23->addWidget(btnJobSeparatePicture);
 
         horizontalLayout_23->setStretch(1, 2);
 
-        gLayoutJobExtraInfo->addWidget(frmJobPicturesControls, 8, 0, 1, 8);
+        gLayoutJobExtraInfo->addWidget(frmJobPicturesControls, 8, 1, 1, 8);
 
         hLayoutImgViewer = new QHBoxLayout();
         hLayoutImgViewer->setSpacing(0);
@@ -2000,48 +1990,43 @@ public:
         hLayoutImgViewer->setStretch(1, 2);
         hLayoutImgViewer->setStretch(2, 1);
 
-        gLayoutJobExtraInfo->addLayout(hLayoutImgViewer, 9, 0, 1, 8);
+        gLayoutJobExtraInfo->addLayout(hLayoutImgViewer, 9, 1, 1, 8);
 
         lblJobStartTime = new QLabel(frmJobInfo_2);
         lblJobStartTime->setObjectName(QStringLiteral("lblJobStartTime"));
         lblJobStartTime->setMaximumSize(QSize(16777215, 16777215));
 
-        gLayoutJobExtraInfo->addWidget(lblJobStartTime, 0, 1, 1, 1);
+        gLayoutJobExtraInfo->addWidget(lblJobStartTime, 0, 2, 1, 1);
 
         txtJobWheather = new vmLineEdit(frmJobInfo_2);
         txtJobWheather->setObjectName(QStringLiteral("txtJobWheather"));
 
-        gLayoutJobExtraInfo->addWidget(txtJobWheather, 4, 1, 1, 3);
+        gLayoutJobExtraInfo->addWidget(txtJobWheather, 4, 2, 1, 3);
 
         lblWeatherConditions = new QLabel(frmJobInfo_2);
         lblWeatherConditions->setObjectName(QStringLiteral("lblWeatherConditions"));
         lblWeatherConditions->setMaximumSize(QSize(16777215, 16777215));
 
-        gLayoutJobExtraInfo->addWidget(lblWeatherConditions, 3, 1, 1, 1);
-
-        lstJobDayReport = new vmListWidget(frmJobInfo_2);
-        lstJobDayReport->setObjectName(QStringLiteral("lstJobDayReport"));
-        QSizePolicy sizePolicy7(QSizePolicy::Minimum, QSizePolicy::Expanding);
-        sizePolicy7.setHorizontalStretch(0);
-        sizePolicy7.setVerticalStretch(0);
-        sizePolicy7.setHeightForWidth(lstJobDayReport->sizePolicy().hasHeightForWidth());
-        lstJobDayReport->setSizePolicy(sizePolicy7);
-
-        gLayoutJobExtraInfo->addWidget(lstJobDayReport, 0, 0, 5, 1);
-
-        btnJobMachines = new QToolButton(frmJobInfo_2);
-        btnJobMachines->setObjectName(QStringLiteral("btnJobMachines"));
-        QIcon icon31;
-        icon31.addFile(QStringLiteral(":/resources/job_machines.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnJobMachines->setIcon(icon31);
-
-        gLayoutJobExtraInfo->addWidget(btnJobMachines, 0, 6, 1, 1);
+        gLayoutJobExtraInfo->addWidget(lblWeatherConditions, 3, 2, 1, 1);
 
         txtJobPicturesPath = new vmLineEdit(frmJobInfo_2);
         txtJobPicturesPath->setObjectName(QStringLiteral("txtJobPicturesPath"));
         txtJobPicturesPath->setFrame(false);
 
-        gLayoutJobExtraInfo->addWidget(txtJobPicturesPath, 7, 1, 1, 7);
+        gLayoutJobExtraInfo->addWidget(txtJobPicturesPath, 7, 2, 1, 7);
+
+        btnJobMachines = new QToolButton(frmJobInfo_2);
+        btnJobMachines->setObjectName(QStringLiteral("btnJobMachines"));
+        QIcon icon32;
+        icon32.addFile(QStringLiteral(":/resources/job_machines.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnJobMachines->setIcon(icon32);
+
+        gLayoutJobExtraInfo->addWidget(btnJobMachines, 0, 7, 1, 1);
+
+        lstJobDayReport = new vmListWidget(frmJobInfo_2);
+        lstJobDayReport->setObjectName(QStringLiteral("lstJobDayReport"));
+
+        gLayoutJobExtraInfo->addWidget(lstJobDayReport, 0, 1, 5, 1);
 
         gLayoutJobExtraInfo->setRowStretch(0, 1);
 
@@ -2052,7 +2037,7 @@ public:
         tabDesign_4->setObjectName(QStringLiteral("tabDesign_4"));
         splitterBuyInfo = new QSplitter(tabDesign_4);
         splitterBuyInfo->setObjectName(QStringLiteral("splitterBuyInfo"));
-        splitterBuyInfo->setGeometry(QRect(7, 7, 966, 713));
+        splitterBuyInfo->setGeometry(QRect(7, 7, 905, 712));
         sizePolicy.setHeightForWidth(splitterBuyInfo->sizePolicy().hasHeightForWidth());
         splitterBuyInfo->setSizePolicy(sizePolicy);
         splitterBuyInfo->setMinimumSize(QSize(500, 0));
@@ -2086,31 +2071,31 @@ public:
         verticalLayout_16->setContentsMargins(2, 2, 2, 2);
         btnBuyAdd = new QToolButton(frmBuyToolbar);
         btnBuyAdd->setObjectName(QStringLiteral("btnBuyAdd"));
-        btnBuyAdd->setIcon(icon15);
+        btnBuyAdd->setIcon(icon8);
 
         verticalLayout_16->addWidget(btnBuyAdd);
 
         btnBuyEdit = new QToolButton(frmBuyToolbar);
         btnBuyEdit->setObjectName(QStringLiteral("btnBuyEdit"));
-        btnBuyEdit->setIcon(icon8);
+        btnBuyEdit->setIcon(icon9);
 
         verticalLayout_16->addWidget(btnBuyEdit);
 
         btnBuyDel = new QToolButton(frmBuyToolbar);
         btnBuyDel->setObjectName(QStringLiteral("btnBuyDel"));
-        btnBuyDel->setIcon(icon9);
+        btnBuyDel->setIcon(icon10);
 
         verticalLayout_16->addWidget(btnBuyDel);
 
         btnBuySave = new QToolButton(frmBuyToolbar);
         btnBuySave->setObjectName(QStringLiteral("btnBuySave"));
-        btnBuySave->setIcon(icon10);
+        btnBuySave->setIcon(icon11);
 
         verticalLayout_16->addWidget(btnBuySave);
 
         btnBuyCancel = new QToolButton(frmBuyToolbar);
         btnBuyCancel->setObjectName(QStringLiteral("btnBuyCancel"));
-        btnBuyCancel->setIcon(icon11);
+        btnBuyCancel->setIcon(icon12);
 
         verticalLayout_16->addWidget(btnBuyCancel);
 
@@ -2144,9 +2129,9 @@ public:
         btnShowSuppliersDlg = new QToolButton(frmBuyJobList);
         btnShowSuppliersDlg->setObjectName(QStringLiteral("btnShowSuppliersDlg"));
         btnShowSuppliersDlg->setMinimumSize(QSize(30, 30));
-        QIcon icon32;
-        icon32.addFile(QStringLiteral(":/resources/arrow-down.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnShowSuppliersDlg->setIcon(icon32);
+        QIcon icon33;
+        icon33.addFile(QStringLiteral(":/resources/arrow-down.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnShowSuppliersDlg->setIcon(icon33);
         btnShowSuppliersDlg->setCheckable(false);
 
         horizontalLayout_6->addWidget(btnShowSuppliersDlg);
@@ -2210,11 +2195,11 @@ public:
         splitterBuyInfo->addWidget(frmBuyJobList);
         frmBuyInfo = new QFrame(splitterBuyInfo);
         frmBuyInfo->setObjectName(QStringLiteral("frmBuyInfo"));
-        QSizePolicy sizePolicy8(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        sizePolicy8.setHorizontalStretch(0);
-        sizePolicy8.setVerticalStretch(0);
-        sizePolicy8.setHeightForWidth(frmBuyInfo->sizePolicy().hasHeightForWidth());
-        frmBuyInfo->setSizePolicy(sizePolicy8);
+        QSizePolicy sizePolicy7(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        sizePolicy7.setHorizontalStretch(0);
+        sizePolicy7.setVerticalStretch(0);
+        sizePolicy7.setHeightForWidth(frmBuyInfo->sizePolicy().hasHeightForWidth());
+        frmBuyInfo->setSizePolicy(sizePolicy7);
         frmBuyInfo->setMinimumSize(QSize(300, 100));
         frmBuyInfo->setFrameShape(QFrame::NoFrame);
         frmBuyInfo->setFrameShadow(QFrame::Plain);
@@ -2226,19 +2211,31 @@ public:
         gLayoutBuyForms->setSpacing(2);
         gLayoutBuyForms->setObjectName(QStringLiteral("gLayoutBuyForms"));
         gLayoutBuyForms->setContentsMargins(2, 2, 2, 2);
+        frmBuyItemsUtilities = new QFrame(frmBuyInfo);
+        frmBuyItemsUtilities->setObjectName(QStringLiteral("frmBuyItemsUtilities"));
+        frmBuyItemsUtilities->setMinimumSize(QSize(0, 0));
+        frmBuyItemsUtilities->setFrameShape(QFrame::NoFrame);
+        frmBuyItemsUtilities->setFrameShadow(QFrame::Raised);
+        layoutBuyItemsUtilities = new QVBoxLayout(frmBuyItemsUtilities);
+        layoutBuyItemsUtilities->setSpacing(0);
+        layoutBuyItemsUtilities->setObjectName(QStringLiteral("layoutBuyItemsUtilities"));
+        layoutBuyItemsUtilities->setContentsMargins(0, 0, 0, 0);
+
+        gLayoutBuyForms->addWidget(frmBuyItemsUtilities, 8, 0, 1, 4);
+
         txtBuyTotalPrice = new vmLineEdit(frmBuyInfo);
         txtBuyTotalPrice->setObjectName(QStringLiteral("txtBuyTotalPrice"));
 
-        gLayoutBuyForms->addWidget(txtBuyTotalPrice, 9, 3, 1, 1);
+        gLayoutBuyForms->addWidget(txtBuyTotalPrice, 10, 3, 1, 1);
 
         btnBuyCopyRows = new QToolButton(frmBuyInfo);
         btnBuyCopyRows->setObjectName(QStringLiteral("btnBuyCopyRows"));
         btnBuyCopyRows->setEnabled(false);
         btnBuyCopyRows->setMinimumSize(QSize(0, 0));
         btnBuyCopyRows->setLayoutDirection(Qt::LeftToRight);
-        QIcon icon33;
-        icon33.addFile(QStringLiteral(":/resources/copy_buy_to_qp.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnBuyCopyRows->setIcon(icon33);
+        QIcon icon34;
+        icon34.addFile(QStringLiteral(":/resources/copy_buy_to_qp.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnBuyCopyRows->setIcon(icon34);
 
         gLayoutBuyForms->addWidget(btnBuyCopyRows, 6, 3, 1, 1);
 
@@ -2263,30 +2260,30 @@ public:
 
         gLayoutBuyForms->addWidget(dteBuyDate, 1, 0, 1, 1);
 
+        dteBuyDeliveryDate = new vmDateEdit(frmBuyInfo);
+        dteBuyDeliveryDate->setObjectName(QStringLiteral("dteBuyDeliveryDate"));
+
+        gLayoutBuyForms->addWidget(dteBuyDeliveryDate, 3, 0, 1, 1);
+
         txtBuyDeliveryMethod = new vmLineEdit(frmBuyInfo);
         txtBuyDeliveryMethod->setObjectName(QStringLiteral("txtBuyDeliveryMethod"));
         txtBuyDeliveryMethod->setMinimumSize(QSize(0, 30));
 
         gLayoutBuyForms->addWidget(txtBuyDeliveryMethod, 3, 1, 1, 3);
 
-        dteBuyDeliveryDate = new vmDateEdit(frmBuyInfo);
-        dteBuyDeliveryDate->setObjectName(QStringLiteral("dteBuyDeliveryDate"));
+        txtBuyID = new vmLineEdit(frmBuyInfo);
+        txtBuyID->setObjectName(QStringLiteral("txtBuyID"));
+        txtBuyID->setMinimumSize(QSize(0, 30));
+        txtBuyID->setMaximumSize(QSize(16777215, 30));
+        txtBuyID->setFocusPolicy(Qt::NoFocus);
+        txtBuyID->setReadOnly(true);
 
-        gLayoutBuyForms->addWidget(dteBuyDeliveryDate, 3, 0, 1, 1);
+        gLayoutBuyForms->addWidget(txtBuyID, 1, 3, 1, 1);
 
         lblBuyPayments = new QLabel(frmBuyInfo);
         lblBuyPayments->setObjectName(QStringLiteral("lblBuyPayments"));
 
         gLayoutBuyForms->addWidget(lblBuyPayments, 6, 0, 1, 1);
-
-        txtBuyID = new vmLineEdit(frmBuyInfo);
-        txtBuyID->setObjectName(QStringLiteral("txtBuyID"));
-        txtBuyID->setMinimumSize(QSize(0, 30));
-        txtBuyID->setMaximumSize(QSize(120, 30));
-        txtBuyID->setFocusPolicy(Qt::NoFocus);
-        txtBuyID->setReadOnly(true);
-
-        gLayoutBuyForms->addWidget(txtBuyID, 1, 3, 1, 1);
 
         tableBuyItems = new vmTableWidget(frmBuyInfo);
         tableBuyItems->setObjectName(QStringLiteral("tableBuyItems"));
@@ -2294,12 +2291,12 @@ public:
         tableBuyItems->setFrameShape(QFrame::StyledPanel);
         tableBuyItems->setFrameShadow(QFrame::Raised);
 
-        gLayoutBuyForms->addWidget(tableBuyItems, 8, 0, 1, 4);
+        gLayoutBuyForms->addWidget(tableBuyItems, 9, 0, 1, 4);
 
         lblBuyItems = new QLabel(frmBuyInfo);
         lblBuyItems->setObjectName(QStringLiteral("lblBuyItems"));
 
-        gLayoutBuyForms->addWidget(lblBuyItems, 10, 0, 1, 1);
+        gLayoutBuyForms->addWidget(lblBuyItems, 11, 0, 1, 1);
 
         lblBuyDeliverDate = new QLabel(frmBuyInfo);
         lblBuyDeliverDate->setObjectName(QStringLiteral("lblBuyDeliverDate"));
@@ -2316,33 +2313,33 @@ public:
 
         gLayoutBuyForms->addWidget(lblBuyNotes_2, 4, 0, 1, 1);
 
+        widget_2 = new QWidget(frmBuyInfo);
+        widget_2->setObjectName(QStringLiteral("widget_2"));
+
+        gLayoutBuyForms->addWidget(widget_2, 7, 0, 1, 1);
+
+        widget_3 = new QWidget(frmBuyInfo);
+        widget_3->setObjectName(QStringLiteral("widget_3"));
+
+        gLayoutBuyForms->addWidget(widget_3, 12, 0, 1, 1);
+
         tableBuyPayments = new vmTableWidget(frmBuyInfo);
         tableBuyPayments->setObjectName(QStringLiteral("tableBuyPayments"));
         tableBuyPayments->setMinimumSize(QSize(500, 0));
         tableBuyPayments->setFrameShape(QFrame::StyledPanel);
         tableBuyPayments->setFrameShadow(QFrame::Raised);
 
-        gLayoutBuyForms->addWidget(tableBuyPayments, 12, 0, 1, 4);
-
-        widget_3 = new QWidget(frmBuyInfo);
-        widget_3->setObjectName(QStringLiteral("widget_3"));
-
-        gLayoutBuyForms->addWidget(widget_3, 11, 0, 1, 1);
-
-        widget_2 = new QWidget(frmBuyInfo);
-        widget_2->setObjectName(QStringLiteral("widget_2"));
-
-        gLayoutBuyForms->addWidget(widget_2, 7, 0, 1, 1);
+        gLayoutBuyForms->addWidget(tableBuyPayments, 14, 0, 1, 4);
 
         lblBuyTotalPrice = new QLabel(frmBuyInfo);
         lblBuyTotalPrice->setObjectName(QStringLiteral("lblBuyTotalPrice"));
 
-        gLayoutBuyForms->addWidget(lblBuyTotalPrice, 9, 0, 1, 1);
+        gLayoutBuyForms->addWidget(lblBuyTotalPrice, 10, 0, 1, 1);
 
         lblBuyTotalPaid = new QLabel(frmBuyInfo);
         lblBuyTotalPaid->setObjectName(QStringLiteral("lblBuyTotalPaid"));
 
-        gLayoutBuyForms->addWidget(lblBuyTotalPaid, 13, 0, 1, 1);
+        gLayoutBuyForms->addWidget(lblBuyTotalPaid, 15, 0, 1, 1);
 
         lblBuyDeliverMethod_2 = new QLabel(frmBuyInfo);
         lblBuyDeliverMethod_2->setObjectName(QStringLiteral("lblBuyDeliverMethod_2"));
@@ -2358,7 +2355,7 @@ public:
         txtBuyTotalPaid->setObjectName(QStringLiteral("txtBuyTotalPaid"));
         txtBuyTotalPaid->setInputMethodHints(Qt::ImhFormattedNumbersOnly);
 
-        gLayoutBuyForms->addWidget(txtBuyTotalPaid, 13, 3, 1, 1);
+        gLayoutBuyForms->addWidget(txtBuyTotalPaid, 15, 3, 1, 1);
 
         lblBuyDate_2 = new QLabel(frmBuyInfo);
         lblBuyDate_2->setObjectName(QStringLiteral("lblBuyDate_2"));
@@ -2368,6 +2365,18 @@ public:
         lblBuyDate_2->setTextFormat(Qt::PlainText);
 
         gLayoutBuyForms->addWidget(lblBuyDate_2, 0, 0, 1, 3);
+
+        frmBuyPaymentsUtilities = new QFrame(frmBuyInfo);
+        frmBuyPaymentsUtilities->setObjectName(QStringLiteral("frmBuyPaymentsUtilities"));
+        frmBuyPaymentsUtilities->setMinimumSize(QSize(0, 0));
+        frmBuyPaymentsUtilities->setFrameShape(QFrame::NoFrame);
+        frmBuyPaymentsUtilities->setFrameShadow(QFrame::Raised);
+        layoutBuyPaymentsUtilities = new QVBoxLayout(frmBuyPaymentsUtilities);
+        layoutBuyPaymentsUtilities->setSpacing(0);
+        layoutBuyPaymentsUtilities->setObjectName(QStringLiteral("layoutBuyPaymentsUtilities"));
+        layoutBuyPaymentsUtilities->setContentsMargins(0, 0, 0, 0);
+
+        gLayoutBuyForms->addWidget(frmBuyPaymentsUtilities, 13, 0, 1, 4);
 
         gLayoutBuyForms->setColumnStretch(0, 1);
 
@@ -2460,9 +2469,9 @@ public:
         btnSearchStart->setObjectName(QStringLiteral("btnSearchStart"));
         btnSearchStart->setEnabled(false);
         btnSearchStart->setMinimumSize(QSize(30, 30));
-        QIcon icon34;
-        icon34.addFile(QStringLiteral(":/resources/search.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnSearchStart->setIcon(icon34);
+        QIcon icon35;
+        icon35.addFile(QStringLiteral(":/resources/search.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnSearchStart->setIcon(icon35);
         btnSearchStart->setCheckable(false);
 
         horizontalLayout_8->addWidget(btnSearchStart);
@@ -2471,7 +2480,7 @@ public:
         btnSearchCancel->setObjectName(QStringLiteral("btnSearchCancel"));
         btnSearchCancel->setEnabled(false);
         btnSearchCancel->setMinimumSize(QSize(30, 30));
-        btnSearchCancel->setIcon(icon11);
+        btnSearchCancel->setIcon(icon12);
 
         horizontalLayout_8->addWidget(btnSearchCancel);
 
@@ -2511,8 +2520,7 @@ public:
         QWidget::setTabOrder(txtJobProjectID, btnQuickProject);
         QWidget::setTabOrder(btnQuickProject, btnJobSelectJob);
         QWidget::setTabOrder(btnJobSelectJob, txtJobPrice);
-        QWidget::setTabOrder(txtJobPrice, lstJobDayReport);
-        QWidget::setTabOrder(lstJobDayReport, btnJobPrevDay);
+        QWidget::setTabOrder(txtJobPrice, btnJobPrevDay);
         QWidget::setTabOrder(btnJobPrevDay, btnJobNextDay);
         QWidget::setTabOrder(btnJobNextDay, btnJobAddDay);
         QWidget::setTabOrder(btnJobAddDay, btnJobEditDay);
@@ -2545,12 +2553,9 @@ public:
         QWidget::setTabOrder(btnPayPayReceipt, btnPayPaymentsReportOnlyUnPaid);
         QWidget::setTabOrder(btnPayPaymentsReportOnlyUnPaid, btnPayPaymentsReport);
         QWidget::setTabOrder(btnPayPaymentsReport, tablePayments);
-        QWidget::setTabOrder(tablePayments, txtPayTotalPrice);
-        QWidget::setTabOrder(txtPayTotalPrice, txtPayTotalPaid);
-        QWidget::setTabOrder(txtPayTotalPaid, txtPayTotalPayments);
+        QWidget::setTabOrder(tablePayments, txtPayTotalPayments);
         QWidget::setTabOrder(txtPayTotalPayments, txtPayID);
-        QWidget::setTabOrder(txtPayID, txtPayObs);
-        QWidget::setTabOrder(txtPayObs, chkPayOverdue);
+        QWidget::setTabOrder(txtPayID, chkPayOverdue);
         QWidget::setTabOrder(chkPayOverdue, btnBuyAdd);
         QWidget::setTabOrder(btnBuyAdd, btnBuyEdit);
         QWidget::setTabOrder(btnBuyEdit, btnBuyDel);
@@ -2604,7 +2609,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabMain->setCurrentIndex(4);
+        tabMain->setCurrentIndex(7);
         tboxCalJobs->setCurrentIndex(0);
 
 
@@ -2674,6 +2679,14 @@ public:
         tabMain->setTabText(tabMain->indexOf(tabCalendar), QApplication::translate("MainWindow", "    Calendar    ", 0));
         tabMain->setTabText(tabMain->indexOf(tabInventory), QApplication::translate("MainWindow", "    &Inventory    ", 0));
         tabMain->setTabText(tabMain->indexOf(tabSupplies), QApplication::translate("MainWindow", "    S&upplies    ", 0));
+        lblPayID->setText(QApplication::translate("MainWindow", "ID:", 0));
+        lblTotalPayments->setText(QApplication::translate("MainWindow", "Pays", 0));
+        btnClientAdd->setText(QApplication::translate("MainWindow", "...", 0));
+        btnClientEdit->setText(QApplication::translate("MainWindow", "...", 0));
+        btnClientDel->setText(QApplication::translate("MainWindow", "...", 0));
+        btnClientSave->setText(QApplication::translate("MainWindow", "...", 0));
+        btnClientCancel->setText(QApplication::translate("MainWindow", "...", 0));
+        chkPayOverdue->setText(QString());
 #ifndef QT_NO_TOOLTIP
         btnPayInfoEdit->setToolTip(QApplication::translate("MainWindow", "Edit currently selected payment record", 0));
 #endif // QT_NO_TOOLTIP
@@ -2702,17 +2715,9 @@ public:
         btnPayPaymentsReport->setToolTip(QApplication::translate("MainWindow", "<html><head/><body><p>Generate a complete Payments Report for all this client's payments, both paid and unpaid</p></body></html>", 0));
 #endif // QT_NO_TOOLTIP
         btnPayPaymentsReport->setText(QApplication::translate("MainWindow", "...", 0));
-        lblTotalPayments->setText(QApplication::translate("MainWindow", "Pays", 0));
-        lblPayObs->setText(QApplication::translate("MainWindow", "Observations:", 0));
-        lblPayID->setText(QApplication::translate("MainWindow", "ID:", 0));
-        chkPayOverdue->setText(QString());
-        btnClientAdd->setText(QApplication::translate("MainWindow", "...", 0));
-        btnClientEdit->setText(QApplication::translate("MainWindow", "...", 0));
-        btnClientDel->setText(QApplication::translate("MainWindow", "...", 0));
-        btnClientSave->setText(QApplication::translate("MainWindow", "...", 0));
-        btnClientCancel->setText(QApplication::translate("MainWindow", "...", 0));
-        lblPayTotalPaid->setText(QApplication::translate("MainWindow", "Total paid:", 0));
         lblTotalPay->setText(QApplication::translate("MainWindow", "Total price:", 0));
+        lblPayTotalPaid->setText(QApplication::translate("MainWindow", "Total paid:", 0));
+        lblPayObs->setText(QApplication::translate("MainWindow", "Observations:", 0));
         lblClientDistrict->setText(QApplication::translate("MainWindow", "District:", 0));
         lblClientZipCode->setText(QApplication::translate("MainWindow", "ZIP Code:", 0));
         lblClientPhones->setText(QApplication::translate("MainWindow", "Telephones:", 0));

@@ -32,7 +32,6 @@ private:
     void saveWidget ( vmWidget* widget, const uint id );
     void setupUI ();
     void fillForms ();
-    void clearForms ();
     void controlForms ();
     void saveInfo ();
 
@@ -54,6 +53,7 @@ private:
     void setTotalPriceAsItChanges ( const vmTableItem* const item );
     void setPayValueAsItChanges ( const vmTableItem* const item );
     void tableItemsCellChanged ( const vmTableItem* const item );
+	void tableRowRemoved ( const uint row );
     void tablePaymentsCellChanged ( const vmTableItem* const item );
 
     void relevantKeyPressed ( const QKeyEvent* ke );
@@ -66,9 +66,9 @@ private:
     friend companyPurchasesUI* COMPANY_PURCHASES ();
     friend void deleteCompanyPurchasesUiInstance ();
 
-    bool mbSearchIsOn;
-    QString mSearchTerm;
     Ui::companyPurchasesUI* ui;
+	QString mSearchTerm;
+	bool mbSearchIsOn;
     companyPurchases* cp_rec;
     PointersList<vmWidget*> widgetList;
     podList<uint> mFoundFields;

@@ -90,52 +90,52 @@ void quickProjectUI::setupUI ()
 	hLayout1->addWidget ( btnCopyPurchasesLists, 1 );
 	hLayout1->addWidget ( btnClose, 1 );
 
-	vmTableColumn* fields[N_QP_GUI_FIELDS+1] = { nullptr };
+	m_table = new vmTableWidget;
+	vmTableColumn* fields ( m_table->createColumns( N_QP_GUI_FIELDS ) );
 
 	for ( uint i ( 0 ); i < N_QP_GUI_FIELDS; ++i ) {
-		fields[i] = new vmTableColumn;
-		fields[i]->label = VivenciaDB::getTableColumnLabel ( &quickProject::t_info, guiColumnToDBColumn ( i ) );
+		fields[i].label = VivenciaDB::getTableColumnLabel ( &quickProject::t_info, guiColumnToDBColumn ( i ) );
 		switch ( i ) {
 			case QP_GUI_ITEM: //FLD_QP_ITEM = 3 - Column A
-				fields[QP_GUI_ITEM]->completer_type = vmCompleters::PRODUCT_OR_SERVICE;
-				fields[QP_GUI_ITEM]->width = 250;
+				fields[QP_GUI_ITEM].completer_type = vmCompleters::PRODUCT_OR_SERVICE;
+				fields[QP_GUI_ITEM].width = 250;
 			break;
 			case QP_GUI_SELL_QUANTITY: //FLD_QP_SELL_QUANTITY = 4 - Column B
-				fields[QP_GUI_SELL_QUANTITY]->formula = QStringLiteral ( "= E%1" );
-				fields[QP_GUI_SELL_QUANTITY]->text_type = vmLineEdit::TT_DOUBLE;
+				fields[QP_GUI_SELL_QUANTITY].formula = QStringLiteral ( "= E%1" );
+				fields[QP_GUI_SELL_QUANTITY].text_type = vmLineEdit::TT_DOUBLE;
 			break;
 			case QP_GUI_PURCHASE_QUANTITY: //FLD_QP_PURCHASE_QUANTITY = 7 - Column E
-				fields[QP_GUI_PURCHASE_QUANTITY]->text_type = vmLineEdit::TT_DOUBLE;
+				fields[QP_GUI_PURCHASE_QUANTITY].text_type = vmLineEdit::TT_DOUBLE;
 			break;
 			case QP_GUI_SELL_TOTAL_PRICE: //FLD_QP_SELL_TOTALPRICE = 6 - Column D
-				fields[QP_GUI_SELL_TOTAL_PRICE]->formula = QStringLiteral ( "* B%1 C%1" );
-				fields[QP_GUI_SELL_TOTAL_PRICE]->text_type = vmLineEdit::TT_PRICE;
-				fields[QP_GUI_SELL_TOTAL_PRICE]->editable = false;
+				fields[QP_GUI_SELL_TOTAL_PRICE].formula = QStringLiteral ( "* B%1 C%1" );
+				fields[QP_GUI_SELL_TOTAL_PRICE].text_type = vmLineEdit::TT_PRICE;
+				fields[QP_GUI_SELL_TOTAL_PRICE].editable = false;
 			break;
 			case QP_GUI_PURCHASE_TOTAL_PRICE: //FLD_QP_PURCHASE_TOTALPRICE = 9 - Column G
-				fields[QP_GUI_PURCHASE_TOTAL_PRICE]->formula = QStringLiteral ( "* E%1 F%1" );
-				fields[QP_GUI_PURCHASE_TOTAL_PRICE]->text_type = vmLineEdit::TT_PRICE;
-				fields[QP_GUI_PURCHASE_TOTAL_PRICE]->editable = false;
+				fields[QP_GUI_PURCHASE_TOTAL_PRICE].formula = QStringLiteral ( "* E%1 F%1" );
+				fields[QP_GUI_PURCHASE_TOTAL_PRICE].text_type = vmLineEdit::TT_PRICE;
+				fields[QP_GUI_PURCHASE_TOTAL_PRICE].editable = false;
 			break;
 			case QP_GUI_RESULT: //FLD_QP_PROFIT = 10 - Column H
-				fields[QP_GUI_RESULT]->formula = QStringLiteral ( "- D%1 G%1" );
-				fields[QP_GUI_RESULT]->text_type = vmLineEdit::TT_PRICE;
-				fields[QP_GUI_RESULT]->editable = false;
+				fields[QP_GUI_RESULT].formula = QStringLiteral ( "- D%1 G%1" );
+				fields[QP_GUI_RESULT].text_type = vmLineEdit::TT_PRICE;
+				fields[QP_GUI_RESULT].editable = false;
 			break;
 			case QP_GUI_SELL_UNIT_PRICE: //FLD_QP_SELL_UNIT_PRICE = 5 - Column C
-				fields[QP_GUI_SELL_UNIT_PRICE]->formula = QStringLiteral ( "= F%1" );
-				fields[QP_GUI_SELL_UNIT_PRICE]->text_type = vmLineEdit::TT_PRICE;
-				fields[QP_GUI_SELL_UNIT_PRICE]->button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
+				fields[QP_GUI_SELL_UNIT_PRICE].formula = QStringLiteral ( "= F%1" );
+				fields[QP_GUI_SELL_UNIT_PRICE].text_type = vmLineEdit::TT_PRICE;
+				fields[QP_GUI_SELL_UNIT_PRICE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
 			break;
 			case QP_GUI_PURCHASE_UNIT_PRICE: //FLD_QP_PURCHASE_UNIT_PRICE = 8 - Column F
-				fields[QP_GUI_PURCHASE_UNIT_PRICE]->text_type = vmLineEdit::TT_PRICE;
-				fields[QP_GUI_PURCHASE_UNIT_PRICE]->button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
+				fields[QP_GUI_PURCHASE_UNIT_PRICE].text_type = vmLineEdit::TT_PRICE;
+				fields[QP_GUI_PURCHASE_UNIT_PRICE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
 			break;
 		}
 	}
 
-	m_table = new vmTableWidget ( 10, fields, this );
 	m_table->setKeepModificationRecords ( false );
+	m_table->initTable ( 20 );
 
 	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 				return cellModified ( item ); } );

@@ -102,8 +102,8 @@ QString VivenciaDB::getTableColumnFlags ( const TABLE_INFO* t_info, uint column 
 	while ( ( sep_2 = t_info->field_flags.indexOf ( CHR_PIPE, sep_1 ) ) != -1 ) {
 		if ( column-- == 0 ) {
 			col_flags = t_info->field_flags.mid ( sep_1, sep_2-sep_1 );
-            //col_flags.truncate ( col_flags.count () - 2 );
-            col_flags.chop ( 2 );
+			//col_flags.truncate ( col_flags.count () - 2 );
+			col_flags.chop ( 2 );
 			break;
 		}
 		sep_1 = unsigned ( sep_2 ) + 1;
@@ -182,7 +182,7 @@ QString VivenciaDB::tableName ( const TABLE_ORDER table )
 
 VivenciaDB::VivenciaDB ()
 	: lowest_id ( 0, TABLES_IN_DB + 1 ), highest_id ( 0, TABLES_IN_DB + 1 ),
-      m_ok ( false ), mNewDB ( false ), mBackupSynced ( true ), rootPasswdMngr ( nullptr )
+	  m_ok ( false ), mNewDB ( false ), mBackupSynced ( true ), rootPasswdMngr ( nullptr )
 {
 	openDataBase ();
 	addPostRoutine ( deleteVivenciaDBInstance );
@@ -438,14 +438,14 @@ bool VivenciaDB::insertColumn ( const uint column, const TABLE_INFO* t_info )
 						QLatin1String ( " ADD COLUMN " ) + getTableColumnName ( t_info, column ) +
 						getTableColumnFlags ( t_info, column ) + ( column > 0 ?
 								QString ( QLatin1String ( " AFTER " ) + getTableColumnName ( t_info, column - 1 ) ) :
-                                QLatin1String ( " FIRST" ) )
+								QLatin1String ( " FIRST" ) )
 					  );
 	QSqlQuery query ( cmd, m_db );
-    if ( query.exec () ) {
-        mBackupSynced = false;
-        return true;
-    }
-    return false;
+	if ( query.exec () ) {
+		mBackupSynced = false;
+		return true;
+	}
+	return false;
 }
 
 bool VivenciaDB::removeColumn ( const QString& column_name, const TABLE_INFO* t_info )
@@ -453,11 +453,11 @@ bool VivenciaDB::removeColumn ( const QString& column_name, const TABLE_INFO* t_
 	const QString cmd ( QLatin1String ( "ALTER TABLE " ) + t_info->table_name +
 						QLatin1String ( " DROP COLUMN " ) + column_name );
 	QSqlQuery query ( cmd, m_db );
-    if ( query.exec () ) {
-        mBackupSynced = false;
-        return true;
-    }
-    return false;
+	if ( query.exec () ) {
+		mBackupSynced = false;
+		return true;
+	}
+	return false;
 }
 
 bool VivenciaDB::renameColumn ( const QString& old_column_name, const uint col_idx, const TABLE_INFO* t_info )
@@ -466,11 +466,11 @@ bool VivenciaDB::renameColumn ( const QString& old_column_name, const uint col_i
 						QLatin1String ( " CHANGE " ) + old_column_name +
 						getTableColumnName ( t_info, col_idx ) + CHR_SPACE + getTableColumnFlags ( t_info, col_idx ) );
 	QSqlQuery query ( cmd, m_db );
-    if ( query.exec () ) {
-        mBackupSynced = false;
-        return true;
-    }
-    return false;
+	if ( query.exec () ) {
+		mBackupSynced = false;
+		return true;
+	}
+	return false;
 }
 
 bool VivenciaDB::changeColumnProperties ( const uint column, const TABLE_INFO* t_info )
@@ -479,11 +479,11 @@ bool VivenciaDB::changeColumnProperties ( const uint column, const TABLE_INFO* t
 						QLatin1String ( " MODIFY COLUMN " ) + getTableColumnName ( t_info, column ) +
 						getTableColumnFlags ( t_info, column ) );
 	QSqlQuery query ( cmd, m_db );
-    if ( query.exec () ) {
-        mBackupSynced = false;
-        return true;
-    }
-    return false;
+	if ( query.exec () ) {
+		mBackupSynced = false;
+		return true;
+	}
+	return false;
 }
 
 uint VivenciaDB::recordCount ( const TABLE_INFO* t_info ) const
@@ -533,17 +533,15 @@ bool VivenciaDB::insertRecord ( const DBRecord* db_rec ) const
 	const uint field_count ( db_rec->t_info->field_count );
 	for ( uint i ( 0 ); i < field_count; ++i )
 		values += CHR_CHRMARK + recStrValue ( db_rec, i ) + chrDelim2;
-
-    //values.truncate ( values.count () - 1 ); // removes the last comma character
-    values.chop ( 1 );
+	values.chop ( 1 );
+	
 	str_query += values + QLatin1String ( " )" );
-
 	m_db.exec ( str_query );
-    if ( m_db.lastError ().type () == QSqlError::NoError ) {
-        mBackupSynced = false;
-        return true;
-    }
-    return false;
+	if ( m_db.lastError ().type () == QSqlError::NoError ) {
+		mBackupSynced = false;
+		return true;
+	}
+	return false;
 }
 
 bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
@@ -570,17 +568,16 @@ bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
 		}
 		sep_1 = unsigned ( sep_2 ) + 1;
 	}
-    //str_query.truncate ( str_query.count () - 1 ); // removes the last comma character
-    str_query.chop ( 1 );
+	str_query.chop ( 1 );
 	str_query += ( QLatin1String ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK ); // id ()
 
 	m_db.exec ( str_query );
 
-    if ( m_db.lastError ().type () == QSqlError::NoError ) {
-        mBackupSynced = false;
-        return true;
-    }
-    return false;
+	if ( m_db.lastError ().type () == QSqlError::NoError ) {
+		mBackupSynced = false;
+		return true;
+	}
+	return false;
 }
 
 bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
@@ -592,17 +589,16 @@ bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
 		if ( (unsigned) db_rec->actualRecordInt ( 0 ) == highest_id[db_rec->t_info->table_order] )
 			const_cast<VivenciaDB*> ( this )->setHighestID ( db_rec->t_info->table_order,
 					const_cast<VivenciaDB*> ( this )->getHighLowID ( db_rec->t_info->table_order, true ) );
-        if ( m_db.lastError ().type () == QSqlError::NoError ) {
-            mBackupSynced = false;
-            return true;
-        }
+		if ( m_db.lastError ().type () == QSqlError::NoError ) {
+			mBackupSynced = false;
+			return true;
+		}
 	}
 	return false;
 }
 
 void VivenciaDB::loadDBRecord ( DBRecord* db_rec, const QSqlQuery* const query )
 {
-	db_rec->setIntValue ( 0, query->value ( 0 ).toInt () );
 	for ( uint i ( 0 ); i < db_rec->t_info->field_count; ++i )
 		setRecValue ( db_rec, i, query->value ( i ).toString () );
 }
@@ -616,7 +612,6 @@ int VivenciaDB::lastDBRecord ( const uint table )
 
 int VivenciaDB::firstDBRecord ( const uint table )
 {
-	//if ( lowest_id[table] == -1 )
 	(void) getHighLowID ( table, false );
 	return ( lowest_id.at ( table ) );
 }
@@ -647,22 +642,23 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, const uint field, const bool lo
 	query.setForwardOnly ( true );
 	query.exec ( cmd );
 	if ( query.first () ) {
-		if ( load_data ) {
+		if ( load_data )
 			loadDBRecord ( db_rec, &query );
-			return true;
-		}
-		else {
+			//return true;
+		//}
+		//else {
 			/* For the SELECT statement have some use, at least save the read id for later use.
 			 * Save all the initial id fields. Fast table lookup and fast item lookup, that's
 			 * the goal of this part of the code
 			 */
 			uint i ( 0 );
-			while ( db_rec->fieldType ( i ) == DBTYPE_ID ) {
+			while ( db_rec->fieldType ( i ) == DBTYPE_ID )
+			{
 				db_rec->setIntValue ( i, query.value ( i ).toInt () );
 				i++;
 			}
 			return true;
-		}
+		//}
 	}
 	return false;
 }
@@ -700,17 +696,17 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, co
 	if ( ret ) {
 		if ( load_data )
 			loadDBRecord ( db_rec, stquery.query );
-		else {
+		//else {
 			uint i ( 0 ); // save first id fields. Useful for subsequent queries or finding related vmListItems
-			do {
+			do
+			{
 				if ( db_rec->fieldType ( i ) == DBTYPE_ID )
 					db_rec->setIntValue ( i, stquery.query->value ( i ).toInt () );
 				else
 					break;
 			} while ( ++i < db_rec->fieldCount () );
-            setRecValue ( db_rec, 0, stquery.query->value ( 0 ).toString () );
-            //db_rec->setValue ( 0, stquery.query->value ( 0 ).toString () );
-		}
+			setRecValue ( db_rec, 0, stquery.query->value ( 0 ).toString () );
+		//}
 	}
 	return ret;
 }
@@ -758,24 +754,24 @@ bool VivenciaDB::runQuery ( const QString& query_cmd, QSqlQuery& queryRes ) cons
 //-----------------------------------------COMMOM-DBRECORD-------------------------------------------
 
 //-----------------------------------------IMPORT-EXPORT--------------------------------------------
-bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables )
+bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables, BackupDialog* bDlg )
 {
 	QString passwd;
 	if ( rootPasswdMngr->askPassword ( passwd, DB_DRIVER_NAME,
 			QCoreApplication::tr ( "You need to provide MYSQL's root(admin) password password for backup operations" ) ) ) {
 		flushAllTables ();
-		BACKUP ()->incrementProgress (); //2
-        const QString mysqldump_args ( QLatin1String ( "--user=root --password=" ) +
-                   passwd + CHR_SPACE + DB_NAME + CHR_SPACE + tables );
+		BackupDialog::incrementProgress ( bDlg ); //2
+		const QString mysqldump_args ( QLatin1String ( "--user=root --password=" ) +
+				   passwd + CHR_SPACE + DB_NAME + CHR_SPACE + tables );
 
-        const QString dump ( fileOps::executeAndCaptureOutput ( mysqldump_args, backupApp () ) );
+		const QString dump ( fileOps::executeAndCaptureOutput ( mysqldump_args, backupApp () ) );
 		unlockAllTables ();
-		BACKUP ()->incrementProgress (); //3
+		BackupDialog::incrementProgress ( bDlg ); //3
 		if ( !dump.isEmpty () ) {
 			QFile file ( filepath );
 			if ( file.open ( QIODevice::WriteOnly | QIODevice::Text ) ) {
 				QTextStream out ( &file );
-                out.setCodec ( "UTF-8" );
+				out.setCodec ( "UTF-8" );
 				out.setAutoDetectUnicode ( true );
 				out.setLocale ( QLocale::system () );
 				QString strHeader ( dump.left ( 500 ) );
@@ -783,8 +779,8 @@ bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables )
 				strHeader.append ( dump.mid ( 500, dump.length () - 500 ) );
 				out << strHeader.toLocal8Bit ();
 				file.close ();
-				BACKUP ()->incrementProgress (); //4
-                mBackupSynced = true;
+				BackupDialog::incrementProgress ( bDlg ); //4
+				mBackupSynced = true;
 				return true;
 			}
 		}
@@ -805,7 +801,7 @@ bool VivenciaDB::checkDumpFile ( const QString& dumpfile )
 			char* line_buf = new char [8*1024];// OPT-6
 			int n_chars ( -1 );
 			QString line, searchedExpr;
-			const QString expr ( QLatin1String ( "(%1,%2,%3," ) );
+			const QString expr ( QStringLiteral ( "(%1,%2,%3," ) );
 
 			do {
 				n_chars = file.readLine ( line_buf, 8*1024 );
@@ -830,7 +826,7 @@ bool VivenciaDB::checkDumpFile ( const QString& dumpfile )
 	return ok;
 }
 
-bool VivenciaDB::doRestore ( const QString& filepath )
+bool VivenciaDB::doRestore (const QString& filepath, BackupDialog* bDlg )
 {
 	QString rootpswd;
 	if ( !rootPasswdMngr->askPassword ( rootpswd, DB_DRIVER_NAME,
@@ -847,7 +843,7 @@ bool VivenciaDB::doRestore ( const QString& filepath )
 	else
 		uncompressed_file = filepath;
 
-	BACKUP ()->incrementProgress (); //3
+	BackupDialog::incrementProgress ( bDlg ); //3
 	QString restoreapp_args;
 	bool ret ( true );
 
@@ -859,37 +855,37 @@ bool VivenciaDB::doRestore ( const QString& filepath )
 	// Note that DB_NAME must refer to an unexisting database or this will fail
 	// Also I think the dump must be of a complete database, with all tables, to avoid inconsistencies
 	if ( !checkDumpFile ( uncompressed_file ) ) { // some table version mismatch
-        restoreapp_args = QLatin1String ( "--user=root --default_character_set=utf8 --password=" ) + rootpswd + CHR_SPACE + DB_NAME;
-        ret = fileOps::executeWithFeedFile ( restoreapp_args, importApp (), uncompressed_file );
+		restoreapp_args = QLatin1String ( "--user=root --default_character_set=utf8 --password=" ) + rootpswd + CHR_SPACE + DB_NAME;
+		ret = fileOps::executeWithFeedFile ( restoreapp_args, importApp (), uncompressed_file );
 	}
 	// use a previous dump from mysqldump to update or replace one or more tables in an existing database
 	// Tables will be overwritten or created. Note that DB_NAME must refer to an existing database
 	else {
-        restoreapp_args = QLatin1String ( "--user=root --password=" ) + rootpswd + CHR_SPACE + DB_NAME + CHR_SPACE + uncompressed_file;
-        ret = fileOps::executeWait ( restoreapp_args, restoreApp () );
+		restoreapp_args = QLatin1String ( "--user=root --password=" ) + rootpswd + CHR_SPACE + DB_NAME + CHR_SPACE + uncompressed_file;
+		ret = fileOps::executeWait ( restoreapp_args, restoreApp () );
 	}
-	BACKUP ()->incrementProgress (); //4
+	BackupDialog::incrementProgress ( bDlg ); //4
 
 	if ( bSourceCompressed ) // do not leave trash behind
-        fileOps::removeFile ( uncompressed_file );
+		fileOps::removeFile ( uncompressed_file );
 
-    if ( ret ) {
-        mBackupSynced = true;
+	if ( ret ) {
+		mBackupSynced = true;
 		return openDataBase ();
-    }
+	}
 
 	return false;
 }
 
-bool VivenciaDB::importFromCSV ( const QString& filename )
+bool VivenciaDB::importFromCSV ( const QString& filename, BackupDialog* bDlg )
 {
-	dataFile *tdb = new dataFile ( filename );
+	dataFile* tdb ( new dataFile ( filename ) );
 	if ( !tdb->open () )
 		return false;
 	if ( !tdb->load () )
 		return false;
 
-	BACKUP ()->incrementProgress (); //3
+	BackupDialog::incrementProgress ( bDlg ); //3
 
 	stringRecord rec;
 	if ( !tdb->getRecord ( rec, 0 ) )
@@ -939,8 +935,8 @@ bool VivenciaDB::importFromCSV ( const QString& filename )
 		break;
 	}
 
-	BACKUP ()->incrementProgress (); //4
-    bool bSuccess ( false );
+	BackupDialog::incrementProgress ( bDlg ); //4
+	bool bSuccess ( false );
 	if ( rec.fieldValue ( 0 ).toFloat () == db_rec->t_info->version ) { //we don't import if there is a version mismatch
 		uint fld ( 1 );
 		uint idx ( 1 );
@@ -962,16 +958,16 @@ bool VivenciaDB::importFromCSV ( const QString& filename )
 			++idx;
 		} while ( true );
 		if ( idx >= 2 )
-            bSuccess = true;
+			bSuccess = true;
 		delete db_rec;
 	}
 
-	BACKUP ()->incrementProgress (); //5
+	BackupDialog::incrementProgress ( bDlg ); //5
 	delete tdb;
-    return bSuccess;
+	return bSuccess;
 }
 
-bool VivenciaDB::exportToCSV ( const uint table, const QString& filename )
+bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, BackupDialog* bDlg )
 {
 	const TABLE_INFO* t_info ( nullptr );
 	switch ( table ) {
@@ -1015,17 +1011,17 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename )
 		t_info = &completerRecord::t_info;
 		break;
 	}
-    (void) fileOps::removeFile ( filename );
+	(void) fileOps::removeFile ( filename );
 	dataFile* tdb ( new dataFile ( filename ) );
 	if ( !tdb->open () )
 		return false;
-	BACKUP ()->incrementProgress (); //2
+	BackupDialog::incrementProgress ( bDlg ); //2
 
 	stringRecord rec;
 	rec.fastAppendValue ( QString::number ( t_info->table_id ) ); //Record table_id information
 	rec.fastAppendValue ( QString::number ( t_info->version, 'f', 1 ) ); //Record version information
 	tdb->insertRecord ( 0, rec );
-	BACKUP ()->incrementProgress (); //3
+	BackupDialog::incrementProgress ( bDlg ); //3
 
 	const QString cmd ( QLatin1String ( "SELECT * FROM " ) + t_info->table_name );
 
@@ -1045,13 +1041,13 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename )
 		} while ( query.next () );
 	}
 
-	BACKUP ()->incrementProgress (); //4
+	BackupDialog::incrementProgress ( bDlg ); //4
 
 	const uint n ( tdb->recCount () );
 	tdb->commit ();
 	delete tdb;
 
-	BACKUP ()->incrementProgress (); //5
+	BackupDialog::incrementProgress ( bDlg ); //5
 	return ( n > 0 );
 }
 

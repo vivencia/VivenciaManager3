@@ -10,7 +10,7 @@
 #include "global.h"
 #include "supplierrecord.h"
 #include "completers.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "documenteditor.h"
 #include "vivenciadb.h"
 #include "mainwindow.h"

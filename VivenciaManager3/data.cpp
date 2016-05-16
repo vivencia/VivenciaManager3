@@ -6,7 +6,7 @@
 #include "backupdialog.h"
 #include "configops.h"
 #include "fileops.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "completers.h"
 #include "spellcheck.h"
 #include "vmnotify.h"
@@ -31,7 +31,7 @@
 
 extern "C"
 {
-    #include <unistd.h>
+	#include <unistd.h>
 }
 
 static const QString MYSQL_INIT_SCRIPT ( QStringLiteral ( "/etc/init.d/mysql" ) );
@@ -64,14 +64,14 @@ void Data::restartProgram ()
 
 bool Data::isMySQLRunning ()
 {
-    QString outStr ( fileOps::executeAndCaptureOutput ( QStringLiteral ( "status" ), MYSQL_INIT_SCRIPT ) );
+	QString outStr ( fileOps::executeAndCaptureOutput ( QStringLiteral ( "status" ), MYSQL_INIT_SCRIPT ) );
 
-    if ( configOps::isSystem ( UBUNTU ) ) {
-        if ( configOps::initSystem ( SYSTEMD ) )
-            return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "active (running)" ) ) != -1 ) );
-        else
-            return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "start/running, process" ) ) != -1 ) );
-    }
+	if ( configOps::isSystem ( UBUNTU ) ) {
+		if ( configOps::initSystem ( SYSTEMD ) )
+			return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "active (running)" ) ) != -1 ) );
+		else
+			return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "start/running, process" ) ) != -1 ) );
+	}
 	else if ( configOps::isSystem ( OPENSUSE ) )
 		return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "running" ) ) != -1 ) );
 	else
@@ -81,34 +81,34 @@ bool Data::isMySQLRunning ()
 QString Data::commandMySQLServer ( const QString& command, const QString& message, const bool only_return_cmd_line )
 {
 	if ( !only_return_cmd_line ) {
-        if ( !fileOps::executeWait ( command, MYSQL_INIT_SCRIPT, nullptr, message ) )
-            ::exit ( ERR_COMMAND_MYSQL );
+		if ( !fileOps::executeWait ( command, MYSQL_INIT_SCRIPT, nullptr, message ) )
+			::exit ( ERR_COMMAND_MYSQL );
 	}
-    return ( MYSQL_INIT_SCRIPT + CHR_SPACE + command );
+	return ( MYSQL_INIT_SCRIPT + CHR_SPACE + command );
 }
 
 bool Data::checkSystem ( const bool bFirstPass )
 {
-    if ( !fileOps::exists ( MYSQL_INIT_SCRIPT).isOn () ) {
-        QMessageBox::critical ( nullptr, APP_TR_FUNC ( "MYSQL is not installed - Exiting" ),
-            QApplication::tr ( "Could not find mysql init script at " ) + MYSQL_INIT_SCRIPT +
-            QApplication::tr ( "Please check if mysql-client and mysql-server are installed." ), QMessageBox::Ok );
-        ::exit ( ERR_MYSQL_NOT_FOUND );
-    }
+	if ( !fileOps::exists ( MYSQL_INIT_SCRIPT).isOn () ) {
+		QMessageBox::critical ( nullptr, APP_TR_FUNC ( "MYSQL is not installed - Exiting" ),
+			QApplication::tr ( "Could not find mysql init script at " ) + MYSQL_INIT_SCRIPT +
+			QApplication::tr ( "Please check if mysql-client and mysql-server are installed." ), QMessageBox::Ok );
+		::exit ( ERR_MYSQL_NOT_FOUND );
+	}
 
-    const QString groups ( fileOps::executeAndCaptureOutput ( fileOps::currentUser (), QStringLiteral ( "groups" ) ) );
-    bool ret ( groups.contains ( QRegExp ( QStringLiteral ( "mysql|root" ) ) ) );
-    if ( !ret && bFirstPass ) {
-        const QString args ( fileOps::currentUser () + QLatin1String ( " mysql" ) );
-        if ( fileOps::executeWait ( args, QStringLiteral ( "adduser" ), nullptr,
+	const QString groups ( fileOps::executeAndCaptureOutput ( fileOps::currentUser (), QStringLiteral ( "groups" ) ) );
+	bool ret ( groups.contains ( QRegExp ( QStringLiteral ( "mysql|root" ) ) ) );
+	if ( !ret && bFirstPass ) {
+		const QString args ( fileOps::currentUser () + QLatin1String ( " mysql" ) );
+		if ( fileOps::executeWait ( args, QStringLiteral ( "adduser" ), nullptr,
 							   QApplication::tr ( "To access mysql databases you need to belong the the mysql group."
 									   "This program will add you to that group, but it needs the administrator password." )
-                             ) )
-            ret = checkSystem ( false );
-        if ( !ret )
-            ::exit ( ERR_USER_NOT_ADDED_TO_MYSQL_GROUP );
+							 ) )
+			ret = checkSystem ( false );
+		if ( !ret )
+			::exit ( ERR_USER_NOT_ADDED_TO_MYSQL_GROUP );
 	}
-    return ret;
+	return ret;
 }
 
 /*
@@ -118,23 +118,23 @@ bool Data::checkSystem ( const bool bFirstPass )
  */
 void Data::checkSetup ()
 {
-    (void) checkSystem ();
+	(void) checkSystem ();
 	checkDatabase ();
 
 	const QString dataDir ( CONFIG ()->appDataDir () );
-    if ( !fileOps::exists ( CONFIG ()->projectDocumentFile () ).isOn () ) {
+	if ( !fileOps::exists ( CONFIG ()->projectDocumentFile () ).isOn () ) {
 		const QString installedDir ( QFileDialog::getExistingDirectory ( nullptr,
-                                     APP_TR_FUNC ( "VivenciaManager needs to be setup. Choose the directory into which the download file was extracted." ),
-                                     QStringLiteral ( "~" ) )
+									 APP_TR_FUNC ( "VivenciaManager needs to be setup. Choose the directory into which the download file was extracted." ),
+									 QStringLiteral ( "~" ) )
 								   );
 		if ( installedDir.isEmpty () ) {
 			if ( QMessageBox::critical ( nullptr,
-                                         APP_TR_FUNC ( "Setup files are missing" ),
+										 APP_TR_FUNC ( "Setup files are missing" ),
 										 QApplication::tr ( "Choose, again, the directory where the extracted setup files are" ),
 										 QMessageBox::Ok, QMessageBox::Cancel ) == QMessageBox::Ok )
 				checkSetup ();
 			else
-                ::exit ( ERR_SETUP_FILES_MISSING );
+				::exit ( ERR_SETUP_FILES_MISSING );
 		}
 		else {
 			fileOps::createDir ( dataDir );
@@ -148,8 +148,8 @@ void Data::checkSetup ()
 void Data::checkDatabase ()
 {
 	if ( !isMySQLRunning () ) {
-        (void) commandMySQLServer ( QStringLiteral ( "start" ),
-                             APP_TR_FUNC (  "The mysql server is not running. "
+		(void) commandMySQLServer ( QStringLiteral ( "start" ),
+							 APP_TR_FUNC (  "The mysql server is not running. "
 									 "It needs to be started in order to run this program. "
 									 "Please, type below the administrator's password." )
 						   );
@@ -159,15 +159,15 @@ void Data::checkDatabase ()
 		if ( !VDB ()->openDataBase () || VDB ()->databaseIsEmpty () ) {
 			BACKUP ()->showNoDatabaseOptionsWindow ();
 			if ( !BACKUP ()->actionSuccess () )
-                ::exit ( ERR_DATABASE_PROBLEM );
+				::exit ( ERR_DATABASE_PROBLEM );
 		}
 	}
 	else {
 		( void ) QMessageBox::critical ( nullptr,
-                                         APP_TR_FUNC ( "Could not connect to mysql server" ),
-                                         APP_TR_FUNC ( "The application will now exit. Try to manually start the mysql daemon"
-                                                 " or troubleshoot for the problem if it persists." ), QMessageBox::Ok );
-        ::exit ( ERR_DATABASE_PROBLEM );
+										 APP_TR_FUNC ( "Could not connect to mysql server" ),
+										 APP_TR_FUNC ( "The application will now exit. Try to manually start the mysql daemon"
+												 " or troubleshoot for the problem if it persists." ), QMessageBox::Ok );
+		::exit ( ERR_DATABASE_PROBLEM );
 	}
 }
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
@@ -200,7 +200,7 @@ void Data::startUserInteface ()
 
 void Data::loadDataIntoMemory ()
 {
-    // To debug the GUI, it is possible to introduce a return here and skip all the code below
+	// To debug the GUI, it is possible to introduce a return here and skip all the code below
 	clientListItem* client_item ( nullptr );
 	jobListItem* job_item ( nullptr );
 	payListItem* pay_item ( nullptr );
@@ -215,24 +215,23 @@ void Data::loadDataIntoMemory ()
 	Payment pay;
 	Buy buy;
 	do {
-        if ( client.readRecord ( id, false ) ) {
+		if ( client.readRecord ( id, false ) ) {
 			client_item = new clientListItem;
 			client_item->setDBRecID ( id );
 			client_item->setRelation ( RLI_CLIENTITEM );
-			client_item->item_related[RLI_CLIENTPARENT] = client_item;
+			client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 			(void) client_item->loadData ();
-			client_item->update ( false );
-            client_item->addToList ( globalMainWindow->clientsList );
+			client_item->addToList ( globalMainWindow->clientsList );
 
 			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) ) {
 				do {
 					job_item = new jobListItem;
 					job_item->setDBRecID ( job.actualRecordInt ( FLD_JOB_ID ) );
 					job_item->setRelation ( RLI_CLIENTITEM );
-					job_item->item_related[RLI_CLIENTPARENT] = client_item;
-					job_item->item_related[RLI_JOBPARENT] = job_item;
-					job_item->item_related[RLI_JOBITEM] = job_item;
-                    client_item->jobs->append ( job_item );
+					job_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
+					job_item->setRelatedItem ( RLI_JOBPARENT, job_item );
+					job_item->setRelatedItem ( RLI_JOBITEM, job_item );
+					client_item->jobs->append ( job_item );
 					jobid = QString::number ( job.actualRecordInt ( FLD_JOB_ID ) );
 
 					if ( pay.readFirstRecord ( FLD_PAY_JOBID, jobid, false ) ) {
@@ -240,9 +239,9 @@ void Data::loadDataIntoMemory ()
 							pay_item = new payListItem;
 							pay_item->setDBRecID ( pay.actualRecordInt ( FLD_PAY_ID ) );
 							pay_item->setRelation ( RLI_CLIENTITEM );
-							pay_item->item_related[RLI_CLIENTPARENT] = client_item;
-							pay_item->item_related[RLI_JOBPARENT] = job_item;
-                            client_item->pays->append ( pay_item );
+							pay_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
+							pay_item->setRelatedItem ( RLI_JOBPARENT, job_item );
+							client_item->pays->append ( pay_item );
 							job_item->setPayItem ( pay_item );
 						} while ( pay.readNextRecord ( true, false ) );
 					}
@@ -252,14 +251,14 @@ void Data::loadDataIntoMemory ()
 							buy_item = new buyListItem;
 							buy_item->setDBRecID ( buy.actualRecordInt ( FLD_BUY_ID ) );
 							buy_item->setRelation ( RLI_CLIENTITEM );
-							buy_item->item_related[RLI_CLIENTPARENT] = client_item;
-							buy_item->item_related[RLI_JOBPARENT] = job_item;
-                            client_item->buys->append ( buy_item );
+							buy_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
+							buy_item->setRelatedItem ( RLI_JOBPARENT, job_item );
+							client_item->buys->append ( buy_item );
 
 							buy_item2 = new buyListItem;
 							buy_item2->setRelation ( RLI_JOBITEM );
-                            buy_item->syncSiblingWithThis ( buy_item2 );
-                            job_item->buys->append ( buy_item2 );
+							buy_item->syncSiblingWithThis ( buy_item2 );
+							job_item->buys->append ( buy_item2 );
 						} while ( buy.readNextRecord ( true, false ) );
 					}
 
@@ -267,18 +266,6 @@ void Data::loadDataIntoMemory ()
 			}
 		}
 	} while ( ++id <= lastRec );
-}
-
-const QString Data::currentClientID () const
-{
-	if ( globalMainWindow->clientsList->currentItem () ) {
-		Client* client ( static_cast<clientListItem*> ( globalMainWindow->clientsList->currentItem () )->clientRecord () );
-		if ( client ) {
-			if ( client->action () != ACTION_ADD )
-				return recStrValue ( client, FLD_CLIENT_ID );
-		}
-	}
-	return emptyString;
 }
 
 const QString Data::currentClientName () const
@@ -412,12 +399,11 @@ void Data::execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoi
 
 void Data::fillJobTypeList ( QStringList &jobList, const QString& clientid )
 {
-    Job job;
-    if ( job.readFirstRecord ( FLD_JOB_CLIENTID, clientid ) ) {
-        do {
-            jobList.append ( job.jobTypeWithDate () );
-            //insertStringListItem ( jobList, job.jobTypeWithDate () );
-        } while ( job.readNextRecord ( true ) );
-    }
+	Job job;
+	if ( job.readFirstRecord ( FLD_JOB_CLIENTID, clientid ) ) {
+		do {
+			jobList.append ( job.jobTypeWithDate () );
+		} while ( job.readNextRecord ( true ) );
+	}
 }
 //--------------------------------------EXTRAS-----------------------------------------------

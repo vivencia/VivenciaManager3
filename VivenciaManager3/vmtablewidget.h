@@ -8,11 +8,11 @@
 #include "vmnumberformats.h"
 #include "vmwidget.h"
 #include "stringrecord.h"
-#include "vmwidgets.h"
 
 #include <QTableWidget>
 
-class vmTableWidget;
+class vmTableSearchPanel;
+class vmTableFilterPanel;
 class QToolButton;
 class QVBoxLayout;
 class QGridLayout;
@@ -53,49 +53,21 @@ struct spreadRow {
 constexpr uint PURCHASES_TABLE_REG_COL ( 6 );
 static const char* const PROPERTY_TABLE_HAS_ITEM_TO_REGISTER ( "pthitr" );
 
-//------------------------------------------------SEARCH-PANEL---------------------------------------------------
-class vmTableSearchPanel : public QFrame
-{
-
-public:
-	inline virtual ~vmTableSearchPanel () {}
-	vmTableSearchPanel ( vmTableWidget* table );
-	void showPanel ();
-
-private:
-	QString m_SearchedWord;
-
-	vmTableWidget* m_table;
-	vmCheckBox* chkSearchAllTable;
-	vmLineEdit* txtSearchTerm;
-	QToolButton* btnSearchStart;
-	QToolButton* btnSearchNext;
-	QToolButton* btnSearchPrev;
-	QToolButton* btnSearchCancel;
-
-	void searchFieldsChanged ( const vmCheckBox* const = nullptr );
-	bool searchStart ();
-	bool searchNext ();
-	bool searchPrev ();
-	void searchCancel ();
-	void searchTextChanged ( const QString& text );
-	void txtSearchTerm_keyPressed ( const QKeyEvent* ke );
-};
-//------------------------------------------------SEARCH-PANEL---------------------------------------------------
-
-//------------------------------------------------VM-TABLE-WIDGET--------------------------------------------------
 class vmTableWidget : public QTableWidget, public vmWidget
 {
 
-	friend class vmTableSearchPanel;
-	friend class vmTableItem;
+friend class vmTableSearchPanel;
+friend class vmTableFilterPanel;
+friend class vmTableItem;
+friend class vmLineEdit;
 
 public:
 	explicit vmTableWidget ( QWidget* parent = nullptr ); // constructor for promoted widgets used by QtDesigner
-	vmTableWidget ( const uint rows, vmTableColumn** cols, QWidget* parent = nullptr );
+	vmTableWidget ( const uint rows, QWidget* parent = nullptr );
 	virtual ~vmTableWidget ();
 
-	void initTable ( const uint rows, vmTableColumn** cols );
+	vmTableColumn* createColumns ( const uint nCols );
+	void initTable ( const uint rows );
 
 	bool selectFound ( const vmTableItem* item );
 	bool searchStart ( const QString& searchTerm );
@@ -105,8 +77,6 @@ public:
 	bool searchNext ();
 	bool searchLast ();
 	inline const QString& searchTerm () const { return mSearchTerm; }
-    void showSearchPanel ();
-    void hideSearchPanel ();
 
 	// Convenient functions that are called by more than one module in the program. Put here to reduce code and binary size
 	static vmTableWidget* createPurchasesTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr );
@@ -117,8 +87,10 @@ public:
 	static vmTableWidget* createPayHistoryTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr,
 			const PAY_HISTORY_RECORD last_column = PHR_USE_DATE );
 
-	void insertRow ( const uint row, const uint n = 1 );
-	void removeRow ( const uint row, const uint n = 1 );
+	virtual void insertRow ( const uint row, const uint n = 1 );
+	virtual void removeRow ( const uint row, const uint n = 1 );
+	void setRowVisible ( const uint row, const bool bVisible );
+	inline uint visibleRows () const { return m_nVisibleRows; }
 
 	/* m_clearRowNotify is by default true because clearRow is to be called when the table is editable (in fact, if it's
      * called when not editable, the function will return and do nothing. Since it is editable, it should permit to
@@ -134,13 +106,14 @@ public:
 	void clearRow ( const uint row, const uint n = 1 );
 	void clear ( const bool force = false );
 	inline void appendRow () {
-		insertRow ( mPlainTable ? rowCount () : mTotalsRow ); }
+		insertRow ( mbPlainTable ? rowCount () : mTotalsRow ); }
 
 	void rowActivatedConnection ( const bool b_activate );
 	void setCellValue ( const QString& value, const uint row, const uint col );
 	void setRowData ( const spreadRow* s_row, const bool b_notify = false );
 	void rowData ( const uint row, spreadRow* ) const;
 	void cellContentChanged ( const vmTableItem* const item );
+	void cellModified ( const vmTableItem* const item );
 
 	void renameAction ( const contextMenuDefaultActions action, const QString& new_text );
 	void addContextMenuAction ( vmAction* );
@@ -149,15 +122,16 @@ public:
 	void loadFromStringTable ( const stringTable& data );
 	void makeStringTable ( stringTable& data );
 	void setCellWidget ( vmTableItem* const sheet_item );
-    void searchPanelPlacement_GridLayout ( const bool bShow );
-    void searchPanelPlacement_BoxLayout ( const bool bShow );
     void addToLayout ( QGridLayout* glayout, const uint row, const uint column );
     void addToLayout ( QVBoxLayout* vblayout, const uint strecth = 0 );
     // Call these when the table is laid out in the Designer
     bool setParentLayout ( QGridLayout* glayout );
     bool setParentLayout ( QVBoxLayout* vblayout );
+	inline void setUtilitiesPlaceLayout ( QVBoxLayout* layoutUtilities ) { mLayoutUtilities = layoutUtilities; }
 
-	inline void setIsPlainTable () { mPlainTable = true; }
+	void setIsList ();
+	void setIsPlainTable ();
+	inline bool isPlainTable () const { return mbPlainTable; }
 	inline void setKeepModificationRecords ( const bool bkeeprec ) { mbKeepModRec = bkeeprec; }
 
 	void setEditable ( const bool editable );
@@ -171,7 +145,7 @@ public:
 	inline uint colCount () const { return m_ncols; }
 	inline uint totalsRow () const { return mTotalsRow; }
 	inline void setLastUsedRow ( const int row ) {
-		if ( row > m_lastUsedRow && row < ( signed )mTotalsRow ) m_lastUsedRow = row; }
+		if ( row > m_lastUsedRow && row < rowCount () ) m_lastUsedRow = row; }
 	inline int lastUsedRow () const { return m_lastUsedRow; }
 
 	uint selectedRowsCount () const;
@@ -203,6 +177,7 @@ public:
 	void reHilightItems ( vmTableItem* next, vmTableItem* prev );
 
 	inline static QString defaultBackgroundColor () { return vmTableWidget::defaultBGColor; }
+	inline QModelIndex indexFromItem ( const vmTableItem* const item ) const { return QTableWidget::indexFromItem ( static_cast<QTableWidgetItem*>( const_cast<vmTableItem*>( item ) ) ); }
 
 	// This first callback is mandatory. Because it is called in a loop, and quite frequently,
 	// In order to avoid checking if cellChanged_func is not null in every iteration, we will assume it is not null
@@ -214,12 +189,14 @@ public:
 		monitoredCellChanged_func = func; }
 	inline void setCallbackForRowRemoved ( std::function<void ( const uint row )> func ) {
 		rowRemoved_func = func; }
-	inline void setCallbackForRowActivated ( std::function<void ( const vmTableItem* current )> func ) {
+	inline void setCallbackForRowActivated ( std::function<void ( const int row )> func ) {
 		rowActivated_func = func; }
 
+	inline void callRowActivated_func ( const int row ) const { if ( rowActivated_func ) rowActivated_func ( row ); }
+	
 protected:
-	void mousePressEvent ( QMouseEvent* e );
 	void keyPressEvent ( QKeyEvent* k );
+	inline void setVisibleRows ( const uint n ) { m_nVisibleRows = n; }
 
 private:
 	void enableOrDisableActionsForCell ( const vmTableItem* sheetItem );
@@ -246,8 +223,10 @@ private:
 	void displayContextMenuForCell ( const QPoint& pos, const vmWidget* cellWidget );
 	void cellWidgetRelevantKeyPressed ( const QKeyEvent* const ke, const vmWidget* const widget );
 
+	vmTableColumn* mCols;
 	int mTotalsRow;
 	int m_lastUsedRow;
+	uint m_nVisibleRows;
 	uint m_ncols;
 	uint mAddedItems;
 	bool mTableChanged;
@@ -259,7 +238,8 @@ private:
      * value immediately otherwise it will no be possible to know, later, what was and was not changed
      */
     bool mbKeepModRec;
-	bool mPlainTable;
+	bool mbPlainTable;
+	bool mbTableIsList;
     bool mIsPurchaseTable;
 	bool mbDoNotUpdateCompleters;
 
@@ -281,6 +261,8 @@ private:
     QLayout* mParentLayout;
 	QAction* mSeparator, *mDatesSeparator;
 	vmTableSearchPanel* m_searchPanel;
+	vmTableFilterPanel* m_filterPanel;
+	QVBoxLayout* mLayoutUtilities;
 	vmTableItem* mContextMenuCell;
 
 	static QString defaultBGColor;
@@ -289,9 +271,7 @@ private:
 	std::function<void ( const uint row, const uint col, const uint prev_row, const uint prev_col )> cellNavigation_func;
 	std::function<void ( const vmTableItem* const item )> monitoredCellChanged_func;
 	std::function<void ( const uint row )> rowRemoved_func;
-	std::function<void ( const vmTableItem* current )> rowActivated_func;
-    std::function<void ( const bool bShow )> searchPanelPlacement_func;
+	std::function<void ( const int row )> rowActivated_func;
 };
-//------------------------------------------------VM-TABLE-WIDGET--------------------------------------------------
 
 #endif // VMTABLEWIDGET_H

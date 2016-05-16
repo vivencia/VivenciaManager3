@@ -71,12 +71,16 @@ constexpr const QLatin1Char CHR_R_BRACKET ( ']' );
 constexpr const QLatin1Char CHR_TILDE ( '~' );
 
 constexpr const QLatin1String colorsStr[6] = {
-	QLatin1String ( "220, 220, 220", 13 ),		// gray
-	QLatin1String ( "255, 0, 0", 9 ),			// red
-	QLatin1String ( "255, 255, 0", 11 ),		// yellow
-	QLatin1String ( "0, 255, 0", 9 ),			// green
-	QLatin1String ( "0, 0, 255", 9 ),			// blue
-	QLatin1String ( "255, 255, 255", 13 )		// white
+	QLatin1String ( "220, 220, 220", 13 ),		// gray		- 0
+	QLatin1String ( "255, 0, 0", 9 ),			// red		- 1
+	QLatin1String ( "255, 255, 0", 11 ),		// yellow	- 2
+	QLatin1String ( "0, 255, 0", 9 ),			// green	- 3
+	QLatin1String ( "0, 0, 255", 9 ),			// blue		- 4
+	QLatin1String ( "255, 255, 255", 13 )		// white	- 5
+};
+
+constexpr const Qt::GlobalColor vmColorToQt[6] = {
+	Qt::gray, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::white
 };
 
 #ifdef TRANSITION_PERIOD
@@ -98,9 +102,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 0
-#define VERSION_REVISION 10
-constexpr const QLatin1String VERSION_APPEND ( "Too much work, too little money", 33 );
-constexpr const QLatin1String VERSION_DATE ( "2016-01-31", 10 );
+#define VERSION_REVISION 20
+constexpr const QLatin1String VERSION_APPEND ( "Too much work, not so little money", 34 );
+constexpr const QLatin1String VERSION_DATE ( "2016-03-15", 10 );
 
 static const QString PROGRAM_VERSION (
     QUOTEME(VERSION_MAJOR) + CHR_DOT +

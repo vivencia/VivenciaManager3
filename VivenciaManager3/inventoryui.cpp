@@ -140,56 +140,55 @@ void InventoryUI::insertRow ( const uint i_row )
 void InventoryUI::createTable ()
 {
 	if ( m_table != nullptr ) return;
-	vmTableColumn *fields[INVENTORY_FIELD_COUNT+1] = { nullptr };
+	m_table = new vmTableWidget;
+	vmTableColumn *fields ( m_table->createColumns ( INVENTORY_FIELD_COUNT ) );
+	m_table->setKeepModificationRecords ( false );
 
 	for ( uint i ( 0 ); i < INVENTORY_FIELD_COUNT; ++i ) {
-		fields[i] = new vmTableColumn;
-		fields[i]->label = VivenciaDB::getTableColumnLabel ( &inventory_rec->t_info, i );
+		fields[i].label = VivenciaDB::getTableColumnLabel ( &inventory_rec->t_info, i );
 
 		switch ( i ) {
 			case FLD_INVENTORY_ID:
-				fields[FLD_INVENTORY_ID]->editable = false;
-				fields[FLD_INVENTORY_ID]->width = 40;
+				fields[FLD_INVENTORY_ID].editable = false;
+				fields[FLD_INVENTORY_ID].width = 40;
 			break;
 			case FLD_INVENTORY_ITEM:
-				fields[FLD_INVENTORY_ITEM]->completer_type = vmCompleters::ITEM_NAMES;
-				fields[FLD_INVENTORY_ITEM]->width = 250;
+				fields[FLD_INVENTORY_ITEM].completer_type = vmCompleters::ITEM_NAMES;
+				fields[FLD_INVENTORY_ITEM].width = 250;
 			break;
 			case FLD_INVENTORY_BRAND:
-				fields[FLD_INVENTORY_BRAND]->completer_type = vmCompleters::BRAND;
-				fields[FLD_INVENTORY_BRAND]->text_type = vmWidget::TT_UPPERCASE;
-				fields[FLD_INVENTORY_BRAND]->width = 120;
+				fields[FLD_INVENTORY_BRAND].completer_type = vmCompleters::BRAND;
+				fields[FLD_INVENTORY_BRAND].text_type = vmWidget::TT_UPPERCASE;
+				fields[FLD_INVENTORY_BRAND].width = 120;
 			break;
 			case FLD_INVENTORY_TYPE:
-				fields[FLD_INVENTORY_TYPE]->completer_type = vmCompleters::STOCK_TYPE;
-				fields[FLD_INVENTORY_TYPE]->width = 120;
+				fields[FLD_INVENTORY_TYPE].completer_type = vmCompleters::STOCK_TYPE;
+				fields[FLD_INVENTORY_TYPE].width = 120;
 			break;
 			case FLD_INVENTORY_SUPPLIER:
-				fields[FLD_INVENTORY_SUPPLIER]->completer_type = vmCompleters::SUPPLIER;
-				fields[FLD_INVENTORY_SUPPLIER]->width = 150;
+				fields[FLD_INVENTORY_SUPPLIER].completer_type = vmCompleters::SUPPLIER;
+				fields[FLD_INVENTORY_SUPPLIER].width = 150;
 			break;
 			case FLD_INVENTORY_PLACE:
-				fields[FLD_INVENTORY_PLACE]->completer_type = vmCompleters::STOCK_PLACE;
-				fields[FLD_INVENTORY_PLACE]->width = 120;
+				fields[FLD_INVENTORY_PLACE].completer_type = vmCompleters::STOCK_PLACE;
+				fields[FLD_INVENTORY_PLACE].width = 120;
 			break;
 			case FLD_INVENTORY_UNIT:
-				fields[FLD_INVENTORY_UNIT]->width = 40;
+				fields[FLD_INVENTORY_UNIT].width = 40;
 			break;
 			case FLD_INVENTORY_PRICE:
-				fields[FLD_INVENTORY_PRICE]->text_type = vmLineEdit::TT_PRICE;
+				fields[FLD_INVENTORY_PRICE].text_type = vmLineEdit::TT_PRICE;
 			break;
 			case FLD_INVENTORY_DATE_IN:
-				fields[FLD_INVENTORY_DATE_IN]->wtype = WT_DATEEDIT;
+				fields[FLD_INVENTORY_DATE_IN].wtype = WT_DATEEDIT;
 			break;
 			case FLD_INVENTORY_QUANTITY:
-				fields[FLD_INVENTORY_QUANTITY]->text_type = vmLineEdit::TT_DOUBLE;
-				fields[FLD_INVENTORY_QUANTITY]->width = 60;
+				fields[FLD_INVENTORY_QUANTITY].text_type = vmLineEdit::TT_DOUBLE;
+				fields[FLD_INVENTORY_QUANTITY].width = 60;
 			break;
 		}
 	}
-
-	m_table = new vmTableWidget ( 30, fields, nullptr );
-	m_table->setKeepModificationRecords ( false );
+	m_table->initTable ( 30 );
 	VDB ()->populateTable ( inventory_rec, m_table );
 }
 

@@ -89,13 +89,15 @@ void spellCheck::addWord ( const QString& word, const bool b_add )
 QMenu* spellCheck::menuAvailableDicts ()
 {
     if ( mMenu == nullptr ) {
+		// QMenu::addMenu () for some reason crashes if we pass a null pointer. So, regardless of having
+		// any dictionary on the system, we must create a menu to pass to it. A bug, in my opinion.
+		mMenu = new QMenu ( APP_TR_FUNC ( "Choose spell language" ) );
+		
         PointersList<fileOps::st_fileInfo*> dics;
         fileOps::lsDir ( dics, mDicPath, QStringList () << QStringLiteral ( ".dic" ), fileOps::LS_FILES );
         if ( !dics.isEmpty () ) {
             QAction* qaction ( nullptr );
-            QString menuText;
-
-            mMenu = new QMenu ( APP_TR_FUNC ( "Choose spell language" ) );
+            QString menuText;    
             mMenu->connect ( mMenu, &QMenu::triggered, this, [&] ( QAction* action ) {
                 return menuEntrySelected ( action ); } );
             qaction = new vmAction ( -1, APP_TR_FUNC ( "Disable spell checking" ) );
@@ -103,7 +105,6 @@ QMenu* spellCheck::menuAvailableDicts ()
             mMenu->addSeparator ();
             for ( uint i ( 0 ); i < dics.count (); ++i ) {
                 menuText = dics.at ( i )->filename;
-                //menuText.truncate ( menuText.length () - 4 ); // remove .dic
                 menuText.chop ( 4 ); // remove ".dic"
                 qaction = new vmAction ( i, menuText );
                 mMenu->addAction ( qaction );
@@ -115,10 +116,8 @@ QMenu* spellCheck::menuAvailableDicts ()
 
 void spellCheck::menuEntrySelected ( const QAction* action )
 {
-    if ( action->text ().startsWith ( QStringLiteral ( "Disab" ) ) ) {
+    if ( action->text ().startsWith ( QStringLiteral ( "Disab" ) ) )
         heap_del ( mChecker );
-        mChecker = nullptr;
-    }
     else {
         setDictionaryLanguage ( action->text () );
         createDictionaryInterface ();
@@ -156,7 +155,7 @@ void spellCheck::createDictionaryInterface ()
         heap_del ( mChecker );
         QString dicAff;
         getDictionaryAff( dicAff );
-        mChecker = new Hunspell ( dicAff.toLatin1 ().constData (), mDictionary.toLatin1 ().constData () );
+        mChecker = new Hunspell ( dicAff.toUtf8 ().constData (), mDictionary.toUtf8 ().constData () );
         mCodec = QTextCodec::codecForName ( mChecker->get_dic_encoding () );
     }
 }
@@ -171,7 +170,7 @@ bool spellCheck::setUserDictionary ()
         while ( !in.atEnd () )
             unknownWordList.append ( in.readLine () );
         file.close ();
-        return ( mChecker->add_dic ( mUserDict.toLatin1 ().constData () ) == 0 );
+        return ( mChecker->add_dic ( mUserDict.toUtf8 ().constData () ) == 0 );
     }
     return false;
 }

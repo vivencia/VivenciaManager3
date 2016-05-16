@@ -1,5 +1,5 @@
 #include "purchases.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "global.h"
 #include "stringrecord.h"
 #include "completers.h"

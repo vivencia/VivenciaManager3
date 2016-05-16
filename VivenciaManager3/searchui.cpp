@@ -2,7 +2,7 @@
 #include "global.h"
 #include "vmtablewidget.h"
 #include "heapmanager.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "inventory.h"
 #include "dbsupplies.h"
 #include "dbsuppliesui.h"
@@ -11,7 +11,7 @@
 #include "companypurchasesui.h"
 #include "mainwindow.h"
 #include "vivenciadb.h"
-#include "listitems.h"
+#include "vmlistitem.h"
 #include "fast_library_functions.h"
 
 #include <QApplication>
@@ -107,7 +107,7 @@ void searchUI::parseSearchTerm ( const QString& searchTerm )
 			if ( char_pos == unsigned ( searchTerm.count () - 1 ) )
 				break;
 
-			switch ( static_cast<uint> ( searchTerm.at ( char_pos ).toLatin1 () ) ) {
+			switch ( searchTerm.at ( char_pos ).unicode () ) {
 				case 'r': // job and sched reports
 				case 'R':
 					setBit ( mSearchFields, SC_REPORT_1 );
@@ -412,36 +412,34 @@ void searchUI::createTable ()
 	mFoundList = new vmTableWidget;
 	mFoundList->setIsPlainTable ();
 
-	vmTableColumn* cols[6] = { nullptr };
+	vmTableColumn* cols ( mFoundList->createColumns ( 5 ) );
 	for ( uint i ( 0 ); i < 5; ++i ) {
-		cols[i] = new vmTableColumn;
 		switch ( i ) {
 			case COL_TYPE:
-				cols[COL_TYPE]->label = TR_FUNC ( "Type" );
-				cols[COL_TYPE]->width = 100;
+				cols[COL_TYPE].label = TR_FUNC ( "Type" );
+				cols[COL_TYPE].width = 100;
 			break;
 			case COL_CLIENT:
-				cols[COL_CLIENT]->label = TR_FUNC( "Client" );
-				cols[COL_CLIENT]->width = 130;
+				cols[COL_CLIENT].label = TR_FUNC( "Client" );
+				cols[COL_CLIENT].width = 130;
 			break;
 			case COL_JOB:
-				cols[COL_JOB]->label = TR_FUNC ( "Job" );
-				cols[COL_JOB]->width = 180;
+				cols[COL_JOB].label = TR_FUNC ( "Job" );
+				cols[COL_JOB].width = 180;
 			break;
 			case COL_DATE:
-				cols[COL_DATE]->label = TR_FUNC ( "Date" );
-				cols[COL_DATE]->wtype = WT_DATEEDIT;
+				cols[COL_DATE].label = TR_FUNC ( "Date" );
+				cols[COL_DATE].wtype = WT_DATEEDIT;
 			break;
 			case COL_FIELD:
-				cols[COL_FIELD]->label = TR_FUNC ( "Found Field(s)" );
-				cols[COL_JOB]->width = 150;
+				cols[COL_FIELD].label = TR_FUNC ( "Found Field(s)" );
+				cols[COL_JOB].width = 150;
 			break;
 		}
 	}
 
-	mFoundList->initTable ( 5, cols );
-	mFoundList->setCallbackForRowActivated ( [&] ( const vmTableItem* current ) { return
-				listRowSelected ( current ); } );
+	mFoundList->initTable ( 5 );
+	mFoundList->setCallbackForRowActivated ( [&] ( const int row ) { return listRowSelected ( row ); } );
 	mFoundList->setMinimumWidth ( 600 );
 }
 
@@ -465,12 +463,12 @@ void searchUI::btnNextClicked ()
 	}
 }
 
-void searchUI::listRowSelected ( const vmTableItem* current )
+void searchUI::listRowSelected ( const int row )
 {
 	if ( displayFunc && mPreviusItemActivated )
 		displayFunc ( mFoundItems.at ( mPreviusItemActivated->row () ), false );
 
-	vmListItem* curItem ( current ? mFoundItems.at ( current->row () ) : nullptr );
+	vmListItem* curItem ( row != -1 ? mFoundItems.at ( row ) : nullptr );
 	if ( curItem ) {
 		switch ( curItem->subType () ) {
 			case CLIENT_TABLE:
@@ -504,10 +502,10 @@ void searchUI::listRowSelected ( const vmTableItem* current )
 			default:
 			return;
 		}
-		mFoundItems.setCurrent ( current->row () );
+		mFoundItems.setCurrent ( row );
 		if ( displayFunc )
 			displayFunc ( curItem, true );
-		mPreviusItemActivated = const_cast<vmTableItem*>( current );
+		mPreviusItemActivated = static_cast<vmTableItem*>( mFoundList->currentItem () );
 	}
 }
 
@@ -546,7 +544,7 @@ void searchUI::getClientInfo ( const clientListItem* const client_item, VMList<Q
 bool searchUI::getJobInfo ( jobListItem* job_item, VMList<QString>& cellData )
 {
 	if ( job_item->loadData () ) {
-		const clientListItem* client ( static_cast<clientListItem*> ( job_item->item_related[RLI_CLIENTPARENT] ) );
+		const clientListItem* client ( static_cast<clientListItem*> ( job_item->relatedItem ( RLI_CLIENTPARENT ) ) );
 		if ( client ) {
 			cellData[COL_CLIENT - 1] = recStrValue ( client->clientRecord (), FLD_CLIENT_NAME );
 			cellData[COL_JOB - 1] = recStrValue ( job_item->dbRec (), FLD_JOB_ID ) + CHR_HYPHEN + recStrValue ( job_item->dbRec (), FLD_JOB_TYPE );
@@ -576,11 +574,11 @@ bool searchUI::getJobInfo ( jobListItem* job_item, VMList<QString>& cellData )
 bool searchUI::getPayInfo ( payListItem* pay_item, VMList<QString>& cellData )
 {
 	if ( pay_item->loadData () ) {
-		const clientListItem* client ( static_cast<clientListItem*> ( pay_item->item_related[RLI_CLIENTPARENT] ) );
+		const clientListItem* client ( static_cast<clientListItem*> ( pay_item->relatedItem ( RLI_CLIENTPARENT ) ) );
 		if ( client ) {
 			cellData[COL_CLIENT-1] = recStrValue ( client->clientRecord (), FLD_CLIENT_NAME );
 
-			jobListItem* job ( static_cast<jobListItem*>( pay_item->item_related[RLI_JOBPARENT] ) );
+			jobListItem* job ( static_cast<jobListItem*>( pay_item->relatedItem ( RLI_JOBPARENT ) ) );
 			if ( job != nullptr && job->loadData () ) {
 				cellData[COL_JOB-1] = recStrValue ( job->jobRecord (), FLD_JOB_ID ) + CHR_HYPHEN + recStrValue ( job->jobRecord (), FLD_JOB_TYPE );
 				const stringTable str_payinfo ( recStrValue ( pay_item->dbRec (), FLD_PAY_INFO ) );
@@ -605,11 +603,11 @@ bool searchUI::getPayInfo ( payListItem* pay_item, VMList<QString>& cellData )
 bool searchUI::getBuyInfo ( buyListItem* buy_item, VMList<QString>& cellData )
 {
 	if ( buy_item->loadData () ) {
-		const clientListItem* client ( static_cast<clientListItem*> ( buy_item->item_related[RLI_CLIENTPARENT] ) );
+		const clientListItem* client ( static_cast<clientListItem*> ( buy_item->relatedItem ( RLI_CLIENTPARENT ) ) );
 		if ( client ) {
 			cellData[COL_CLIENT-1] = recStrValue ( client->clientRecord (), FLD_CLIENT_NAME );
 
-			jobListItem* job ( static_cast<jobListItem*>( buy_item->item_related[RLI_JOBPARENT] ) );
+			jobListItem* job ( static_cast<jobListItem*>( buy_item->relatedItem ( RLI_JOBPARENT ) ) );
 			if ( job != nullptr && job->loadData () ) {
 				cellData[COL_JOB-1] = recStrValue ( job->jobRecord (), FLD_JOB_ID ) + CHR_HYPHEN + recStrValue ( job->jobRecord (), FLD_JOB_TYPE );
 				const stringTable str_buypayinfo ( recStrValue ( buy_item->dbRec (), FLD_BUY_PAYINFO ) );
