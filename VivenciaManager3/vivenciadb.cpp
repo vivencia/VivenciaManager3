@@ -75,7 +75,7 @@ static const QString OLD_CONN_NAME ( QStringLiteral ( "vivencia" ) );
 static const QString OLD_DB_NAME ( QLatin1String ( "Vivencia" ) );
 static const QString OLD_USER_NAME ( QLatin1String ( "root" ) );
 
-static const QString DB_DRIVER_NAME ( QStringLiteral ( "QMYSQL" ) );
+static const QString DB_DRIVER_NAME ( QStringLiteral ( "QMYSQL3" ) );
 static const QString ROOT_CONNECTION ( QStringLiteral ( "root_connection" ) );
 
 //-----------------------------------------STATIC---------------------------------------------
@@ -197,11 +197,10 @@ VivenciaDB::~VivenciaDB ()
 //-----------------------------------------READ-OPEN-LOAD-------------------------------------------
 bool VivenciaDB::openDataBase ()
 {
-	if ( !m_db.isOpen () ) {
-		//m_db = QSqlDatabase::addDatabase ( DB_DRIVER_NAME, CONNECTION_NAME );
+	if ( !m_db.isOpen () )
+	{
 		//TEST: do not provide a connection name so that this database becomes the default for the application (see docs)
 		// This is so that any QSqlQuery object will automatically use VivenciaDatabase;
-		//m_db = QSqlDatabase::addDatabase ( DB_DRIVER_NAME, CONNECTION_NAME );
 		m_db = QSqlDatabase::addDatabase ( DB_DRIVER_NAME );
 		m_db.setHostName ( HOST );
 		m_db.setPort ( PORT );
@@ -970,45 +969,46 @@ bool VivenciaDB::importFromCSV ( const QString& filename, BackupDialog* bDlg )
 bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, BackupDialog* bDlg )
 {
 	const TABLE_INFO* t_info ( nullptr );
-	switch ( table ) {
-	case GENERAL_TABLE:
-		t_info = &generalTable::t_info;
+	switch ( table )
+	{
+		case GENERAL_TABLE:
+			t_info = &generalTable::t_info;
 		break;
-	case USERS_TABLE:
-		t_info = &userRecord::t_info;
+		case USERS_TABLE:
+			t_info = &userRecord::t_info;
 		break;
-	case CLIENT_TABLE:
-		t_info = &Client::t_info;
+		case CLIENT_TABLE:
+			t_info = &Client::t_info;
 		break;
-	case JOB_TABLE:
-		t_info = &Job::t_info;
+		case JOB_TABLE:
+			t_info = &Job::t_info;
 		break;
-	case PAYMENT_TABLE:
-		t_info = &Payment::t_info;
+		case PAYMENT_TABLE:
+			t_info = &Payment::t_info;
 		break;
-	case PURCHASE_TABLE:
-		t_info = &Buy::t_info;
+		case PURCHASE_TABLE:
+			t_info = &Buy::t_info;
 		break;
-	case QUICK_PROJECT_TABLE:
-		t_info = &quickProject::t_info;
+		case QUICK_PROJECT_TABLE:
+			t_info = &quickProject::t_info;
 		break;
-	case INVENTORY_TABLE:
-		t_info = &Inventory::t_info;
+		case INVENTORY_TABLE:
+			t_info = &Inventory::t_info;
 		break;
-	case SERVICES_TABLE:
-		t_info = &servicesOffered::t_info;
+		case SERVICES_TABLE:
+			t_info = &servicesOffered::t_info;
 		break;
-	case SUPPLIER_TABLE:
-		t_info = &supplierRecord::t_info;
+		case SUPPLIER_TABLE:
+			t_info = &supplierRecord::t_info;
 		break;
-	case COMPANY_PURCHASES_TABLE:
-		t_info = &companyPurchases::t_info;
+		case COMPANY_PURCHASES_TABLE:
+			t_info = &companyPurchases::t_info;
 		break;
-	case SUPPLIES_TABLE:
-		t_info = &dbSupplies::t_info;
+		case SUPPLIES_TABLE:
+			t_info = &dbSupplies::t_info;
 		break;
-	case COMPLETER_RECORDS_TABLE:
-		t_info = &completerRecord::t_info;
+		case COMPLETER_RECORDS_TABLE:
+			t_info = &completerRecord::t_info;
 		break;
 	}
 	(void) fileOps::removeFile ( filename );

@@ -1,10 +1,10 @@
 #include "supplierrecord.h"
 #include "global.h"
+#include "vivenciadb.h"
 #include "completers.h"
 
 #ifdef TRANSITION_PERIOD
 #include "purchases.h"
-#include "vivenciadb.h"
 #endif
 
 static const double TABLE_VERSION ( 1.1 );

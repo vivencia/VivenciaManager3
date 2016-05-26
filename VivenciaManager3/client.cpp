@@ -3,6 +3,7 @@
 #include "completers.h"
 #include "configops.h"
 #include "fileops.h"
+#include "vivenciadb.h"
 
 const double TABLE_VERSION ( 2.3 );
 
@@ -17,7 +18,6 @@ static const uint CLIENTS_FIELDS_TYPE[CLIENT_FIELD_COUNT] = {
 };
 
 #ifdef TRANSITION_PERIOD
-#include "vivenciadb.h"
 #include "stringrecord.h"
 #include "vmlist.h"
 #include "generaltable.h"

@@ -289,9 +289,10 @@ vmNumber& vmNumber::fromStrInt ( const QString& integer )
 	if ( !integer.isEmpty () )
 	{
 		QChar qchr;
-		const int minus_sign_idx ( integer.indexOf ( CHR_HYPHEN ) );
-		int chr ( minus_sign_idx );
+		int chr ( integer.indexOf ( CHR_HYPHEN ) );
+		const bool b_negative ( chr != -1 );
 		const int len ( integer.length () );
+		clear ( false );
 		while ( ++chr < len )
 		{
 			qchr = integer.at ( chr );
@@ -302,6 +303,8 @@ vmNumber& vmNumber::fromStrInt ( const QString& integer )
 				nbr_part[0] += qchr.digitValue ();
 			}
 		}
+		if ( b_negative )
+			nbr_part[0] = 0 - nbr_part[0];
 		setType ( VMNT_INT );
 		setCached ( false );
 	}
@@ -333,7 +336,7 @@ vmNumber& vmNumber::fromUInt ( const unsigned int n )
 {
 	setType ( VMNT_INT );
 	setCached ( false );
-	nbr_part[0] = n;
+	nbr_part[0] = static_cast<int>( n );
 	return *this;
 }
 
@@ -705,16 +708,23 @@ vmNumber& vmNumber::dateFromDropboxDate ( const QString& date, const bool cache 
 	return *this;
 }
 
+/* Won't try to guess if the date string starts with year or day. Assume it's year 
+ * because that's what it should be anyway
+ */
 vmNumber& vmNumber::dateFromFilenameDate ( const QString& date, const bool cache )
 {
-	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toInt ();
-	nbr_upart[VM_IDX_MONTH] = date.mid ( 4, 2 ).toInt ();
-	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
-	setType ( VMNT_DATE );
-	nbr_upart[VM_IDX_STRFORMAT] = VDF_FILE_DATE;
-	if ( cache ) {
-		setCached ( true );
-		cached_str = date;
+	if ( date.length () >= 6 )
+	{
+		const int year_end_idx ( date.length () > 6 ? 4 : 2 );
+		nbr_upart[VM_IDX_YEAR] = date.left ( year_end_idx ).toInt ();
+		nbr_upart[VM_IDX_MONTH] = date.mid ( year_end_idx, 2 ).toInt ();
+		nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
+		setType ( VMNT_DATE );
+		nbr_upart[VM_IDX_STRFORMAT] = VDF_FILE_DATE;
+		if ( cache ) {
+			setCached ( true );
+			cached_str = date;
+		}
 	}
 	return *this;
 }
@@ -857,6 +867,7 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 				case VDF_LONG_DATE:
 					cached_str = strDay + QLatin1String ( " de " ) + QLatin1String ( MONTHS[nbr_upart[VM_IDX_MONTH]] ) +
 							 QLatin1String ( " de " ) + strYear;
+				break;
 				case VDF_DROPBOX_DATE:
 					cached_str = strYear + CHR_HYPHEN + strMonth + CHR_HYPHEN + strDay;
 				break;
@@ -1328,7 +1339,7 @@ static void numberToTime ( const unsigned int n, int &hours, unsigned int &minut
 		minutes = 0;
 	}
 	if ( abs_hour > 9999 )
-		abs_hour = 9999;
+		hours = 9999;
 	else if ( hours < 0 )
 		hours = 0 - abs_hour;
 	else

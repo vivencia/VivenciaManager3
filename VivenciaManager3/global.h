@@ -103,8 +103,8 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 0
 #define VERSION_REVISION 20
-constexpr const QLatin1String VERSION_APPEND ( "Too much work, not so little money", 34 );
-constexpr const QLatin1String VERSION_DATE ( "2016-03-15", 10 );
+constexpr const QLatin1String VERSION_APPEND ( "On the eve of the Festival", 26 );
+constexpr const QLatin1String VERSION_DATE ( "2016-05-26", 10 );
 
 static const QString PROGRAM_VERSION (
     QUOTEME(VERSION_MAJOR) + CHR_DOT +
@@ -125,18 +125,18 @@ static const QString STR_MYSQL ( QStringLiteral ( "mysql" ) );
 static const QString SYSTEMD ( QStringLiteral ( "systemd" ) );
 static const QString UPSTART ( QStringLiteral ( "upstart" ) );
 
-#ifdef TRANSITION_PERIOD
+//#ifdef TRANSITION_PERIOD
 static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase3" ) );
 static const QString USER_NAME ( QStringLiteral ( "vivenciamngr3" ) );
 static const QString PASSWORD ( QStringLiteral ( "fenixfenix3" ) ) ;
 
-extern int getNewClientID ( const int old_id );
-extern int getOldClientID ( const int new_id );
-#else
-static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase" ) );
-static const QString USER_NAME ( QStringLiteral ( "vivenciamngr" ) );
-static const QString PASSWORD ( QStringLiteral ( "fenixfenix" ) );
-#endif
+//extern int getNewClientID ( const int old_id );
+//extern int getOldClientID ( const int new_id );
+//#else
+//static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase" ) );
+//static const QString USER_NAME ( QStringLiteral ( "vivenciamngr" ) );
+//static const QString PASSWORD ( QStringLiteral ( "fenixfenix" ) );
+//#endif
 
 class MainWindow;
 extern MainWindow* globalMainWindow;

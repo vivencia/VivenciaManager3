@@ -119,15 +119,36 @@ inline static QString getNameFromProjectFile ( const QString& filename )
 	return filename.left ( filename.indexOf ( CHR_DOT, 1 ) );
 }
 
-//TODO - make this more flexible. Examine each character looking for string of digits
 static QString getDateFromProjectFile ( const QString& filename )
 {
-	const int idx ( filename.indexOf ( CHR_HYPHEN, 1 ) );
-	if ( idx != -1 )
+	bool b_digit ( false );
+	QString strDate;
+	QString::const_iterator itr ( filename.constBegin () );
+	const QString::const_iterator itr_end ( filename.constEnd () );
+	for ( ; itr != itr_end; ++itr )
 	{
-		vmNumber date;
-		date.fromStrDate ( filename.mid ( idx + 1, filename.indexOf ( CHR_HYPHEN, idx + 1 ) - idx ) );
-		return date.toString ();
+		if ( b_digit )
+		{
+			b_digit = static_cast<QChar> ( *itr ).isDigit ();
+			if ( b_digit )
+				strDate += static_cast<QChar> ( *itr );
+		}
+		else
+		{
+			b_digit = static_cast<QChar> ( *itr ).isDigit ();
+			if ( !b_digit )
+			{
+				if ( strDate.length () < 4 )
+					strDate.clear ();
+			}
+			else
+				strDate += static_cast<QChar> ( *itr );
+		}
+	}
+	if ( strDate.length () >= 4 )
+	{
+		const vmNumber date ( strDate, VMNT_DATE );
+		return date.toDate ( vmNumber::VDF_HUMAN_DATE );
 	}
 	return emptyString;
 }
@@ -136,7 +157,7 @@ static QString getDateFromProjectDir ( const QString& filename )
 {
 	vmNumber date;
 	date.fromStrDate ( filename.left ( filename.indexOf ( CHR_SPACE ) ) );
-	return date.toDate ( vmNumber::VDF_LONG_DATE );
+	return date.toDate ( vmNumber::VDF_HUMAN_DATE );
 }
 
 static QString getNameFromEstimateFile ( const QString& filename )
@@ -159,7 +180,7 @@ static QString getDateFromEstimateFile ( const QString& filename )
 		const QString datestr ( filename.mid (
 									estimateFilePrefix.count (), idx - estimateFilePrefix.count () - 1 ) );
 		vmNumber date ( datestr, VMNT_DATE, vmNumber::VDF_FILE_DATE );
-		return date.toDate( vmNumber::VDF_LONG_DATE );
+		return date.toDate( vmNumber::VDF_HUMAN_DATE );
 	}
 	return emptyString;
 }
@@ -751,7 +772,8 @@ void estimateDlg::projectActions ( QAction *action )
 		}
 	}
 	msgTitle += bProceed ? TR_FUNC ( "Succeeded!" ) : TR_FUNC ( "Failed!" );
-	if ( msgBody[0].contains ( CHR_PERCENT ) ) {
+	if ( msgBody[0].contains ( CHR_PERCENT ) )
+	{
 		if ( bProceed )
 			msgBody[1] = msgBody[1].arg ( strProjectPath );
 		else
@@ -765,7 +787,8 @@ jobListItem* estimateDlg::findJobByPath ( QTreeWidgetItem* const item )
 	jobListItem* jobItem ( nullptr );
 	const QString clientID ( Client::clientID ( item->text ( 0 ) ) );
 	clientListItem* clientItem ( globalMainWindow->getClientItem ( clientID.toInt () ) );
-	if ( clientItem ) {
+	if ( clientItem )
+	{
 		const QString strPath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () );
 		const QString strQuery ( QStringLiteral ( "SELECT ID FROM JOBS WHERE CLIENTID=%1 AND PROJECTPATH=%2" ) );
 		QSqlQuery queryRes;
@@ -777,7 +800,8 @@ jobListItem* estimateDlg::findJobByPath ( QTreeWidgetItem* const item )
 
 void estimateDlg::changeJobData ( jobListItem* const jobItem, const QString& strProjectPath, const QString& strProjectID )
 {
-	if ( jobItem != nullptr ) {
+	if ( jobItem != nullptr ) 
+	{
 		jobItem->setAction ( ACTION_EDIT, false );
 		Job* job ( jobItem->jobRecord () );
 		setRecValue ( job, FLD_JOB_PROJECT_PATH, strProjectPath );
@@ -814,7 +838,8 @@ void estimateDlg::estimateActions ( QAction* action )
 			PointersList<fileOps::st_fileInfo*> files;
 			fileOps::st_fileInfo* f_info ( nullptr );
 			
-			if ( fileOps::exists ( basePath ).isOff () ) {
+			if ( fileOps::exists ( basePath ).isOff () )
+			{
 				if ( !fileOps::createDir ( basePath ).isOn () ) //maybe first estimate for user, create dir
 					return;
 				f_info = new fileOps::st_fileInfo;
@@ -830,7 +855,8 @@ void estimateDlg::estimateActions ( QAction* action )
 				estimateName.prepend ( nonClientEstimatesPrefix );
 
 			f_info = new fileOps::st_fileInfo;
-			if ( static_cast<vmAction*> ( action )->id () == EA_NEW_VMR ) {
+			if ( static_cast<vmAction*> ( action )->id () == EA_NEW_VMR )
+			{
 				f_info->filename = estimateName + CONFIG ()->projectReportExtension ();
 				f_info->fullpath = basePath + f_info->filename;
 
@@ -838,7 +864,8 @@ void estimateDlg::estimateActions ( QAction* action )
 					false, f_info->fullpath, false );
 				files.append ( f_info );
 			}
-			else {
+			else
+			{
 				f_info->filename = estimateName + CONFIG ()->projectDocumentExtension ();
 				f_info->fullpath = basePath + f_info->filename;
 
@@ -868,7 +895,8 @@ void estimateDlg::reportActions ( QAction* action )
 						   );
 	if ( static_cast<vmAction*> ( action )->id () == RA_REMOVE )
 			removeFiles ( item, true, true );
-	else {
+	else
+	{
 		QString reportName;
 		vmNotify::inputBox ( reportName, this, TR_FUNC ( "Please write the report's name" ),
 						 TR_FUNC ( "Name: " ) );
@@ -878,7 +906,8 @@ void estimateDlg::reportActions ( QAction* action )
 		PointersList<fileOps::st_fileInfo*> files;
 		fileOps::st_fileInfo* f_info ( nullptr );
 		
-		if ( fileOps::exists ( basePath ).isOff () ) {
+		if ( fileOps::exists ( basePath ).isOff () )
+		{
 			if ( !fileOps::createDir ( basePath ).isOn () ) //maybe first report for user, create dir
 				return;
 			f_info = new fileOps::st_fileInfo;
@@ -894,20 +923,23 @@ void estimateDlg::reportActions ( QAction* action )
 			reportName.prepend ( nonClientReportsPrefix );
 
 		f_info = new fileOps::st_fileInfo;
-		if ( static_cast<vmAction*> ( action )->id () == RA_NEW_VMR ) {
+		if ( static_cast<vmAction*> ( action )->id () == RA_NEW_VMR )
+		{
 			f_info->filename = reportName + CONFIG ()->projectReportExtension ();
 			f_info->fullpath = basePath + f_info->filename;
 			EDITOR ()->startNewReport ( true )->createJobReport (
 				Client::clientID ( clientName ), false , f_info->fullpath, false );
 			files.append ( f_info );
 		}
-		else {
+		else
+		{
 			f_info->filename = reportName + CONFIG ()->projectDocumentExtension ();
 			f_info->fullpath = basePath + f_info->filename;
 			if ( fileOps::copyFile ( f_info->fullpath, CONFIG ()->projectDocumentFile () ) )
 				files.append ( f_info );
 
-			if ( static_cast<vmAction*> ( action )->id () == RA_NEW_EXTERNAL_COMPLETE ) {
+			if ( static_cast<vmAction*> ( action )->id () == RA_NEW_EXTERNAL_COMPLETE )
+			{
 				f_info = new fileOps::st_fileInfo;
 				f_info->filename = reportName + CONFIG ()->projectSpreadSheetExtension ();
 				f_info->fullpath = basePath + f_info->filename;
@@ -925,24 +957,32 @@ void estimateDlg::removeFiles ( QTreeWidgetItem* item, const bool bSingleFile, c
 		return;
 
 	const QString fileName ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () );
-	if ( bSingleFile ) {
-		if ( fileOps::removeFile ( fileName ).isOn () ) {
+	if ( bSingleFile )
+	{
+		if ( fileOps::removeFile ( fileName ).isOn () )
+		{
 			if ( item->parent () )
 				item->parent ()->removeChild ( item );
 			delete item;
 		}
 	}
-	else {
+	else
+	{
 		const QString baseFileName ( fileName.left ( fileName.lastIndexOf ( CHR_DOT ) + 1 ) );
 		QTreeWidgetItem* parentItem ( item->parent () );
 		QTreeWidgetItem* child ( nullptr );
 		uint i ( 0 );
-		if ( parentItem->childCount () > 0 ) {
-			do {
+		if ( parentItem->childCount () > 0 )
+		{
+			do
+			{
 				child = parentItem->child ( i );
-				if ( child ) {
-					if ( child->text ( 0 ).startsWith ( baseFileName, Qt::CaseInsensitive ) ) {
-						if ( fileOps::removeFile ( child->text ( 0 ) ).isOn () ) {
+				if ( child )
+				{
+					if ( child->text ( 0 ).startsWith ( baseFileName, Qt::CaseInsensitive ) )
+					{
+						if ( fileOps::removeFile ( child->text ( 0 ) ).isOn () )
+						{
 							parentItem->removeChild ( child );
 							delete child;
 						}
@@ -958,9 +998,11 @@ bool estimateDlg::removeDir ( QTreeWidgetItem *item, const bool bAsk )
 {
 	if ( bAsk ) {
 		if ( VM_NOTIFY ()->questionBox ( TR_FUNC ( "Question" ), TR_FUNC ( "Are you sure you want to delete project " )
-					+ item->text ( 0 ) + TR_FUNC ( " and all its contents?" ) ) ) {
+					+ item->text ( 0 ) + TR_FUNC ( " and all its contents?" ) ) )
+		{
 
-			if ( fileOps::rmDir ( item->data ( 0, ROLE_ITEM_FILENAME ).toString (), QStringList (), fileOps::LS_ALL, -1 ) ) {
+			if ( fileOps::rmDir ( item->data ( 0, ROLE_ITEM_FILENAME ).toString (), QStringList (), fileOps::LS_ALL, -1 ) )
+			{
 				VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Success" ), TR_FUNC ( "Project " ) + item->text ( 0 ) + tr (" is now removed" ) );
 				item->parent ()->removeChild ( item );
 				delete item;
@@ -973,13 +1015,15 @@ bool estimateDlg::removeDir ( QTreeWidgetItem *item, const bool bAsk )
 
 bool estimateDlg::renameDir ( QTreeWidgetItem *item, QString &strNewName )
 {
-	if ( strNewName.isEmpty () ) {
+	if ( strNewName.isEmpty () )
+	{
 		if ( !vmNotify::inputBox ( strNewName, this, TR_FUNC ( "Rename Project" ), TR_FUNC ( "Enter new name for the project" ) ) )
 			return false;
 	}
 	QString strNewFilePath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () );
 	if ( fileOps::rename ( item->data ( 0, ROLE_ITEM_FILENAME ).toString (),
-						   strNewFilePath.replace ( item->text ( 0 ), strNewName ) ).isOn () ) {
+						   strNewFilePath.replace ( item->text ( 0 ), strNewName ) ).isOn () )
+	{
 		item->setText ( 0, strNewName );
 		item->setData ( 0, ROLE_ITEM_FILENAME, strNewFilePath );
 		return true;

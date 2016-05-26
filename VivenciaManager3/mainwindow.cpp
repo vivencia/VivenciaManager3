@@ -2224,11 +2224,11 @@ void MainWindow::loadAllOverduesList ()
 
 void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 {
-	const uint row ( item->row () );
+	const uint row ( static_cast<uint>( item->row () ) );
 	if ( row == ui->tablePayments->totalsRow () )
 		return;
 
-	const uint col ( item->column () );
+	const uint col ( static_cast<uint>( item->column () ) );
 	const bool b_paid ( ui->tablePayments->sheetItem ( row, PHR_PAID )->text () == CHR_ONE );
 	bool bSetUseDate ( false );
 
@@ -2253,7 +2253,7 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 			if ( b_paid && !ui->tablePayments->sheetItem ( row, PHR_DATE )->cellIsAltered () )
 				ui->tablePayments->sheetItem ( row, PHR_DATE )->setDate ( vmNumber::currentDate );
 
-			input_ok = ( b_paid == ui->tablePayments->sheetItem ( row, PHR_VALUE )->number ().isPrice () );
+			input_ok = ( !b_paid == ui->tablePayments->sheetItem ( row, PHR_VALUE )->number ().isNull () );
 			mPayCurItem->setFieldInputStatus ( PHR_VALUE + INFO_TABLE_COLUMNS_OFFSET, input_ok.isOn (), ui->tablePayments->sheetItem ( row, PHR_VALUE ) );
 
 			if ( col == PHR_PAID ) {

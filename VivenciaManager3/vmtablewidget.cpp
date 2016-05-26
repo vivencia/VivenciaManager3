@@ -167,6 +167,7 @@ void vmTableWidget::initTable ( const uint rows )
 				break;
 				case WT_LINEEDIT_WITH_BUTTON:
 					colWidth = 150;
+				break;
 				default:
 					colWidth = 100;
 				break;
@@ -403,6 +404,7 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 				cols[PHR_PAID].label = tr ( "Paid?" );
 				cols[PHR_PAID].wtype = WT_CHECKBOX;
 				cols[PHR_PAID].width = 50;
+				cols[PHR_PAID].default_value = CHR_ZERO;
 			break;
 			case PHR_METHOD:
 				cols[PHR_METHOD].label = tr ( "Method" );
@@ -440,14 +442,16 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 
 void vmTableWidget::insertRow ( const uint row, const uint n )
 {
-	if ( row <= (unsigned) rowCount () )
+	if ( row <= static_cast<uint> ( rowCount () ) )
 	{
 		int i_row ( 0 );
 		m_nVisibleRows += n;
 		uint i_col ( 0 );
 		QString new_formula;
 		vmTableItem* sheet_item ( nullptr ), *new_SheetItem ( nullptr );
-		for ( ; i_row < (signed) n; ++i_row )
+		
+		mTotalsRow += n;
+		for ( ; i_row < static_cast<int>( n ); ++i_row )
 		{ // Insert new rows accordingly, i.e., compute their formulas, if they have
 			QTableWidget::insertRow ( row + i_row );
 			for ( i_col = 0; i_col < colCount (); ++i_col )
@@ -471,7 +475,6 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 		if ( !mbPlainTable ) {
 			// update all rows after the inserted ones, so that their formula reflects the row changes
-			mTotalsRow += n;
 			for ( i_row = row + n; i_row < mTotalsRow; ++i_row ) {
 				for ( i_col = 0; i_col < colCount (); ++i_col ) {
 					sheet_item = sheetItem ( i_row, i_col );
@@ -666,13 +669,16 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 	if ( mbKeepModRec ) {
 		const uint row ( item->row () );
 		uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
-		for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i ) {
-			if ( unsigned ( row ) == modifiedRows.at ( i ) ) {
+		for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i )
+		{
+			if ( unsigned ( row ) == modifiedRows.at ( i ) )
+			{
 				if ( cellChanged_func )
 					cellChanged_func ( item );
 				return;
 			}
-			else if ( unsigned ( row ) > modifiedRows.at ( i ) ) {
+			else if ( unsigned ( row ) > modifiedRows.at ( i ) )
+			{
 				break;
 			}
 			else
@@ -680,7 +686,8 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 		}
 		modifiedRows.insert ( insert_pos, unsigned ( row ) );
 	}
-	if ( mIsPurchaseTable ) {
+	if ( mIsPurchaseTable )
+	{
 		if ( item->column () == PURCHASES_TABLE_REG_COL )
 			setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
 	}
@@ -690,7 +697,8 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 
 void vmTableWidget::cellModified ( const vmTableItem* const item )
 {
-	if ( item ) {
+	if ( item )
+	{
 		if ( cellChanged_func != nullptr )
 			cellChanged_func ( item );
 	}
@@ -700,7 +708,8 @@ void vmTableWidget::cellModified ( const vmTableItem* const item )
 void vmTableWidget::renameAction ( const contextMenuDefaultActions action, const QString& new_text )
 {
 	if ( new_text.isEmpty () ) return;
-	switch ( action ) {
+	switch ( action )
+	{
 		case UNDO:
 			mUndoAction->setLabel ( new_text );
 		break;
@@ -747,7 +756,8 @@ void vmTableWidget::removeContextMenuAction ( vmAction* action )
 void vmTableWidget::loadFromStringTable ( const stringTable& data )
 {
 	clear ( true );
-	if ( data.isOK () ) {
+	if ( data.isOK () )
+	{
 		spreadRow* s_row ( new spreadRow );
 		uint i_col ( 0 );
 
@@ -755,11 +765,15 @@ void vmTableWidget::loadFromStringTable ( const stringTable& data )
 			s_row->column[i_col] = i_col;
 
 		const stringRecord* rec ( &data.first () );
-		if ( rec->isOK () ) {
+		if ( rec->isOK () )
+		{
 			s_row->row = 0;
-			do {
-				if ( rec->first () ) {
-					for ( i_col = 0; i_col < colCount (); ++i_col ) {
+			do
+			{
+				if ( rec->first () )
+				{
+					for ( i_col = 0; i_col < colCount (); ++i_col )
+					{
 						s_row->field_value[i_col] = rec->curValue ();
 						if ( !rec->next () )
 							break;
@@ -779,7 +793,8 @@ void vmTableWidget::makeStringTable ( stringTable& data )
 {
 	stringRecord rec;
 	uint i_col ( 0 );
-	for ( uint i_row ( 0 ); ( signed )i_row <= lastUsedRow (); ++i_row ) {
+	for ( uint i_row ( 0 ); ( signed )i_row <= lastUsedRow (); ++i_row )
+	{
 		for ( i_col = 0; i_col < colCount (); ++i_col )
 			rec.fastAppendValue ( sheetItem ( i_row, i_col )->text () );
 		data.fastAppendRecord ( rec );
@@ -791,14 +806,16 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 {
 	vmWidget* widget ( nullptr );
 	// read only columns do not connect signals, do not need completers
-	const bool is_read_only ( isBitSet ( readOnlyColumnsMask, sheet_item->column () ) || sheet_item->row () == (signed) totalsRow () );
+	const bool bCellReadOnly ( isBitSet ( readOnlyColumnsMask, sheet_item->column () ) || sheet_item->row () == (signed) totalsRow () );
 
-	switch ( sheet_item->widgetType () ) {
+	switch ( sheet_item->widgetType () )
+	{
 		case WT_LINEEDIT:
 			widget = new vmLineEdit;
 			static_cast<vmLineEdit*> ( widget )->setFrame ( false );
 			static_cast<vmLineEdit*> ( widget )->setTextType ( sheet_item->textType () );
-			if ( !is_read_only ) {
+			if ( !bCellReadOnly )
+			{
 				APP_COMPLETERS ()->setCompleter ( static_cast<vmLineEdit*>( widget ), sheet_item->completerType () );
 				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 					return textWidgetChanged ( sender ); } );
@@ -808,7 +825,8 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 			widget = new vmLineEditWithButton;
 			static_cast<vmLineEditWithButton*> ( widget )->setButtonType ( sheet_item->buttonType () );
 			static_cast<vmLineEditWithButton*> ( widget )->lineControl ()->setTextType ( sheet_item->textType () );
-			if ( !is_read_only ) {
+			if ( !bCellReadOnly )
+			{
 				APP_COMPLETERS ()->setCompleter ( static_cast<vmLineEditWithButton*> ( widget )->lineControl (), sheet_item->completerType () );
 					static_cast<vmLineEditWithButton*> ( widget )->lineControl ()->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 						return textWidgetChanged ( sender ); } );
@@ -817,25 +835,25 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 		case WT_CHECKBOX: // so far, only check box has a different default value, depending on the table to which they belong
 			widget = new vmCheckBox;
 			static_cast<vmCheckBox*> ( widget )->setChecked ( sheet_item->defaultValue () == CHR_ONE );
-			if ( !is_read_only )
+			if ( !bCellReadOnly )
 				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 					return checkBoxToggled ( sender ); } );
 		break;
 		case WT_DATEEDIT:
 			widget = new vmDateEdit;
-			if ( !is_read_only )
+			if ( !bCellReadOnly )
 				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 					return dateWidgetChanged ( sender ); } );
 		break;
 		case WT_TIMEEDIT:
 			widget = new vmTimeEdit;
-			if ( !is_read_only )
+			if ( !bCellReadOnly )
 				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 					return timeWidgetChanged ( sender ); } );
 		break;
 		case WT_COMBO:
 			widget = new vmComboBox;
-			if ( !is_read_only )
+			if ( !bCellReadOnly )
 				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 					return textWidgetChanged ( sender ); } );
 		break;
@@ -909,23 +927,29 @@ void vmTableWidget::setEditable ( const bool editable )
 
 	int i_row ( 0 );
 	uint i_col ( 0 );
-	for ( ; i_row < mTotalsRow; ++i_row ) {
-		for ( i_col = 0; i_col < colCount (); ++i_col ) {
+	for ( ; i_row < mTotalsRow; ++i_row )
+	{
+		for ( i_col = 0; i_col < colCount (); ++i_col )
+		{
 			if ( !isBitSet ( readOnlyColumnsMask, i_col ) )
 				sheetItem ( i_row, i_col )->setEditable ( editable );
 		}
 	}
 
-	if ( editable ) {
-		if ( isPlainTable () ) {
+	if ( editable )
+	{
+		if ( isPlainTable () )
+		{
 			connect ( this, &QTableWidget::itemChanged, this, [&] ( QTableWidgetItem *item ) { 
 					return ( cellModified ( static_cast<vmTableItem*>( item ) ) ); } );
 		}
-		if ( cellNavigation_func != nullptr ) {
+		if ( cellNavigation_func != nullptr )
+		{
 			connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
 				return cellNavigation_func ( static_cast<uint> ( row ), static_cast<uint> ( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } );
 		}
-		if ( mIsPurchaseTable ) {
+		if ( mIsPurchaseTable )
+		{
 			connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
 					  static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
 					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
@@ -946,9 +970,12 @@ void vmTableWidget::setEditable ( const bool editable )
 uint vmTableWidget::selectedRowsCount () const
 {
 	uint n ( 0 );
-	for ( uint i_row ( 0 ); ( signed )i_row <= m_lastUsedRow; ++i_row ) {
-		for ( uint i_col = 0; i_col < ( colCount () - 1 ); ++i_col ) {
-			if ( item ( i_row, i_col )->isSelected () ) {
+	for ( uint i_row ( 0 ); ( signed )i_row <= m_lastUsedRow; ++i_row )
+	{
+		for ( uint i_col ( 0 ); i_col < ( colCount () - 1 ); ++i_col )
+		{
+			if ( item ( i_row, i_col )->isSelected () )
+			{
 				++n;
 				break;
 			}
@@ -959,8 +986,10 @@ uint vmTableWidget::selectedRowsCount () const
 
 bool vmTableWidget::isRowEmpty ( const uint row ) const
 {
-	for ( uint i_col ( 0 ); i_col < colCount (); ++i_col ) {
-		if ( sheetItem ( row, i_col )->text () != sheetItem ( row, i_col )->defaultValue () ) { // cell is not empty
+	for ( uint i_col ( 0 ); i_col < colCount (); ++i_col )
+	{
+		if ( sheetItem ( row, i_col )->text () != sheetItem ( row, i_col )->defaultValue () )
+		{ // cell is not empty
 			//if ( !isBitSet ( readOnlyColumnsMask, i_col ) ) { // and it is a cell that can be emptied
 			return false; // ergo, row is not clear
 			//}
@@ -974,7 +1003,8 @@ but more than often we need the data from the row and we use a single selected i
 */
 bool vmTableWidget::isRowSelected ( const uint row ) const
 {
-	for ( uint i_col = 0; i_col < colCount (); ++i_col ) {
+	for ( uint i_col = 0; i_col < colCount (); ++i_col )
+	{
 		if ( sheetItem ( row, i_col )->isSelected () )
 			return true;
 	}

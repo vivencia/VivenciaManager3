@@ -84,7 +84,7 @@ public:
 		return address.contains ( QLatin1Char ( '@' ) ) && address.contains ( CHR_DOT );
 	}
 
-	constexpr static int vmColorIndex ( const VMColors vmcolor )
+	static int vmColorIndex ( const VMColors vmcolor )
 	{
 		int idx ( -1 );
 		switch ( vmcolor ) {

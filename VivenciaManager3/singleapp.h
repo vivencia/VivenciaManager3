@@ -7,7 +7,7 @@
 class SingleApp
 {
 public:
-	inline SingleApp( const QString& app )
+	inline SingleApp ( const QString& app )
 		: m_QSharedMem ( new QSharedMemory ( app ) ), m_AlreadyRunning ( false )
 		{
 			if ( m_QSharedMem->create ( 1 ) == false )

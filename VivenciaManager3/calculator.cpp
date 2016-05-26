@@ -418,7 +418,7 @@ void Calculator::compile ( const Tokens &tokens ) const
 						const Token par = syntaxStack.top ( 1 );
 						//Token id = syntaxStack.top ( 2 );
 						if ( !arg.isOperator () && par.asOperator () == Token::LeftPar ) {
-							ruleFound = true;
+							//ruleFound = true;
 							argStack.push ( argCount );
 							argCount = 1;
 							break;

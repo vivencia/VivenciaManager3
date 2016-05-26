@@ -464,7 +464,7 @@ bool fileOps::rmDir ( const QString& baseDir,
 					::remove ( pathname.toUtf8 () );
 				else {
 					if ( follow_into != 0 )
-                        ok = rmDir ( pathname, name_filters, filter, follow_into == -1 ? -1 : follow_into - 1 );
+                        (void) rmDir ( pathname, name_filters, filter, follow_into == -1 ? -1 : follow_into - 1 );
                     ok = ( ::rmdir ( pathname.toUtf8 () ) == 0 );
 				}
 			}

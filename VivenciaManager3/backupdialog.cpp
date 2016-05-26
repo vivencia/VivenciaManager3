@@ -278,12 +278,12 @@ bool BackupDialog::doExport (const QString& prefix, const QString& path, const b
 
 	initProgressBar ( unsigned ( ui->tablesList->count () - 1 ) * 5 );
 
-	for ( uint i ( 0 ); i <  unsigned ( ui->tablesList->count () - 1 ); ++i ) {
+	for ( int i ( 0 ); i <  ui->tablesList->count () - 1; ++i ) {
 		if ( ui->tablesList->item ( i )->checkState () == Qt::Checked ) {
 			filepath = path + CHR_F_SLASH + prefix + ui->tablesList->item ( i )->text ();
 			if ( checkThatFileDoesNotExist ( filepath, true ) ) {
 				BackupDialog::incrementProgress ( this ); //1
-				ok = VDB ()->exportToCSV ( 2 << ( i-2 ), filepath, this );
+				ok = VDB ()->exportToCSV ( ( 2<<i ), filepath, this );
 				if ( ok )
 					BackupDialog::addToRestoreList ( filepath, this );
 			}

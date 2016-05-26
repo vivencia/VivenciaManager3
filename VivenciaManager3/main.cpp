@@ -34,13 +34,14 @@ int main ( int argc, char *argv[] )
 	return 0;*/
 	
 	/*SingleApp sapp ( PROGRAM_NAME );
-	if ( sapp.IsAlreadyRunning () ) {
+	if ( sapp.IsAlreadyRunning () )
+	{
 		qDebug () << PROGRAM_NAME << QLatin1String ( " is already running. Only one instance at a time allowed. Exiting..." );
 		return 1;
 	}*/
 	
 	QApplication app ( argc, argv );
-	app.setStyle ( QStyleFactory::create ( QLatin1String ( "GTK+ Style" ) ) );
+	app.setStyle ( QStyleFactory::create ( QStringLiteral ( "GTK+ Style" ) ) );
 	app.setPalette ( app.style ()->standardPalette () );
 
 #ifdef TRANSLATION_ENABLED
