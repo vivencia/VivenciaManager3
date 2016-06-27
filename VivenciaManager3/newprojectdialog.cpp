@@ -12,6 +12,10 @@
 newProjectDialog::newProjectDialog ( QWidget *parent )
 	: QDialog ( parent, Qt::Tool ), mJobItem ( nullptr ), bresult ( false )
 {
+	QLabel* lblClient ( new QLabel ( TR_FUNC ( "Client:" ) ) );
+	cboClients = new vmComboBox;
+	cboClients->setCallbackForIndexChanged ( [&] ( const int idx ) { return loadJobsList ( Client::clientID ( cboClients->itemText ( idx ) ) ); } );
+	
 	QLabel* lblJobType ( new QLabel ( TR_FUNC ( "Select target job ..." ) ) );
 	lstJobTypes = new vmListWidget;
 	lstJobTypes->setCallbackForCurrentItemChanged ( [&] ( vmListItem* current ) {
@@ -39,6 +43,8 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 	QVBoxLayout* vbLayout ( new QVBoxLayout );
 	vbLayout->setMargin ( 2 );
 	vbLayout->setSpacing ( 2 );
+	vbLayout->addWidget ( lblClient );
+	vbLayout->addWidget ( cboClients, 2 );
 	vbLayout->addWidget( lblJobType );
 	vbLayout->addWidget( lstJobTypes, 2 );
 
@@ -67,7 +73,25 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 
 newProjectDialog::~newProjectDialog () {}
 
-void newProjectDialog::showDialog ( const QString& clientid )
+void newProjectDialog::showDialog ( const QString& clientname, const bool b_allow_other_client )
+{
+	if ( cboClients->count () == 0 )
+	{
+		QStringList client_names;
+		Data::fillClientsNamesList ( client_names );
+		cboClients->addItems ( client_names );
+	}
+	if ( !clientname.isEmpty () ) {
+		cboClients->setCurrentIndex ( cboClients->findText ( clientname ) );
+		cboClients->setCurrentText ( clientname );
+		loadJobsList ( Client::clientID ( clientname ) );
+	}
+	cboClients->setEditable ( b_allow_other_client );
+	cboClients->setIgnoreChanges ( !b_allow_other_client );
+	exec ();
+}
+
+void newProjectDialog::loadJobsList ( const int clientid )
 {
 	lstJobTypes->setIgnoreChanges ( true );
 	lstJobTypes->clear ();
@@ -76,10 +100,10 @@ void newProjectDialog::showDialog ( const QString& clientid )
 	mProjectPath.clear ();
 
 	QStringList jobTypesList;
-	Data::fillJobTypeList ( jobTypesList, clientid );
+	Data::fillJobTypeList ( jobTypesList, QString::number ( clientid ) );
 
 	QString jobid;
-	mClientItem = globalMainWindow->getClientItem ( clientid.toInt () );
+	mClientItem = globalMainWindow->getClientItem ( clientid );
 	jobListItem* job_parent ( nullptr );
 	QStringList::const_iterator itr ( jobTypesList.constBegin () );
 	const QStringList::const_iterator itr_end ( jobTypesList.constEnd () );
@@ -99,7 +123,6 @@ void newProjectDialog::showDialog ( const QString& clientid )
 	}
 	lstJobTypes->setIgnoreChanges ( false );
 	lstJobTypes->setCurrentItem ( mJobItem, true );
-	exec ();
 }
 
 void newProjectDialog::jobTypeItemSelected ( vmListItem* item )
@@ -152,8 +175,12 @@ void newProjectDialog::chkUseDefaultName_checked ()
 
 void newProjectDialog::btnOK_clicked ()
 {
-	bresult = true;
-	close ();
+	if ( VM_NOTIFY ()->questionBox ( TR_FUNC ( "Confirmation" ), TR_FUNC ( "Proceed with creating a project for the following job: " ) +
+								mJobItem->jobRecord ()->jobSummary () + CHR_QUESTION_MARK ) )
+	{
+		bresult = true;
+		close ();
+	}
 }
 
 void newProjectDialog::btnCancel_clicked ()

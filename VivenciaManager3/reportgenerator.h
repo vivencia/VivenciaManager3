@@ -10,6 +10,7 @@ class Client;
 class Job;
 class Payment;
 
+class QComboBox;
 class QLineEdit;
 class QFrame;
 class QTextEdit;

@@ -21,6 +21,8 @@ public:
 	void showWindow ( const QString& client_name );
 
 private:
+	void cancelItemSelection ();
+	void selectEstimateFromFile ( QTreeWidgetItem* targetClient );
 	void convertToProject ( QTreeWidgetItem* item );
 	void projectActions ( QAction* action );
     jobListItem* findJobByPath ( QTreeWidgetItem* const item );

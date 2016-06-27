@@ -831,16 +831,13 @@ void vmLineEditWithButton::setEditable ( const bool editable )
 void vmLineEditWithButton::execButtonAction ()
 {
 	mLineEdit->mbButtonClicked = true;
-	switch ( mBtnType ) {
-		case LEBT_CALC_BUTTON:
-			CALCULATOR ()->showCalc ( mLineEdit->text (), mButton->mapToGlobal ( mButton->pos () ), mLineEdit, nullptr );
-		break;
-		case LEBT_DIALOG_BUTTON:
-            mLineEdit->setText ( fileOps::getOpenFileName ( CONFIG ()->homeDir () , TR_FUNC ( "All Files ( * ) " ) ), true );
-		break;
-		default:
-		break;
+	if ( mBtnType == LEBT_CALC_BUTTON )
+	{
+		vmNumber price ( mLineEdit->text (), VMNT_DOUBLE );
+		CALCULATOR ()->showCalc ( price.toStrDouble (), mButton->mapToGlobal ( mButton->pos () ), mLineEdit, nullptr );
 	}
+	else // LEBT_DIALOG_BUTTON
+		mLineEdit->setText ( fileOps::getOpenFileName ( CONFIG ()->homeDir () , TR_FUNC ( "All Files ( * ) " ) ), true );
 }
 //------------------------------------------------VM-LINE-EDIT-BUTTON------------------------------------------------
 

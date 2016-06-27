@@ -144,8 +144,7 @@ public:
 
 	inline uint colCount () const { return m_ncols; }
 	inline uint totalsRow () const { return mTotalsRow; }
-	inline void setLastUsedRow ( const int row ) {
-		if ( row > m_lastUsedRow && row < rowCount () ) m_lastUsedRow = row; }
+	void setLastUsedRow ( const int row );
 	inline int lastUsedRow () const { return m_lastUsedRow; }
 
 	uint selectedRowsCount () const;

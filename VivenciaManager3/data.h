@@ -42,7 +42,8 @@ friend class MainWindow;
 public:
 	~Data ();
 
-	static inline void init () {
+	static inline void init ()
+	{
 		if ( !s_instance )
 			s_instance = new Data;
 	}
@@ -73,11 +74,11 @@ public:
 	static QPoint getGlobalWidgetPosition ( const QWidget* widget );
 	static void execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoint& mouse_pos );
 
-    static inline void fillClientsNamesList ( QStringList &namesList ) {
+    static inline void fillClientsNamesList ( QStringList& namesList ) {
         for ( int i ( 0 ); i <= VDB ()->lastDBRecord ( TABLE_CLIENT_ORDER ); ++i )
             insertStringListItem ( namesList, Client::clientName ( i ) );
     }
-    static void fillJobTypeList ( QStringList &jobList, const QString& clientid );
+    static void fillJobTypeList ( QStringList& jobList, const QString& clientid );
 
 	static inline bool isEmailAddress ( const QString& address )
 	{
@@ -87,7 +88,8 @@ public:
 	static int vmColorIndex ( const VMColors vmcolor )
 	{
 		int idx ( -1 );
-		switch ( vmcolor ) {
+		switch ( vmcolor )
+		{
 			case vmGray: idx = 0; break;
 			case vmRed: idx = 1; break;
 			case vmYellow: idx = 2; break;
@@ -108,7 +110,8 @@ private:
 
 	static Data* s_instance;
 
-	struct st_migrateInfo {
+	struct st_migrateInfo
+	{
 		vmListItem* migrateItem;
 		clientListItem* clientTo;
 	} m_migrateInfo;

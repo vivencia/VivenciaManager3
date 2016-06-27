@@ -276,7 +276,6 @@ int Job::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 		case SC_DATE_1: return FLD_JOB_STARTDATE;
 		case SC_DATE_2: return FLD_JOB_ENDDATE;
 		case SC_TIME_1: return FLD_JOB_TIME;
-		//case SC_TIME_2: return FLD_JOB_MOWER;
 		case SC_TYPE: return FLD_JOB_TYPE;
 		case SC_EXTRA_1: return FLD_JOB_CLIENTID;
 		case SC_EXTRA_2: return FLD_JOB_PROJECT_ID;

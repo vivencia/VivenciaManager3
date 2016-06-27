@@ -95,9 +95,10 @@ bool textFile::open ()
 			return true;
 	}
 
-	QIODevice::OpenModeFlag openflag ( QIODevice::ReadWrite );
+	const bool b_exists ( fileOps::exists ( m_filename ).isOn () );
+	QIODevice::OpenModeFlag openflag ( b_exists ? QIODevice::ReadWrite : QIODevice::WriteOnly );
 
-    if ( !fileOps::canWrite ( m_filename ).isOn () )
+    if ( b_exists && !fileOps::canWrite ( m_filename ).isOn () )
 	{
         openflag = QIODevice::ReadOnly;
 	}
@@ -133,17 +134,17 @@ void textFile::readType ()
 	}
 }
 
-bool textFile::load ()
+triStateType textFile::load ()
 {
 	if ( !m_open )
 	{
 		if ( !open () )
-			return false;
+			return TRI_OFF;
 	}
-	if ( m_file.size () == 0 )
-		return false;
+	if ( isEmpty () )
+		return TRI_UNDEF;
 	readType ();
-	return loadData ();
+	return ( loadData () ? TRI_ON : TRI_OFF );
 }
 
 bool textFile::overwrite ()

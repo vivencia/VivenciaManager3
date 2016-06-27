@@ -15,7 +15,7 @@ const uint JOB_REPORT_FIELDS_COUNT ( 5 );
 
 static const uint JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_TIME,
-	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_LONGTEXT
+	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_LONGTEXT
 };
 
 #ifdef TRANSITION_PERIOD
@@ -55,6 +55,7 @@ public:
             CHR_HYPHEN + recStrValue ( this, FLD_JOB_ID );
 	}
 
+	inline const QString jobSummary () const { return jobSummary ( recStrValue ( this, FLD_JOB_ID ) ); }
     static const QString jobAddress ( const Job* const job = nullptr, Client* client = nullptr );
 	static QString jobSummary ( const QString& jobid );
 	static QString concatenateJobInfo ( const Job& job );

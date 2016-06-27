@@ -19,6 +19,8 @@ class QAction;
 //------------------------------------------------TEXT-EDIT-COMPLETER--------------------------------------------
 
 const uint WRONG_WORDS_MENUS ( 8 );
+const char* const PROPERTY_PRINT_PREVIEW ( "ppp" );
+const char* const PROPERTY_DOC_MODIFIED ( "pdm" );
 
 class textEditWithCompleter : public QTextEdit, public vmWidget
 {

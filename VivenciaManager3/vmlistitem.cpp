@@ -106,7 +106,7 @@ void vmListItem::syncSiblingWithThis ( vmListItem* sibling )
 	}
 }
 
-void vmListItem::addToList ( vmListWidget* const w_list )
+void vmListItem::addToList ( vmListWidget* const w_list, const bool b_makecall )
 {
 	if ( m_list != w_list )
 	{
@@ -114,7 +114,7 @@ void vmListItem::addToList ( vmListWidget* const w_list )
 			m_list->removeItem ( this );
 		m_list = w_list;
 	}
-	w_list->addItem ( this );
+	w_list->addItem ( this, b_makecall );
 }
 
 void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, const bool bSelfOnly )
@@ -137,10 +137,11 @@ void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 			badInputs_ptr[i] = action == ACTION_ADD ? false : true;
 		
 		// update all related items, except self. Call setAction with self_only to true so that we don't enter infinite recurssion.
-		if ( !bSelfOnly ) {
-			for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i ) {
-				if ( ( static_cast<uint> ( mRelation ) != i ) && relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
-					relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setAction ( m_action, i == RLI_CLIENTITEM, true );
+		if ( !bSelfOnly && mRelation == RLI_CLIENTITEM ) {
+			for ( uint i ( RLI_CLIENTITEM + 1 ); i <= RLI_EXTRAITEM; ++i ) {
+				//if ( ( static_cast<uint> ( mRelation ) != i ) && relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+				if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+					relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setAction ( m_action, false, true );
 			}
 		}
 	}
@@ -236,7 +237,7 @@ void vmListItem::saveCrashInfo ( crashRestore* crash )
 
 void vmListItem::setSearchArray ()
 {
-	if ( m_dbrec != nullptr )
+	if ( m_dbrec != nullptr && !mbSearchCreated )
 	{
 		searchFields = new triStateType[m_dbrec->fieldCount ()];
 		mbSearchCreated = true;

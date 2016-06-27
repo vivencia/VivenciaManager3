@@ -276,7 +276,7 @@ public:
 //--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
 
 //--------------------------------------------SHARED-----------------------------------------------------------
-    void removeListItem ( vmListItem* item, const bool b_delete_item = true );
+    void removeListItem ( vmListItem* item, const bool b_delete_item = true, const bool b_auto_select_another = true );
 	void postFieldAlterationActions ( vmListItem* item );
 //--------------------------------------------SHARED-----------------------------------------------------------
 

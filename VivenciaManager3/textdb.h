@@ -3,6 +3,7 @@
 
 #include "vmlist.h"
 #include "stringrecord.h"
+#include "tristatetype.h"
 
 #include <QFile>
 
@@ -24,10 +25,11 @@ public:
 	void remove ();
 
 	inline bool isOpen () const { return m_open; }
+	inline bool isEmpty () const { return m_file.size () <= 0; }
 
 	void clear ();
 	bool open ();
-	bool load ();
+	triStateType load ();
 	void commit ();
 
 	void setText ( const QString& new_file_text );

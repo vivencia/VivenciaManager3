@@ -16,7 +16,7 @@ public:
 	inline void setCurrentItem ( const vmListItem* const item, const bool b_makecall ) { setCurrentRow ( item ? item->row () : -1, b_makecall ); }
 	void setCurrentRow ( int row, const bool b_makecall );
 	inline vmListItem* currentItem () const { return mCurrentItem; }
-	void addItem ( vmListItem* item );
+	void addItem ( vmListItem* item, const bool b_makecall = true );
 	inline void removeItem ( vmListItem* item, const bool bDel = false ) { removeRow ( item->row (), 1, bDel ); }
 	void insertRow ( const uint row, const uint n );
 	void removeRow ( const uint row, const uint n = 1, const bool bDel = false );

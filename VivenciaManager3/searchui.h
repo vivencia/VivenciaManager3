@@ -1,7 +1,7 @@
 #ifndef SEARCHUI_H
 #define SEARCHUI_H
 
-#include <QDockWidget>
+#include <QDialog>
 
 #include "vmlist.h"
 #include "tristatetype.h"
@@ -12,13 +12,14 @@ class vmTableWidget;
 class vmTableItem;
 
 class QToolButton;
+class QPushButton;
 
 enum SEARCH_STEPS {
 	SS_CLIENT = 0, SS_JOB, SS_PAY, SS_BUY,
 	SS_INVENTORY, SS_SUPPLIES, SS_SUPPLIERS
 };
 
-class searchUI : public QDockWidget
+class searchUI : public QDialog
 {
 
 friend class Data;
@@ -73,6 +74,7 @@ private:
 	vmTableWidget* mFoundList;
 	QToolButton* mBtnNext;
 	QToolButton* mBtnPrev;
+	QPushButton* mBtnClose;
 	QWidget* mWidget;
 	PointersList<vmListItem*> mFoundItems;
 	vmTableItem* mPreviusItemActivated;

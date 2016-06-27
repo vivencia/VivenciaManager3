@@ -234,8 +234,10 @@ void Data::loadDataIntoMemory ()
 					client_item->jobs->append ( job_item );
 					jobid = QString::number ( job.actualRecordInt ( FLD_JOB_ID ) );
 
-					if ( pay.readFirstRecord ( FLD_PAY_JOBID, jobid, false ) ) {
-						do {
+					if ( pay.readFirstRecord ( FLD_PAY_JOBID, jobid, false ) )
+					{
+						do
+						{
 							pay_item = new payListItem;
 							pay_item->setDBRecID ( pay.actualRecordInt ( FLD_PAY_ID ) );
 							pay_item->setRelation ( RLI_CLIENTITEM );
@@ -246,8 +248,10 @@ void Data::loadDataIntoMemory ()
 						} while ( pay.readNextRecord ( true, false ) );
 					}
 
-					if ( buy.readFirstRecord ( FLD_BUY_JOBID, jobid, false ) ) {
-						do {
+					if ( buy.readFirstRecord ( FLD_BUY_JOBID, jobid, false ) )
+					{
+						do
+						{
 							buy_item = new buyListItem;
 							buy_item->setDBRecID ( buy.actualRecordInt ( FLD_BUY_ID ) );
 							buy_item->setRelation ( RLI_CLIENTITEM );
@@ -319,19 +323,22 @@ int Data::insertComboItem ( vmComboBox* cbo, const QString& text )
 	int i ( 0 );
 	const int n_items ( cbo->count () );
 
-	for ( ; i < n_items; ++i ) {
+	for ( ; i < n_items; ++i )
+	{
 		str = cbo->itemText ( i );
 		if ( text.compare ( str, Qt::CaseInsensitive ) == 0 )
 			return i; // item already in combo, do nothing
 		// Insert item alphabetically
-		for ( x = 0; x < text.count (); ++x ) {
+		for ( x = 0; x < text.count (); ++x )
+		{
 			if ( x >= str.count () )
 				break;
 			if ( text.at ( x ) > str.at ( x ) )
 				break;
 			else if ( text.at ( x ) == str.at ( x ) )
 				continue;
-			else {
+			else
+			{
 				cbo->insertItem ( text, i, false );
 				return i;
 			}
@@ -350,19 +357,22 @@ int Data::insertStringListItem ( QStringList& list, const QString& text )
 	int x ( 0 );
 	int i ( 0 );
 
-	for ( ; i < list.count (); ++i ) {
+	for ( ; i < list.count (); ++i )
+	{
 		str = list.at ( i );
 		if ( text.compare ( str, Qt::CaseInsensitive ) == 0 )
 			return i; // item already in list, do nothing
 		// Insert item alphabetically
-		for ( x = 0; x < text.count (); ++x ) {
+		for ( x = 0; x < text.count (); ++x )
+		{
 			if ( x >= str.count () )
 				break;
 			if ( text.at ( x ) > str.at ( x ) )
 				break;
 			else if ( text.at ( x ) == str.at ( x ) )
 				continue;
-			else {
+			else
+			{
 				list.insert ( i, text );
 				return i;
 			}
@@ -377,7 +387,8 @@ QPoint Data::getGlobalWidgetPosition ( const QWidget* widget )
 	QWidget* refWidget ( nullptr );
 	if ( globalMainWindow->isAncestorOf ( widget ) )
 		refWidget = globalMainWindow;
-	else {
+	else
+	{
 		refWidget = widget->parentWidget ();
 		if ( refWidget == nullptr )
 			refWidget = qApp->desktop ();
@@ -397,11 +408,13 @@ void Data::execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoi
 	menu->exec ( menuPos );
 }
 
-void Data::fillJobTypeList ( QStringList &jobList, const QString& clientid )
+void Data::fillJobTypeList ( QStringList& jobList, const QString& clientid )
 {
 	Job job;
-	if ( job.readFirstRecord ( FLD_JOB_CLIENTID, clientid ) ) {
-		do {
+	if ( job.readFirstRecord ( FLD_JOB_CLIENTID, clientid ) )
+	{
+		do
+		{
 			jobList.append ( job.jobTypeWithDate () );
 		} while ( job.readNextRecord ( true ) );
 	}

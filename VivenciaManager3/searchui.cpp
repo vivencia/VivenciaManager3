@@ -16,6 +16,7 @@
 
 #include <QApplication>
 #include <QToolButton>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QModelIndex>
@@ -43,7 +44,7 @@ void deleteSearchUIInstance ()
 }
 
 searchUI::searchUI ()
-	: QDockWidget (), mbShow ( true ), mSearchFields ( 0 ), mWidget ( nullptr ),
+	: QDialog (), mbShow ( true ), mSearchFields ( 0 ), mWidget ( nullptr ),
 	  mFoundItems ( 10 ), mPreviusItemActivated ( nullptr ), displayFunc ( nullptr )
 {
 	setupUI ();
@@ -262,9 +263,10 @@ void searchUI::search ( const uint search_start, const uint search_end )
 						if ( mFoundItems.contains ( item ) == -1 ) {
 							// Sometimes, MySQL does not find exactly what we searched for, and we need to
 							// filter its results
-							if ( dbrec->readRecord ( id ) ) {
+							if ( item->loadData () ) {
+							//if ( dbrec->readRecord ( id ) ) {
 								for ( fld = 0; fld < fld_max; ++fld ) {
-									if ( recStrValue ( dbrec, fld ).contains ( mSearchTerm, Qt::CaseInsensitive ) ) {
+									if ( recStrValue ( item->dbRec (), fld ).contains ( mSearchTerm, Qt::CaseInsensitive ) ) {
 										item->setSearchArray (); // for the found item - only -, initialize the array
 										item->setSearchFieldStatus ( fld, SS_SEARCH_FOUND );
 										bhas_result = true;
@@ -390,20 +392,23 @@ void searchUI::setupUI ()
 	mBtnNext = new QToolButton;
 	mBtnNext->setIcon ( ICON ( "arrow-right.png" ) );
 	connect ( mBtnNext,  &QPushButton::clicked, this, [&] () { return btnNextClicked (); } );
+	mBtnClose = new QPushButton ( APP_TR_FUNC ( "Close" ) );
+	connect ( mBtnClose, &QPushButton::clicked, this, [&] () { return hide (); } );
+	
 	QHBoxLayout* hLayout ( new QHBoxLayout );
 	hLayout->setSpacing ( 1 );
 	hLayout->setMargin ( 0 );
-	hLayout->addWidget ( mBtnPrev, 0, Qt::AlignCenter );
-	hLayout->addWidget ( mBtnNext, 0, Qt::AlignCenter );
+	hLayout->addWidget ( mBtnPrev, 0, Qt::AlignLeft );
+	hLayout->addWidget ( mBtnNext, 0, Qt::AlignLeft );
+	hLayout->addStretch ( 2 );
+	hLayout->addWidget ( mBtnClose, 1, Qt::AlignRight );
 
 	QVBoxLayout* vLayout ( new QVBoxLayout );
 	vLayout->setMargin ( 2 );
 	vLayout->setSpacing ( 2 );
 	vLayout->addWidget ( mFoundList, 2 );
 	vLayout->addLayout ( hLayout );
-	QFrame* mainWidget ( new QFrame () );
-	mainWidget->setLayout ( vLayout );
-	setWidget ( mainWidget );
+	setLayout ( vLayout );
 	setMinimumSize ( mFoundList->size () );
 }
 

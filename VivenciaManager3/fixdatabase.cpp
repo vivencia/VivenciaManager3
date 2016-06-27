@@ -27,7 +27,7 @@ static void commandQueue ( QString& main_command )
 }
 
 fixDatabase::fixDatabase ()
-	: mPasswdMngr ( new passwordManager () ), m_badtables ( 5 ), b_needsfixing ( false )
+	: mPasswdMngr ( new passwordManager ( QStringLiteral ( "fixdb" ) ) ), m_badtables ( 5 ), b_needsfixing ( false )
 {}
 
 fixDatabase::~fixDatabase ()
@@ -57,7 +57,7 @@ bool fixDatabase::checkDatabase ()
 	QString r_passwd;
 	if ( mPasswdMngr->sudoPassword ( r_passwd, QApplication::tr (
 										 "In order to perform the check you need to have root privileges. Please type root's password." ) ) ) {
-		QString command ( fixApp + fixAppVerify + mysqlLibDir.arg ( DB_NAME, QLatin1String ( "*" ), tempFile ) );
+		QString command ( fixApp + fixAppVerify + mysqlLibDir.arg ( DB_NAME, QStringLiteral ( "*" ), tempFile ) );
 		commandQueue ( command );
 		( void )fileOps::sysExec ( sudoCommand.arg ( r_passwd, QLatin1String ( "rm -f " ) + tempFile ) );
 

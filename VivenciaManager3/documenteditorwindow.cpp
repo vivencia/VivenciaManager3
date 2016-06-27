@@ -9,7 +9,7 @@
 documentEditorWindow::documentEditorWindow ( documentEditor *parent )
 	: QWidget (), mainLayout ( nullptr ), m_type ( 0 ), mb_untitled ( true ),
 	  mb_programModification ( false ), mb_modified ( false ), mb_HasUndo ( false ),
-	  mb_HasRedo ( false ), mb_inPreview ( false ), m_parentEditor ( parent )
+	  mb_HasRedo ( false ), mb_inPreview ( false ), m_parentEditor ( parent ), documentModified_func ( nullptr )
 {
 	setAttribute ( Qt::WA_DeleteOnClose );
 
@@ -27,7 +27,7 @@ documentEditorWindow::~documentEditorWindow ()
 void documentEditorWindow::newFile ()
 {
 	canClose ();
-	static uint sequenceNumber = 0;
+	static uint sequenceNumber ( 0 );
 
 	mb_untitled = true;
 	mb_modified = false;
@@ -41,9 +41,11 @@ void documentEditorWindow::newFile ()
 
 bool documentEditorWindow::load ( const QString& filename, const bool add_to_recent )
 {
-	if ( canClose () ) {
+	if ( canClose () )
+	{
 		mb_programModification = true;
-		if ( loadFile ( filename ) ) {
+		if ( loadFile ( filename ) )
+		{
 			mb_programModification = false;
 			setCurrentFile ( filename );
 			if ( add_to_recent )
@@ -58,10 +60,12 @@ bool documentEditorWindow::load ( const QString& filename, const bool add_to_rec
 bool documentEditorWindow::save ( const QString& filename )
 {
 	bool ret ( false );
-	if ( mb_modified ) {
+	if ( mb_modified )
+	{
 		if ( !mb_untitled )
 			ret = saveFile ( filename );
-		else {
+		else
+		{
 			EDITOR ()->saveAsDocument ();
 			ret = !mb_untitled;
 		}
@@ -81,7 +85,8 @@ bool documentEditorWindow::saveas ( const QString& filename )
 
 void documentEditorWindow::documentWasModified ()
 {
-	if ( !mb_programModification ) {
+	if ( !mb_programModification )
+	{
 		/* When printing and previewing, we want to ignore the modified status. But a QTextEdit emits
 		the documentModified signal more than once when previewing (don't know how many when printing only)
 		and more than once it does it again when the preview dialog is closed. We need to count those calls
@@ -89,17 +94,21 @@ void documentEditorWindow::documentWasModified ()
 		true when printing and calling it so many times).
 		 */
 		static int wasInPreview ( 0 );
-		if ( mb_inPreview ) {
+		if ( mb_inPreview )
+		{
 			++wasInPreview;
 			return;
 		}
-		if ( wasInPreview > 0 ) {
+		if ( wasInPreview > 0 )
+		{
 			--wasInPreview;
 			return;
 		}
-		if ( !mb_modified ) {
+		if ( !mb_modified )
+		{
 			mb_modified = true;
-			emit signalDocumentWasModified ( this );
+			if ( documentModified_func )
+				documentModified_func ( this );
 		}
 	}
 }
@@ -112,11 +121,14 @@ void documentEditorWindow::documentWasModifiedByUndo ( const bool undo )
 
 void documentEditorWindow::documentWasModifiedByRedo ( const bool redo )
 {
-	if ( !mb_programModification ) {
+	if ( !mb_programModification )
+	{
 		mb_HasRedo = redo;
-		if ( redo && !mb_HasUndo ) {
+		if ( redo && !mb_HasUndo )
+		{
 			mb_modified = false;
-			emit signalDocumentWasModified ( this );
+			if ( documentModified_func )
+				documentModified_func ( this );
 		}
 	}
 }
@@ -136,7 +148,8 @@ void documentEditorWindow::setCurrentFile ( const QString& fileName )
 	curFile = QFileInfo ( fileName ).canonicalFilePath ();
 	mb_untitled = false;
 	mb_modified = false;
-	emit signalDocumentWasModified ( this );
+	if ( documentModified_func )
+		documentModified_func ( this );
 }
 
 /*void documentEditorWindow::closeEvent ( QCloseEvent* e )
@@ -149,10 +162,11 @@ void documentEditorWindow::setCurrentFile ( const QString& fileName )
 
 bool documentEditorWindow::canClose ()
 {
-	if ( mb_modified ) {
+	if ( mb_modified )
+	{
 		const int btn (
 			VM_NOTIFY ()->customBox ( strippedName ( curFile ) + tr ( " was modified" ),  tr ( "Do you want to save your changes?" ),
-								  vmNotify::QUESTION, tr ( "Save" ), tr ( "Cancel" ), tr ( " Discard" ) ) );
+								  vmNotify::QUESTION, tr ( "Save" ), tr ( "Don't save" ), tr ( "Cancel" ) ) );
 
 		switch ( btn ) {
 			case 0:		return save ( curFile );	break;

@@ -320,8 +320,8 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 	if ( client_item ) {
 		ui->tabMain->setCurrentIndex ( 0 );
 		if ( client_item->loadData () ) {
-			loadClientInfo ( client_item->clientRecord () );
 			controlClientForms ( client_item );
+			loadClientInfo ( client_item->clientRecord () );
 			if ( client_item != mClientCurItem ) {
 				if ( b_select )
 					clientsList->setCurrentItem ( client_item, false );
@@ -378,9 +378,11 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 	buysList->clear (); // clears the list but does delete the items
 
 	uint i ( 0 );
-	if ( client_item ) {
+	if ( client_item )
+	{
 		jobListItem* job_item ( nullptr );
-		for ( i = 0; i < client_item->jobs->count (); ++i ) {
+		for ( i = 0; i < client_item->jobs->count (); ++i )
+		{
 			job_item = client_item->jobs->at ( i );
 			(void) job_item->loadData ();
 			job_item->addToList ( jobsList );
@@ -388,7 +390,8 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 
 		payListItem* pay_item ( nullptr );
 		vmNumber totalPays;
-		for ( i = 0; i < client_item->pays->count (); ++i ) {
+		for ( i = 0; i < client_item->pays->count (); ++i )
+		{
 			pay_item = client_item->pays->at ( i );
 			(void) pay_item->loadData ();
 			pay_item->addToList ( paysList );
@@ -397,7 +400,8 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 		paysList->setProperty ( PROPERTY_TOTAL_PAYS, totalPays.toPrice () );
 
 		buyListItem* buy_item ( nullptr );
-		for ( i = 0; i < client_item->buys->count (); ++i ) {
+		for ( i = 0; i < client_item->buys->count (); ++i )
+		{
 			buy_item = client_item->buys->at ( i );
 			(void) buy_item->loadData ();
 			buy_item->addToList ( buysList );
@@ -411,23 +415,21 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 
 void MainWindow::btnClientAdd_clicked ()
 {
-	//clientsList->setIgnoreChanges ( true );
 	clientListItem* client_item ( new clientListItem );
 	client_item->setRelation ( RLI_CLIENTITEM );
 	client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 	(void) client_item->loadData ();
 	client_item->setAction ( ACTION_ADD, true );
 	client_item->addToList ( clientsList );
-	//mClientCurItem = client_item;
-	//displayClient ( client_item, true );
 	ui->txtClientName->setFocus ();
-	//clientsList->setIgnoreChanges ( false );
 }
 
 void MainWindow::btnClientEdit_clicked ()
 {
-	if ( mClientCurItem ) {
-		if ( mClientCurItem->action () == ACTION_READ ) {
+	if ( mClientCurItem )
+	{
+		if ( mClientCurItem->action () == ACTION_READ )
+		{
 			mClientCurItem->setAction ( ACTION_EDIT, true );
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Editing client record" ),
 						recStrValue ( mClientCurItem->clientRecord (), FLD_CLIENT_NAME ) );
@@ -439,7 +441,8 @@ void MainWindow::btnClientEdit_clicked ()
 
 void MainWindow::btnClientDel_clicked ()
 {
-	if ( mClientCurItem ) {
+	if ( mClientCurItem )
+	{
 		clientListItem* client_item ( mClientCurItem );
 		RECORD_ACTION cur_action ( client_item->action () );
 		client_item->setAction ( ACTION_DEL, true );
@@ -453,8 +456,10 @@ void MainWindow::btnClientDel_clicked ()
 
 void MainWindow::btnClientSave_clicked ()
 {
-	if ( mClientCurItem ) {
-		if ( mClientCurItem->clientRecord ()->saveRecord () ) {
+	if ( mClientCurItem )
+	{
+		if ( mClientCurItem->clientRecord ()->saveRecord () )
+		{
 			mClientCurItem->setAction ( mClientCurItem->clientRecord ()->action () );
 			if ( mClientCurItem->dbRecID () == -1 )
 				mClientCurItem->setDBRecID ( recIntValue ( mClientCurItem->clientRecord (), FLD_CLIENT_ID ) );
@@ -469,13 +474,14 @@ void MainWindow::btnClientSave_clicked ()
 
 void MainWindow::btnClientCancel_clicked ()
 {
-	if ( mClientCurItem ) {
-		switch ( mClientCurItem->action () ) {
+	if ( mClientCurItem )
+	{
+		switch ( mClientCurItem->action () )
+		{
 			case ACTION_ADD:
 			{
 				clientListItem* client_item ( mClientCurItem );
 				mClientCurItem = nullptr;
-				//controlClientForms ( nullptr );
 				removeListItem ( client_item );
 			}
 			break;
@@ -496,11 +502,13 @@ void MainWindow::txtClientName_textAltered ( const QString& text )
 	const bool input_ok ( text.isEmpty () ? false : ( Client::clientID ( text ) == -1 ) );
 	mClientCurItem->setFieldInputStatus ( FLD_CLIENT_NAME, input_ok, ui->txtClientName );
 
-	if ( input_ok ) {
+	if ( input_ok )
+	{
 		setRecValue ( mClientCurItem->clientRecord (), FLD_CLIENT_NAME, text );
 		mClientCurItem->update ();
 	}
-	else {
+	else
+	{
 		if ( !text.isEmpty () )
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Warning" ), TR_FUNC ( "Client name already in use" ) );
 	}
@@ -789,7 +797,8 @@ void MainWindow::setupJobPictureControl ()
 	QMenu* menuJobClientsYearPictures ( new QMenu );
 	vmAction* action ( nullptr );
 	const uint year ( static_cast<uint> ( vmNumber::currentDate.year () ) );
-	for ( uint i ( 2008 ); i <= year; ++i ) {
+	for ( uint i ( 2008 ); i <= year; ++i )
+	{
 		action = new vmAction ( i, QString::number ( i ), this );
 		action->setCheckable ( true );
 		menuJobClientsYearPictures->addAction ( action );
@@ -859,11 +868,13 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 
 	ui->lstJobDayReport->setIgnoreChanges ( true );
 
-	switch ( action ) {
+	switch ( action )
+	{
 		default: return;
 		case ACTION_ADD:
 		{
-			for ( ; i >= 0 ; --i ) {
+			for ( ; i >= 0 ; --i )
+			{
 				item = static_cast<vmListItem*>( ui->lstJobDayReport->item ( i ) );
 				if ( item->data ( JILUR_REMOVED ).toBool () == true )
 					continue;
@@ -878,7 +889,8 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 		break;
 		case ACTION_DEL:
 		{
-			for ( ; i >= 0 ; --i ) {
+			for ( ; i >= 0 ; --i )
+			{
 				item = static_cast<vmListItem*>( ui->lstJobDayReport->item ( i ) );
 				date.fromTrustedStrDate ( item->data ( JILUR_DATE ).toString (), vmNumber::VDF_DB_DATE );
 				mCal->addCalendarExchangeRule ( job->ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber );
@@ -889,16 +901,20 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 		break;
 		case ACTION_EDIT:
 		{
-			if ( job->wasModified ( FLD_JOB_REPORT ) || job->wasModified ( FLD_JOB_PRICE ) ) {
+			if ( job->wasModified ( FLD_JOB_REPORT ) || job->wasModified ( FLD_JOB_PRICE ) )
+			{
 				const stringTable& originalJobReport ( recStrValueAlternate ( job, FLD_JOB_REPORT ) );
 				const vmNumber oldPricePerDay ( vmNumber ( recStrValueAlternate ( job, FLD_JOB_PRICE ), VMNT_PRICE, 1 ) / originalJobReport.countRecords () );
 				const stringRecord* jobDay ( nullptr );
 
-				for ( ; i >= 0 ; --i ) {
+				for ( ; i >= 0 ; --i )
+				{
 					item = static_cast<vmListItem*>( ui->lstJobDayReport->item ( i ) );
-					if ( item->data ( JILUR_REMOVED ).toBool () == true ) {
+					if ( item->data ( JILUR_REMOVED ).toBool () == true )
+					{
 						jobDay = &originalJobReport.readRecord ( originalJobReport.findRecordRowByFieldValue ( item->data ( JILUR_DATE ).toString (), Job::JRF_DATE ) );
-						if ( jobDay->isOK () ) {
+						if ( jobDay->isOK () )
+						{
 							// Use the recorded table instead of data from the list item because  there is a possibility that the item
 							// had the date changed before the user decided it was all wrong and the info had to be removed
 							date.fromTrustedStrDate ( jobDay->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
@@ -908,7 +924,8 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 						}
 						continue;
 					}
-					if ( item->data ( JILUR_ADDED ).toBool () == true ) {
+					if ( item->data ( JILUR_ADDED ).toBool () == true )
+					{
 						item->setData ( JILUR_ADDED, false );
 						date.fromTrustedStrDate ( item->data ( JILUR_DATE ).toString (), vmNumber::VDF_DB_DATE );
 						mCal->addCalendarExchangeRule ( job->ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
@@ -918,11 +935,14 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 					date.fromTrustedStrDate ( item->data ( JILUR_DATE ).toString (), vmNumber::VDF_DB_DATE );
 				}
 
-				if ( pricePerDay != oldPricePerDay ) { // even if total price was not changed, the number of days might have been
+				if ( pricePerDay != oldPricePerDay ) // even if total price was not changed, the number of days might have been
+				{
 					jobDay = &originalJobReport.first ();
-					while ( jobDay->isOK () ) {
+					while ( jobDay->isOK () )
+					{
 						date.fromTrustedStrDate ( jobDay->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-						if ( !oldPricePerDay.isNull () ) {
+						if ( !oldPricePerDay.isNull () )
+						{
 							mCal->addCalendarExchangeRule ( job->ce_list, CEAO_DEL_PRICE_DATE1, date, oldPricePerDay );
 							mCal->addCalendarExchangeRule ( job->ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
 						}
@@ -940,14 +960,16 @@ void MainWindow::updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION
 
 void MainWindow::jobKeyPressedSelector ( const QKeyEvent* ke )
 {
-	switch ( ke->key () ) {
+	switch ( ke->key () )
+	{
 		case Qt::Key_Enter:
 		case Qt::Key_Return:
 			clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
 			on_btnJobSave_clicked ();
 		break;
 		case Qt::Key_S:
-			if ( mJobCurItem ) {
+			if ( mJobCurItem )
+			{
 				updateJobInfo ( ui->txtJobReport->currentText (), JILUR_REPORT );
 				if ( mJobCurItem->jobRecord ()->saveRecord () )
 					VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Job report committed" ), TR_FUNC ( "You still need to click on Save to commit other changes" ) );
@@ -975,8 +997,10 @@ void MainWindow::jobsListWidget_currentItemChanged ( vmListItem* item )
 
 void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item )
 {
-	if ( item ) {
-		if ( !item->data ( JILUR_REMOVED ).toBool () ) {
+	if ( item )
+	{
+		if ( !item->data ( JILUR_REMOVED ).toBool () )
+		{
 			const vmNumber time1 ( item->data ( JILUR_START_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
 			ui->timeJobStart->setTime ( time1.toQTime () );
 			vmNumber timeAndDate ( item->data ( JILUR_END_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
@@ -994,7 +1018,8 @@ void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item )
 		else
 			ui->txtJobReport->textEditWithCompleter::setText ( TR_FUNC ( " - THIS DAY WAS REMOVED - " ) );
 	}
-	else {
+	else
+	{
 		ui->timeJobStart->setTime ( vmNumber () );
 		ui->timeJobEnd->setTime ( vmNumber () );
 		ui->txtJobTotalDayTime->setText ( emptyString );
@@ -1080,8 +1105,8 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 {
 	if ( job_item ) {
 		if ( job_item->loadData () ) {
-			loadJobInfo ( job_item->jobRecord () );
 			controlJobForms ( job_item );
+			loadJobInfo ( job_item->jobRecord () );
 			if ( job_item != mJobCurItem ) {
 				if ( b_select )
 					jobsList->setCurrentItem ( job_item, false );
@@ -2069,8 +2094,8 @@ void MainWindow::displayPay ( payListItem* pay_item, const bool b_select )
 {
 	if ( pay_item ) {
 		if ( pay_item->loadData () ) {
-			loadPayInfo ( pay_item->payRecord () );
 			controlPayForms ( pay_item );
+			loadPayInfo ( pay_item->payRecord () );
 			if ( pay_item != mPayCurItem ) {
 				if ( b_select )
 					paysList->setCurrentItem ( pay_item, false );
@@ -2731,8 +2756,8 @@ void MainWindow::controlBuyForms ( const buyListItem* const buy_item )
 void MainWindow::displayBuy ( buyListItem* buy_item, const bool b_select )
 {
 	if ( buy_item && buy_item->loadData () ) {
-		loadBuyInfo ( buy_item->buyRecord () );
 		controlBuyForms ( buy_item );
+		loadBuyInfo ( buy_item->buyRecord () );
 		if ( buy_item != mBuyCurItem ) {
 			if ( b_select ) { // Sync both lists, but make sure no signals are emitted
 				buysList->setCurrentItem ( buy_item, false );
@@ -2758,9 +2783,9 @@ void MainWindow::loadBuyInfo ( const Buy* const buy )
 	 * within all cells must be blocked by setting the table read-only. Otherwise we would see
 	 * a plethora of unnecessary and potentially fatal callback calls
 	 */
+	const bool bIsEditable ( ui->tableBuyItems->isEditable () );
 	ui->tableBuyItems->setEditable ( false );
 	ui->tableBuyPayments->setEditable ( false );
-	ui->tableBuyPayments->clear (); // force ?
 	
 	if ( buy ) {
 		ui->txtBuyID->setText ( recStrValue ( buy, FLD_BUY_ID ) );
@@ -2788,6 +2813,9 @@ void MainWindow::loadBuyInfo ( const Buy* const buy )
 		ui->dteBuyDeliveryDate->setText ( emptyString );
 		ui->cboBuySuppliers->clearEditText ();
 	}
+	
+	ui->tableBuyItems->setEditable ( bIsEditable );
+	ui->tableBuyPayments->setEditable ( bIsEditable );
 }
 
 buyListItem* MainWindow::getBuyItem ( const clientListItem* const parent_client, const int id ) const
@@ -2975,11 +3003,11 @@ void MainWindow::setBuyPayValueToBuyPrice ( const QString& price )
 		row = 0;
 		ui->tableBuyPayments->setCurrentCell ( 0, 0, QItemSelectionModel::ClearAndSelect );
 	}
-	if ( row == 0 )
-	{
+	//if ( row == 0 )
+	//{
 		ui->tableBuyPayments->sheetItem ( row, PHR_VALUE )->setText ( price, false, true );
 		ui->tableBuyPayments->sheetItem ( row, PHR_DATE )->setDate ( ui->dteBuyDate->date () );
-	}
+	//}
 }
 //--------------------------------------------BUY------------------------------------------------------------
 
@@ -4088,18 +4116,19 @@ void MainWindow::createTrayIcon ( const bool b_setup )
 //--------------------------------------------TRAY-IMPORT-EXPORT-BACKUP--------------------------------
 
 //--------------------------------------------SHARED-----------------------------------------------------------
-void MainWindow::removeListItem ( vmListItem* item, const bool b_delete_item )
+void MainWindow::removeListItem ( vmListItem* item, const bool b_delete_item, const bool b_auto_select_another )
 {
 	vmListWidget* list ( item->listWidget () );
 	list->setIgnoreChanges ( true );
+	// do not propagate the status to DBRecord so that it might use the info from the previous 
+	// state to perform some actions if needed
 	item->setAction ( ACTION_DEL, true );
 	crash->eliminateRestoreInfo ( item->crashID () );
-	if ( item->dbRec () )
+	if ( item->dbRec () && item->relation () == RLI_CLIENTITEM )
 		item->dbRec ()->deleteRecord ();
-	list->setIgnoreChanges ( false );
+	if ( b_auto_select_another )
+		list->setIgnoreChanges ( false );
 	list->removeItem ( item, b_delete_item );
-	//if ( b_select_another )
-	//	list->setCurrentRow ( -1 ); // force selection of PREV_ITEM
 }
 
 void MainWindow::postFieldAlterationActions ( vmListItem* item )
@@ -4219,7 +4248,7 @@ void MainWindow::on_btnJobCancel_clicked ()
 		switch ( mJobCurItem->action () ) {
 			case ACTION_ADD:
 			{
-				removeListItem ( mPayCurItem, false );
+				removeListItem ( mPayCurItem, false, false );
 				/* Must set it to null because we make the above call with argument b_select_another to
 				 * false, which will cause it not to call paysListWidget_currentItemChanged, which will
 				 * not set mPayCurItem, but mPayCurItem points to an object that is no more. To avoid an
@@ -4228,7 +4257,6 @@ void MainWindow::on_btnJobCancel_clicked ()
 				 */
 				jobListItem* job_item ( mJobCurItem );
 				mJobCurItem = nullptr;
-				//controlJobForms ( nullptr );
 				removeListItem ( job_item );
 			}
 			break;
@@ -4500,7 +4528,6 @@ void MainWindow::on_btnBuyCopyRows_clicked ()
 
 void MainWindow::on_btnBuyAdd_clicked ()
 {
-	//buysList->setIgnoreChanges ( true );
 	buyListItem* buy_item ( new buyListItem );
 	buy_item->setRelation ( RLI_CLIENTITEM );
 	buy_item->setRelatedItem ( RLI_CLIENTPARENT, mClientCurItem );
@@ -4509,21 +4536,16 @@ void MainWindow::on_btnBuyAdd_clicked ()
 	buy_item->setAction ( ACTION_ADD, true );
 	mBuyCurItem = buy_item;
 
-	buysJobList->setIgnoreChanges ( true );
 	buyListItem* buy_item2 ( new buyListItem );
 	buy_item2->setRelation ( RLI_JOBITEM );
 	buy_item->syncSiblingWithThis ( buy_item2 );
-	buy_item2->addToList ( buysJobList );
+	buy_item2->addToList ( buysJobList, false );
 	
 	buy_item->addToList ( buysList );
 
 	setRecValue ( buy_item->buyRecord (), FLD_BUY_CLIENTID, recStrValue ( mClientCurItem->clientRecord (), FLD_CLIENT_ID ) );
 	setRecValue ( buy_item->buyRecord (), FLD_BUY_JOBID, recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_ID ) );
-
-	//displayBuy ( buy_item );
 	ui->cboBuySuppliers->setFocus ();
-	//buysList->setIgnoreChanges ( false );
-	buysJobList->setIgnoreChanges ( false );
 }
 
 void MainWindow::on_btnBuyEdit_clicked ()
@@ -4589,10 +4611,9 @@ void MainWindow::on_btnBuyCancel_clicked ()
 		switch ( mBuyCurItem->action () ) {
 			case ACTION_ADD:
 			{
-				removeListItem ( static_cast<buyListItem*> ( mBuyCurItem->relatedItem ( RLI_JOBITEM ) ), false );
+				removeListItem ( static_cast<buyListItem*> ( mBuyCurItem->relatedItem ( RLI_JOBITEM ) ), false, false );
 				buyListItem* buy_item ( mBuyCurItem );
 				mBuyCurItem = nullptr;
-				//controlBuyForms ( nullptr );
 				removeListItem ( buy_item );
 			}
 			break;

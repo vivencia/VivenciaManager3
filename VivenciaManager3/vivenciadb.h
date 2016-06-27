@@ -109,6 +109,8 @@ public:
 	bool doRestore ( const QString& filepath, BackupDialog* bDlg );
 	bool importFromCSV (const QString& filename, BackupDialog* bDlg );
 	bool exportToCSV (const uint table, const QString& filename, BackupDialog* bDlg );
+	
+	passwordManager* rootPwdManager ();
 	//-----------------------------------------IMPORT-EXPORT--------------------------------------------
 
 private:
@@ -139,7 +141,7 @@ private:
 
     bool m_ok, mNewDB;
     mutable bool mBackupSynced;
-	passwordManager* rootPasswdMngr;
+	passwordManager* mRootPasswdMngr;
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
 
 	static VivenciaDB* s_instance;

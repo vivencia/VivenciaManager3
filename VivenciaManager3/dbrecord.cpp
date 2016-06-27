@@ -242,11 +242,13 @@ bool DBRecord::deleteRecord ()
 {
 	if ( actualRecordInt ( 0 ) >= 1 )
 	{
+		const bool b_del_from_temp ( prevAction () == ACTION_ADD );
 		setAction ( ACTION_DEL );
 		callHelperFunctions ();
 		if ( VDB ()->removeRecord ( this ) )
 		{
-			DBRecord::removeFromTemporaryRecords ( this );
+			if ( b_del_from_temp )
+				DBRecord::removeFromTemporaryRecords ( this );
 			clearAll ();
 			setAction ( ACTION_READ );
 			return true;
@@ -374,6 +376,9 @@ void DBRecord::addToTemporaryRecords ( DBRecord* dbrec )
 		id = DBRecord::tempNewRecs[table].last ()->recordInt ( 0 ) + 1;
 	dbrec->setIntValue ( 0, id ); // this is set so that VivenciaDB::insertDBREcord can use the already evaluated value
 	dbrec->setIntBackupValue ( 0, id ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
+	const QString str_id ( QString::number ( id ) );
+	dbrec->setValue ( 0, str_id );
+	dbrec->setBackupValue ( 0, str_id );
 	DBRecord::tempNewRecs[table].append( dbrec );
 }
 

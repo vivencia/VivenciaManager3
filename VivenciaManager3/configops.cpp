@@ -353,7 +353,7 @@ QString configOps::readConfig ( const QString& filename, const QString& field )
 	configFile* cfgFile ( new configFile ( filename ) );
 
 	if ( cfgFile->open () ) {
-		if ( cfgFile->load () )
+		if ( cfgFile->load ().isOn () )
 			value = cfgFile->fieldValue ( field );
 	}
 	delete cfgFile;
@@ -366,7 +366,9 @@ bool configOps::writeConfig ( const QString& filename, const QString& field, con
 	configFile* cfgFile ( new configFile ( filename ) );
 
 	if ( cfgFile->open () ) {
-		if ( cfgFile->load () ) {
+		if ( !cfgFile->load ().isOff () ) {
+			if ( !cfgFile->setWorkingSection ( 0 ) ) // config file empty
+				cfgFile->insertNewSection ( QStringLiteral ( "CONFIG" ), true );
 			const int idx ( cfgFile->fieldIndex ( field ) );
 			if ( idx == -1 )
 				cfgFile->insertField ( field, value );

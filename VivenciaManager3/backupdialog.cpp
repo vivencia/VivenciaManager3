@@ -368,7 +368,7 @@ void BackupDialog::readFromBackupList ()
 {
 	if ( !tdb )
 		tdb = new dataFile ( CONFIG ()->appDataDir () + QLatin1String ( "/backups.db" ) );
-	if ( tdb->load () ) {
+	if ( tdb->load ().isOn () ) {
 		stringRecord files;
 		if ( tdb->getRecord ( files, 0 ) ) {
 			if ( files.first () ) {

@@ -47,9 +47,9 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	   maybe because Qt copies the pointer before we have the chance to alter its name.
 	 */
 
-	document ()->setObjectName ( QStringLiteral ( "np" ) );
+	document ()->setProperty ( PROPERTY_PRINT_PREVIEW, false );
 	m_highlighter = new wordHighlighter ( this->document () );
-	m_highlighter->setObjectName ( QStringLiteral ( "np" ) );
+	m_highlighter->setProperty ( PROPERTY_PRINT_PREVIEW, false );
 
 	m_highlighter->enableSpellChecking ( true );
 	misspelledWordsActs[0] = new QAction ( this );
@@ -62,7 +62,8 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	connect ( misspelledWordsActs[2], &QAction::triggered, this, [&] () { return ignoreWord (); } );
 	misspelledWordsActs[2]->setVisible ( false );
     QAction* action ( nullptr );
-	for  ( uint i = 3; i < WRONG_WORDS_MENUS; ++i ) {
+	for  ( uint i ( 3 ); i < WRONG_WORDS_MENUS; ++i )
+	{
 		misspelledWordsActs[i] = new QAction ( this );
 		misspelledWordsActs[i]->setVisible ( false );
         action = misspelledWordsActs[i];
@@ -92,20 +93,16 @@ void textEditWithCompleter::setEditable ( const bool editable )
 
 void textEditWithCompleter::setPreview ( const bool preview )
 {
-	static bool doc_modified ( false );
-
-	document ()->setObjectName ( preview ? QStringLiteral ( "p" ) : QStringLiteral ( "np" ) );
-	m_highlighter->setObjectName ( preview ? QStringLiteral ( "p" ) : QStringLiteral ( "np" ) );
+	document ()->setProperty ( PROPERTY_PRINT_PREVIEW, preview );
+	m_highlighter->setProperty ( PROPERTY_PRINT_PREVIEW, preview );
 	m_highlighter->enableSpellChecking ( !preview );
 	m_highlighter->enableHighlighting ( !preview );
 	// printing and print previewing set document () state to modified by default. We need to overrule
 	// this behaviour. This func must be called before asking Qt to print or preview
 	if ( preview )
-		doc_modified = document ()->isModified ();
-	else {
-		if ( !doc_modified )
-			document ()->setModified ( false ); // return state to non-modified only if it was not modfied before starting the process
-	}
+		document ()->setProperty ( PROPERTY_DOC_MODIFIED, document ()->isModified () );
+	else // return state to non-modified only if it was not modfied before starting the process
+		document ()->setModified ( document ()->property ( PROPERTY_DOC_MODIFIED ).toBool () );
 }
 
 void textEditWithCompleter::showhideUtilityPanel ()
@@ -173,7 +170,8 @@ void textEditWithCompleter::selectFound ()
 
 bool textEditWithCompleter::searchStart ( const QString& searchTerm )
 {
-	if ( searchTerm.count () >= 2 && searchTerm != mSearchTerm ) {
+	if ( searchTerm.count () >= 2 && searchTerm != mSearchTerm )
+	{
 		searchCancel ();
 		QTextCursor cursor = textCursor ();
 		cursor.setPosition ( 0, QTextCursor::MoveAnchor );

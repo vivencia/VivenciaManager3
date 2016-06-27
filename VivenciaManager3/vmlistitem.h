@@ -48,10 +48,11 @@ public:
 
 	inline RECORD_ACTION action () const { return m_action; }
     void setRelation ( const RELATED_LIST_ITEMS relation  );
+	inline RELATED_LIST_ITEMS relation () const { return mRelation; }
     void disconnectRelation ( const uint start_relation, vmListItem* item );
     void syncSiblingWithThis ( vmListItem* sibling );
 
-    void addToList ( vmListWidget* const w_list );
+    void addToList ( vmListWidget* const w_list, const bool b_makecall = true );
     inline vmListWidget* listWidget () const { return m_list; }
 
 	inline DBRecord* dbRec () const { return m_dbrec; }

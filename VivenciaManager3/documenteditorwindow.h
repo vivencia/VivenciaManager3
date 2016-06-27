@@ -5,16 +5,15 @@
 #include <QMainWindow>
 #include <QGridLayout>
 
+#include <functional>
 class documentEditor;
 
 class documentEditorWindow : public QWidget
 {
 
-Q_OBJECT
-
 public:
 	explicit documentEditorWindow ( documentEditor* parent );
-	~documentEditorWindow ();
+	virtual ~documentEditorWindow ();
 
 	inline uint editorType () const {
 		return m_type;
@@ -66,17 +65,18 @@ public:
 		return strippedName ( curFile ) + QLatin1String ( mb_modified ? "[*]" : "" ) ;
 	}
 
-signals:
-	void signalDocumentWasModified ( documentEditorWindow* );
+	inline void setCallbackForDocumentModified ( std::function<void ( documentEditorWindow* )> func ) {
+		documentModified_func = func;
+	}
 
-protected slots:
-	void documentWasModified ();
-	void documentWasModifiedByUndo ( const bool );
-	void documentWasModifiedByRedo ( const bool );
 
 protected:
 	QGridLayout* mainLayout;
 
+	void documentWasModified ();
+	void documentWasModifiedByUndo ( const bool );
+	void documentWasModifiedByRedo ( const bool );
+	
 	//void closeEvent ( QCloseEvent* event );
 
 	inline QString strippedName ( const QString& fullFileName ) const
@@ -107,6 +107,8 @@ private:
 	bool mb_HasUndo, mb_HasRedo;
 	bool mb_inPreview;
 	documentEditor* m_parentEditor;
+	
+	std::function<void ( documentEditorWindow* )> documentModified_func;
 };
 
 #endif // DOCUMENTEDITORWINDOW_H

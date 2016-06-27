@@ -63,6 +63,9 @@ const int ROLE_ITEM_TYPE ( Qt::UserRole );
 const int ROLE_ITEM_FILENAME ( Qt::UserRole + 1 );
 const int ROLE_ITEM_CLIENTNAME ( Qt::UserRole + 2 );
 
+static bool b_inItemSelectionMode ( false );
+static QTreeWidgetItem* targetItemInSelectionMode ( nullptr );
+
 enum FILETYPES
 {
 	FILETYPE_DOC = 0, FILETYPE_XLS = 1, FILETYPE_PDF = 2, FILETYPE_VMR = 3, FILETYPE_UNKNOWN = 4
@@ -80,7 +83,7 @@ enum FILEMANAGER_ACTIONS
 
 enum PROJECT_ACTIONS
 {
-	PA_NEW_FULL = 0, PA_NEW_EMPTY = 1, PA_RENAME = 2, PA_REMOVE = 3, PA_ADD_DOC = 4, PA_ADD_XLS = 5
+	PA_NEW_FULL = 0, PA_NEW_EMPTY = 1, PA_CONVERT_FROM_ESTIMATE = 2, PA_RENAME = 3, PA_REMOVE = 4, PA_ADD_DOC = 5, PA_ADD_XLS = 6
 };
 
 enum ESTIMATE_ACTIONS
@@ -176,7 +179,8 @@ static QString getDateFromEstimateFile ( const QString& filename )
 										 nonClientEstimatesPrefix : emptyString );
 
 	const int idx ( filename.indexOf ( CHR_HYPHEN, estimateFilePrefix.count () + 1 ) );
-	if ( idx != -1 ) {
+	if ( idx != -1 )
+	{
 		const QString datestr ( filename.mid (
 									estimateFilePrefix.count (), idx - estimateFilePrefix.count () - 1 ) );
 		vmNumber date ( datestr, VMNT_DATE, vmNumber::VDF_FILE_DATE );
@@ -287,7 +291,7 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	connect ( btnReport, &QPushButton::clicked, btnReport, [&] () { return btnReport->showMenu (); } );
 
 	btnClose = new QPushButton ( TR_FUNC ( "Close" ) );
-	connect ( btnClose, &QPushButton::clicked, this, [&] () { close (); } );
+	connect ( btnClose, &QPushButton::clicked, this, [&] () { b_inItemSelectionMode ? cancelItemSelection () : static_cast<void>( close () ); } );
 
 	QHBoxLayout* hLayout3 ( new QHBoxLayout );
 	hLayout3->setMargin ( 2 );
@@ -381,6 +385,7 @@ void estimateDlg::setupActions ()
 	menuProject = new QMenu;
 	menuProject->addAction ( new vmAction ( PA_NEW_FULL, TR_FUNC ( "New project folder" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_NEW_EMPTY, TR_FUNC ( "New empty project folder" ), this ) );
+	menuProject->addAction ( new vmAction ( PA_CONVERT_FROM_ESTIMATE, TR_FUNC ( "New from estimate" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_RENAME, TR_FUNC ( "Rename project" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_REMOVE, TR_FUNC ( "Delete project folder" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_ADD_DOC, TR_FUNC ( "Add new DOC" ), this ) );
@@ -561,7 +566,7 @@ uint estimateDlg::actionIndex ( const QString& filename ) const
 
 void estimateDlg::updateButtons ()
 {
-	if ( !treeView->selectedItems ().isEmpty () )
+	if ( !b_inItemSelectionMode && !treeView->selectedItems ().isEmpty () )
 	{
 		const QTreeWidgetItem* sel_item ( treeView->selectedItems ().at ( 0 ) );
 		const uint type ( sel_item->data ( 0, ROLE_ITEM_TYPE ).toUInt () );
@@ -575,6 +580,7 @@ void estimateDlg::updateButtons ()
 		{
 			menuProject->actions ().at ( PA_NEW_FULL )->setEnabled ( type == TYPE_CLIENT_TOPLEVEL );
 			menuProject->actions ().at ( PA_NEW_EMPTY )->setEnabled ( type == TYPE_CLIENT_TOPLEVEL );
+			menuProject->actions ().at ( PA_CONVERT_FROM_ESTIMATE )->setEnabled ( type == TYPE_CLIENT_TOPLEVEL );
 			menuProject->actions ().at ( PA_RENAME )->setEnabled ( type == TYPE_PROJECT_DIR );
 			menuProject->actions ().at ( PA_REMOVE )->setEnabled ( type == TYPE_PROJECT_DIR );
 			menuProject->actions ().at ( PA_ADD_DOC )->setEnabled ( type == TYPE_PROJECT_DIR );
@@ -600,6 +606,17 @@ void estimateDlg::updateButtons ()
 		}
 		btnFileManager->menu ()->actions ().at ( 0 )->setEnabled ( true );
 	}
+	else
+	{
+		btnDoc->setEnabled ( false );
+		btnXls->setEnabled ( false );
+		btnPdf->setEnabled ( false );
+		btnVmr->setEnabled ( false );
+		btnProject->setEnabled ( false );
+		btnReport->setEnabled (	false );
+		btnEstimate->setEnabled ( false );
+		btnFileManager->setEnabled ( false );
+	}
 }
 
 void estimateDlg::openWithDoubleClick ( QTreeWidgetItem* item )
@@ -609,67 +626,111 @@ void estimateDlg::openWithDoubleClick ( QTreeWidgetItem* item )
 		execAction ( item, SFO_OPEN_FILE );
 }
 
-void estimateDlg::convertToProject ( QTreeWidgetItem* item )
+void estimateDlg::cancelItemSelection ()
 {
-	QString srcPath, targetPath, project_name, nonClientName;
-	QString clientName ( item->data ( 0, ROLE_ITEM_CLIENTNAME ).toString () );
-	const bool non_client ( clientName.isEmpty () );
+	b_inItemSelectionMode = false;
+	for ( int i ( 0 ); i < treeView->topLevelItemCount (); i++ )
+		treeView->topLevelItem ( i )->setDisabled ( false );
+	treeView->setCurrentItem ( targetItemInSelectionMode, 0, QItemSelectionModel::ClearAndSelect );
+	treeView->scrollToItem ( targetItemInSelectionMode, QAbstractItemView::PositionAtTop );
+	treeView->expandItem ( targetItemInSelectionMode );
+	treeView->expandItem ( targetItemInSelectionMode->child ( 0 ) ? targetItemInSelectionMode->child ( 0 ) : nullptr );
+	btnClose->setText ( TR_FUNC ( "Close" ) );
+	disconnect ( treeView, &QTreeWidget::itemSelectionChanged, nullptr, nullptr );
+	connect ( treeView, &QTreeWidget::itemSelectionChanged, this, [&] () { updateButtons (); } );
+	updateButtons ();
+}
 
-	if ( non_client )
+void estimateDlg::selectEstimateFromFile ( QTreeWidgetItem* targetClient )
+{
+	VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Select estimate file" ), TR_FUNC ( "Select one estimate file to be converted into "
+																			"a new project. Or press cancel to abort this operation." ), 5000 );
+	for ( int i ( 0 ); i < treeView->topLevelItemCount (); i++ )
 	{
-		if ( !vmNotify::inputBox ( clientName, this,  TR_FUNC ( "Convert estimate to which client project?" ),
-							 TR_FUNC ( "Client name: " ), emptyString, emptyString, emptyString, vmCompleters::CLIENT_NAME ) )
-			return;
-		srcPath = CONFIG ()->projectsBaseDir () + configOps::estimatesDirSuffix () + CHR_F_SLASH;
+		if ( treeView->topLevelItem ( i )->text ( 0 ) != nonClientStr )
+			treeView->topLevelItem ( i )->setDisabled ( true );
+		else {
+			treeView->setCurrentItem ( treeView->topLevelItem ( i ), 0, QItemSelectionModel::ClearAndSelect );
+			treeView->scrollToItem ( treeView->topLevelItem ( i ), QAbstractItemView::PositionAtTop );
+			treeView->expandItem ( treeView->topLevelItem ( i ) );
+			treeView->expandItem ( treeView->topLevelItem ( i )->child ( 0 ) );
+		}
+	}
+	targetClient->setDisabled ( false );
+	targetItemInSelectionMode = targetClient;
+	b_inItemSelectionMode = true;
+	updateButtons ();
+	btnClose->setText ( TR_FUNC ( "Cancel" ) );	
+	disconnect ( treeView, &QTreeWidget::itemSelectionChanged, nullptr, nullptr );
+	connect ( treeView, &QTreeWidget::itemSelectionChanged, this, [&] () { convertToProject ( treeView->currentItem () ) ; } );
+}
+
+void estimateDlg::convertToProject ( QTreeWidgetItem* item )
+{	
+	VM_NOTIFY ()->messageBox ( TR_FUNC ( "Choose destination job" ), TR_FUNC ( "Please select the client and the job to which to convert this estimate." ) );
+	if ( !m_npdlg )
+		m_npdlg = new newProjectDialog ( this );
+	m_npdlg->showDialog ( emptyString, true );
+	if ( !m_npdlg->resultAccepted () )
+		return;
+
+	QString project_name;	
+	bool bProceed ( false );
+	fileOps::st_fileInfo* f_info ( nullptr );
+	PointersList<fileOps::st_fileInfo*> files;
+	files.setAutoDeleteItem ( true );
+	jobListItem* jobItem ( nullptr );
+	
+	const QString targetPath ( m_npdlg->projectPath () );
+	if ( !fileOps::exists ( targetPath ).isUndefined () )
+	{
+		f_info = new fileOps::st_fileInfo;
+		bProceed = fileOps::createDir ( targetPath ).isOn ();
+		if ( bProceed )
+		{
+			project_name = fileOps::nthDirFromPath ( targetPath );
+			f_info->filename = project_name;
+			if ( f_info->filename.endsWith ( CHR_F_SLASH ) )
+				f_info->filename.chop ( 1 );
+			f_info->fullpath = targetPath;
+			f_info->is_dir = true;
+			f_info->is_file = false;
+			files.append ( f_info );
+			(void) fileOps::createDir ( targetPath + QLatin1String ( "Pictures" ) );
+			jobItem = m_npdlg->jobItem ();
+		}
 	}
 	else
-		srcPath = fileOps::dirFromPath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () );
+		return;
 
-	targetPath = CONFIG ()->projectsBaseDir () + clientName + CHR_F_SLASH;
-
-	const int btn (
-		vmNotify::customBox ( TR_FUNC ( "New project" ), TR_FUNC ( "Create new project or choose existing directory?" ),
-								  vmNotify::QUESTION, TR_FUNC ( "Choose existing " ), TR_FUNC ( "Create new" ), TR_FUNC ( "Cancel" ), this ) );
-	switch ( btn )
+	const QString srcPath ( fileOps::dirFromPath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () ) );
+	
+	if ( getDateFromProjectDir ( project_name ).isEmpty () )
 	{
-		case MESSAGE_BTN_OK: // Choose existing
-			project_name = fileOps::getExistingDir ( targetPath );
-			if ( project_name.isEmpty () )
-				return;
-			targetPath = project_name;
-		break;
-		case MESSAGE_BTN_CANCEL:
-		break;
-		default: // create new project
-			vmNotify::inputBox ( project_name, this, TR_FUNC ( "Project's new name" ),
-					 TR_FUNC ( "New name: " ), item->text ( 0 ) );
-			if ( project_name.isEmpty () )
-				return;
-			targetPath += project_name + CHR_F_SLASH;
-			if ( !fileOps::createDir ( targetPath ).isOn () ) //maybe first estimate for user, create dir
-				return;
-	}
-
-	PointersList<fileOps::st_fileInfo*> estimateFiles;
-	fileOps::st_fileInfo* f_info ( new fileOps::st_fileInfo );
-	f_info->filename = project_name;
-	f_info->fullpath = targetPath;
-	f_info->is_dir = true;
-	f_info->is_file = false;
-	estimateFiles.append ( f_info );
-		
-	const QString baseFilename ( fileOps::fileNameWithoutPath ( fileOps::filePathWithoutExtension ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () ) ) );
-	fileOps::lsDir ( estimateFiles, srcPath, QStringList () << baseFilename );
-	for ( uint i ( 1 ); i < estimateFiles.count (); ++i )
-	{
-		fileOps::copyFile ( targetPath + estimateFiles.at ( i )->filename, estimateFiles.at ( i )->fullpath );
+		vmNumber date ( getDateFromEstimateFile ( fileOps::nthDirFromPath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () ) ), VMNT_DATE );
+		project_name.prepend ( date.toDate ( vmNumber::VDF_FILE_DATE )  + CHR_SPACE + CHR_HYPHEN + CHR_SPACE );
 	}
 	
-	addToTree ( estimateFiles, clientName );
-	fileOps::createDir ( targetPath + QLatin1String ( "/Pictures/" ) );
-	if ( clientName == DATA ()->currentClientName () )
-		globalMainWindow->setUpJobButtons ( targetPath );
+	//const QString baseFilename ( fileOps::fileNameWithoutPath ( fileOps::filePathWithoutExtension ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () ) ) );
+	fileOps::lsDir ( files, srcPath, QStringList () << item->text ( 0 ).left ( item->text ( 0 ).indexOf	( CHR_L_PARENTHESIS ) - 1 ) );
+	for ( uint i ( 1 ); i < files.count (); ++i )
+	{
+		auto final_name = [] ( const QString& source ) -> QString { return ( source.endsWith ( CONFIG ()->projectSpreadSheetExtension () ) ? QLatin1String ( "Planilhas-" ) : QLatin1String ( "Projeto-" ) ) + source; };
+		const QString target_file ( final_name ( files.at ( i )->filename ) );
+		static_cast<void> ( fileOps::copyFile ( targetPath + target_file, files.at ( i )->fullpath ) );
+	}
+
+	changeJobData ( jobItem, targetPath, m_npdlg->projectID () );
+	if ( DATA ()->currentJob () == jobItem->jobRecord () ) //update view on main window if necessary
+		globalMainWindow->displayJob ( jobItem );
+
+	addToTree ( files, Client::clientName ( recIntValue ( jobItem->jobRecord (), FLD_JOB_CLIENTID ) ) );
 	VM_NOTIFY ()->messageBox ( TR_FUNC ( "Success!" ), project_name + TR_FUNC ( " was converted!" ) );
+	if ( b_inItemSelectionMode )
+	{
+		cancelItemSelection ();
+		
+	}
 }
 
 void estimateDlg::projectActions ( QAction *action )
@@ -691,6 +752,10 @@ void estimateDlg::projectActions ( QAction *action )
 			msgTitle = TR_FUNC ( "New Empty Project Creation - " );
 			msgBody[0] = TR_FUNC ( "Project %1 could not be created! Check the the error logs." );
 			msgBody[1] = TR_FUNC ( "Project %1 was created!" );
+		break;
+		case PA_CONVERT_FROM_ESTIMATE:
+			selectEstimateFromFile ( item );
+			return;
 		break;
 		case PA_RENAME:
 			bProceed = renameDir ( item, strProjectPath );
@@ -725,9 +790,10 @@ void estimateDlg::projectActions ( QAction *action )
 	{
 		if ( !m_npdlg )
 			m_npdlg = new newProjectDialog ( this );
-		m_npdlg->showDialog ( QString::number ( Client::clientID ( item->text ( 0 ) ) ) );
+		m_npdlg->showDialog ( item->text ( 0 ) );
 		bProceed = m_npdlg->resultAccepted ();
-		if ( bProceed ) {
+		if ( bProceed )
+		{
 			fileOps::st_fileInfo* f_info ( nullptr );
 			strProjectPath = m_npdlg->projectPath ();
 			if ( ( bProceed = !fileOps::exists ( strProjectPath ).isUndefined () ) )
@@ -801,8 +867,9 @@ jobListItem* estimateDlg::findJobByPath ( QTreeWidgetItem* const item )
 void estimateDlg::changeJobData ( jobListItem* const jobItem, const QString& strProjectPath, const QString& strProjectID )
 {
 	if ( jobItem != nullptr ) 
-	{
-		jobItem->setAction ( ACTION_EDIT, false );
+	{	
+		jobItem->loadData ();
+		jobItem->setAction ( ACTION_EDIT, true );
 		Job* job ( jobItem->jobRecord () );
 		setRecValue ( job, FLD_JOB_PROJECT_PATH, strProjectPath );
 		setRecValue ( job, FLD_JOB_PICTURE_PATH, strProjectPath + QLatin1String ( "Pictures/" ) );

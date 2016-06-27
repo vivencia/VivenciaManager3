@@ -58,7 +58,7 @@ UserManagement::UserManagement ()
     : user_rec ( nullptr ), mDlgWindow ( nullptr ), mPasswdMngr ( nullptr )
 {
     user_rec = new userRecord;
-	mPasswdMngr = new passwordManager ( passwordManager::PWSS_SAVE );
+	mPasswdMngr = new passwordManager ( QStringLiteral ( "usrmngr" ), passwordManager::PWSS_SAVE );
     addPostRoutine ( deleteUserManagementInstance );
 }
 

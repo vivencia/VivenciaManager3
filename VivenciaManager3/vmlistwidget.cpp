@@ -40,7 +40,7 @@ void vmListWidget::setCurrentRow ( int row, const bool b_makecall )
 	}
 }
 
-void vmListWidget::addItem ( vmListItem* item )
+void vmListWidget::addItem ( vmListItem* item, const bool b_makecall )
 {
 	if ( item != nullptr )
 	{
@@ -53,13 +53,13 @@ void vmListWidget::addItem ( vmListItem* item )
 			mCurrentItem = item;
 			scrollToItem ( mCurrentItem );
 			setCurrentCell ( row, 0, QItemSelectionModel::ClearAndSelect );
-			if ( mCurrentItemChangedFunc )
+			if ( b_makecall && mCurrentItemChangedFunc )
 				mCurrentItemChangedFunc ( mCurrentItem );
 		}
 	}
 }
 
-void vmListWidget::clear (const bool b_ignorechanges , const bool b_del )
+void vmListWidget::clear ( const bool b_ignorechanges, const bool b_del )
 {
 	setIgnoreChanges ( b_ignorechanges ); //once called, the callee must set/unset this property
 	removeRow ( 0, rowCount (), b_del );

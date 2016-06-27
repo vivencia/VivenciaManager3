@@ -16,7 +16,7 @@ void cleanCrashInfo ()
 	for ( uint i ( 0 ); i < temp_files.count (); ++i ) {
 		df.setName ( temp_files.at ( i )->fullpath );
 		if ( df.open () ) {
-			if ( df.load () ) {
+			if ( df.load ().isOn () ) {
 				if ( df.recCount () > 0 )
 					continue;
 			}
@@ -54,7 +54,7 @@ bool crashRestore::needRestore ()
     if ( crashInfoLoaded.isUndefined () ) {
         if ( fileOps::exists ( m_filename ).isOn () ) {
             if ( fileCrash->open () ) {
-                if ( fileCrash->load () )
+                if ( fileCrash->load ().isOn () )
                     ret = ( fileCrash->recCount () > 0 );
             }
         }

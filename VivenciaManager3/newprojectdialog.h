@@ -19,7 +19,7 @@ class newProjectDialog : public QDialog
 public:
     explicit newProjectDialog ( QWidget* parent = nullptr );
     virtual ~newProjectDialog ();
-    void showDialog ( const QString& clientid );
+    void showDialog ( const QString& clientname, const bool b_allow_other_client = false );
 
     inline const QString& projectPath () const { return mProjectPath; }
     inline const QString& projectID () const { return mProjectID; }
@@ -27,6 +27,7 @@ public:
     inline bool resultAccepted () const { return bresult; }
 
 private:
+	void loadJobsList ( const int clientid );
     void jobTypeItemSelected ( vmListItem* item );
     void txtProjectNameAltered ( const vmWidget* const );
     void btnChooseExistingDir_clicked ();
@@ -37,6 +38,7 @@ private:
 
     vmListWidget* lstJobTypes;
     vmLineEdit* txtProjectName;
+	vmComboBox* cboClients;
     vmCheckBox* chkUseDefaultName;
     QPushButton* btnOK, *btnCancel;
     QToolButton* btnChooseExistingDir;

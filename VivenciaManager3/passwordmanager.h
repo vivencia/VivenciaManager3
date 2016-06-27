@@ -13,9 +13,9 @@ class passwordManager
 public:
 
 	enum PassWdSaveState {
-		PWSS_DO_NOT_SAVE = 0, PWSS_SAVE_TEMP = 1, PWSS_SAVE = 2 };
+		PWSS_DO_NOT_SAVE = -1, PWSS_SAVE_TEMP = 0, PWSS_SAVE = 1 };
 
-	explicit passwordManager ( const PassWdSaveState s_state = PWSS_DO_NOT_SAVE );
+	explicit passwordManager ( const QString& pwd_id, const PassWdSaveState s_state = PWSS_DO_NOT_SAVE );
 	~passwordManager ();
 
 	bool remove ( const QString& id );
@@ -32,14 +32,15 @@ public:
 	bool toFile ( QFile* file, const QString& id = QString::null ) const;
 	bool fromFile ( QFile* const file, const bool overwrite = false );
 
-	bool sudoPassword ( QString& r_passwd, const QString& message );
+	inline void setSaveState ( const PassWdSaveState s_state ) { ms_state = s_state; }
+	bool sudoPassword ( QString& r_passwd, const QString& message, const PassWdSaveState save_state = PWSS_SAVE_TEMP );
 	bool askPassword ( QString& passwd, const QString& id, const QString& message );
 
 private:
 	QHash<QString,QString> mPairs;
 	PassWdSaveState ms_state;
 	QString mFilename;
-	QFile* mFile;
+	QFile* mFile, *mRootFile;
 	bool mbUpToDate;
 
 	bool insert ( const QString& id, const QString& password );

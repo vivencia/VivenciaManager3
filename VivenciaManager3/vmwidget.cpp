@@ -130,3 +130,14 @@ void vmWidget::showContextMenu ( const QPoint& pos )
 	if ( contextmenu_func )
 		contextmenu_func ( pos, this );
 }
+
+/* Compost widgets have a problem when setting/getting properties. Depending from whence they are called sub widgets might be referenced
+ * by the caller and those sub widgets might not have gotten all the properties from the parent widget. One TODO feature is to have a
+ * list of all sub widgets and recursively call them setting a property when said property is set for the parent widget
+ * */
+void vmWidget::setOwnerItem ( vmTableItem* const item )
+{
+	 m_sheetItem = item;
+	 if ( m_type == WT_LINEEDIT_WITH_BUTTON )
+		 static_cast<vmLineEditWithButton*> ( toQWidget () )->lineControl ()->setOwnerItem ( item );
+}

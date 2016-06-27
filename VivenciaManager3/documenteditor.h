@@ -20,16 +20,14 @@ class QDockWidget;
 class documentEditor : public QMainWindow
 {
 
-	Q_OBJECT
-
 public:
+	virtual ~documentEditor ();
 	textEditor* startNewTextEditor ();
 	reportGenerator* startNewReport ( const bool b_windowless = false );
 
 	void addDockWindow ( Qt::DockWidgetArea area, QDockWidget* dockwidget );
 	void removeDockWindow ( QDockWidget* dockwidget );
 
-public slots:
 	void updateMenus ( const int tab_index );
 	void updateWindowMenu ();
 	void newTextDocument ();
@@ -51,6 +49,9 @@ public slots:
 	void activatePreviousTab ();
 	void showCalc ();
 
+protected:
+	void closeEvent ( QCloseEvent* );
+	
 private:
 	explicit documentEditor ( QWidget* parent = nullptr );
 
@@ -64,8 +65,6 @@ private:
 	{
 		return static_cast<documentEditorWindow*>( tabDocuments->currentWidget () );
 	}
-
-	documentEditorWindow* findMdiChild ( const QString& fileName ) const;
 
 	QString buildFilter () const;
 	void resizeViewPort ( documentEditorWindow* window );

@@ -399,6 +399,7 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 				cols[PHR_VALUE].label = tr ( "Value" );
 				cols[PHR_VALUE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
 				cols[PHR_VALUE].text_type = vmLineEdit::TT_PRICE;
+				cols[PHR_VALUE].wtype = WT_LINEEDIT_WITH_BUTTON;
 			break;
 			case PHR_PAID:
 				cols[PHR_PAID].label = tr ( "Paid?" );
@@ -965,6 +966,12 @@ void vmTableWidget::setEditable ( const bool editable )
 			disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
 	}
 	vmWidget::setEditable ( editable );
+}
+
+void vmTableWidget::setLastUsedRow ( const int row )
+{
+	if ( row > m_lastUsedRow &&	row < ( isPlainTable () ? rowCount () : static_cast<int>( totalsRow () ) ) ) 
+		m_lastUsedRow = row;
 }
 
 uint vmTableWidget::selectedRowsCount () const

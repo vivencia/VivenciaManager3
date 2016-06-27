@@ -77,7 +77,7 @@ public:
 	void showContextMenu ( const QPoint& pos );
 
 	inline const vmTableItem* ownerItem () const { return m_sheetItem; }
-	inline void setOwnerItem ( vmTableItem* const item ) { m_sheetItem = item; }
+	void setOwnerItem ( vmTableItem* const item );
 
 	/* When data is a vmNumber, its internal data structure, privateData, must have the number member created and operational.
 	 * For that, call that number's copyNumber method ( a member of vmBaseType ) with itself as argument before calling this method
