@@ -2,7 +2,8 @@
 # Project created by QtCreator 2010-03-22T17:08:20
 # -------------------------------------------------
 QT += sql \
-    printsupport
+	  dbus \
+      printsupport
 
 TARGET = VivenciaManager3
 TEMPLATE = app
@@ -68,7 +69,6 @@ SOURCES += main.cpp \
     completerrecord.cpp \
     dbcalendar.cpp \
     searchui.cpp \
-    passwordmanager.cpp \
     usermanagementui.cpp \
     contactsmanagerwidget.cpp \
     machinesrecord.cpp \
@@ -80,7 +80,12 @@ SOURCES += main.cpp \
     vmlistwidget.cpp \
     vmtableutils.cpp \
     vmlistitem.cpp \
-    vmlinefilter.cpp
+    vmlinefilter.cpp \
+    keychain/gnomekeyring.cpp \
+    keychain/keychain_unix.cpp \
+    keychain/keychain.cpp \
+    keychain/kwallet_interface.cpp \
+    keychain/passwordsessionmanager.cpp
 
 HEADERS += dbrecord.h \
 	vmnumberformats.h \
@@ -148,7 +153,6 @@ HEADERS += dbrecord.h \
     completerrecord.h \
     dbcalendar.h \
     searchui.h \
-    passwordmanager.h \
     usermanagementui.h \
     contactsmanagerwidget.h \
     machinesrecord.h \
@@ -162,12 +166,19 @@ HEADERS += dbrecord.h \
     vmlistwidget.h \
     vmtableutils.h \
     vmlistitem.h \
-    vmlinefilter.h
+    vmlinefilter.h \
+    keychain/gnomekeyring_p.h \
+    keychain/keychain_p.h \
+    keychain/keychain.h \
+    keychain/kwallet_interface.h \
+    keychain/passwordsessionmanager.h
+
 FORMS += mainwindow.ui \
 	backupdialog.ui \
     companypurchasesui.ui \
     configdialog.ui
-RESOURCES += resources.qrc
+RESOURCES += \
+    resources.qrc
 LIBS += -L/usr/lib -lhunspell -lbz2
 DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS
 INCLUDEPATH += -I/usr/include
@@ -179,3 +190,21 @@ QMAKE_CXXFLAGS += -Werror -Wall -Wextra -pedantic -std=c++14
 TRANSLATIONS += i18n/VivenciaManager_pt_BR.ts
 
 OTHER_FILES +=
+
+DISTFILES += \
+    files/spreadsheet.xlsx \
+    project_files/spreadsheet.xlsx \
+    files/project.docx \
+    project_files/project.docx \
+    qtkeychain/org.kde.KWallet.xml \
+    files/vivencia.jpg \
+    project_files/vivencia.jpg \
+    project_files/vivencia_report_logo.jpg \
+    files/splash.png \
+    resources/run.png \
+    resources/useradd.png \
+    resources/vm-logo.png \
+    resources/circle_black.svg \
+    files/User_pt_BR.dic \
+    Optimization_and_code_sanity.txt \
+    i18n/VivenciaManager_pt_BR.ts

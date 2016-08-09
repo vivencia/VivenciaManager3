@@ -11,7 +11,7 @@ public:
 	vmListWidget ( QWidget* parent = nullptr, const uint nRows = 0 );
 	virtual ~vmListWidget ();
 
-	inline void setIgnoreChanges ( const bool b_ignore ) { rowActivatedConnection ( !(mbIgnore = b_ignore) ); }
+	void setIgnoreChanges ( const bool b_ignore );
 	inline bool isIgnoringChanges () const { return mbIgnore; }
 	inline void setCurrentItem ( const vmListItem* const item, const bool b_makecall ) { setCurrentRow ( item ? item->row () : -1, b_makecall ); }
 	void setCurrentRow ( int row, const bool b_makecall );

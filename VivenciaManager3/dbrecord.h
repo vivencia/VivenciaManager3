@@ -145,8 +145,7 @@ public:
 	inline RECORD_ACTION action () const { return m_action; }
 	inline RECORD_ACTION prevAction () const { return m_prevaction; }
 	void setAction ( const RECORD_ACTION action );
-	static void addToTemporaryRecords ( DBRecord* dbrec );
-	static void removeFromTemporaryRecords ( DBRecord* dbrec );
+	static void createTemporaryRecord ( DBRecord* dbrec );
 
 	inline bool inSync () const { return mb_synced; }
 	void sync ( const int src_index, const bool b_force );
@@ -239,7 +238,6 @@ protected:
 	RECORD_ACTION m_action, m_prevaction;
 
 	st_Query stquery;
-	static PointersList<DBRecord*> tempNewRecs[TABLES_IN_DB];
 
 	alterRecord fptr_change;
 	alterRecordInt fptr_changeInt;

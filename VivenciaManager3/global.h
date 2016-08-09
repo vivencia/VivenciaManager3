@@ -102,9 +102,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 0
-#define VERSION_REVISION 20
-constexpr const QLatin1String VERSION_APPEND ( "On the eve of the Festival", 26 );
-constexpr const QLatin1String VERSION_DATE ( "2016-05-26", 10 );
+#define VERSION_REVISION 22
+constexpr const QLatin1String VERSION_APPEND ( "To work, not to work", 20 );
+constexpr const QLatin1String VERSION_DATE ( "2016-07-24", 10 );
 
 static const QString PROGRAM_VERSION (
     QUOTEME(VERSION_MAJOR) + CHR_DOT +
@@ -113,7 +113,8 @@ static const QString PROGRAM_VERSION (
     VERSION_APPEND + CHR_SPACE + CHR_L_PARENTHESIS + VERSION_DATE + CHR_R_PARENTHESIS
 );
 
-#define ICON(name) QIcon ( QStringLiteral ( ":resources/" name ) )
+//#define ICON(name) QIcon ( QStringLiteral ( ":resources/" name ) )
+#define ICON(name) QIcon::fromTheme ( QStringLiteral ( name ), QIcon ( QStringLiteral ( ":resources/" name"" ) ) )
 #define PIXMAP(name) QPixmap ( QStringLiteral ( ":resources/" name ) )
 
 extern bool EXITING_PROGRAM;
@@ -124,6 +125,8 @@ static const QString UBUNTU ( QStringLiteral ( "Ubuntu" ) );
 static const QString STR_MYSQL ( QStringLiteral ( "mysql" ) );
 static const QString SYSTEMD ( QStringLiteral ( "systemd" ) );
 static const QString UPSTART ( QStringLiteral ( "upstart" ) );
+static const QString SYSTEM_ROOT_SERVICE ( QStringLiteral ( "SYSTEM_ROOT_SERVICE" ) );
+static const QString SYSTEM_ROOT_PASSWORD_ID ( QStringLiteral ( "SYSTEM_ROOT_PASSWORD_ID" ) );
 
 //#ifdef TRANSITION_PERIOD
 static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase3" ) );

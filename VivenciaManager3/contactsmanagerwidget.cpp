@@ -51,11 +51,11 @@ void contactsManagerWidget::initInterface ()
 
 	btnAdd = new QToolButton ( this );
 	btnAdd->setCheckable ( true );
-	btnAdd->setIcon ( ICON ( "add.png" ) );
+	btnAdd->setIcon ( ICON ( "add" ) );
 	connect ( btnAdd, static_cast<void (QToolButton::*)( bool )>( &QToolButton::clicked ), this, [&] ( const bool checked ) {
 		return btnAdd_clicked ( checked ); } );
 	btnDel = new QToolButton ( this );
-	btnDel->setIcon ( ICON ( "remove.png" ) );
+	btnDel->setIcon ( ICON ( "remove" ) );
 	connect ( btnDel, &QToolButton::clicked, this, [&] () {
 		return btnDel_clicked (); } );
 
@@ -69,7 +69,7 @@ void contactsManagerWidget::initInterface ()
 	if ( m_contact_type == CMW_EMAIL )
 	{
 		btnExtra = new QToolButton ( this );
-		btnExtra->setIcon ( ICON ( "email.png" ) );
+		btnExtra->setIcon ( ICON ( "email" ) );
 		connect ( btnExtra, &QToolButton::clicked, this, [&] () {
 			return btnExtra_clicked (); } );
 		btnExtra->setEnabled ( false );

@@ -29,17 +29,17 @@ userManagementUI::userManagementUI ( QWidget* parent )
 {
 	btnInsertUser = new QToolButton;
 	btnInsertUser->setCheckable ( true );
-	btnInsertUser->setIcon ( ICON ( "browse-controls/add.png" ) );
+	btnInsertUser->setIcon ( ICON ( "browse-controls/add" ) );
 	connect ( btnInsertUser, static_cast<void (QToolButton::*)(const bool)>( &QToolButton::clicked ), this, [&] ( const bool checked ) { return btnInsertUser_clicked ( checked ); } );
 
 	btnEditUser = new QToolButton;
 	btnEditUser->setCheckable ( true );
-	btnEditUser->setIcon ( ICON ( "browse-controls/edit.png" ) );
+	btnEditUser->setIcon ( ICON ( "browse-controls/edit" ) );
 	btnEditUser->setEnabled ( false );
 	connect ( btnEditUser, static_cast<void (QToolButton::*)(const bool)>( &QToolButton::clicked ), this, [&] ( const bool checked ) { return btnEditUser_clicked ( checked ); } );
 
 	btnRemoveUser = new QToolButton;
-	btnRemoveUser->setIcon ( ICON ( "remove.png" ) );
+	btnRemoveUser->setIcon ( ICON ( "remove" ) );
 	btnRemoveUser->setEnabled ( false );
 	connect ( btnRemoveUser, &QToolButton::clicked, this, [&] () { return btnRemoveUser_clicked (); } );
 
@@ -91,7 +91,7 @@ userManagementUI::userManagementUI ( QWidget* parent )
 	}*/
 	tablesView->setEditable ( false );
 
-	btnClose = new QPushButton ( ICON ( "cancel.png" ), tr ( "Close" ) );
+	btnClose = new QPushButton ( ICON ( "cancel" ), tr ( "Close" ) );
 	connect ( btnClose, &QPushButton::clicked, this, [&] () { return btnClose_clicked (); } );
 
 	lblStatusBar = new QLabel;
@@ -191,7 +191,7 @@ void userManagementUI::btnInsertUser_clicked ( const bool checked )
 	tablesView->setEditable ( checked );
 	btnEditUser->setEnabled ( !checked );
 	btnRemoveUser->setEnabled ( !checked );
-	btnInsertUser->setIcon ( checked ? ICON ( "document-save.png" ) : ICON ( "browse-controls/add.png" ) );
+	btnInsertUser->setIcon ( checked ? ICON ( "document-save" ) : ICON ( "browse-controls/add" ) );
 	if ( checked ) {
 		txtEditUserName->clear ();
 		txtEditUserName->setFocus ();
@@ -216,7 +216,7 @@ void userManagementUI::btnEditUser_clicked ( const bool checked )
 	tablesView->setEditable ( checked );
 	btnInsertUser->setEnabled ( !checked );
 	btnRemoveUser->setEnabled ( !checked );
-	btnEditUser->setIcon ( checked ? ICON ( "document-save.png" ) : ICON ( "browse-controls/edit.png" ) );
+	btnEditUser->setIcon ( checked ? ICON ( "document-save" ) : ICON ( "browse-controls/edit" ) );
 	if ( checked )
 		txtEditPassword->setFocus ();
 	else {

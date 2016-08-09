@@ -18,6 +18,7 @@
 #include "dbsuppliesui.h"
 #include "suppliersdlg.h"
 #include "fast_library_functions.h"
+#include "keychain/passwordsessionmanager.h"
 
 #include <QApplication>
 #include <QClipboard>
@@ -27,6 +28,7 @@
 #include <QListWidget>
 #include <QMenu>
 #include <QPoint>
+#include <QIcon>
 #include <QDesktopWidget>
 
 extern "C"
@@ -36,6 +38,7 @@ extern "C"
 
 static const QString MYSQL_INIT_SCRIPT ( QStringLiteral ( "/etc/init.d/mysql" ) );
 QString APP_START_CMD ( emptyString );
+QIcon* listIndicatorIcons[4] = { nullptr };
 
 #define ERR_DATABASE_PROBLEM 1
 #define ERR_MYSQL_NOT_FOUND 2
@@ -92,21 +95,23 @@ bool Data::checkSystem ( const bool bFirstPass )
 	if ( !fileOps::exists ( MYSQL_INIT_SCRIPT).isOn () ) {
 		QMessageBox::critical ( nullptr, APP_TR_FUNC ( "MYSQL is not installed - Exiting" ),
 			QApplication::tr ( "Could not find mysql init script at " ) + MYSQL_INIT_SCRIPT +
-			QApplication::tr ( "Please check if mysql-client and mysql-server are installed." ), QMessageBox::Ok );
+			QApplication::tr ( ". Please check if mysql-client and mysql-server are installed." ), QMessageBox::Ok );
 		::exit ( ERR_MYSQL_NOT_FOUND );
 	}
 
 	const QString groups ( fileOps::executeAndCaptureOutput ( fileOps::currentUser (), QStringLiteral ( "groups" ) ) );
 	bool ret ( groups.contains ( QRegExp ( QStringLiteral ( "mysql|root" ) ) ) );
 	if ( !ret && bFirstPass ) {
-		const QString args ( fileOps::currentUser () + QLatin1String ( " mysql" ) );
-		if ( fileOps::executeWait ( args, QStringLiteral ( "adduser" ), nullptr,
-							   QApplication::tr ( "To access mysql databases you need to belong the the mysql group."
-									   "This program will add you to that group, but it needs the administrator password." )
-							 ) )
+		QString passwd;
+		if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( passwd, SYSTEM_ROOT_SERVICE, SYSTEM_ROOT_PASSWORD_ID,
+			APP_TR_FUNC ( "To access mysql databases you need to belong the the mysql group. This program will add you to that group, "
+						  "but it needs administrator privileges." ) ) )
+		{
+			static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( passwd, QLatin1String ( "adduser " ) + fileOps::currentUser () + QLatin1String ( " mysql" ) ) ) );
 			ret = checkSystem ( false );
-		if ( !ret )
-			::exit ( ERR_USER_NOT_ADDED_TO_MYSQL_GROUP );
+			if ( !ret )
+				::exit ( ERR_USER_NOT_ADDED_TO_MYSQL_GROUP );
+		}
 	}
 	return ret;
 }
@@ -165,8 +170,9 @@ void Data::checkDatabase ()
 	else {
 		( void ) QMessageBox::critical ( nullptr,
 										 APP_TR_FUNC ( "Could not connect to mysql server" ),
-										 APP_TR_FUNC ( "The application will now exit. Try to manually start the mysql daemon"
-												 " or troubleshoot for the problem if it persists." ), QMessageBox::Ok );
+										 APP_TR_FUNC (	"Make sure the packages mysql-client/server are installed. "
+														"The application will now exit. Try to manually start the mysql daemon"
+														" or troubleshoot for the problem if it persists." ), QMessageBox::Ok );
 		::exit ( ERR_DATABASE_PROBLEM );
 	}
 }
@@ -189,6 +195,9 @@ Data::Data ()
 Data::~Data ()
 {
 	//globalMainWindow = nullptr;
+	delete listIndicatorIcons[1];
+	delete listIndicatorIcons[2];
+	delete listIndicatorIcons[3];
 }
 
 void Data::startUserInteface ()
@@ -200,6 +209,11 @@ void Data::startUserInteface ()
 
 void Data::loadDataIntoMemory ()
 {
+	// Initialize icons here, once and for all. Not the most logical place, but I don't have that place yet
+	listIndicatorIcons[static_cast<int>( ACTION_DEL)] = new QIcon ( ICON ( "listitem-delete" ) );
+	listIndicatorIcons[static_cast<int>( ACTION_ADD)] = new QIcon ( ICON ( "listitem-add" ) );
+	listIndicatorIcons[static_cast<int>( ACTION_EDIT)] = new QIcon ( ICON ( "listitem-edit" ) );
+	
 	// To debug the GUI, it is possible to introduce a return here and skip all the code below
 	clientListItem* client_item ( nullptr );
 	jobListItem* job_item ( nullptr );
@@ -207,8 +221,8 @@ void Data::loadDataIntoMemory ()
 	buyListItem* buy_item ( nullptr ), *buy_item2 ( nullptr );
 	QString jobid;
 
-	int id ( VDB ()->firstDBRecord ( TABLE_CLIENT_ORDER ) );
-	const int lastRec ( VDB ()->lastDBRecord ( TABLE_CLIENT_ORDER ) );
+	int id ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) );
+	const int lastRec ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
 
 	Client client;
 	Job job;

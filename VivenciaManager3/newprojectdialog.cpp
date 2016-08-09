@@ -27,7 +27,7 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 		return txtProjectNameAltered ( widget ); } );
 
 	btnChooseExistingDir = new QToolButton;
-	btnChooseExistingDir->setIcon( ICON ( "folder-brown.png" ) );
+	btnChooseExistingDir->setIcon( ICON ( "folder-brown" ) );
 	connect ( btnChooseExistingDir, &QToolButton::clicked, this, [&] () { return btnChooseExistingDir_clicked (); } );
 
 	chkUseDefaultName = new vmCheckBox ( TR_FUNC ( "Use automatically generated name" ) );
@@ -73,7 +73,7 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 
 newProjectDialog::~newProjectDialog () {}
 
-void newProjectDialog::showDialog ( const QString& clientname, const bool b_allow_other_client )
+void newProjectDialog::showDialog ( const QString& clientname, const bool b_allow_other_client, const bool b_allow_name_change )
 {
 	if ( cboClients->count () == 0 )
 	{
@@ -88,6 +88,9 @@ void newProjectDialog::showDialog ( const QString& clientname, const bool b_allo
 	}
 	cboClients->setEditable ( b_allow_other_client );
 	cboClients->setIgnoreChanges ( !b_allow_other_client );
+	txtProjectName->setEnabled ( b_allow_name_change );
+	btnChooseExistingDir->setEnabled ( b_allow_name_change );
+	chkUseDefaultName->setEnabled ( b_allow_name_change );
 	exec ();
 }
 

@@ -65,7 +65,7 @@ void machinesDlg::showJobMachineUse ( const QString& jobid )
 void machinesDlg::setupUI ()
 {
 	setWindowFlags ( Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint );
-	setWindowIcon ( ICON ( "job_machines.png" ) );
+	setWindowIcon ( ICON ( "job_machines" ) );
 	setWindowTitle ( tr ( "Machines and events" ) );
 
 	cboEvents = new vmComboBox;
@@ -79,10 +79,10 @@ void machinesDlg::setupUI ()
 	cboType = new vmComboBox;
 	cboType->setID ( FLD_MACHINES_TYPE );
 	btnAddEvent = new QToolButton;
-	btnAddEvent->setIcon ( ICON ( "add.png" ) );
+	btnAddEvent->setIcon ( ICON ( "add" ) );
 	btnAddEvent->setToolTip ( tr ( "Add an event to the selected job" ) );
 	btnDelEvent = new QToolButton;
-	btnDelEvent->setIcon ( ICON ( "remove.png" ) );
+	btnDelEvent->setIcon ( ICON ( "remove" ) );
 	btnDelEvent->setToolTip ( tr ( "Remove the current event for the job" ) );
 	dteEventDate = new vmDateEdit;
 	dteEventDate->setID ( FLD_MACHINES_EVENT_DATES );
@@ -93,7 +93,7 @@ void machinesDlg::setupUI ()
 	txtJob = new vmLineEdit;
 	txtJob->setID ( FLD_MACHINES_EVENT_JOBS );
 	btnSelectJob = new QToolButton;
-	btnSelectJob->setIcon ( ICON ( "job_info.png" ) );
+	btnSelectJob->setIcon ( ICON ( "job_info" ) );
 	btnSelectJob->setToolTip ( tr ( "Choose job associated with this machine event" ) );
 	QHBoxLayout* layoutJobMachineEvents ( new QHBoxLayout );
 	grpJobMachineEvents = new vmActionGroup;
@@ -108,13 +108,13 @@ void machinesDlg::setupUI ()
 	grpHistory->addEntry ( tableMachineHistory, new QHBoxLayout (), true );
 	//grpJobMachineEvents->addQEntry ( new QLabel ( tr ( "Total use time: " ) ), layoutJobMachineEvents );
 
-	btnEdit = new QPushButton ( ICON ( "browse-controls/edit.png" ), tr ( "Edit" ) );
+	btnEdit = new QPushButton ( ICON ( "browse-controls/edit" ), tr ( "Edit" ) );
 	btnEdit->setToolTip ( tr ( "Manage machines information" ) );
-	btnCancel = new QPushButton ( ICON ( "cancel.png" ), tr ( "Cancel" ) );
+	btnCancel = new QPushButton ( ICON ( "cancel" ), tr ( "Cancel" ) );
 	btnCancel->setToolTip ( tr ( "Cancel alterations" ) );
-	btnSave = new QPushButton ( ICON ( "document-save.png" ), tr ( "Save" ) );
+	btnSave = new QPushButton ( ICON ( "document-save" ), tr ( "Save" ) );
 	btnSave->setToolTip ( tr ( "Save alterations" ) );
-	btnClose = new QPushButton ( ICON ( "exit_app.png" ), tr ( "Close" ) );
+	btnClose = new QPushButton ( ICON ( "exit_app" ), tr ( "Close" ) );
 	btnClose->setToolTip ( tr ( "Close the dialog" ) );
 
 	QHBoxLayout* layoutRow_0 ( new QHBoxLayout );

@@ -96,14 +96,14 @@ public:
 	void clientsListWidget_currentItemChanged ( vmListItem* item );
 	void controlClientForms ( const clientListItem* const client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
-    void loadClientInfo ( const Client* const client );
+	void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const int id ) const;
 	void fillAllLists ( const clientListItem* client_item );
-    void btnClientAdd_clicked ();
-    void btnClientEdit_clicked ();
-    void btnClientDel_clicked ();
-    void btnClientSave_clicked ();
-    void btnClientCancel_clicked ();
+	void btnClientAdd_clicked ();
+	void btnClientEdit_clicked ();
+	void btnClientSave_clicked ();
+	void btnClientDel_clicked ();
+	void btnClientCancel_clicked ();
 //--------------------------------------------CLIENT------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-CLIENT-----------------------------------------------------------
@@ -126,30 +126,30 @@ public:
 	void jobKeyPressedSelector ( const QKeyEvent* ke );
 	void jobsListWidget_currentItemChanged ( vmListItem* item );
 	void jobDayReportListWidget_currentItemChanged ( vmListItem* item );
-    void controlJobForms ( const jobListItem* const job_item );
-    void controlJobDayForms ( const jobListItem* const job_item );
-    void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
+	void controlJobForms ( const jobListItem* const job_item );
+	void controlJobDayForms ( const jobListItem* const job_item );
+	void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
-    void loadJobInfo ( const Job* const job );
+	void loadJobInfo ( const Job* const job );
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
 	void scanJobImages ();
-    void decodeJobReportInfo ( const Job* const job );
+	void decodeJobReportInfo ( const Job* const job );
 	void updateJobInfo ( const QString& text, const uint user_role );
-    void updateJobInfoByRemoval ( const uint day , const bool bUndo = false );
+	void updateJobInfoByRemoval ( const uint day , const bool bUndo = false );
 	void addJobPayment ( jobListItem* const job_item );
 	void saveJobPayment ( jobListItem* const job_item );
 	void removeJobPayment ( payListItem* pay_item );
 	void alterJobPayPrice ( jobListItem* const job_item );
 	void calcJobTime ();
 	void showJobTotalTime ( const vmNumber& time ) const;
-    triStateType dateIsInDaysList ( const QString& str_date );
-    void rescanJobDaysList ();
-    void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
+	triStateType dateIsInDaysList ( const QString& str_date );
+	void rescanJobDaysList ();
+	void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
 	void controlFormsForJobSelection ( const bool bStartSelection );
 	void selectJob ();
 	void btnJobSelect_clicked ();
 	void btnJobAddDay_clicked ();
-    void btnJobEditDay_clicked ();
+	void btnJobEditDay_clicked ();
 	void btnJobDelDay_clicked ();
 	void btnJobCancelDelDay_clicked ();
 	void btnJobPrevDay_clicked ();
@@ -171,7 +171,7 @@ public:
 	void timeJobStart_timeAltered ();
 	void timeJobEnd_timeAltered ();
 	void dteJob_dateAltered ( const vmWidget* const sender );
-    void dteJobAddDate_dateAltered ();
+	void dteJobAddDate_dateAltered ();
 //--------------------------------------------EDITING-FINISHED-JOB-----------------------------------------------------------
 
 //--------------------------------------------PAY------------------------------------------------------------
@@ -190,7 +190,7 @@ public:
 	void payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION new_action );
 	void controlPayForms ( const payListItem* const pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
-    void loadPayInfo ( const Payment* const pay );
+	void loadPayInfo ( const Payment* const pay );
 	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
 	void fillCalendarPaysList ( const stringTable& payids, vmListWidget* list, const bool use_date = false );
 	void loadClientOverduesList ();
@@ -218,9 +218,9 @@ public:
 	void updateCalendarWithBuyInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateCalendarWithBuyPayInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
-    void controlBuyForms ( const buyListItem* const buy_item );
+	void controlBuyForms ( const buyListItem* const buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
-    void loadBuyInfo ( const Buy* const buy );
+	void loadBuyInfo ( const Buy* const buy );
 	buyListItem* getBuyItem ( const clientListItem* const parent_client, const int id ) const;
 	void fillJobBuyList ( const jobListItem* parent_job );
 	void fillCalendarBuysList ( const stringTable& buyids, vmListWidget* list, const bool pay_date = false );
@@ -244,17 +244,17 @@ public:
 	bool restoreItem ( const stringRecord& restore_info );
 	void restoreLastSession ();
 	void searchCallbackSelector ( const QKeyEvent* ke );
-    void setupLeftPanel ();
+	void setupLeftPanel ();
 	void setupWorkFlow ();
 	void setupTabNavigationButtons ();
-    void syncLeftPanelWithWorkFlow ( const int value );
-    void syncWorkFlowWithLeftPanel ( const int value );
+	void syncLeftPanelWithWorkFlow ( const int value );
+	void syncWorkFlowWithLeftPanel ( const int value );
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 
 //--------------------------------------------CALENDAR-----------------------------------------------------------
 	void setupCalendarMethods ();
 	void calMain_activated ( const QDate& date, const bool bUserAction = true );
-    void updateCalendarView ( const uint year, const uint month );
+	void updateCalendarView ( const uint year, const uint month );
 	void tboxCalJobs_currentChanged ( const int index );
 	void tboxCalPays_currentChanged ( const int index );
 	void tboxCalBuys_currentChanged ( const int index );
@@ -276,7 +276,7 @@ public:
 //--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
 
 //--------------------------------------------SHARED-----------------------------------------------------------
-    void removeListItem ( vmListItem* item, const bool b_delete_item = true, const bool b_auto_select_another = true );
+	void removeListItem ( vmListItem* item, const bool b_delete_item = true, const bool b_auto_select_another = true );
 	void postFieldAlterationActions ( vmListItem* item );
 //--------------------------------------------SHARED-----------------------------------------------------------
 
@@ -355,15 +355,14 @@ private:
 	buyListItem* mBuyCurItem;
 
 	QToolButton* mBtnNavPrev, *mBtnNavNext;
-    double leftToRightWorkflowRatio;
 //---------------------------CUSTOM-WIDGETS-------------------------------------
 
 //--------------------------------------------JOB-----------------------------------------------------------
 
 	void on_btnJobAdd_clicked ();
 	void on_btnJobEdit_clicked ();
-	void on_btnJobDel_clicked ();
 	void on_btnJobSave_clicked ();
+	void on_btnJobDel_clicked ();
 	void on_btnJobCancel_clicked ();
 
 	void btnJobReloadPictures_clicked ();
@@ -388,8 +387,8 @@ private:
 //--------------------------------------------BUY-----------------------------------------------------------
 	void on_btnBuyAdd_clicked ();
 	void on_btnBuyEdit_clicked ();
-	void on_btnBuyDel_clicked ();
 	void on_btnBuySave_clicked ();
+	void on_btnBuyDel_clicked ();
 	void on_btnBuyCancel_clicked ();
 	void on_btnBuyCopyRows_clicked ();
 //--------------------------------------------BUY-----------------------------------------------------------
@@ -405,7 +404,7 @@ private:
 	void receiveWidgetBack ( QWidget* );
 
 	void btnReportGenerator_clicked ();
-    void btnBackupRestore_clicked ();
+	void btnBackupRestore_clicked ();
 	void btnCalculator_clicked ();
 	void btnServicesPrices_clicked ();
 	void btnEstimates_clicked ();

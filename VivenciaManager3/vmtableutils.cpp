@@ -17,22 +17,22 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 		return txtSearchTerm_keyPressed ( ke ); } ) );
 
 	btnSearchStart = new QToolButton;
-	btnSearchStart->setIcon ( ICON ( "search.png" ) );
+	btnSearchStart->setIcon ( ICON ( "search" ) );
 	btnSearchStart->setEnabled ( false );
 	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } );
 
 	btnSearchPrev = new QToolButton;
-	btnSearchPrev->setIcon ( ICON ( "arrow-left.png" ) );
+	btnSearchPrev->setIcon ( ICON ( "arrow-left" ) );
 	btnSearchPrev->setEnabled ( false );
 	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () { return searchPrev (); } );
 
 	btnSearchNext = new QToolButton;
-	btnSearchNext->setIcon ( ICON ( "arrow-right.png" ) );
+	btnSearchNext->setIcon ( ICON ( "arrow-right" ) );
 	btnSearchNext->setEnabled ( false );
 	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () { return searchNext (); } );
 
 	btnSearchCancel = new QToolButton;
-	btnSearchCancel->setIcon ( ICON ( "cancel.png" ) );
+	btnSearchCancel->setIcon ( ICON ( "cancel" ) );
 	connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return hide (); } );
 
 	chkSearchAllTable = new vmCheckBox ( tr ( "Search all fields" ) );
@@ -142,7 +142,7 @@ vmTableFilterPanel::vmTableFilterPanel ( const vmTableWidget * const table )
 	searchLevels.setAutoDeleteItem ( true );
 	
 	m_btnClose = new QToolButton;
-	m_btnClose->setIcon ( ICON ( "stylepanel/panelCloseOver.png" ) );
+	m_btnClose->setIcon ( ICON ( "stylepanel/panelCloseOver" ) );
 	connect ( m_btnClose, &QToolButton::clicked, this, [&] () { return hide (); } );
 	
 	QLabel* lblFilter ( new QLabel ( TR_FUNC ( "Filter:" ) ) );

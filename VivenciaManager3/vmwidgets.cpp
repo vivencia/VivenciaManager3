@@ -279,7 +279,7 @@ vmDateEdit::vmDateEdit ( QWidget* parent )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
 	mButton = new QToolButton;
-	mButton->setIcon ( ICON ( "calendar.png" ) );
+	mButton->setIcon ( ICON ( "x-office-calendar" ) );
 	connect ( mButton, &QToolButton::clicked, this, [&] () {
 		return contextMenuRequested ();
 	} );
@@ -815,7 +815,7 @@ vmLineEditWithButton::~vmLineEditWithButton ()
 void vmLineEditWithButton::setButtonType ( const LINE_EDIT_BUTTON_TYPE type )
 {
 	mBtnType = type;
-	mButton->setIcon ( mBtnType == LEBT_CALC_BUTTON ? ICON ( "calc.png" ) : ICON ( "folder-brown.png" ) );
+	mButton->setIcon ( mBtnType == LEBT_CALC_BUTTON ? ICON ( "accessories-calculator" ) : ICON ( "folder-templates" ) );
     mButton->setToolTip ( mBtnType == LEBT_CALC_BUTTON ? TR_FUNC ( "Use calculator" ) : TR_FUNC ( "Most used dates" ) );
 	connect ( mButton, &QToolButton::clicked, this, [&] () { return execButtonAction (); } );
 	mButton->setEnabled ( isEditable () );
@@ -861,7 +861,8 @@ QString vmComboBox::defaultStyleSheet () const
 	QString colorstr;
 	if ( !parentWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		const QComboBox* combo ( new QComboBox ( parentWidget () ) );
 		colorstr = QLatin1String ( " ( " ) + combo->palette ().color ( combo->backgroundRole () ).name ()
 				   + QLatin1String ( " ) }" );
@@ -873,8 +874,10 @@ QString vmComboBox::defaultStyleSheet () const
 void vmComboBox::highlight ( const VMColors vm_color, const QString& str )
 {
 	vmWidget::highlight ( vm_color );
-	if ( !str.isEmpty () ) {
-		if ( vm_color != vmDefault_Color ) {
+	if ( !str.isEmpty () )
+	{
+		if ( vm_color != vmDefault_Color )
+		{
 			setCurrentIndex ( findText ( str, Qt::MatchContains ) );
 			mLineEdit->setSelection ( mLineEdit->text ().indexOf ( str, 0, Qt::CaseInsensitive ), str.length () );
 			return;
@@ -885,11 +888,14 @@ void vmComboBox::highlight ( const VMColors vm_color, const QString& str )
 
 void vmComboBox::currentIndexChanged_slot ( const int idx )
 {
-	if ( !mbIgnoreChanges ) {
-		if ( idx >= 0 ) {
+	if ( !mbIgnoreChanges )
+	{
+		if ( idx >= 0 )
+		{
 			if ( vmWidget::isEditable () && contentsAltered_func )
 				contentsAltered_func ( mLineEdit );
-			else {
+			else
+			{
 				if ( indexChanged_func )
 					indexChanged_func ( idx );
 			}
@@ -915,7 +921,8 @@ void vmComboBox::setCompleter ( const vmCompleters::COMPLETER_CATEGORIES complet
 void vmComboBox::setIgnoreChanges ( const bool b_ignore )
 {
 	mbIgnoreChanges = b_ignore;
-	if ( !mbIgnoreChanges ) {
+	if ( !mbIgnoreChanges )
+	{
 		// If I do not static_cast like this, the compiler cannot know which overloaded function to use
 		connect ( this, static_cast<void (QComboBox::*)(int)>( &QComboBox::currentIndexChanged ), this, [&] ( int idx ) {
 				return currentIndexChanged_slot ( idx ); } );
@@ -930,7 +937,8 @@ void vmComboBox::setEditable ( const bool editable )
 	// Qt destroys the line edit. Upon returning to editable, there is no more line edit.
 	mLineEdit->setEditable ( editable );
 	vmWidget::setEditable ( editable );
-	if ( editable ) {
+	if ( editable )
+	{
 		mbKeyEnterPressedOnce = false;
 		mbKeyEscPressedOnce = false;
 	}
@@ -963,16 +971,21 @@ void vmComboBox::setCallbackForContextMenu
 void vmComboBox::keyPressEvent ( QKeyEvent *e )
 {
     DBG_OUT ( "vmComboBox::keyPressEvent", true, true );
-	if ( vmWidget::isEditable () ) {
-		switch ( e->key () ) {
+	if ( vmWidget::isEditable () )
+	{
+		switch ( e->key () )
+		{
 			case Qt::Key_Enter:
 			case Qt::Key_Return:
-				if ( !completer () || !completer ()->popup () || !completer ()->popup ()->isVisible () ) {
-                    if ( !mbKeyEnterPressedOnce && keyEnter_func ) {
+				if ( !completer () || !completer ()->popup () || !completer ()->popup ()->isVisible () )
+				{
+                    if ( !mbKeyEnterPressedOnce && keyEnter_func )
+					{
                         DBG_OUT ( "!mbKeyEnterPressedOnce", true, false )
 						keyEnter_func ();
                     }
-					else {
+					else
+					{
                         DBG_OUT ( "mbKeyEnterPressedOnce", true, false )
 						if ( keypressed_func )
 							keypressed_func ( e, this );
@@ -985,10 +998,12 @@ void vmComboBox::keyPressEvent ( QKeyEvent *e )
 				return;
 			break;
 			case Qt::Key_Escape:
-				if ( !completer () || !completer ()->popup () || !completer ()->popup ()->isVisible () ) {
+				if ( !completer () || !completer ()->popup () || !completer ()->popup ()->isVisible () )
+				{
 					if ( !mbKeyEscPressedOnce && keyEsc_func )
 						keyEsc_func ();
-					else {
+					else
+					{
 						if ( keypressed_func )
 							keypressed_func ( e, this );
 					}
@@ -1016,7 +1031,8 @@ void vmComboBox::focusInEvent ( QFocusEvent* e )
 
 void vmComboBox::focusOutEvent ( QFocusEvent* e )
 {
-	if ( vmWidget::isEditable () ) {
+	if ( vmWidget::isEditable () )
+	{
 		qDebug () << "combo focus out";
 		QComboBox::focusOutEvent ( e );
 	}

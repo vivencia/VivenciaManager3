@@ -153,11 +153,11 @@ void suppliersDlg::setupUI ()
 	connect ( btnEdit, static_cast<void (QPushButton::*)( bool )>( &QPushButton::clicked ), this, [&] ( const bool checked ) {
 		return btnEditClicked ( checked ); } );
 
-	btnCancel = new QPushButton ( ICON ( "cancel.png" ), tr ( "Cancel" ) );
+	btnCancel = new QPushButton ( ICON ( "cancel" ), tr ( "Cancel" ) );
 	connect ( btnCancel, &QPushButton::clicked, this, [&] () {
 		return btnCancelClicked (); } );
 
-	btnRemove = new QPushButton ( ICON ( "browse-controls/remove.png" ), tr ( "Remove" ) );
+	btnRemove = new QPushButton ( ICON ( "browse-controls/remove" ), tr ( "Remove" ) );
 	connect ( btnRemove, &QPushButton::clicked, this, [&] () {
 		return btnRemoveClicked (); } );
 
@@ -220,11 +220,11 @@ void suppliersDlg::controlForms ()
 
 	btnInsert->setEnabled ( supRec->action () != ACTION_EDIT );
 	btnInsert->setText ( supRec->action () != ACTION_ADD ? tr ( "Add" ) : tr ( "Save" ) );
-	btnInsert->setIcon ( supRec->action () != ACTION_ADD ?  ICON ( "browse-controls/add.png" ) : ICON ( "document-save.png" ) );
+	btnInsert->setIcon ( supRec->action () != ACTION_ADD ?  ICON ( "browse-controls/add" ) : ICON ( "document-save" ) );
 
 	btnEdit->setEnabled ( supRec->action () != ACTION_ADD );
 	btnEdit->setText ( supRec->action () != ACTION_EDIT ? tr ( "Edit" ) : tr ( "Save" ) );
-	btnEdit->setIcon ( supRec->action () != ACTION_EDIT ?  ICON ( "browse-controls/edit.png" ) : ICON ( "document-save.png" ) );
+	btnEdit->setIcon ( supRec->action () != ACTION_EDIT ?  ICON ( "browse-controls/edit" ) : ICON ( "document-save" ) );
 
 	btnCancel->setEnabled ( editing_action );
 	btnRemove->setEnabled ( !editing_action );

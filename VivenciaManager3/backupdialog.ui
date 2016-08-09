@@ -41,15 +41,15 @@
       <enum>QFrame::Raised</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="pageBackup">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>634</width>
-        <height>419</height>
+        <width>636</width>
+        <height>425</height>
        </rect>
       </property>
       <attribute name="label">
@@ -241,8 +241,7 @@ p, li { white-space: pre-wrap; }
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/folder-brown.png</normaloff>:/resources/folder-brown.png</iconset>
+               <iconset theme="folder"/>
               </property>
              </widget>
             </item>
@@ -360,8 +359,7 @@ p, li { white-space: pre-wrap; }
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+               <iconset theme="text-x-generic-template"/>
               </property>
              </widget>
             </item>
@@ -383,8 +381,7 @@ p, li { white-space: pre-wrap; }
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/folder-brown.png</normaloff>:/resources/folder-brown.png</iconset>
+               <iconset theme="folder"/>
               </property>
              </widget>
             </item>
@@ -443,8 +440,8 @@ p, li { white-space: pre-wrap; }
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>634</width>
-        <height>419</height>
+        <width>636</width>
+        <height>425</height>
        </rect>
       </property>
       <attribute name="label">

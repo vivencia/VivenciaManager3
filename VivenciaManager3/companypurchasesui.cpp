@@ -37,7 +37,7 @@ companyPurchasesUI::companyPurchasesUI ( QWidget* parent )
 {
 	ui->setupUi ( this );
 	setupUI ();
-	const bool have_items ( VDB ()->lastDBRecord ( TABLE_CP_ORDER ) >= 0 );
+	const bool have_items ( VDB ()->getHighestID ( TABLE_CP_ORDER ) > 0 );
 	ui->btnCPEdit->setEnabled ( true );
 	ui->btnCPRemove->setEnabled ( have_items );
 	ui->btnCPNext->setEnabled ( have_items );
@@ -264,11 +264,11 @@ void companyPurchasesUI::controlForms ()
 		ui->btnCPSearch->setEnabled ( true );
 		
 		ui->btnCPEdit->setText ( emptyString );
-		ui->btnCPEdit->setIcon ( ICON ( "browse-controls/edit.png" ) );
+		ui->btnCPEdit->setIcon ( ICON ( "browse-controls/edit" ) );
 		ui->btnCPAdd->setText ( emptyString );
-		ui->btnCPAdd->setIcon ( ICON ( "browse-controls/add.png" ) );
+		ui->btnCPAdd->setIcon ( ICON ( "browse-controls/add" ) );
 		ui->btnCPRemove->setText ( emptyString );
-		ui->btnCPRemove->setIcon ( ICON ( "browse-controls/remove.png" ) );
+		ui->btnCPRemove->setIcon ( ICON ( "browse-controls/remove" ) );
 	}
 }
 
@@ -373,13 +373,13 @@ void companyPurchasesUI::btnCPPrev_clicked ()
 
 	if ( mbSearchIsOn ) {
 		if ( ( ok = searchPrev () ) ) {
-			b_isfirst = ( recIntValue ( cp_rec, FLD_CP_ID ) == VDB ()->firstDBRecord ( cp_rec->t_info.table_order ) );
+			b_isfirst = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getLowestID ( cp_rec->t_info.table_order ) );
 			showSearchResult_internal ( true );
 		}
 	}
 	else {
 		ok = cp_rec->readPrevRecord ();
-		b_isfirst = ( recIntValue ( cp_rec, FLD_CP_ID ) == signed ( VDB ()->firstDBRecord ( TABLE_CP_ORDER ) ) );
+		b_isfirst = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getLowestID ( TABLE_CP_ORDER ) );
 		fillForms ();
 	}
 
@@ -395,13 +395,13 @@ void companyPurchasesUI::btnCPNext_clicked ()
 	bool ok ( false );
 	if ( mbSearchIsOn ) {
 		if ( ( ok = searchPrev () ) ) {
-			b_islast = ( recIntValue ( cp_rec, FLD_CP_ID ) == VDB ()->lastDBRecord ( cp_rec->t_info.table_order ) );
+			b_islast = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getHighestID ( cp_rec->t_info.table_order ) );
 			showSearchResult_internal ( true );
 		}
 	}
 	else {
 		ok = cp_rec->readNextRecord ();
-		b_islast = ( recIntValue ( cp_rec, FLD_CP_ID ) == signed ( VDB ()->lastDBRecord ( TABLE_CP_ORDER ) ) );
+		b_islast = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getHighestID ( TABLE_CP_ORDER ) );
 		fillForms ();
 	}
 
@@ -442,9 +442,9 @@ void companyPurchasesUI::btnCPAdd_clicked ( const bool checked )
 		fillForms ();
 		controlForms ();
 		ui->btnCPAdd->setText ( tr ( "Save" ) );
-		ui->btnCPAdd->setIcon ( ICON ( "document-save.png" ) );
+		ui->btnCPAdd->setIcon ( ICON ( "document-save" ) );
 		ui->btnCPRemove->setText ( tr ( "Cancel" ) );
-		ui->btnCPRemove->setIcon ( ICON ( "cancel.png" ) );
+		ui->btnCPRemove->setIcon ( ICON ( "cancel" ) );
 		ui->txtCPSupplier->setFocus ();
 	}
 	else
@@ -457,9 +457,9 @@ void companyPurchasesUI::btnCPEdit_clicked ( const bool checked )
 		cp_rec->setAction ( ACTION_EDIT );
 		controlForms ();
 		ui->btnCPEdit->setText ( tr ( "Save" ) );
-		ui->btnCPEdit->setIcon ( ICON ( "document-save.png" ) );
+		ui->btnCPEdit->setIcon ( ICON ( "document-save" ) );
 		ui->btnCPRemove->setText ( tr ( "Cancel" ) );
-		ui->btnCPRemove->setIcon ( ICON ( "cancel.png" ) );
+		ui->btnCPRemove->setIcon ( ICON ( "cancel" ) );
 		ui->txtCPSupplier->setFocus ();
 	}
 	else
@@ -483,12 +483,12 @@ void companyPurchasesUI::btnCPRemove_clicked ()
 						cp_rec->readRecord ( 1 );
 				}
 				fillForms ();
-				ui->btnCPFirst->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->firstDBRecord ( TABLE_CP_ORDER ) ) );
-				ui->btnCPPrev->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->firstDBRecord ( TABLE_CP_ORDER ) ) );
-				ui->btnCPNext->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->lastDBRecord ( TABLE_CP_ORDER ) ) );
-				ui->btnCPLast->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->lastDBRecord ( TABLE_CP_ORDER ) ) );
-				ui->btnCPSearch->setEnabled ( signed ( VDB ()->lastDBRecord ( TABLE_CP_ORDER ) ) > 0 );
-				ui->txtCPSearch->setEditable ( signed ( VDB ()->lastDBRecord ( TABLE_CP_ORDER ) ) > 0 );
+				ui->btnCPFirst->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getLowestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPPrev->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getLowestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPNext->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPLast->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPSearch->setEnabled ( signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) > 0 );
+				ui->txtCPSearch->setEditable ( signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) > 0 );
 			}
 		}
 	}

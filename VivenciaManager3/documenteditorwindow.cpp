@@ -168,7 +168,8 @@ bool documentEditorWindow::canClose ()
 			VM_NOTIFY ()->customBox ( strippedName ( curFile ) + tr ( " was modified" ),  tr ( "Do you want to save your changes?" ),
 								  vmNotify::QUESTION, tr ( "Save" ), tr ( "Don't save" ), tr ( "Cancel" ) ) );
 
-		switch ( btn ) {
+		switch ( btn )
+		{
 			case 0:		return save ( curFile );	break;
 			case -1:	return false;				break;
 			default:								break;

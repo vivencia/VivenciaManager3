@@ -281,7 +281,7 @@ bool configOps::isSystem ( const QString& os_name )
 bool configOps::initSystem ( const QString& initName )
 {
     int exitCode ( -1 );
-    fileOps::executeWait( initName, QStringLiteral ( "pgrep" ), &exitCode );
+    fileOps::executeWait ( initName, QStringLiteral ( "pgrep" ), &exitCode );
     return exitCode == 0;
 }
 

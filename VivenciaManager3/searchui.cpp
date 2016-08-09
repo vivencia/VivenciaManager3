@@ -387,10 +387,10 @@ void searchUI::setupUI ()
 {
 	createTable ();
 	mBtnPrev = new QToolButton;
-	mBtnPrev->setIcon ( ICON ( "arrow-left.png" ) );
+	mBtnPrev->setIcon ( ICON ( "arrow-left" ) );
 	connect ( mBtnPrev,  &QPushButton::clicked, this, [&] () { return btnPrevClicked (); } );
 	mBtnNext = new QToolButton;
-	mBtnNext->setIcon ( ICON ( "arrow-right.png" ) );
+	mBtnNext->setIcon ( ICON ( "arrow-right" ) );
 	connect ( mBtnNext,  &QPushButton::clicked, this, [&] () { return btnNextClicked (); } );
 	mBtnClose = new QPushButton ( APP_TR_FUNC ( "Close" ) );
 	connect ( mBtnClose, &QPushButton::clicked, this, [&] () { return hide (); } );

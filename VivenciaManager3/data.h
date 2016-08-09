@@ -75,7 +75,7 @@ public:
 	static void execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoint& mouse_pos );
 
     static inline void fillClientsNamesList ( QStringList& namesList ) {
-        for ( int i ( 0 ); i <= VDB ()->lastDBRecord ( TABLE_CLIENT_ORDER ); ++i )
+        for ( uint i ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) ); i <= VDB ()->getHighestID ( TABLE_CLIENT_ORDER ); ++i )
             insertStringListItem ( namesList, Client::clientName ( i ) );
     }
     static void fillJobTypeList ( QStringList& jobList, const QString& clientid );

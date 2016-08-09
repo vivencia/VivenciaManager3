@@ -34,16 +34,19 @@ public:
 
 	~VivenciaDB ();
 
-	static void init () {
+	static void init ()
+	{
 		if ( !s_instance )
 			s_instance = new VivenciaDB;
 	}
 
-	static inline const TABLE_INFO* tableInfo ( const int ti ) { //ti = table order
+	static inline const TABLE_INFO* tableInfo ( const uint ti )
+	{ //ti = table order
 		return table_info[ti];
 	}
 
-	inline QSqlDatabase* database () {
+	inline QSqlDatabase* database ()
+	{
 		return &m_db;
 	}
 
@@ -81,20 +84,18 @@ public:
 	bool updateRecord ( const DBRecord* db_rec ) const;
 	bool removeRecord ( const DBRecord* db_rec ) const;
 	void loadDBRecord ( DBRecord* db_rec, const QSqlQuery* const query );
-	int lastDBRecord ( const uint table );
-	int firstDBRecord ( const uint table );
 	bool insertDBRecord ( DBRecord* db_rec );
 	bool getDBRecord ( DBRecord* db_rec, const uint field = 0, const bool load_data = true );
 	bool getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, const bool load_data = true );
-	uint getHighLowID ( const uint table, const bool high = true ) const;
-	/* Used on table updates. If one table update makes use of information from another table by calling lastDBRecord
-	 * or getHighLowID to find the last record, highest_id will be set with current information. If later, this second table
-	 * must uptade its contents, might be that the last id must be reset for accurate results.
-	 */
-	inline void setHighestID ( const uint table, const int new_id = 0 ) {
+	
+	uint getHighestID ( const uint table ) const;
+	inline void setHighestID ( const uint table, const uint new_id = 1 ) {
 		if ( table < TABLES_IN_DB ) highest_id[table] = new_id; }
+	uint getLowestID ( const uint table ) const;
+	inline void setLowestID ( const uint table, const uint new_id = 1 ) {
+		if ( table < TABLES_IN_DB ) lowest_id[table] = new_id; }
 
-	inline uint getNextID ( const uint table ) const { return getHighLowID ( table ) + 1; }
+	uint getNextID ( const uint table );
 	
 	bool recordExists ( const QString& table_name, const int id ) const;
 
@@ -134,14 +135,14 @@ private:
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
 	QSqlDatabase m_db;
 
-	mutable podList<uint> lowest_id;
-	mutable podList<uint> highest_id;
+	podList<uint> lowest_id;
+	podList<uint> highest_id;
 
 	static const TABLE_INFO* table_info[TABLES_IN_DB];
 
     bool m_ok, mNewDB;
     mutable bool mBackupSynced;
-	passwordManager* mRootPasswdMngr;
+	//passwordManager* mRootPasswdMngr;
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
 
 	static VivenciaDB* s_instance;

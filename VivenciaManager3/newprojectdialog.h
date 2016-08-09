@@ -19,7 +19,7 @@ class newProjectDialog : public QDialog
 public:
     explicit newProjectDialog ( QWidget* parent = nullptr );
     virtual ~newProjectDialog ();
-    void showDialog ( const QString& clientname, const bool b_allow_other_client = false );
+    void showDialog ( const QString& clientname, const bool b_allow_other_client = false , const bool b_allow_name_change = true );
 
     inline const QString& projectPath () const { return mProjectPath; }
     inline const QString& projectID () const { return mProjectID; }

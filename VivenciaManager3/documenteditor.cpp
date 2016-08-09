@@ -85,7 +85,7 @@ documentEditor::documentEditor ( QWidget* parent )
 	updateMenus ( -1 );
 
 	setWindowTitle ( PROGRAM_NAME + TR_FUNC ( " - Document Editor" ) );
-	setWindowIcon ( ICON ( "report.png" ) );
+	setWindowIcon ( ICON ( "report" ) );
 
 	resize ( 500, 450 );
 	addPostRoutine ( deleteEditorInstance );
@@ -109,59 +109,59 @@ void documentEditor::removeDockWindow ( QDockWidget *dockwidget )
 
 void documentEditor::createActions ()
 {
-	newAct = new vmAction ( -1, ( ICON ( "document-new.png" ) ), TR_FUNC ( "&New text file" ), this );
+	newAct = new vmAction ( -1, ( ICON ( "document-new" ) ), TR_FUNC ( "&New text file" ), this );
 	newAct->setShortcuts ( QKeySequence::New );
 	newAct->setStatusTip ( TR_FUNC ( "Create a new document" ) );
 	connect ( newAct, &QAction::triggered, this, [&] ( const bool ) { return newTextDocument (); } );
 
-	newReportAct = new vmAction ( -1, ( ICON ( "report.png" ) ), TR_FUNC ( "New &Report" ), this );
+	newReportAct = new vmAction ( -1, ( ICON ( "report" ) ), TR_FUNC ( "New &Report" ), this );
 	newReportAct->setShortcuts ( QKeySequence::Refresh );
 	newReportAct->setStatusTip ( TR_FUNC ( "Create a new report" ) );
 	connect ( newReportAct, &QAction::triggered, this, [&] ( const bool ) { return newReport (); } );
 
-	openAct = new vmAction ( -1, ICON ( "document-open.png" ), TR_FUNC ( "&Open..." ), this );
+	openAct = new vmAction ( -1, ICON ( "document-open" ), TR_FUNC ( "&Open..." ), this );
 	openAct->setShortcuts ( QKeySequence::Open );
 	openAct->setStatusTip ( TR_FUNC ( "Open an existing file" ) );
 	connect ( openAct, &QAction::triggered, this, [&] ( const bool ) { return openDocument (); } );
 
-	saveAct = new vmAction ( -1, ICON ( "document-save.png" ), TR_FUNC ( "&Save" ), this );
+	saveAct = new vmAction ( -1, ICON ( "document-save" ), TR_FUNC ( "&Save" ), this );
 	saveAct->setShortcuts ( QKeySequence::Save );
 	saveAct->setStatusTip ( TR_FUNC ( "Save the document to disk" ) );
 	connect ( saveAct, &QAction::triggered, this, [&] ( const bool ) { return saveDocument (); } );
 
-	saveAsAct = new vmAction ( -1, ICON ( "document-save-as.png" ), TR_FUNC ( "Save &as..." ), this );
+	saveAsAct = new vmAction ( -1, ICON ( "document-save-as" ), TR_FUNC ( "Save &as..." ), this );
 	saveAsAct->setShortcuts ( QKeySequence::SaveAs );
 	saveAsAct->setStatusTip ( TR_FUNC ( "Save the document under a new name" ) );
 	connect ( saveAsAct, &QAction::triggered, this, [&] ( const bool ) { return saveAsDocument (); } );
 
-	mailAct = new vmAction ( -1, ICON ( "email.png" ), TR_FUNC ( "Send via email" ), this );
+	mailAct = new vmAction ( -1, ICON ( "email" ), TR_FUNC ( "Send via email" ), this );
 	mailAct->setStatusTip ( TR_FUNC ( "Send the document as an email attachment unless the editor provides another option" ) );
 	connect ( mailAct, &QAction::triggered, this, [&] ( const bool ) { return sendMailAttachment (); } );
 
-	cutAct = new vmAction ( -1, ICON ( "edit-cut.png" ), TR_FUNC ( "Cu&t" ), this );
+	cutAct = new vmAction ( -1, ICON ( "edit-cut" ), TR_FUNC ( "Cu&t" ), this );
 	cutAct->setShortcuts ( QKeySequence::Cut );
 	cutAct->setStatusTip ( TR_FUNC ( "Cut the current selection's contents to the clipboard" ) );
 	connect ( cutAct, &QAction::triggered, this, [&] ( const bool ) { return cut (); } );
 
-	copyAct = new vmAction ( -1, ICON ( "edit-copy.png" ), TR_FUNC ( "&Copy" ), this );
+	copyAct = new vmAction ( -1, ICON ( "edit-copy" ), TR_FUNC ( "&Copy" ), this );
 	copyAct->setShortcuts ( QKeySequence::Copy );
 	copyAct->setStatusTip ( TR_FUNC ( "Copy the current selection's contents to the clipboard" ) );
 	connect ( copyAct, &QAction::triggered, this, [&] ( const bool ) { return copy (); } );
 
-	pasteAct = new vmAction ( -1, ICON ( "edit-paste.png" ), TR_FUNC ( "&Paste" ), this );
+	pasteAct = new vmAction ( -1, ICON ( "edit-paste" ), TR_FUNC ( "&Paste" ), this );
 	pasteAct->setShortcuts ( QKeySequence::Paste );
 	pasteAct->setStatusTip ( TR_FUNC ( "Paste the clipboard's contents into the current selection" ) );
 	connect ( pasteAct, &QAction::triggered, this, [&] ( const bool ) { return paste (); } );
 
-	closeAct = new vmAction ( -1, ICON ( "close-active-window.png" ), TR_FUNC ( "Cl&ose" ), this );
+	closeAct = new vmAction ( -1, ICON ( "close-active-window" ), TR_FUNC ( "Cl&ose" ), this );
 	closeAct->setStatusTip ( TR_FUNC ( "Close the active window" ) );
 	connect ( closeAct, &QAction::triggered, this, [&] ( const bool ) { return closeTab (); } );
 
-	closeAllAct = new vmAction ( -1, ICON ( "close-all.png" ), TR_FUNC ( "Close &All" ), this );
+	closeAllAct = new vmAction ( -1, ICON ( "close-all" ), TR_FUNC ( "Close &All" ), this );
 	closeAllAct->setStatusTip ( TR_FUNC ( "Close all the windows" ) );
 	connect ( closeAllAct, &QAction::triggered, this, [&] ( const bool ) { return closeAllTabs (); } );
 
-	hideAct = new vmAction ( -1, TR_FUNC ( "Leave" ), this);
+	hideAct = new vmAction ( -1, ICON ( "window-close" ), TR_FUNC ( "Leave" ), this);
 	hideAct->setShortcuts ( QKeySequence::Quit );
 	hideAct->setStatusTip ( TR_FUNC ( "Close Document Editor window" ) );
 	connect ( hideAct, &QAction::triggered, this, [&] ( const bool ) { return hide (); } );
@@ -179,7 +179,7 @@ void documentEditor::createActions ()
 	separatorAct = new vmAction ( -1, this );
 	separatorAct->setSeparator ( true );
 
-	calcAct = new vmAction ( -1, ICON ( "calc.png" ), TR_FUNC ( "Show calculator" ), this );
+	calcAct = new vmAction ( -1, ICON ( "calc" ), TR_FUNC ( "Show calculator" ), this );
 	calcAct->setStatusTip ( TR_FUNC ( "Show the calculator window" ) );
 	connect ( calcAct, &QAction::triggered, this, [&] ( const bool ) { return showCalc (); } );
 }

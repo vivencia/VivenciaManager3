@@ -14,6 +14,7 @@ class jobListItem;
 class payListItem;
 class buyListItem;
 class crashRestore;
+class QIcon;
 
 static const uint client_nBadInputs ( 1 );
 static const uint job_nBadInputs ( 2 );
@@ -25,6 +26,8 @@ static const uint buy_nBadInputs ( 4 );
  */
 static const uint INFO_TABLE_COLUMNS_OFFSET ( 100 );
 
+extern QIcon* listIndicatorIcons[4];
+									  
 enum RELATED_LIST_ITEMS {
 	RLI_CLIENTPARENT = 0, RLI_JOBPARENT = 1, RLI_CLIENTITEM = 2, RLI_JOBITEM = 3, RLI_DATEITEM = 4, RLI_EXTRAITEM = 5
 };
@@ -47,19 +50,19 @@ public:
 	void highlight ( const VMColors vm_color, const QString& = QString::null );
 
 	inline RECORD_ACTION action () const { return m_action; }
-    void setRelation ( const RELATED_LIST_ITEMS relation  );
+	void setRelation ( const RELATED_LIST_ITEMS relation  );
 	inline RELATED_LIST_ITEMS relation () const { return mRelation; }
-    void disconnectRelation ( const uint start_relation, vmListItem* item );
-    void syncSiblingWithThis ( vmListItem* sibling );
+	void disconnectRelation ( const uint start_relation, vmListItem* item );
+	void syncSiblingWithThis ( vmListItem* sibling );
 
-    void addToList ( vmListWidget* const w_list, const bool b_makecall = true );
-    inline vmListWidget* listWidget () const { return m_list; }
+	void addToList ( vmListWidget* const w_list, const bool b_makecall = true );
+	inline vmListWidget* listWidget () const { return m_list; }
 
 	inline DBRecord* dbRec () const { return m_dbrec; }
 	void setDBRec ( DBRecord* dbrec, const bool self_only = false );
 
 	inline int dbRecID () const { return id (); }
-    inline void setDBRecID ( const int recid ) { setID ( recid ); }
+	inline void setDBRecID ( const int recid ) { setID ( recid ); }
 
 	void saveCrashInfo ( crashRestore* crash );
 
@@ -67,7 +70,7 @@ public:
 	virtual void createDBRecord ();
 	virtual bool loadData ();
 	virtual void update ();
-    virtual void relationActions ( vmListItem* = nullptr ) { ; }
+	virtual void relationActions ( vmListItem* = nullptr ) { ; }
 	void setRelatedItem ( const RELATED_LIST_ITEMS rel_idx, vmListItem* const item );
 	vmListItem* relatedItem ( const RELATED_LIST_ITEMS rel_idx ) const;
 	
@@ -85,9 +88,10 @@ public:
 	inline SEARCH_STATUS searchFieldStatus ( const uint field ) const {
 			return searchFields ? static_cast<SEARCH_STATUS> ( searchFields[field].state () ) : SS_NOT_SEARCHING; }
 
-    void setSearchArray ();
+	void setSearchArray ();
 
 protected:
+	void changeAppearance ();
 	void deleteRelatedItem ( const RELATED_LIST_ITEMS rel_idx );
 
 	int m_crashid;
@@ -104,20 +108,20 @@ private:
 	vmListItem* item_related[6];
 	
 	RECORD_ACTION m_action;
-    vmListWidget* m_list;
+	vmListWidget* m_list;
 
 	bool* badInputs_ptr;
 	int n_badInputs;
 	uint mTotal_badInputs;
-    bool mbSearchCreated;
+	bool mbSearchCreated, mbInit;
 };
 
 class clientListItem : public vmListItem
 {
 
 public:
-    explicit inline clientListItem ()
-        : vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs ) {}
+	explicit inline clientListItem ()
+		: vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs ) {}
 	virtual ~clientListItem ();
 
 	// Prevent Qt from deleting these objects
@@ -128,11 +132,11 @@ public:
 	void update ();
 	void createDBRecord ();
 	bool loadData ();
-    void relationActions ( vmListItem* subordinateItem = nullptr );
+	void relationActions ( vmListItem* subordinateItem = nullptr );
 
-    PointersList<jobListItem*>* jobs;
-    PointersList<payListItem*>* pays;
-    PointersList<buyListItem*>* buys;
+	PointersList<jobListItem*>* jobs;
+	PointersList<payListItem*>* pays;
+	PointersList<buyListItem*>* buys;
 
 private:
 	bool badInputs[client_nBadInputs];
@@ -141,9 +145,9 @@ private:
 class jobListItem : public vmListItem
 {
 public:
-    explicit inline jobListItem ()
-        : vmListItem ( JOB_TABLE, job_nBadInputs, badInputs ),
-          mSearchSubFields ( nullptr ), m_payitem ( nullptr ), m_newproject_opt ( INT_MIN ) {}
+	explicit inline jobListItem ()
+		: vmListItem ( JOB_TABLE, job_nBadInputs, badInputs ),
+		  mSearchSubFields ( nullptr ), m_payitem ( nullptr ), m_newproject_opt ( INT_MIN ) {}
 
 	virtual ~jobListItem ();
 
@@ -157,7 +161,7 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
-    void relationActions ( vmListItem* subordinateItem = nullptr );
+	void relationActions ( vmListItem* subordinateItem = nullptr );
 
 	inline void setPayItem ( payListItem* const pay ) { m_payitem = pay; }
 	inline payListItem* payItem () const { return m_payitem; }
@@ -165,14 +169,14 @@ public:
 	inline void setNewProjectOpt ( const int opt ) { m_newproject_opt = opt; }
 	inline int newProjectOpt () const { return m_newproject_opt; }
 
-    podList<uint>* searchSubFields () const;
+	podList<uint>* searchSubFields () const;
 	void setReportSearchFieldFound ( const uint report_field, const uint day );
 
-    PointersList<buyListItem*>* buys;
-    PointersList<vmListItem*>* daysList;
+	PointersList<buyListItem*>* buys;
+	PointersList<vmListItem*>* daysList;
 
 private:
-    podList<uint>* mSearchSubFields;
+	podList<uint>* mSearchSubFields;
 	payListItem* m_payitem;
 	int m_newproject_opt;
 
@@ -183,8 +187,8 @@ class payListItem : public vmListItem
 {
 
 public:
-    explicit inline payListItem ()
-        : vmListItem ( PAYMENT_TABLE, pay_nBadInputs, badInputs ) {}
+	explicit inline payListItem ()
+		: vmListItem ( PAYMENT_TABLE, pay_nBadInputs, badInputs ) {}
 	virtual ~payListItem ();
 
 	// Prevent Qt from deleting these objects
@@ -197,7 +201,7 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
-    void relationActions ( vmListItem* subordinateItem = nullptr );
+	void relationActions ( vmListItem* subordinateItem = nullptr );
 
 private:
 	bool badInputs[pay_nBadInputs];
@@ -207,8 +211,8 @@ class buyListItem : public vmListItem
 {
 
 public:
-    explicit inline buyListItem ()
-        : vmListItem ( PURCHASE_TABLE, buy_nBadInputs, badInputs ) {}
+	explicit inline buyListItem ()
+		: vmListItem ( PURCHASE_TABLE, buy_nBadInputs, badInputs ) {}
 	virtual ~buyListItem ();
 
 	// Prevent Qt from deleting these objects
@@ -219,7 +223,7 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
-    void relationActions ( vmListItem* subordinateItem = nullptr );
+	void relationActions ( vmListItem* subordinateItem = nullptr );
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 

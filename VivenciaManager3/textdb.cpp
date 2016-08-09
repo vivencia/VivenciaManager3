@@ -31,8 +31,6 @@ textFile::textFile ( const QString& filename )
 
 textFile::~textFile ()
 {
-	if ( m_needsaving )
-		commit ();
 	clear ();
 }
 
@@ -69,12 +67,15 @@ bool textFile::isTextFile ( const QString& filename, const TF_TYPE type )
 
 void textFile::remove ()
 {
+	m_needsaving = false;
 	fileOps::removeFile ( m_filename );
 	clear ();
 }
 
 void textFile::clear ()
 {
+	if ( m_needsaving )
+		commit ();
 	clearData ();
 	m_buffersize = 0;
 	m_file.close ();
@@ -407,7 +408,8 @@ bool configFile::loadData ()
 	configFile_st* section_info ( nullptr );
 	bool b_skiplineread ( false );
 
-	do {
+	do
+	{
 		if ( !b_skiplineread )
 		{
 			n_chars = m_file.readLine ( buf, buf_size );
@@ -425,7 +427,8 @@ bool configFile::loadData ()
 			{
 				section_info = new configFile_st;
 				section_info->section_name = line.mid ( idx, idx2 - idx );
-				do {
+				do
+				{
 					n_chars = m_file.readLine ( buf, buf_size );
 					if ( n_chars >= 3 )
 					{

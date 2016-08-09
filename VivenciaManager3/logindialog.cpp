@@ -31,7 +31,7 @@ loginDialog::loginDialog ()
 
     btnConfigUsers = new QToolButton ( this );
     btnConfigUsers->setFixedSize ( 30, 30 );
-    btnConfigUsers->setIcon ( ICON ( "config-users.png" ) );
+    btnConfigUsers->setIcon ( ICON ( "config-users" ) );
     btnConfigUsers->setToolTip ( tr ( "Manage users" ) );
     connect ( btnConfigUsers, SIGNAL ( clicked () ), this, SLOT ( btnConfigUsers_clicked () ) );
 
@@ -89,7 +89,7 @@ loginDialog::loginDialog ()
 
     setWindowModality ( Qt::ApplicationModal );
     setWindowTitle ( QLatin1String ( "Login - " ) + PROGRAM_NAME );
-    setWindowIcon ( ICON ( "vm-logo-22x22.png" ) );
+    setWindowIcon ( ICON ( "vm-logo-22x22" ) );
     setMinimumWidth ( 350 );
 }
 

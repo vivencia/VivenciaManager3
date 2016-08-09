@@ -40,8 +40,8 @@ DB_Image::DB_Image ( QWidget* parent )
 
 	name_filters.insert ( 0, QStringLiteral ( "*.jpg" ) );
 	name_filters.insert ( 1, QStringLiteral ( "*.JPG" ) );
-	name_filters.insert ( 2, QStringLiteral ( "*.png" ) );
-	name_filters.insert ( 4, QStringLiteral ( "*.PNG" ) );
+	name_filters.insert ( 2, QStringLiteral ( "*" ) );
+	name_filters.insert ( 4, QStringLiteral ( "*" ) );
 }
 
 DB_Image::~DB_Image ()

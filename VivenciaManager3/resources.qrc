@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/folder-brown.png</file>
         <file>resources/gimp.png</file>
         <file>resources/gwenview.png</file>
         <file>resources/system-file-manager.png</file>
@@ -8,43 +7,26 @@
         <file>resources/arrow-right.png</file>
         <file>resources/no_image.jpg</file>
         <file>resources/find-service.png</file>
-        <file>resources/date-found.png</file>
         <file>resources/appicon.png</file>
         <file>resources/reports.png</file>
         <file>resources/project-nbr.png</file>
         <file>resources/arrow-down.png</file>
         <file>resources/view-form-table.png</file>
         <file>resources/db-import-export.png</file>
-        <file>resources/Microsoft+Office+Excel+2007.xpm</file>
-        <file>resources/Microsoft+Office+Word+2007.xpm</file>
         <file>resources/application-pdf.png</file>
         <file>resources/separate_window.png</file>
         <file>resources/klipper.png</file>
         <file>resources/calc.png</file>
         <file>resources/calendar.png</file>
         <file>resources/replace-all.png</file>
-        <file>resources/format-justify-center.png</file>
-        <file>resources/format-justify-fill.png</file>
-        <file>resources/format-justify-left.png</file>
-        <file>resources/format-justify-right.png</file>
-        <file>resources/format-text-bold.png</file>
         <file>resources/format-text-color.png</file>
-        <file>resources/format-text-italic.png</file>
-        <file>resources/format-text-underline.png</file>
-        <file>resources/format-text-strikethrough.png</file>
         <file>resources/format-stroke-color.png</file>
-        <file>resources/document-print.png</file>
-        <file>resources/document-print-preview.png</file>
         <file>resources/numbered-list.png</file>
         <file>resources/bullet-list.png</file>
         <file>resources/report.png</file>
         <file>resources/add.png</file>
         <file>resources/remove.png</file>
-        <file>resources/document-open.png</file>
-        <file>resources/document-save-as.png</file>
-        <file>resources/document-save.png</file>
         <file>resources/email.png</file>
-        <file>resources/document-new.png</file>
         <file>i18n/VivenciaManager_pt_BR.qm</file>
         <file>resources/vm-logo-22x22.png</file>
         <file>resources/new_project.png</file>
@@ -58,7 +40,6 @@
         <file>resources/fill_default.png</file>
         <file>resources/edit-delete.png</file>
         <file>resources/cancel.png</file>
-        <file>resources/exit_app.png</file>
         <file>resources/edit-copy.png</file>
         <file>resources/edit-cut.png</file>
         <file>resources/edit-paste.png</file>
@@ -66,7 +47,6 @@
         <file>resources/close-all.png</file>
         <file>resources/insert-image.png</file>
         <file>resources/clients-year-pictures.png</file>
-        <file>resources/reload.png</file>
         <file>resources/user_priv_ok.png</file>
         <file>resources/user_priv_no.png</file>
         <file>resources/improvements.png</file>
@@ -93,7 +73,6 @@
         <file>resources/configure.png</file>
         <file>resources/client.png</file>
         <file>resources/client_jobs.png</file>
-        <file>resources/client_scheds.png</file>
         <file>resources/client_pays.png</file>
         <file>resources/client_buys.png</file>
         <file>resources/edit-rename.png</file>
@@ -104,5 +83,8 @@
         <file>resources/stylepanel/panelClose.png</file>
         <file>resources/stylepanel/panelCloseOver.png</file>
         <file>resources/unknown.png</file>
+        <file>resources/listitem-add.png</file>
+        <file>resources/listitem-delete.png</file>
+        <file>resources/listitem-edit.png</file>
     </qresource>
 </RCC>

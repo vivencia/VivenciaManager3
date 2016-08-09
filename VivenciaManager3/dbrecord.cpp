@@ -5,8 +5,6 @@
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
 
-PointersList<DBRecord*> DBRecord::tempNewRecs[TABLES_IN_DB];
-
 static const int podBytes ( sizeof ( RECORD_FIELD::i_field ) + sizeof ( RECORD_FIELD::modified ) + sizeof ( RECORD_FIELD::was_modified ) );
 
 static const TABLE_INFO generic_tinfo = {
@@ -162,7 +160,7 @@ void DBRecord::resetQuery ()
 
 bool DBRecord::readFirstRecord ( const bool load_data )
 {
-	return readRecord ( VDB ()->firstDBRecord ( t_info->table_order ), load_data );
+	return readRecord ( VDB ()->getLowestID ( t_info->table_order ), load_data );
 }
 
 bool DBRecord::readFirstRecord ( const int field, const QString& search, const bool load_data )
@@ -176,7 +174,7 @@ bool DBRecord::readFirstRecord ( const int field, const QString& search, const b
 
 bool DBRecord::readLastRecord ( const bool load_data )
 {
-	return readRecord ( VDB ()->lastDBRecord ( t_info->table_order ), load_data );
+	return readRecord ( VDB ()->getHighestID ( t_info->table_order ), load_data );
 }
 
 bool DBRecord::readLastRecord ( const int field, const QString& search, const bool load_data )
@@ -193,7 +191,7 @@ bool DBRecord::readNextRecord ( const bool follow_search, const bool load_data )
 {
 	if ( !follow_search )
 	{
-		const int last_id ( VDB ()->lastDBRecord ( t_info->table_order ) );
+		const int last_id ( VDB ()->getHighestID ( t_info->table_order ) );
 		if ( last_id >= 1 && actualRecordInt ( 0 ) < last_id )
 		{
 			do
@@ -215,7 +213,7 @@ bool DBRecord::readPrevRecord ( const bool follow_search, const bool load_data )
 {
 	if ( !follow_search )
 	{
-		const int first_id ( VDB ()->firstDBRecord ( t_info->table_order ) );
+		const int first_id ( VDB ()->getLowestID ( t_info->table_order ) );
 		if ( first_id >= 0 && actualRecordInt ( 0 ) > 0 )
 		{
 			do
@@ -242,13 +240,10 @@ bool DBRecord::deleteRecord ()
 {
 	if ( actualRecordInt ( 0 ) >= 1 )
 	{
-		const bool b_del_from_temp ( prevAction () == ACTION_ADD );
 		setAction ( ACTION_DEL );
 		callHelperFunctions ();
 		if ( VDB ()->removeRecord ( this ) )
 		{
-			if ( b_del_from_temp )
-				DBRecord::removeFromTemporaryRecords ( this );
 			clearAll ();
 			setAction ( ACTION_READ );
 			return true;
@@ -271,8 +266,6 @@ bool DBRecord::saveRecord ()
 	// all the fields in the respective record that comprise the product´s completer for it
 	if ( ret )
 	{
-		if ( m_action == ACTION_ADD )
-			DBRecord::removeFromTemporaryRecords ( this );
 		callHelperFunctions ();
 		setAction ( ACTION_READ );
 		setAllModified ( false );
@@ -347,7 +340,7 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 					fptr_recordStr = &DBRecord::actualRecordStr;
 					fptr_recordInt = &DBRecord::actualRecordInt;
 					fptr_recordStrAlternate = &DBRecord::backupRecordStr;
-					DBRecord::addToTemporaryRecords ( this );
+					DBRecord::createTemporaryRecord ( this );
 				break;
 				case ACTION_EDIT:
 					sync ( RECORD_FIELD::IDX_ACTUAL, true );
@@ -365,33 +358,15 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 }
 
 
-void DBRecord::addToTemporaryRecords ( DBRecord* dbrec )
+void DBRecord::createTemporaryRecord ( DBRecord* dbrec )
 {
-	//TODO only one item must access here. Only RLI_CLIENTITEM but that info is not available to a DBRecord
 	const uint table ( dbrec->t_info->table_order );
-	uint id ( 0 );
-	if ( DBRecord::tempNewRecs[table].isEmpty () )
-		id = VDB ()->getNextID ( table );
-	else
-		id = DBRecord::tempNewRecs[table].last ()->recordInt ( 0 ) + 1;
-	dbrec->setIntValue ( 0, id ); // this is set so that VivenciaDB::insertDBREcord can use the already evaluated value
-	dbrec->setIntBackupValue ( 0, id ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
-	const QString str_id ( QString::number ( id ) );
+	const uint new_id ( VDB ()->getNextID ( table ) );
+	dbrec->setIntValue ( 0, new_id ); // this is set so that VivenciaDB::insertDBREcord can use the already evaluated value
+	dbrec->setIntBackupValue ( 0, new_id ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
+	const QString str_id ( QString::number ( new_id ) );
 	dbrec->setValue ( 0, str_id );
 	dbrec->setBackupValue ( 0, str_id );
-	DBRecord::tempNewRecs[table].append( dbrec );
-}
-
-void DBRecord::removeFromTemporaryRecords ( DBRecord* dbrec )
-{
-	const uint table ( dbrec->t_info->table_order );
-	int pos ( DBRecord::tempNewRecs[table].contains ( dbrec ) );
-	if ( DBRecord::tempNewRecs[table].remove ( pos ) >= 0 )
-	{
-		uint id ( VDB ()->getNextID ( table ) );
-		for ( uint i ( 0 ); i < DBRecord::tempNewRecs[table].count (); ++i )
-			DBRecord::tempNewRecs[table][i]->setIntValue ( 0, id++ );
-	}
 }
 
 void DBRecord::sync ( const int src_index, const bool b_force )

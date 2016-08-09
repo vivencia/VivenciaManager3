@@ -571,7 +571,7 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	btnSearchStart = new QToolButton;
 	btnSearchStart->setEnabled ( false );
-	btnSearchStart->setIcon ( ICON ( "search.png" ) );
+	btnSearchStart->setIcon ( ICON ( "search" ) );
 	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () {
 		return searchStart ();
 	} );
@@ -579,7 +579,7 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 	btnSearchPrev = new QToolButton;
 	btnSearchPrev->setEnabled ( false );
 	btnSearchPrev->setToolTip ( QString ( tr ( "Find previous word" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F2" ) ) );
-	btnSearchPrev->setIcon ( ICON ( "arrow-left.png" ) );
+	btnSearchPrev->setIcon ( ICON ( "arrow-left" ) );
 	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () {
 		return searchPrev ();
 	} );
@@ -587,13 +587,13 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 	btnSearchNext = new QToolButton;
 	btnSearchNext->setEnabled ( false );
 	btnSearchNext->setToolTip ( QString ( tr ( "Find next word" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F3" ) ) );
-	btnSearchNext->setIcon ( ICON ( "arrow-right.png" ) );
+	btnSearchNext->setIcon ( ICON ( "arrow-right" ) );
 	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () {
 		return searchNext ();
 	} );
 
 	btnClose = new QToolButton;
-	btnClose->setIcon ( ICON ( "cancel.png" ) );
+	btnClose->setIcon ( ICON ( "cancel" ) );
 	connect ( btnClose, &QToolButton::clicked, this, [&] () {
 		return searchCancel ();
 	} );
@@ -608,7 +608,7 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	btnRplcWord = new QToolButton;
 	btnRplcWord->setEnabled ( false );
-	btnRplcWord->setIcon ( ICON ( "find-service.png" ) );
+	btnRplcWord->setIcon ( ICON ( "find-service" ) );
 	btnRplcWord->setToolTip ( QString ( tr ( "Replace currently selected occurence" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F4" ) ) );
 	connect ( btnRplcWord, &QToolButton::clicked, this, [&] () {
 		return replaceWord ();
@@ -616,7 +616,7 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	btnRplcAll = new QToolButton;
 	btnRplcAll->setEnabled ( false );
-	btnRplcAll->setIcon ( ICON ( "replace-all.png" ) );
+	btnRplcAll->setIcon ( ICON ( "replace-all" ) );
 	btnRplcAll->setToolTip ( QString ( tr ( "Replace all highlighted occurences" )  + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F5" ) ) );
 	connect ( btnRplcAll, &QToolButton::clicked, this, [&] () {
 		return rplcAll ();

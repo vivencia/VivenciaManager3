@@ -111,8 +111,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/calc.png</normaloff>:/resources/calc.png</iconset>
+         <iconset theme="accessories-calculator">
+          <normaloff>.</normaloff>.</iconset>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -163,8 +163,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/estimatives.png</normaloff>:/resources/estimatives.png</iconset>
+         <iconset theme="applications-accessories">
+          <normaloff>.</normaloff>.</iconset>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -186,8 +186,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/companypurchases.png</normaloff>:/resources/companypurchases.png</iconset>
+         <iconset theme="applications-office">
+          <normaloff>.</normaloff>.</iconset>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -209,8 +209,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/configure.png</normaloff>:/resources/configure.png</iconset>
+         <iconset theme="applications-engineering">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -229,8 +229,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/exit_app.png</normaloff>:/resources/exit_app.png</iconset>
+         <iconset theme="application-exit">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -363,8 +363,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>344</width>
-              <height>628</height>
+              <width>346</width>
+              <height>632</height>
              </rect>
             </property>
            </widget>
@@ -446,8 +446,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>100</width>
-              <height>30</height>
+              <width>1241</width>
+              <height>627</height>
              </rect>
             </property>
            </widget>
@@ -647,8 +647,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>227</width>
-                        <height>162</height>
+                        <width>403</width>
+                        <height>322</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -696,8 +696,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>237</width>
-                        <height>162</height>
+                        <width>254</width>
+                        <height>142</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -748,8 +748,8 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>247</width>
-                        <height>162</height>
+                        <width>263</width>
+                        <height>142</height>
                        </rect>
                       </property>
                       <attribute name="label">
@@ -814,8 +814,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>199</width>
-                     <height>162</height>
+                     <width>402</width>
+                     <height>322</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -858,8 +858,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>210</width>
-                     <height>162</height>
+                     <width>211</width>
+                     <height>141</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -903,7 +903,7 @@
                      <x>0</x>
                      <y>0</y>
                      <width>219</width>
-                     <height>162</height>
+                     <height>141</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -960,8 +960,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>174</width>
-                     <height>162</height>
+                     <width>403</width>
+                     <height>322</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1004,8 +1004,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>184</width>
-                     <height>162</height>
+                     <width>185</width>
+                     <height>141</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1048,8 +1048,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>194</width>
-                     <height>162</height>
+                     <width>193</width>
+                     <height>141</height>
                     </rect>
                    </property>
                    <attribute name="label">
@@ -1325,8 +1325,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/document-save.png</normaloff>:/resources/document-save.png</iconset>
+                  <iconset theme="document-save">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -1485,8 +1485,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/document-save.png</normaloff>:/resources/document-save.png</iconset>
+                  <iconset theme="document-save">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -2425,8 +2425,8 @@
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/resources/system-file-manager.png</normaloff>:/resources/system-file-manager.png</iconset>
+                   <iconset theme="system-file-manager">
+                    <normaloff>.</normaloff>.</iconset>
                   </property>
                  </widget>
                 </item>
@@ -2460,8 +2460,8 @@
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/resources/Microsoft+Office+Word+2007.xpm</normaloff>:/resources/Microsoft+Office+Word+2007.xpm</iconset>
+                   <iconset theme="x-office-document">
+                    <normaloff>.</normaloff>.</iconset>
                   </property>
                  </widget>
                 </item>
@@ -2495,8 +2495,8 @@
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/resources/Microsoft+Office+Excel+2007.xpm</normaloff>:/resources/Microsoft+Office+Excel+2007.xpm</iconset>
+                   <iconset theme="x-office-spreadsheet">
+                    <normaloff>.</normaloff>.</iconset>
                   </property>
                  </widget>
                 </item>
@@ -2527,8 +2527,8 @@
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
-                    <normaloff>:/resources/application-pdf.png</normaloff>:/resources/application-pdf.png</iconset>
+                   <iconset theme="okular">
+                    <normaloff>.</normaloff>.</iconset>
                   </property>
                  </widget>
                 </item>
@@ -2695,8 +2695,8 @@
                     <string>...</string>
                    </property>
                    <property name="icon">
-                    <iconset resource="resources.qrc">
-                     <normaloff>:/resources/document-save.png</normaloff>:/resources/document-save.png</iconset>
+                    <iconset theme="document-save">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
@@ -3107,8 +3107,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/prev_rec.png</normaloff>:/resources/browse-controls/prev_rec.png</iconset>
+                  <iconset theme="go-previous">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3121,8 +3121,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/next_rec.png</normaloff>:/resources/browse-controls/next_rec.png</iconset>
+                  <iconset theme="go-next">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3229,8 +3229,8 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/separate_window.png</normaloff>:/resources/separate_window.png</iconset>
+               <iconset theme="window-new">
+                <normaloff>.</normaloff>.</iconset>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -3299,8 +3299,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/arrow-left.png</normaloff>:/resources/arrow-left.png</iconset>
+                  <iconset theme="go-previous">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3310,8 +3310,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/arrow-right.png</normaloff>:/resources/arrow-right.png</iconset>
+                  <iconset theme="go-next">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3321,8 +3321,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/reload.png</normaloff>:/resources/reload.png</iconset>
+                  <iconset theme="view-refresh">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3356,8 +3356,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/gimp.png</normaloff>:/resources/gimp.png</iconset>
+                  <iconset theme="gimp">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3367,8 +3367,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/system-file-manager.png</normaloff>:/resources/system-file-manager.png</iconset>
+                  <iconset theme="system-file-manager">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3378,8 +3378,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/gwenview.png</normaloff>:/resources/gwenview.png</iconset>
+                  <iconset theme="gwenview">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                 </widget>
                </item>
@@ -3430,8 +3430,8 @@
                   <string>...</string>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/separate_window.png</normaloff>:/resources/separate_window.png</iconset>
+                  <iconset theme="window-new">
+                   <normaloff>.</normaloff>.</iconset>
                  </property>
                  <property name="checkable">
                   <bool>true</bool>
@@ -3702,8 +3702,8 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset resource="resources.qrc">
-                      <normaloff>:/resources/document-save.png</normaloff>:/resources/document-save.png</iconset>
+                     <iconset theme="document-save">
+                      <normaloff>.</normaloff>.</iconset>
                     </property>
                    </widget>
                   </item>
@@ -3895,126 +3895,15 @@
              <property name="spacing">
               <number>2</number>
              </property>
-             <item row="8" column="0" colspan="4">
-              <widget class="QFrame" name="frmBuyItemsUtilities">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-               <layout class="QVBoxLayout" name="layoutBuyItemsUtilities">
-                <property name="spacing">
-                 <number>0</number>
-                </property>
-                <property name="leftMargin">
-                 <number>0</number>
-                </property>
-                <property name="topMargin">
-                 <number>0</number>
-                </property>
-                <property name="rightMargin">
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-               </layout>
-              </widget>
-             </item>
-             <item row="10" column="3">
-              <widget class="vmLineEdit" name="txtBuyTotalPrice"/>
-             </item>
-             <item row="6" column="3">
-              <widget class="QToolButton" name="btnBuyCopyRows">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Copy list to quick project</string>
-               </property>
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
+             <item row="15" column="0">
+              <widget class="QLabel" name="lblBuyTotalPaid">
                <property name="text">
-                <string>...</string>
-               </property>
-               <property name="icon">
-                <iconset resource="resources.qrc">
-                 <normaloff>:/resources/copy_buy_to_qp.png</normaloff>:/resources/copy_buy_to_qp.png</iconset>
+                <string>Total paid:</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="3">
-              <widget class="QLabel" name="lblBuyID_2">
-               <property name="maximumSize">
-                <size>
-                 <width>50</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Arial</family>
-                 <pointsize>10</pointsize>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="text">
-                <string>ID:</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::PlainText</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="4">
-              <widget class="vmLineEdit" name="txtBuyNotes">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>30</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0">
-              <widget class="vmDateEdit" name="dteBuyDate" native="true"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="vmDateEdit" name="dteBuyDeliveryDate" native="true"/>
-             </item>
-             <item row="3" column="1" colspan="3">
-              <widget class="vmLineEdit" name="txtBuyDeliveryMethod">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>30</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="3">
-              <widget class="vmLineEdit" name="txtBuyID">
+             <item row="2" column="1" colspan="2">
+              <widget class="QLabel" name="lblBuyDeliverMethod_2">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
@@ -4024,21 +3913,27 @@
                <property name="maximumSize">
                 <size>
                  <width>16777215</width>
-                 <height>30</height>
+                 <height>40</height>
                 </size>
                </property>
-               <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
                </property>
-               <property name="readOnly">
-                <bool>true</bool>
+               <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+               </property>
+               <property name="text">
+                <string>Delivery method:</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::PlainText</enum>
                </property>
               </widget>
              </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="lblBuyPayments">
-               <property name="text">
-                <string>Descrimination:</string>
+             <item row="15" column="3">
+              <widget class="vmLineEditWithButton" name="txtBuyTotalPaid" native="true">
+               <property name="inputMethodHints">
+                <set>Qt::ImhFormattedNumbersOnly</set>
                </property>
               </widget>
              </item>
@@ -4087,87 +3982,16 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="lblBuyNotes_2">
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>30</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Notes:</string>
-               </property>
-              </widget>
+             <item row="3" column="0">
+              <widget class="vmDateEdit" name="dteBuyDeliveryDate" native="true"/>
              </item>
-             <item row="7" column="0">
-              <widget class="QWidget" name="widget_2" native="true"/>
-             </item>
-             <item row="12" column="0">
-              <widget class="QWidget" name="widget_3" native="true"/>
-             </item>
-             <item row="14" column="0" colspan="4">
-              <widget class="vmTableWidget" name="tableBuyPayments">
-               <property name="minimumSize">
-                <size>
-                 <width>500</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::StyledPanel</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Raised</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="10" column="0">
-              <widget class="QLabel" name="lblBuyTotalPrice">
-               <property name="text">
-                <string>Total price:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="15" column="0">
-              <widget class="QLabel" name="lblBuyTotalPaid">
-               <property name="text">
-                <string>Total paid:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1" colspan="2">
-              <widget class="QLabel" name="lblBuyDeliverMethod_2">
+             <item row="3" column="1" colspan="3">
+              <widget class="vmLineEdit" name="txtBuyDeliveryMethod">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
                  <height>30</height>
                 </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>40</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="text">
-                <string>Delivery method:</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::PlainText</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="15" column="3">
-              <widget class="vmLineEditWithButton" name="txtBuyTotalPaid" native="true">
-               <property name="inputMethodHints">
-                <set>Qt::ImhFormattedNumbersOnly</set>
                </property>
               </widget>
              </item>
@@ -4225,6 +4049,199 @@
                 </property>
                </layout>
               </widget>
+             </item>
+             <item row="8" column="0" colspan="4">
+              <widget class="QFrame" name="frmBuyItemsUtilities">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QVBoxLayout" name="layoutBuyItemsUtilities">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+               </layout>
+              </widget>
+             </item>
+             <item row="10" column="3">
+              <widget class="vmLineEdit" name="txtBuyTotalPrice"/>
+             </item>
+             <item row="1" column="3">
+              <widget class="vmLineEdit" name="txtBuyID">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="focusPolicy">
+                <enum>Qt::NoFocus</enum>
+               </property>
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="lblBuyPayments">
+               <property name="text">
+                <string>Descrimination:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="12" column="0">
+              <widget class="QWidget" name="widget_3" native="true"/>
+             </item>
+             <item row="7" column="0">
+              <widget class="QWidget" name="widget_2" native="true"/>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="lblBuyNotes_2">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Notes:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="3">
+              <widget class="QLabel" name="lblBuyID_2">
+               <property name="maximumSize">
+                <size>
+                 <width>50</width>
+                 <height>30</height>
+                </size>
+               </property>
+               <property name="font">
+                <font>
+                 <family>Arial</family>
+                 <pointsize>10</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+               </property>
+               <property name="text">
+                <string>ID:</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::PlainText</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="14" column="0" colspan="4">
+              <widget class="vmTableWidget" name="tableBuyPayments">
+               <property name="minimumSize">
+                <size>
+                 <width>500</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="10" column="0">
+              <widget class="QLabel" name="lblBuyTotalPrice">
+               <property name="text">
+                <string>Total price:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="4">
+              <widget class="vmLineEdit" name="txtBuyNotes">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="vmDateEdit" name="dteBuyDate" native="true"/>
+             </item>
+             <item row="6" column="3">
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <item>
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnBuyCopyRows">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Copy list to quick project</string>
+                 </property>
+                 <property name="layoutDirection">
+                  <enum>Qt::LeftToRight</enum>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/copy_buy_to_qp.png</normaloff>:/resources/copy_buy_to_qp.png</iconset>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </item>
@@ -4399,8 +4416,8 @@ p, li { white-space: pre-wrap; }
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset resource="resources.qrc">
-          <normaloff>:/resources/search.png</normaloff>:/resources/search.png</iconset>
+         <iconset theme="system-search">
+          <normaloff>.</normaloff>.</iconset>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -4597,7 +4614,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>lstCalPaysWeek</tabstop>
   <tabstop>txtBuyTotalPrice</tabstop>
   <tabstop>txtCalPricePayDay</tabstop>
-  <tabstop>btnBuyCopyRows</tabstop>
   <tabstop>txtCalPriceBuyWeek</tabstop>
   <tabstop>txtCalPriceJobWeek</tabstop>
   <tabstop>lstCalPaysMonth</tabstop>

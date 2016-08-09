@@ -114,7 +114,7 @@ reportGenerator::reportGenerator ( documentEditor* mdiParent )
 	btnGenerateReport = new QToolButton;
 	btnGenerateReport->setFixedSize ( 30, 30 );
 	btnGenerateReport->setToolTip ( tr ( "Generate a report based on the combo boxes selection" ) );
-	btnGenerateReport->setIcon ( ICON ( "appicon.png" ) );
+	btnGenerateReport->setIcon ( ICON ( "appicon" ) );
 	connect ( btnGenerateReport, SIGNAL ( clicked () ), this, SLOT ( btnGenerateReport_clicked () ) );
 
 	QHBoxLayout* layoutCbos2 = new QHBoxLayout;
@@ -235,7 +235,7 @@ reportGenerator::reportGenerator ( documentEditor* mdiParent )
 	btnViewJob->setFixedSize ( 30, 30 );
 	btnViewJob->setEnabled ( false );
 	btnViewJob->setToolTip ( tr ( "View job's brief information" ) );
-	btnViewJob->setIcon ( ICON ( "job_info.png" ) );
+	btnViewJob->setIcon ( ICON ( "job_info" ) );
 	connect ( btnViewJob, SIGNAL ( clicked ( bool ) ), this, SLOT ( btnViewJob_clicked ( bool ) ) );
 
 	QHBoxLayout* layoutBriefJob = new QHBoxLayout;
@@ -1124,22 +1124,22 @@ dockBJ::dockBJ ()
 
 	QToolButton* btnCopyJobType = new QToolButton;
 	btnCopyJobType->setFixedSize ( 30, 30 );
-	btnCopyJobType->setIcon ( ICON ( "document-new.png" ) );
+	btnCopyJobType->setIcon ( ICON ( "document-new" ) );
 	btnCopyJobType->setToolTip ( tr ( "Copy to report" ) );
 	connect ( btnCopyJobType, SIGNAL ( clicked () ), this, SLOT ( btnCopyJobType_clicked () ) );
 	QToolButton* btnCopyJobDate = new QToolButton;
 	btnCopyJobDate->setFixedSize ( 30, 30 );
-	btnCopyJobDate->setIcon ( ICON ( "document-new.png" ) );
+	btnCopyJobDate->setIcon ( ICON ( "document-new" ) );
 	btnCopyJobDate->setToolTip ( tr ( "Copy to report" ) );
 	connect ( btnCopyJobDate, SIGNAL ( clicked () ), this, SLOT ( btnCopyJobDate_clicked () ) );
 	QToolButton* btnCopyJobPrice = new QToolButton;
 	btnCopyJobPrice->setFixedSize ( 30, 30 );
-	btnCopyJobPrice->setIcon ( ICON ( "document-new.png" ) );
+	btnCopyJobPrice->setIcon ( ICON ( "document-new" ) );
 	btnCopyJobPrice->setToolTip ( tr ( "Copy to report" ) );
 	connect ( btnCopyJobPrice, SIGNAL ( clicked () ), this, SLOT ( btnCopyJobPrice_clicked () ) );
 	QToolButton* btnCopyJobReport = new QToolButton;
 	btnCopyJobReport->setFixedSize ( 30, 30 );
-	btnCopyJobReport->setIcon ( ICON ( "document-new.png" ) );
+	btnCopyJobReport->setIcon ( ICON ( "document-new" ) );
 	btnCopyJobReport->setToolTip ( tr ( "Copy to report" ) );
 	connect ( btnCopyJobReport, SIGNAL ( clicked () ), this, SLOT ( btnCopyJobReport_clicked () ) );
 

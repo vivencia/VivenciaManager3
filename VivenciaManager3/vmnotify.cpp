@@ -166,7 +166,8 @@ void vmNotify::buttonClicked ( QPushButton* btn, Message* const message )
 		result = btn->property ( PROPERTY_BUTTON_RESULT ).toInt ();
 	}
 	else
-		message->mBtnID = MESSAGE_BTN_CANCEL;
+		result = message->mBtnID;
+
 	if ( message->isModal )
 	{
 		if ( result == QDialog::Accepted )
@@ -366,7 +367,7 @@ int vmNotify::notifyBox ( const QString& title, const QString& msg,
 	message->title = title;
 	message->bodyText = msg;
 	message->timeout = m_sec;
-	message->iconName = QLatin1String ( ":/resources/notify-" ) + QString::number ( icon ) + QLatin1String ( ".png" );
+	message->iconName = QLatin1String ( ":/resources/notify-" ) + QString::number ( icon ) + QLatin1String ( "" );
 
 	if ( !btnsText[0].isEmpty () ) // this button is always a ok button
 	{
@@ -406,7 +407,7 @@ void vmNotify::notifyMessage ( const QString& title, const QString& msg, const i
 	message->title = title;
 	message->bodyText = msg;
 	message->timeout = msecs;
-	message->iconName = QLatin1String ( ":/resources/notify-" ) + QLatin1String ( b_critical ? "3" : "2" ) + QLatin1String ( ".png" );
+	message->iconName = QLatin1String ( ":/resources/notify-" ) + QLatin1String ( b_critical ? "3" : "2" ) + QLatin1String ( "" );
 	addMessage ( message );
 }
 
@@ -461,7 +462,7 @@ int vmNotify::customBox ( const QString& title, const QString& msg,
 
 bool vmNotify::inputBox ( QString& result, const QWidget* referenceWidget, const QString& title, const QString& label_text,
 						  const QString& initial_text, const QString& icon, const QString& opt_check_box,
-						  const vmCompleters::COMPLETER_CATEGORIES completer, const bool bPasswordBox )
+						  const vmCompleters::COMPLETER_CATEGORIES completer )
 {
 	vmNotify* newNotify ( new vmNotify ( referenceWidget != nullptr ? QStringLiteral ( "C" ) : emptyString, referenceWidget ) );
 	newNotify->setWindowFlags ( Qt::FramelessWindowHint );
@@ -479,11 +480,11 @@ bool vmNotify::inputBox ( QString& result, const QWidget* referenceWidget, const
 	inputForm->setText ( initial_text );
 	inputForm->setMaximumHeight ( 30 );
 	inputForm->setMinimumWidth ( 200 );
-	if ( bPasswordBox )
-		inputForm->setEchoMode ( QLineEdit::Password );
+	
 	if ( completer != vmCompleters::NONE )
 		APP_COMPLETERS ()->setCompleter ( inputForm, completer );
 	inputForm->setCallbackForRelevantKeyPressed ( [&, message] ( const QKeyEvent* ke, const vmWidget* const ) { return message->inputFormKeyPressed ( ke ); } );
+	message->setMessageFinishedCallback ( [&newNotify ] ( Message* msg ) { return newNotify->buttonClicked ( nullptr, msg ); } );
 	message->addWidget ( inputForm, row );
 
 	vmCheckBox* optCheck ( nullptr );
@@ -517,6 +518,51 @@ bool vmNotify::inputBox ( QString& result, const QWidget* referenceWidget, const
 		}
 		if ( result.isEmpty () )
 			result = inputForm->text ();
+		b_ok = !result.isEmpty ();
+	}
+	delete message;
+	delete newNotify;
+	return b_ok;
+}
+
+bool vmNotify::passwordBox ( QString& result, const QWidget* referenceWidget, const QString& title,
+							 const QString& label_text, const QString& icon )
+{
+	vmNotify* newNotify ( new vmNotify ( referenceWidget != nullptr ? QStringLiteral ( "C" ) : emptyString, referenceWidget ) );
+	newNotify->setWindowFlags ( Qt::FramelessWindowHint );
+	uint row ( 1 );
+	Message* message ( new Message ( newNotify ) );
+	message->title = title;
+	message->bodyText = label_text;
+	message->timeout = -1;
+	message->isModal = true;
+	message->iconName = icon;
+	message->mbAutoRemove = false;
+
+	vmLineEdit* inputForm ( new vmLineEdit );
+	inputForm->setEditable ( true );
+	inputForm->setMaximumHeight ( 30 );
+	inputForm->setMinimumWidth ( 200 );
+	inputForm->setEchoMode ( QLineEdit::Password );
+	inputForm->setCallbackForRelevantKeyPressed ( [&, message] ( const QKeyEvent* ke, const vmWidget* const ) { return message->inputFormKeyPressed ( ke ); } );
+	message->setMessageFinishedCallback ( [&newNotify ] ( Message* msg ) { return newNotify->buttonClicked ( nullptr, msg ); } );
+	message->addWidget ( inputForm, row );
+
+	QPushButton* btn0 ( new QPushButton ( QStringLiteral ( "OK" ) ) );
+	btn0->setProperty ( PROPERTY_BUTTON_ID, MESSAGE_BTN_OK );
+	btn0->setProperty ( PROPERTY_BUTTON_RESULT, QDialog::Accepted );
+	message->addWidget ( btn0, ++row, Qt::AlignCenter, true );
+	QPushButton* btn1 ( new QPushButton ( QApplication::tr ( "Cancel" ) ) );
+	btn1->setProperty ( PROPERTY_BUTTON_ID, MESSAGE_BTN_CANCEL );
+	btn1->setProperty ( PROPERTY_BUTTON_RESULT, QDialog::Rejected );
+	message->addWidget ( static_cast<QWidget*> ( btn1 ), row, Qt::AlignCenter, true );
+	
+	newNotify->addMessage ( message );
+	bool b_ok ( message->mBtnID == MESSAGE_BTN_OK );
+
+	if ( b_ok )
+	{
+		result = inputForm->text ();
 		b_ok = !result.isEmpty ();
 	}
 	delete message;

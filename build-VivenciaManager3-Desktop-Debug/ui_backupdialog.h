@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'backupdialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.5.1
+** Created by: Qt User Interface Compiler version 5.6.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -102,7 +102,7 @@ public:
         toolBox->setFrameShadow(QFrame::Raised);
         pageBackup = new QWidget();
         pageBackup->setObjectName(QStringLiteral("pageBackup"));
-        pageBackup->setGeometry(QRect(0, 0, 634, 419));
+        pageBackup->setGeometry(QRect(0, 0, 636, 425));
         gLayoutPage = new QGridLayout(pageBackup);
         gLayoutPage->setSpacing(2);
         gLayoutPage->setObjectName(QStringLiteral("gLayoutPage"));
@@ -174,8 +174,7 @@ public:
         btnChooseExportFolder->setObjectName(QStringLiteral("btnChooseExportFolder"));
         btnChooseExportFolder->setMinimumSize(QSize(30, 30));
         btnChooseExportFolder->setMaximumSize(QSize(30, 30));
-        QIcon icon1;
-        icon1.addFile(QStringLiteral(":/resources/folder-brown.png"), QSize(), QIcon::Normal, QIcon::Off);
+        QIcon icon1(QIcon::fromTheme(QStringLiteral("folder")));
         btnChooseExportFolder->setIcon(icon1);
 
         gridLayout_4->addWidget(btnChooseExportFolder, 3, 1, 1, 1);
@@ -225,7 +224,8 @@ public:
         btnDefaultFilename->setObjectName(QStringLiteral("btnDefaultFilename"));
         btnDefaultFilename->setMinimumSize(QSize(30, 30));
         btnDefaultFilename->setMaximumSize(QSize(30, 30));
-        btnDefaultFilename->setIcon(icon);
+        QIcon icon2(QIcon::fromTheme(QStringLiteral("text-x-generic-template")));
+        btnDefaultFilename->setIcon(icon2);
 
         gridLayout_3->addWidget(btnDefaultFilename, 1, 1, 1, 1);
 
@@ -275,7 +275,7 @@ public:
         toolBox->addItem(pageBackup, QStringLiteral("Backup"));
         pageRestore = new QWidget();
         pageRestore->setObjectName(QStringLiteral("pageRestore"));
-        pageRestore->setGeometry(QRect(0, 0, 634, 419));
+        pageRestore->setGeometry(QRect(0, 0, 636, 425));
         gridLayout_7 = new QGridLayout(pageRestore);
         gridLayout_7->setSpacing(2);
         gridLayout_7->setObjectName(QStringLiteral("gridLayout_7"));
@@ -293,27 +293,27 @@ public:
         btnSendMail = new QPushButton(pageRestore);
         btnSendMail->setObjectName(QStringLiteral("btnSendMail"));
         btnSendMail->setMinimumSize(QSize(0, 30));
-        QIcon icon2;
-        icon2.addFile(QStringLiteral(":/resources/email.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnSendMail->setIcon(icon2);
+        QIcon icon3;
+        icon3.addFile(QStringLiteral(":/resources/email.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnSendMail->setIcon(icon3);
 
         verticalLayout_3->addWidget(btnSendMail);
 
         btnRemoveFromList = new QPushButton(pageRestore);
         btnRemoveFromList->setObjectName(QStringLiteral("btnRemoveFromList"));
         btnRemoveFromList->setMinimumSize(QSize(0, 30));
-        QIcon icon3;
-        icon3.addFile(QStringLiteral(":/resources/remove.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnRemoveFromList->setIcon(icon3);
+        QIcon icon4;
+        icon4.addFile(QStringLiteral(":/resources/remove.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnRemoveFromList->setIcon(icon4);
 
         verticalLayout_3->addWidget(btnRemoveFromList);
 
         btnRemoveAndDelete = new QPushButton(pageRestore);
         btnRemoveAndDelete->setObjectName(QStringLiteral("btnRemoveAndDelete"));
         btnRemoveAndDelete->setMinimumSize(QSize(0, 30));
-        QIcon icon4;
-        icon4.addFile(QStringLiteral(":/resources/edit-delete.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnRemoveAndDelete->setIcon(icon4);
+        QIcon icon5;
+        icon5.addFile(QStringLiteral(":/resources/edit-delete.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnRemoveAndDelete->setIcon(icon5);
 
         verticalLayout_3->addWidget(btnRemoveAndDelete);
 
@@ -347,9 +347,9 @@ public:
         btnChooseImportFile->setEnabled(false);
         btnChooseImportFile->setMinimumSize(QSize(30, 30));
         btnChooseImportFile->setMaximumSize(QSize(30, 30));
-        QIcon icon5;
-        icon5.addFile(QStringLiteral(":/resources/find-service.png"), QSize(), QIcon::Normal, QIcon::Off);
-        btnChooseImportFile->setIcon(icon5);
+        QIcon icon6;
+        icon6.addFile(QStringLiteral(":/resources/find-service.png"), QSize(), QIcon::Normal, QIcon::Off);
+        btnChooseImportFile->setIcon(icon6);
 
         gridLayout_7->addWidget(btnChooseImportFile, 4, 3, 1, 1);
 
@@ -409,7 +409,7 @@ public:
 
         retranslateUi(BackupDialog);
 
-        toolBox->setCurrentIndex(1);
+        toolBox->setCurrentIndex(0);
         btnApply->setDefault(true);
 
 

@@ -5,8 +5,6 @@
 
 #include <QString>
 
-class passwordManager;
-
 class QFile;
 
 class fixDatabase
@@ -40,7 +38,7 @@ public:
 private:
 	bool readOutputFile ( const QString& r_passwd );
 
-	passwordManager* mPasswdMngr;
+	//passwordManager* mPasswdMngr;
 	PointersList<fixDatabase::badTable*> m_badtables;
 	bool b_needsfixing;
 	QString mStrOutput;

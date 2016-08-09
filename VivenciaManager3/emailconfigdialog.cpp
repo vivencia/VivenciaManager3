@@ -88,9 +88,9 @@ void emailConfigDialog::setupUi ()
 	gLayout->setSpacing ( 2 );
 
 	QHBoxLayout* horizontalLayout ( new QHBoxLayout );
-	ui::btnAddProfile = new QPushButton ( ICON ( "browse-controls/add.png" ), tr ( "Add profile" ) );
+	ui::btnAddProfile = new QPushButton ( ICON ( "browse-controls/add" ), tr ( "Add profile" ) );
 	connect ( ui::btnAddProfile, &QPushButton::clicked, this, [&] () { return btnAddProfile_clicked (); } );
-	ui::btnEditProfile = new QPushButton ( ICON ( "browse-controls/edit.png" ), tr ( "Edit profile" ) );
+	ui::btnEditProfile = new QPushButton ( ICON ( "browse-controls/edit" ), tr ( "Edit profile" ) );
 	connect ( ui::btnEditProfile, &QPushButton::clicked, this, [&] () { return btnEditProfile_clicked (); } );
 	horizontalLayout->addWidget ( ui::btnAddProfile );
 	horizontalLayout->addWidget ( ui::btnEditProfile );
@@ -118,7 +118,7 @@ void emailConfigDialog::setupUi ()
 	ui::txtProgram = new vmLineEdit;
 	ui::txtProgram->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return optsList.current ()->bProfileModified = true; } );
 	ui::btnChooseApp = new QToolButton ();
-	ui::btnChooseApp->setIcon ( ICON ( "folder-brown.png" ) );
+	ui::btnChooseApp->setIcon ( ICON ( "folder-brown" ) );
 	connect ( ui::btnChooseApp, &QPushButton::clicked, this, [&] () { return btnChooseApp_clicked (); } );
 
 	horizontalLayout = new QHBoxLayout;
@@ -155,9 +155,9 @@ void emailConfigDialog::setupUi ()
 	gLayout->setColumnStretch ( 0, 1 );
 	gLayout->setColumnStretch ( 1, 1 );
 
-	ui::btnSaveProfile = new QPushButton ( ICON ( "document-save.png" ), tr ( "Save" ) );
+	ui::btnSaveProfile = new QPushButton ( ICON ( "document-save" ), tr ( "Save" ) );
 	connect ( ui::btnSaveProfile, &QPushButton::clicked, this, [&] () { return btnSaveProfile_clicked (); } );
-	ui::btnCancelProfile = new QPushButton ( ICON ( "cancel.png" ), tr ( "Cancel" ) );
+	ui::btnCancelProfile = new QPushButton ( ICON ( "cancel" ), tr ( "Cancel" ) );
 	connect ( ui::btnCancelProfile, &QPushButton::clicked, this, [&] () { return btnCancelProfile_clicked (); } );
 	ui::btnClose = new QPushButton ( tr ( "Close" ) );
 	connect ( ui::btnClose, &QPushButton::clicked, this, [&] () { return btnClose_clicked (); } );

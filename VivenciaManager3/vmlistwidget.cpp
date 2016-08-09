@@ -8,14 +8,22 @@ vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
 	vmTableColumn* cols ( createColumns ( 1 ) );
 	cols[0].width = 1000;
 	initTable ( nRows );
-	connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int, const int prev_row, const int )
-			  { return rowSelected ( row, prev_row ); } );
 	setIgnoreChanges ( false );
 }
 
 vmListWidget::~vmListWidget ()
 {
 	this->vmListWidget::clear ( true, true );
+}
+
+void vmListWidget::setIgnoreChanges ( const bool b_ignore )
+{
+	rowActivatedConnection ( !(mbIgnore = b_ignore) );
+	if ( !b_ignore )
+		connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int, const int prev_row, const int )
+				  { return rowSelected ( row, prev_row ); } );
+	else
+		disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
 }
 
 void vmListWidget::setCurrentRow ( int row, const bool b_makecall )

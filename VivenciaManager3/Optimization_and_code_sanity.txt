@@ -1,0 +1,122 @@
+
+  Optimizations: see
+        www.eventhelix.com/realtimemantra/basics/optimizingcandcppcode.htm
+        http://en.wikibooks.org/wiki/Category:Optimizing_C%2B%2B
+
+    ->  Prefer initialization over assignment ( example:
+            QString str_query ( ... )... instead of
+            QString str_query; str_query = ...
+
+    -> OPT-1: If a signed integer number is surely non-negative, when you divide it by a constant
+            ( mainly when the constant is a power of two ) , convert it to unsigned.
+
+    -> OPT-2: Arrange the member variables of classes and structures in such a way that the most used
+        variables are in the first 128 bytes, and then sorted from the longest object to the shortest.
+
+    -> OPT-3: In switch statements, sort the cases by decreasing probability.
+
+    -> OPT-4: If you have to check whether an integer number i is between two integer numbers min_i and max_i included,
+            and you are sure that min_i <= max_i, use the following expression:
+                    unsigned ( i – min_i ) <= unsigned ( max_i – min_i )
+            In the given conditions, the above formula is equivalent to the following, more intuitive formula:
+                    min_i <= i && i <= max_i
+            The former formula performs two differences and one comparison, while the latter formula performs no difference
+            and two comparisons. For pipelined processors, comparisons are slower than differences, because they imply a branch.
+            In addition, if min_i is a constant expression with zero value, the two differences disappear.
+
+    -> OPT-5: Sempre use unsigned para variáveis que não podem, garantidamente, conter valores negativos. This is closely
+                related to OPT-1. In general, unsigned operations tend to be faster
+
+    -> OPT-6: In non-recursive functions, to allocate variable-size but not large memory space, use the alloca function.
+                It is very efficient, as it allocates space on the stack. Advantages:
+                    No need to perform expensive list/tree searches in heap management structures
+                    No need to execute expensive sbrk () syscalls to grow the heap
+                    No need to perform locking in MT applications
+
+    -> OPT-7: Use prefix increment ( ++ ) or decrement ( -- ) operators instead of the corresponding postfix operators,
+            if the expression value is not used. If the incremented object is a primitive type, there is no difference
+            between prefix and postfix operators. However, if it is a composite object, the postfix operator causes the
+            creation of a temporary object, while the prefix operator does not.
+
+    -> OPT-8: Use the assignment composite operators ( like in a += b ) instead of simple operators combined
+            with assignment operators ( like in a = a + b ). Typically a simple operator creates a temporary object.
+
+    -> OPT-9: Declare explicit all the constructors that may receive only one argument, except the copy
+            constructors of concrete classes. Non-explicit constructors may be called automatically
+            by the compiler when it performs an automatic type conversion. The execution of such constructors may take much time.
+
+    -> OPT-10: compiler flags: -fno-rtti -fno-pic -O3 -march= -mtune= -fomit-frame-pointer
+
+OPT_CS: #1
+03/06/2011
+According to Understand Codecheck:
+
+"The inherent nature of floating-point types is such that comparisons of equality will often not
+evaluate to true, even when they are expected to. Also, the behaviour of such a comparison cannot be
+predicted before execution, and may well vary from one implementation to another."
+_______________________________________________________________________________________________________
+
+OPT_CS: #2
+03/06/2011
+According to Understand Codecheck:
+
+"Report assignment operators that do not check for self assignment.
+  The following generalized formats are allowed. Comments and whitespace are
+  allowed anywhere, but otherwise, these formats are rigid:
+	0. xxx operator=(xxx C &p) { [return;] }
+	1. xxx operator=(xxx C &p) { if (this != &p) [{]...[}] [return;] }
+	2. xxx operator=(xxx C &p) { if (*this != p) [{]...[}] [return;] }
+	3. xxx operator=(xxx C &p) { if (p != *this) [{]...[}] [return;] }
+	4. xxx operator=(xxx C &p) { if (&p != this) [{]...[}] [return;] }
+	5. xxx operator=(xxx C &p) { if (this == &p) [{] return ...
+	6. xxx operator=(xxx C &p) { if (*this == p) [{] return ...
+	7. xxx operator=(xxx C &p) { if (p == *this) [{] return ...
+	6. xxx operator=(xxx C &p) { if (&p == this) [{] return ..."
+
+_______________________________________________________________________________________________________
+
+OPT_CS: #3
+05/06/2011
+
+According to Understand Codecheck:
+
+"For simple constants, prefer const objects or enums to #defines.
+For function-like macros, prefer inline functions to #defines."
+
+_______________________________________________________________________________________________________
+
+OPT_CS: #4
+05/06/2011
+
+According to Understand Codecheck:
+
+"Pointers must be initialized to 0, or some valid value when created.
+Assumptions:
+   1. Any initialization statement is sufficient.
+_______________________________________________________________________________________________________
+
+OPT_CS: #5
+05/06/2011
+
+According to Understand Codecheck:
+
+"Checks for a space between the variable name and the & or *. Assume this standard refers to variable/type/function declarations"
+_______________________________________________________________________________________________________
+
+OPT_CS: #6
+05/06/2011
+
+According to Understand Codecheck:
+
+"One argument constructors must be declared explicit"
+_______________________________________________________________________________________________________
+
+OPT_CS: #7
+05/06/2011
+
+According to Understand Codecheck:
+
+Function parameters should both be declared ( for example, in header files ) and defined ( in the source file )
+
+_______________________________________________________________________________________________________
+

@@ -2,10 +2,10 @@
 #include "global.h"
 #include "fileops.h"
 #include "data.h"
-#include "passwordmanager.h"
 #include "vmnotify.h"
 #include "fixdatabaseui.h"
 #include "heapmanager.h"
+#include "keychain/passwordsessionmanager.h"
 
 #include <QFile>
 #include <QTextStream>
@@ -27,41 +27,44 @@ static void commandQueue ( QString& main_command )
 }
 
 fixDatabase::fixDatabase ()
-	: mPasswdMngr ( new passwordManager ( QStringLiteral ( "fixdb" ) ) ), m_badtables ( 5 ), b_needsfixing ( false )
+	: m_badtables ( 5 ), b_needsfixing ( false )
 {}
 
 fixDatabase::~fixDatabase ()
 {
 	m_badtables.clear ( true );
-	heap_del ( mPasswdMngr );
 }
 
 bool fixDatabase::readOutputFile ( const QString& r_passwd )
 {
 	bool ok ( false );
-    if ( fileOps::exists ( tempFile ).isOn () ) {
+    if ( fileOps::exists ( tempFile ).isOn () )
+	{
 		QFile file ( tempFile );
-		if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) ) {
+		if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
+		{
 			mStrOutput = file.readAll ();
 			file.close ();
 			ok = true;
 		}
-		( void )fileOps::sysExec ( sudoCommand.arg ( r_passwd, QStringLiteral ( "rm -f " ) + tempFile ) );
+		static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( r_passwd, QStringLiteral ( "rm -f " ) + tempFile ) ) );
 	}
 	return ok;
 }
 
 bool fixDatabase::checkDatabase ()
 {
-	// The server should be stopped for this operation to avoid making errors when trying to fix them
+	// The server should be stopped for this operation to avoid making more errors when trying to fix them
 	QString r_passwd;
-	if ( mPasswdMngr->sudoPassword ( r_passwd, QApplication::tr (
-										 "In order to perform the check you need to have root privileges. Please type root's password." ) ) ) {
+	if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( r_passwd, SYSTEM_ROOT_SERVICE, SYSTEM_ROOT_PASSWORD_ID,
+														APP_TR_FUNC ( "In order to perform the check you need to have root privileges. Please type root's password." ) ) )
+	{
 		QString command ( fixApp + fixAppVerify + mysqlLibDir.arg ( DB_NAME, QStringLiteral ( "*" ), tempFile ) );
 		commandQueue ( command );
-		( void )fileOps::sysExec ( sudoCommand.arg ( r_passwd, QLatin1String ( "rm -f " ) + tempFile ) );
+		static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( r_passwd, QLatin1String ( "rm -f " ) + tempFile ) ) );
 
-		if ( readOutputFile ( r_passwd ) ) {
+		if ( readOutputFile ( r_passwd ) )
+		{
 			b_needsfixing = false;
 			m_badtables.clear ( true );
 			int idx ( mStrOutput.indexOf ( strOutTableUpperLimiter ) );
@@ -72,7 +75,8 @@ bool fixDatabase::checkDatabase ()
 			const int len3 ( strOutError.length () + 1 );
 			badTable* bt ( nullptr );
 
-			while ( idx != -1 ) {
+			while ( idx != -1 )
+			{
 				idx = mStrOutput.indexOf ( QStringLiteral ( ".MYI" ), idx2 + len1 );
 				if ( idx == -1 )
 					break;
@@ -84,25 +88,30 @@ bool fixDatabase::checkDatabase ()
 				idx = mStrOutput.indexOf ( strOutError, idx2 + 1 );
 				if ( idx != -1 ) {
 					idx3 = mStrOutput.indexOf ( strOutTableLowerLimiter, idx2 );
-					if ( idx < idx3 ) {
+					if ( idx < idx3 )
+					{
 						idx2 = mStrOutput.indexOf ( CHR_NEWLINE, idx + len3 );
 						idx += len3;
 						bt->err = mStrOutput.mid ( idx , idx2 - idx );
 						bt->result = CR_TABLE_CORRUPTED;
 						b_needsfixing = true;
 					}
-					else {
+					else
+					{
 						bt->err = QStringLiteral ( "OK" );
 						bt->result = CR_OK;
 					}
 				}
-				else {
+				else
+				{
 					bt->err = QStringLiteral ( "OK" );
 					bt->result = CR_OK;
 				}
 				m_badtables.append ( bt );
 				idx = idx2 = mStrOutput.indexOf ( strOutTableUpperLimiter, idx2 + 1 );
 			}
+			// If we reach here, the password worked. Save it for the session
+			APP_PSWD_MANAGER ()->savePassword ( passwordSessionManager::SaveSession, r_passwd, SYSTEM_ROOT_SERVICE, SYSTEM_ROOT_PASSWORD_ID );
 			return true;
 		}
 	}
@@ -112,12 +121,13 @@ bool fixDatabase::checkDatabase ()
 bool fixDatabase::fixTables ( const QString& tables )
 {
 	QString r_passwd;
-	if ( mPasswdMngr->sudoPassword ( r_passwd, QApplication::tr (
-										 "In order to fix the database, you need to have root privileges." ) ) ) {
+	if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( r_passwd, SYSTEM_ROOT_SERVICE, SYSTEM_ROOT_PASSWORD_ID,
+														APP_TR_FUNC ( "In order to fix the database, you need to have root privileges." ) ) )
+	{
 
 		QString command ( fixApp + fixAppSafeRecover + mysqlLibDir.arg ( DB_NAME ).arg ( tables ).arg ( tempFile ) );
 		commandQueue ( command );
-		( void )fileOps::sysExec ( sudoCommand.arg ( r_passwd, command ), emptyString );
+		static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( r_passwd, command ), emptyString ) );
 		if ( readOutputFile ( r_passwd ) )
 			return ( !mStrOutput.contains ( QStringLiteral ( "err" ) ) && mStrOutput.contains ( QStringLiteral ( "recovering" ) ) );
 	}

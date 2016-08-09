@@ -28,6 +28,15 @@ public:
 		st_fileInfo () : is_dir ( false ), is_file ( true ) {}
 	};
 
+	enum DesktopEnvironment {
+		DesktopEnv_Plasma5,
+		DesktopEnv_Gnome,
+		DesktopEnv_Kde4,
+		DesktopEnv_Unity,
+		DesktopEnv_Xfce,
+		DesktopEnv_Other
+	};
+	
 	constexpr explicit inline fileOps () {}
 
 	static const QString appPath ( const QString& appname );
@@ -75,6 +84,9 @@ public:
     static QString getExistingDir ( const QString& dir );
     static QString getOpenFileName ( const QString& dir, const QString& filter );
     static QString getSaveFileName ( const QString& dir, const QString& filter );
+
+	static DesktopEnvironment detectDesktopEnvironment ();
+	static DesktopEnvironment getKDEVersion ();
 };
 
 #endif // FILEOPS_H

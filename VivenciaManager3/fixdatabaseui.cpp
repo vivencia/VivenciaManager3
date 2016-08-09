@@ -20,7 +20,7 @@ static QIcon* dbTableStateIcon ( const fixDatabase::CheckResult result )
     {
         static QIcon* res_undef ( nullptr );
         if ( !res_undef )
-            res_undef = new QIcon ( ICON ( "notify-1.png" ) );
+            res_undef = new QIcon ( ICON ( "notify-1" ) );
         return res_undef;
     }
     break;
@@ -28,7 +28,7 @@ static QIcon* dbTableStateIcon ( const fixDatabase::CheckResult result )
     {
         static QIcon* res_ok ( nullptr );
         if ( !res_ok )
-            res_ok = new QIcon ( ICON ( "db-ok.png" ) );
+            res_ok = new QIcon ( ICON ( "db-ok" ) );
         return res_ok;
     }
     break;
@@ -36,7 +36,7 @@ static QIcon* dbTableStateIcon ( const fixDatabase::CheckResult result )
     {
         static QIcon* res_err ( nullptr );
         if ( !res_err )
-            res_err = new QIcon ( ICON ( "db-error.png" ) );
+            res_err = new QIcon ( ICON ( "db-error" ) );
         return res_err;
     }
     }

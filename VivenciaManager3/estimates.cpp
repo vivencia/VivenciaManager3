@@ -83,7 +83,8 @@ enum FILEMANAGER_ACTIONS
 
 enum PROJECT_ACTIONS
 {
-	PA_NEW_FULL = 0, PA_NEW_EMPTY = 1, PA_CONVERT_FROM_ESTIMATE = 2, PA_RENAME = 3, PA_REMOVE = 4, PA_ADD_DOC = 5, PA_ADD_XLS = 6
+	PA_NEW_FULL = 0, PA_NEW_EMPTY = 1, PA_CONVERT_FROM_ESTIMATE = 2, PA_RENAME = 3, 
+		PA_LINK_TO_JOB = 4, PA_REMOVE = 5, PA_ADD_DOC = 6, PA_ADD_XLS = 7
 };
 
 enum ESTIMATE_ACTIONS
@@ -218,15 +219,15 @@ static QString tryToGetClientAddress ( const QString& client_name )
 estimateDlg::estimateDlg ( QWidget* parent )
 	: QDialog ( parent ), m_npdlg ( nullptr )
 {
+	iconsType[FILETYPE_DOC] = new QIcon ( QIcon::fromTheme ( QStringLiteral ( "x-office-document" ) ) );
+	iconsType[FILETYPE_XLS] = new QIcon ( QIcon::fromTheme ( QStringLiteral ( "x-office-spreadsheet" ) ) );
+	iconsType[FILETYPE_PDF] = new QIcon ( QIcon::fromTheme ( QStringLiteral ( "okular" ) ) );
+	iconsType[FILETYPE_VMR] = new QIcon ( QIcon::fromTheme ( QStringLiteral ( "x-office-address-book" ) ) );
+	iconsType[FILETYPE_UNKNOWN] = new QIcon ( QIcon::fromTheme ( QStringLiteral ( "unknown" ) ) );
+
 	setWindowTitle ( TR_FUNC ( "Projects, Estimates and Reports" ) );
-	setWindowIcon ( ICON ( "report.png" ) );
-
-	iconsType[FILETYPE_DOC] = new QIcon ( ICON ( "Microsoft+Office+Word+2007.xpm" ) );
-	iconsType[FILETYPE_XLS] = new QIcon ( ICON ( "Microsoft+Office+Excel+2007.xpm" ) );
-	iconsType[FILETYPE_PDF] = new QIcon ( ICON ( "application-pdf.png" ) );
-	iconsType[FILETYPE_VMR] = new QIcon ( ICON ( "report.png" ) );
-	iconsType[FILETYPE_UNKNOWN] = new QIcon ( ICON ( "unknown.png" ) );
-
+	setWindowIcon ( *iconsType[FILETYPE_VMR] );
+	
 	btnDoc = new QToolButton;
 	btnDoc->setFixedSize ( 30, 30 );
 	btnDoc->setIcon ( *iconsType[FILETYPE_DOC] );
@@ -245,11 +246,11 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	connect ( btnPdf, &QToolButton::pressed, btnPdf, [&] () { return btnPdf->showMenu (); } );
 	btnFileManager = new QToolButton;
 	btnFileManager->setFixedSize ( 30, 30 );
-	btnFileManager->setIcon ( ICON ( "system-file-manager.png" ) );
+	btnFileManager->setIcon ( QIcon::fromTheme ( QStringLiteral ( "system-file-manager" ) ) );
 	connect ( btnFileManager, &QToolButton::pressed, btnFileManager, [&] () { return btnFileManager->showMenu (); } );
 	btnReload = new QToolButton;
 	btnReload->setFixedSize ( 30, 30 );
-	btnReload->setIcon ( ICON ( "reload.png" ) );
+	btnReload->setIcon ( QIcon::fromTheme ( QStringLiteral ( "view-refresh" ) ) );
 	connect ( btnReload, &QToolButton::pressed, this, [&] () { return scanDir (); } );
 
 	QVBoxLayout* vLayout1 ( new QVBoxLayout );
@@ -386,6 +387,7 @@ void estimateDlg::setupActions ()
 	menuProject->addAction ( new vmAction ( PA_NEW_FULL, TR_FUNC ( "New project folder" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_NEW_EMPTY, TR_FUNC ( "New empty project folder" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_CONVERT_FROM_ESTIMATE, TR_FUNC ( "New from estimate" ), this ) );
+	menuProject->addAction ( new vmAction ( PA_LINK_TO_JOB, TR_FUNC ( "Link this project folder to job" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_RENAME, TR_FUNC ( "Rename project" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_REMOVE, TR_FUNC ( "Delete project folder" ), this ) );
 	menuProject->addAction ( new vmAction ( PA_ADD_DOC, TR_FUNC ( "Add new DOC" ), this ) );
@@ -425,7 +427,8 @@ void estimateDlg::scanDir ()
 	treeView->clear ();
 	QString clientName;
 	QString dirName;
-	for ( int c_id ( 0 ); c_id <= VDB ()->lastDBRecord ( TABLE_CLIENT_ORDER ); ++c_id )
+	const uint lastClientID ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
+	for ( uint c_id ( 1 ); c_id <= lastClientID; ++c_id )
 	{
 		clientName = Client::clientName ( c_id );
 		if ( !clientName.isEmpty () )
@@ -464,7 +467,8 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 		topLevelItem->setText ( 0, clientName );
 		topLevelItem->setBackground ( 0, QBrush ( Qt::darkCyan ) );
 		topLevelItem->setForeground ( 0, QBrush ( Qt::white ) );
-		topLevelItem->setData( 0, ROLE_ITEM_TYPE, TYPE_CLIENT_TOPLEVEL );
+		topLevelItem->setData ( 0, ROLE_ITEM_TYPE, TYPE_CLIENT_TOPLEVEL );
+		topLevelItem->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName );
 		treeView->addTopLevelItem ( topLevelItem );
 	}
 
@@ -497,7 +501,7 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 					child_dir->setText ( 1, itemTypeStr[dirType] );
 					child_dir->setData ( 0, ROLE_ITEM_TYPE, dirType );
 					child_dir->setData ( 0, ROLE_ITEM_FILENAME, files.at ( i )->fullpath );
-					child_dir->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName != nonClientStr ? clientName : emptyString );
+					child_dir->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName );
 				}
 			}
 			else
@@ -581,6 +585,7 @@ void estimateDlg::updateButtons ()
 			menuProject->actions ().at ( PA_NEW_FULL )->setEnabled ( type == TYPE_CLIENT_TOPLEVEL );
 			menuProject->actions ().at ( PA_NEW_EMPTY )->setEnabled ( type == TYPE_CLIENT_TOPLEVEL );
 			menuProject->actions ().at ( PA_CONVERT_FROM_ESTIMATE )->setEnabled ( type == TYPE_CLIENT_TOPLEVEL );
+			menuProject->actions ().at ( PA_LINK_TO_JOB )->setEnabled ( type == TYPE_PROJECT_DIR );
 			menuProject->actions ().at ( PA_RENAME )->setEnabled ( type == TYPE_PROJECT_DIR );
 			menuProject->actions ().at ( PA_REMOVE )->setEnabled ( type == TYPE_PROJECT_DIR );
 			menuProject->actions ().at ( PA_ADD_DOC )->setEnabled ( type == TYPE_PROJECT_DIR );
@@ -736,7 +741,7 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 void estimateDlg::projectActions ( QAction *action )
 {
 	QTreeWidgetItem* item ( treeView->selectedItems ().at ( 0 ) );
-	bool bAddDoc ( false ), bAddXls ( false ), bUseDialog ( false ), bProceed ( false );
+	bool bAddDoc ( false ), bAddXls ( false ), bUseDialog ( false ), bProceed ( false ), bGetJobOnly ( false );
 	QString strProjectPath, strProjectID, msgTitle, msgBody[2];
 	switch ( static_cast<vmAction*> ( action )->id () )
 	{
@@ -756,6 +761,13 @@ void estimateDlg::projectActions ( QAction *action )
 		case PA_CONVERT_FROM_ESTIMATE:
 			selectEstimateFromFile ( item );
 			return;
+		break;
+		case PA_LINK_TO_JOB:
+			bUseDialog = true;
+			bGetJobOnly = true;
+			msgTitle = TR_FUNC ( "New Full Project Creation - " );
+			msgBody[0] = TR_FUNC ( "Project " ) + item->text ( 0 ) + TR_FUNC ( " was not linked to any job. Check the error logs." );
+			msgBody[1] = TR_FUNC ( "Project " ) + item->text ( 0 ) + TR_FUNC ( " was linked to job %1" );
 		break;
 		case PA_RENAME:
 			bProceed = renameDir ( item, strProjectPath );
@@ -790,12 +802,13 @@ void estimateDlg::projectActions ( QAction *action )
 	{
 		if ( !m_npdlg )
 			m_npdlg = new newProjectDialog ( this );
-		m_npdlg->showDialog ( item->text ( 0 ) );
+		m_npdlg->showDialog ( item->data ( 0, ROLE_ITEM_CLIENTNAME ).toString (), !bGetJobOnly, !bGetJobOnly );
 		bProceed = m_npdlg->resultAccepted ();
-		if ( bProceed )
+		strProjectID = m_npdlg->projectID ();
+		if ( bProceed && !bGetJobOnly )
 		{
-			fileOps::st_fileInfo* f_info ( nullptr );
 			strProjectPath = m_npdlg->projectPath ();
+			fileOps::st_fileInfo* f_info ( nullptr );
 			if ( ( bProceed = !fileOps::exists ( strProjectPath ).isUndefined () ) )
 			{
 				f_info = new fileOps::st_fileInfo;
@@ -809,14 +822,17 @@ void estimateDlg::projectActions ( QAction *action )
 					f_info->is_dir = true;
 					f_info->is_file = false;
 					files.append ( f_info );
-					strProjectID = m_npdlg->projectID ();
 					(void) fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) );
 					addFilesToDir ( bAddDoc, bAddXls, strProjectPath, strProjectID, files );
 					bAddDoc = bAddXls = false;
-					jobItem = m_npdlg->jobItem ();
 				}
 			}
 		}
+		else if ( bGetJobOnly )
+		{
+			strProjectPath = item->data ( 0, ROLE_ITEM_FILENAME ).toString ();
+		}
+		jobItem = m_npdlg->jobItem ();
 	}
 	if ( bProceed )
 	{
@@ -834,7 +850,8 @@ void estimateDlg::projectActions ( QAction *action )
 				changeJobData ( jobItem, strProjectPath, strProjectID );
 			if ( DATA ()->currentJob () == jobItem->jobRecord () ) //update view on main window if necessary
 				globalMainWindow->displayJob ( jobItem );
-			addToTree ( files, item->text ( 0 ) );
+			if ( !bGetJobOnly )
+				addToTree ( files, item->text ( 0 ) );
 		}
 	}
 	msgTitle += bProceed ? TR_FUNC ( "Succeeded!" ) : TR_FUNC ( "Failed!" );

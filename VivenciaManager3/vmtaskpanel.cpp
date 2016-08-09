@@ -8,7 +8,7 @@ vmTaskPanel::vmTaskPanel ( const QString& title, QWidget* parent )
 {
 	setProperty ( "class", QStringLiteral ( "panel" ) );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
-    setScheme ( ActionPanelScheme::defaultScheme () );
+	setScheme ( ActionPanelScheme::defaultScheme () );
 
 	mLayout = new QVBoxLayout;
 	mLayout->setMargin ( 5 );
@@ -16,9 +16,10 @@ vmTaskPanel::vmTaskPanel ( const QString& title, QWidget* parent )
 	mLayout->setSizeConstraint ( QLayout::SetMinAndMaxSize );
 	setLayout ( mLayout );
 
-	if ( !title.isEmpty () ) {
+	if ( !title.isEmpty () )
+	{
 		mTitle = new vmActionLabel ( title );
-        mLayout->insertWidget( 0, mTitle );
+		mLayout->insertWidget( 0, mTitle );
 	}
 }
 
@@ -26,9 +27,10 @@ vmTaskPanel::~vmTaskPanel () {}
 
 void vmTaskPanel::setTitle ( const QString& new_title )
 {
-	if ( !mTitle ) {
+	if ( !mTitle )
+	{
 		mTitle = new vmActionLabel ( new_title );
-        mLayout->insertWidget( 0, mTitle );
+		mLayout->insertWidget( 0, mTitle );
 	}
 	else
 		mTitle->setText ( new_title );
@@ -36,15 +38,18 @@ void vmTaskPanel::setTitle ( const QString& new_title )
 
 void vmTaskPanel::setScheme ( ActionPanelScheme* scheme )
 {
-	if ( scheme )  {
+	if ( scheme )
+	{
 		mScheme = scheme;
 		setStyleSheet ( mScheme->actionStyle );
 
 		// set scheme for children
 		QObjectList list ( children () );
-		foreach ( QObject *obj, list )  {
-			if ( dynamic_cast<vmActionGroup*> ( obj ) )  {
-				( ( vmActionGroup* ) obj )->setScheme ( scheme );
+		foreach ( QObject *obj, list )
+		{
+			if ( dynamic_cast<vmActionGroup*> ( obj ) )
+			{
+				( static_cast<vmActionGroup*>( obj ) )->setScheme ( scheme );
 				continue;
 			}
 		}
@@ -81,7 +86,8 @@ vmActionGroup* vmTaskPanel::createGroup ( const QIcon& icon, const QString& titl
 
 void vmTaskPanel::removeGroup ( vmActionGroup* group, const bool bDelete )
 {
-	if ( group ) {
+	if ( group )
+	{
 		mLayout->removeWidget ( group );
 		if ( bDelete )
 			delete group;

@@ -426,25 +426,25 @@ textEditorToolBar::textEditorToolBar ()
 {
 	btnBold = new QToolButton;
 	btnBold->setCheckable ( true );
-	btnBold->setIcon ( ICON ( "format-text-bold.png" ) );
+	btnBold->setIcon ( ICON ( "format-text-bold" ) );
 	btnBold->setToolTip ( TR_FUNC ( "Bold font" ) );
 	connect ( btnBold, &QToolButton::clicked, this, [&] ( const bool checked ) { return btnBold_clicked ( checked  ); } );
 
 	btnItalic = new QToolButton;
 	btnItalic->setCheckable ( true );
-	btnItalic->setIcon ( ICON ( "format-text-italic.png" ) );
+	btnItalic->setIcon ( ICON ( "format-text-italic" ) );
 	btnItalic->setToolTip ( TR_FUNC ( "Italic font" ) );
 	connect ( btnItalic, &QToolButton::clicked, this, [&] ( const bool checked ) { return btnItalic_clicked ( checked  ); } );
 
 	btnUnderline = new QToolButton;
 	btnUnderline->setCheckable ( true );
-	btnUnderline->setIcon ( ICON ( "format-text-underline.png" ) );
+	btnUnderline->setIcon ( ICON ( "format-text-underline" ) );
 	btnUnderline->setToolTip ( TR_FUNC ( "Underline font" ) );
 	connect ( btnUnderline, &QToolButton::clicked, this, [&] ( const bool checked ) { return btnUnderline_clicked ( checked	); } );
 
 	btnStrikethrough = new QToolButton;
 	btnStrikethrough->setCheckable ( true );
-	btnStrikethrough->setIcon ( ICON ( "format-text-strikethrough.png" ) );
+	btnStrikethrough->setIcon ( ICON ( "format-text-strikethrough" ) );
 	btnStrikethrough->setToolTip ( TR_FUNC ( "Strike through font" ) );
 	connect ( btnStrikethrough, &QToolButton::clicked, this, [&] ( const bool checked ) { return btnStrikethrough_clicked ( checked ); } );
 
@@ -452,12 +452,12 @@ textEditorToolBar::textEditorToolBar ()
 	vLine2->setFrameStyle ( QFrame::VLine|QFrame::Raised );
 
 	btnTextColor = new QToolButton;
-	btnTextColor->setIcon ( ICON ( "format-text-color.png" ) );
+	btnTextColor->setIcon ( ICON ( "format-text-color" ) );
 	btnTextColor->setToolTip ( TR_FUNC ( "Font color" ) );
 	connect ( btnTextColor, &QToolButton::clicked, this, [&] () { return btnTextColor_clicked (); } );
 
 	btnHighlightColor = new QToolButton;
-	btnHighlightColor->setIcon ( ICON ( "format-stroke-color.png" ) );
+	btnHighlightColor->setIcon ( ICON ( "format-stroke-color" ) );
 	btnHighlightColor->setToolTip ( TR_FUNC ( "Font highlight color" ) );
 	connect ( btnHighlightColor, &QToolButton::clicked, this, [&] () { return btnHighlightColor_clicked (); } );
 
@@ -497,25 +497,25 @@ textEditorToolBar::textEditorToolBar ()
 	btnAlignLeft = new QToolButton;
 	btnAlignLeft->setCheckable ( true );
 	btnAlignLeft->setChecked ( true );
-	btnAlignLeft->setIcon ( ICON ( "format-justify-left.png" ) );
+	btnAlignLeft->setIcon ( ICON ( "format-justify-left" ) );
 	btnAlignLeft->setToolTip ( TR_FUNC ( "Align text with the left margin" ) );
 	connect ( btnAlignLeft, &QToolButton::clicked, this, [&] () { return btnAlignLeft_clicked (); } );
 
 	btnAlignRight = new QToolButton;
 	btnAlignRight->setCheckable ( true );
-	btnAlignRight->setIcon ( ICON ( "format-justify-right.png" ) );
+	btnAlignRight->setIcon ( ICON ( "format-justify-right" ) );
 	btnAlignRight->setToolTip ( TR_FUNC ( "Align text with the right margin" ) );
 	connect ( btnAlignRight, &QToolButton::clicked, this, [&] () { return btnAlignRight_clicked (); } );
 
 	btnAlignCenter = new QToolButton;
 	btnAlignCenter->setCheckable ( true );
-	btnAlignCenter->setIcon ( ICON ( "format-justify-center.png" ) );
+	btnAlignCenter->setIcon ( ICON ( "format-justify-center" ) );
 	btnAlignCenter->setToolTip ( TR_FUNC ( "Align text in the center" ) );
 	connect ( btnAlignCenter, &QToolButton::clicked, this, [&] () { return btnAlignCenter_clicked (); } );
 
 	btnAlignJustify = new QToolButton;
 	btnAlignJustify->setCheckable ( true );
-	btnAlignJustify->setIcon ( ICON ( "format-justify-fill.png" ) );
+	btnAlignJustify->setIcon ( ICON ( "format-justify-fill" ) );
 	btnAlignJustify->setToolTip ( TR_FUNC ( "Justify text within margins" ) );
 	connect ( btnAlignJustify, &QToolButton::clicked, this, [&] () { return btnAlignJustify_clicked (); } );
 
@@ -542,22 +542,22 @@ textEditorToolBar::textEditorToolBar ()
 	spinNCols->setMinimum ( 1 );
 
 	btnInsertTableRow = new QToolButton;
-	btnInsertTableRow->setIcon ( ICON ( "add.png" ) );
+	btnInsertTableRow->setIcon ( ICON ( "add" ) );
 	btnInsertTableRow->setToolTip ( TR_FUNC ( "Insert n rows into table from current row" ) );
 	connect ( btnInsertTableRow, &QToolButton::clicked, this, [&] () { return btnInsertTableRow_clicked (); } );
 
 	btnRemoveTableRow = new QToolButton;
-	btnRemoveTableRow->setIcon ( ICON ( "remove.png" ) );
+	btnRemoveTableRow->setIcon ( ICON ( "remove" ) );
 	btnRemoveTableRow->setToolTip ( TR_FUNC ( "Remove n rows down from table starting at current row" ) );
 	connect ( btnRemoveTableRow, &QToolButton::clicked, this, [&] () { return btnRemoveTableRow_clicked (); } );
 
 	btnInsertTableCol = new QToolButton;
-	btnInsertTableCol->setIcon ( ICON ( "add.png" ) );
+	btnInsertTableCol->setIcon ( ICON ( "add" ) );
 	btnInsertTableCol->setToolTip ( TR_FUNC ( "Insert n columns into table to the right of the current column" ) );
 	connect ( btnInsertTableCol, &QToolButton::clicked, this, [&] () { return btnInsertTableCol_clicked (); } );
 
 	btnRemoveTableCol = new QToolButton;
-	btnRemoveTableCol->setIcon ( ICON ( "remove.png" ) );
+	btnRemoveTableCol->setIcon ( ICON ( "remove" ) );
 	btnRemoveTableCol->setToolTip ( TR_FUNC ( "Remove n columns from table from the left of the current column" ) );
 	connect ( btnRemoveTableCol, &QToolButton::clicked, this, [&] () { return btnRemoveTableCol_clicked (); } );
 
@@ -589,10 +589,10 @@ textEditorToolBar::textEditorToolBar ()
 	hLine4->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
-	btnInsertBulletList = new QPushButton ( ICON ( "bullet-list.png" ), TR_FUNC ( "Bullet list" ) );
+	btnInsertBulletList = new QPushButton ( ICON ( "bullet-list" ), TR_FUNC ( "Bullet list" ) );
 	connect ( btnInsertBulletList, &QToolButton::clicked, this, [&] () { return btnInsertBulletList_cliked (); } );
 
-	btnInsertNumberedList = new QPushButton ( ICON ( "numbered-list.png" ), TR_FUNC ( "Numbered list" ) );
+	btnInsertNumberedList = new QPushButton ( ICON ( "numbered-list" ), TR_FUNC ( "Numbered list" ) );
 	connect ( btnInsertNumberedList, &QToolButton::clicked, this, [&] () { return btnInsertNumberedList_clicked (); } );
 
 	QHBoxLayout* layoutLists ( new QHBoxLayout );
@@ -605,24 +605,24 @@ textEditorToolBar::textEditorToolBar ()
 	hLine5->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
-	btnInsertImage = new QPushButton ( ICON ( "insert-image.png" ), TR_FUNC ( "Insert image" ) );
+	btnInsertImage = new QPushButton ( ICON ( "insert-image" ), TR_FUNC ( "Insert image" ) );
 	connect ( btnInsertImage, &QToolButton::clicked, this, [&] () { return btnInsertImage_clicked (); } );
 	QFrame* hLine6 = new QFrame;
 	hLine6->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
 	btnPrint = new QToolButton;
-	btnPrint->setIcon ( ICON ( "document-print.png" ) );
+	btnPrint->setIcon ( ICON ( "document-print" ) );
 	btnPrint->setToolTip ( TR_FUNC ( "Print" ) );
 	connect ( btnPrint, &QToolButton::clicked, this, [&] () { return btnPrint_clicked (); } );
 
 	btnPrintPreview = new QToolButton;
-	btnPrintPreview->setIcon ( ICON ( "document-print-preview.png" ) );
+	btnPrintPreview->setIcon ( ICON ( "document-print-preview" ) );
 	btnPrintPreview->setToolTip ( TR_FUNC ( "Print preview" ) );
 	connect ( btnPrintPreview, &QToolButton::clicked, this, [&] () { return btnPrintPreview_clicked (); } );
 
 	btnExportToPDF = new QToolButton;
-	btnExportToPDF->setIcon ( ICON ( "application-pdf.png" ) );
+	btnExportToPDF->setIcon ( ICON ( "application-pdf" ) );
 	btnExportToPDF->setToolTip ( TR_FUNC ( "Export to PDF" ) );
 	connect ( btnExportToPDF, &QToolButton::clicked, this, [&] () { return btnExportToPDF_clicked (); } );
 

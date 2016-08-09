@@ -22,7 +22,7 @@ class QPushButton;
 class QVBoxLayout;
 class QTimerEvent;
 
-enum { MESSAGE_BTN_OK = 0, MESSAGE_BTN_CANCEL = -1 };
+enum { MESSAGE_BTN_OK = 1, MESSAGE_BTN_CANCEL = 0 };
 
 class Message
 {
@@ -92,9 +92,11 @@ public:
 
 	static bool inputBox ( QString& result, const QWidget* referenceWidget, const QString& title, const QString& label_text,
 					const QString& initial_text = QString::null, const QString& icon = QString::null,
-					const QString& opt_check_box = QString::null, const vmCompleters::COMPLETER_CATEGORIES completer = vmCompleters::NONE,
-					const bool bPasswordBox = false );
+					const QString& opt_check_box = QString::null, const vmCompleters::COMPLETER_CATEGORIES completer = vmCompleters::NONE );
 
+	static bool passwordBox ( QString& result, const QWidget* referenceWidget, const QString& title,
+					const QString& label_text, const QString& icon = QString::null );
+	
 	static vmNotify* progressBox ( vmNotify* box = nullptr, QWidget* parent = nullptr, const uint max_value = 10, uint next_value = 0,
 								   const QString& title = QString::null, const QString& label = QString::null );
 

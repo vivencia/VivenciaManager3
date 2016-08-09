@@ -21,16 +21,6 @@ extern "C"
 #include <dirent.h>
 }
 
-inline bool inKDE () {
-	return QLatin1String ( ::getenv ( "XDG_SESSION_DESKTOP" ) ) == QLatin1String ( "kde" );
-}
-inline bool inGNOME () {
-	return QLatin1String ( ::getenv ( "XDG_SESSION_DESKTOP" ) ) == QLatin1String ( "gnome" );
-}
-inline bool inUnity () {
-	return QLatin1String ( ::getenv ( "XDG_SESSION_DESKTOP" ) ) == QLatin1String ( "ubuntu" );
-}
-
 const QString fileOps::appPath ( const QString& appname )
 {
 	const QString strPATH ( QLatin1String ( ::getenv ( "PATH" ) ) );
@@ -479,15 +469,15 @@ bool fileOps::rmDir ( const QString& baseDir,
 static QString suProgram ( const QString& message, const QString& command )
 {
 	QString cmdLine;
-	if ( inKDE () )
-		cmdLine = configOps::kdesu ( message );
-	else if ( inGNOME () )
-		cmdLine = configOps::gksu ( message, emptyString );
-	else if ( inUnity () )
-		cmdLine = configOps::kdesu ( message );
-	else
-		return emptyString;
-
+	switch ( fileOps::detectDesktopEnvironment () )
+	{
+		case fileOps::DesktopEnv_Plasma5:
+		case fileOps::DesktopEnv_Kde4:
+			cmdLine = configOps::kdesu ( message );
+		break;
+		default:
+			cmdLine = configOps::gksu ( message, emptyString );
+	}
 	cmdLine += CHR_SPACE + CHR_QUOTES + command + CHR_QUOTES;
 	return cmdLine;
 }
@@ -617,4 +607,34 @@ QString fileOps::getOpenFileName ( const QString& dir, const QString& filter )
 QString fileOps::getSaveFileName ( const QString& default_name, const QString& filter )
 {
     return QFileDialog::getSaveFileName ( nullptr, APP_TR_FUNC ( "Save as ..." ), default_name, filter );
+}
+
+fileOps::DesktopEnvironment fileOps::detectDesktopEnvironment ()
+{
+	// session/desktop env variables: XDG_SESSION_DESKTOP or XDG_CURRENT_DESKTOP
+	const QString xdgCurrentDesktop ( QLatin1String ( ::getenv ( "XDG_CURRENT_DESKTOP" ) ) );
+	if ( xdgCurrentDesktop == QStringLiteral ( "KDE" ) )
+		return getKDEVersion ();
+	else if ( xdgCurrentDesktop == QStringLiteral ( "GNOME" ) )
+		return DesktopEnv_Gnome;
+	else if ( xdgCurrentDesktop == QStringLiteral ( "Unity" ) )
+		return DesktopEnv_Unity;
+	else if ( xdgCurrentDesktop.contains ( QStringLiteral ( "xfce" ), Qt::CaseInsensitive )
+			|| xdgCurrentDesktop.contains ( QStringLiteral ( "xubuntu" ), Qt::CaseInsensitive ) )
+		return DesktopEnv_Xfce;
+	else
+		return DesktopEnv_Other;
+}
+
+// the following detection algorithm is derived from chromium,
+// licensed under BSD, see base/nix/xdg_util.cc
+fileOps::DesktopEnvironment fileOps::getKDEVersion ()
+{
+	const QString value ( QLatin1String ( ::getenv ( "KDE_SESSION_VERSION" ) ) );
+	if ( value == QStringLiteral ( "5" ) )
+		return DesktopEnv_Plasma5;
+	else if ( value == QStringLiteral ( "4" ) )
+		return DesktopEnv_Kde4;
+	else // most likely KDE3
+		return DesktopEnv_Other;
 }

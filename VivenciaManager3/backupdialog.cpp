@@ -38,7 +38,7 @@ BackupDialog::BackupDialog ()
 	backupNotify = new vmNotify ( QStringLiteral ( "TL" ), this );
 	ui->setupUi ( this );
     setWindowTitle ( TR_FUNC ( "Backup/Restore - " ) + PROGRAM_NAME );
-	setWindowIcon ( ICON ( "vm-logo-22x22.png" ) );
+	setWindowIcon ( ICON ( "vm-logo-22x22" ) );
 
 	setupConnections ();
 	fillTable ();
@@ -197,7 +197,7 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 	QString backupFile ( path + filename + QLatin1String ( ".sql" ) );
 
 	bool ok ( false );
-	if ( checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) ) {
+	if ( EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) ) {
 		QString tables;
 		if ( bDlg ) {
 			if ( bDlg->ui->chkDocs->isChecked () )
@@ -237,7 +237,7 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 				BackupDialog::incrementProgress ( bDlg ); //7
 			}
 		}
-		if ( bDlg )	 {
+		if ( bDlg ) {
 			bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Backup" ), TR_FUNC ( "Standard backup to file %1 was %2" ).arg (
 					filename, QLatin1String ( ok ? " successfull" : " unsuccessfull" ) ) );
 		}
@@ -403,7 +403,7 @@ void BackupDialog::showNoDatabaseOptionsWindow ()
     m_after_close_action = ACA_RETURN_TO_PREV_WINDOW;
 	if ( dlgNoDB == nullptr ) {
 		dlgNoDB = new QDialog ( this );
-		dlgNoDB->setWindowIcon ( ICON ( "vm-logo-22x22.png" ) );
+		dlgNoDB->setWindowIcon ( ICON ( "vm-logo-22x22" ) );
         dlgNoDB->setWindowTitle ( TR_FUNC ( "Database inexistent" ) );
 
         QLabel* lblExplanation ( new QLabel ( TR_FUNC (

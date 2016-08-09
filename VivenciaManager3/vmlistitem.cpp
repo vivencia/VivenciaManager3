@@ -29,19 +29,21 @@ vmListItem::vmListItem ( const uint type_id, const uint nbadInputs, bool* const 
 	: vmTableItem (), m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ), 
 		searchFields ( nullptr ), item_related { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
 		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( badinputs_ptr ),
-		n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false )
+		n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false ), mbInit ( true )
 {
 	setSubType ( type_id );
 	setAction ( ACTION_READ, true );
+	mbInit = false;
 }
 
 vmListItem::vmListItem ( const QString& label )
 	: vmTableItem ( label ), m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ),
 		searchFields ( nullptr ), item_related { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
 		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( nullptr ),
-		n_badInputs ( 0 ), mTotal_badInputs ( 0 ), mbSearchCreated ( false )
+		n_badInputs ( 0 ), mTotal_badInputs ( 0 ), mbSearchCreated ( false ), mbInit ( true )
 {
 	setAction ( ACTION_READ );
+	mbInit = false;
 }
 
 vmListItem::~vmListItem ()
@@ -57,7 +59,8 @@ QString vmListItem::defaultStyleSheet () const
 	QString colorstr;
 	if ( !listWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		listWidget ()->setIgnoreChanges ( true );
 		vmListItem* item ( new vmListItem ( 1000 ) );
 		item->addToList ( listWidget () );
@@ -83,10 +86,12 @@ void vmListItem::setRelation ( const RELATED_LIST_ITEMS relation )
 
 void vmListItem::disconnectRelation ( const uint start_relation, vmListItem* item )
 {
-	for ( uint i ( start_relation ); i <= RLI_EXTRAITEM; ++i ) {
+	for ( uint i ( start_relation ); i <= RLI_EXTRAITEM; ++i )
+	{
 		if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) == item )
 			setRelatedItem ( static_cast<RELATED_LIST_ITEMS>( i ), nullptr );
-		else {
+		else
+		{
 			if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
 				relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->disconnectRelation ( i+1, item );
 		}
@@ -119,27 +124,26 @@ void vmListItem::addToList ( vmListWidget* const w_list, const bool b_makecall )
 
 void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, const bool bSelfOnly )
 {
-	if ( action != m_action ) {
+	if ( action != m_action )
+	{
 		m_action = action != ACTION_REVERT ? action : ACTION_READ;
-		setBackground ( QBrush ( COLORS[static_cast<int>( action )] ) );
-		QFont fnt ( font () );
-		fnt.setItalic ( action > ACTION_READ );
-		setFont ( fnt );
-
 		// Since m_dbrec is a shared pointer among all related items, only the first -external- call
 		// to setAction must change. All subsequent calls -internal- can skip these steps
 		if ( m_dbrec && bSetDBRec )
 			m_dbrec->setAction ( action );
 
-		update ();
+		if ( !mbInit )
+			changeAppearance ();
+		
 		n_badInputs = action == ACTION_ADD ? mTotal_badInputs : 0;
 		for ( uint i ( 0 ); i < mTotal_badInputs; ++i )
 			badInputs_ptr[i] = action == ACTION_ADD ? false : true;
 		
 		// update all related items, except self. Call setAction with self_only to true so that we don't enter infinite recurssion.
-		if ( !bSelfOnly && mRelation == RLI_CLIENTITEM ) {
-			for ( uint i ( RLI_CLIENTITEM + 1 ); i <= RLI_EXTRAITEM; ++i ) {
-				//if ( ( static_cast<uint> ( mRelation ) != i ) && relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+		if ( !bSelfOnly && mRelation == RLI_CLIENTITEM )
+		{
+			for ( uint i ( RLI_CLIENTITEM + 1 ); i <= RLI_EXTRAITEM; ++i )
+			{
 				if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
 					relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setAction ( m_action, false, true );
 			}
@@ -150,9 +154,10 @@ void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 void vmListItem::setDBRec ( DBRecord* dbrec, const bool self_only )
 {
 	// update all related items, except self. Call setAction with self_only to true so that we don't enter infinite recurssion.
-	if ( !self_only ) {
-		for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i ) {
-			//if ( ( static_cast<uint> ( mRelation ) != i ) && item_related[i] != nullptr )
+	if ( !self_only )
+	{
+		for ( uint i ( RLI_CLIENTITEM ); i <= RLI_EXTRAITEM; ++i )
+		{
 			if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
 				relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->m_dbrec = dbrec;
 		}
@@ -179,7 +184,8 @@ bool vmListItem::loadData ()
 	 * a DBREcord must be created either directly from from a derived class or genericly and then copy from a specifc record,
 	 * when used in a generic list item.
 	 */
-	if ( dbRec () ) {
+	if ( dbRec () )
+	{
 		if ( action () == ACTION_READ )
 			return ( m_dbrec->readRecord ( id () ) );
 		return true; // when adding or editing, do not read from the database, but use current user input
@@ -200,6 +206,26 @@ void vmListItem::setRelatedItem ( const RELATED_LIST_ITEMS rel_idx, vmListItem* 
 vmListItem* vmListItem::relatedItem ( const RELATED_LIST_ITEMS rel_idx ) const
 {
 	return item_related[rel_idx];
+}
+
+void vmListItem::changeAppearance ()
+{
+	setBackground ( QBrush ( COLORS[static_cast<uint>( action () )] ) );
+	QFont fnt ( font () );
+	fnt.setItalic ( action () > ACTION_READ );
+	setFont ( fnt );
+	
+	int startItem ( static_cast<int>( relation () >= RLI_CLIENTITEM ? RLI_EXTRAITEM : relation () ) );
+	
+	for ( int i ( startItem ); i >= RLI_CLIENTPARENT; --i )
+	{
+		if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
+		{
+			relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setIcon ( *listIndicatorIcons[static_cast<uint>( action () )] );
+		}
+	}
+	
+	update ();
 }
 
 void vmListItem::deleteRelatedItem ( const RELATED_LIST_ITEMS rel_idx )

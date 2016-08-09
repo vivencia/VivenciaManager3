@@ -26,22 +26,19 @@
 #include "heapmanager.h"
 #include "textdb.h"
 #include "vmtablewidget.h"
-#include "passwordmanager.h"
 #include "vmnotify.h"
+#include "keychain/passwordsessionmanager.h"
 
-#include <QStringMatcher>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlResult>
+#include <QStringMatcher>
 #include <QTextStream>
-
-// TODO at some point
-// MyISAM-table 'SCHEDS.MYI' is usable but should be fixed
-// above is part of the output of myisamchk -e /var/lib/mysql/VivenciaManager/*.MYI, run as root
-// This should be the line looked for when trying to fix the database. One day there will be a module for database options like change password, fix, optimize, etc
 
 VivenciaDB* VivenciaDB::s_instance ( nullptr );
 
 static const QLatin1String chrDelim2 ( "\'," );
+static const QString VMDB_PASSWORD_SERVICE ( QStringLiteral ( "vmdb_pswd_service" ) );
+static const QString VMDB_PASSWORD_SERVER_ADMIN_ID ( QStringLiteral ( "vmdb_pswd_server_admin_id" ) );
 
 void deleteVivenciaDBInstance ()
 {
@@ -188,7 +185,7 @@ QString VivenciaDB::tableName ( const TABLE_ORDER table )
 
 VivenciaDB::VivenciaDB ()
 	: lowest_id ( 0, TABLES_IN_DB + 1 ), highest_id ( 0, TABLES_IN_DB + 1 ),
-	  m_ok ( false ), mNewDB ( false ), mBackupSynced ( true ), mRootPasswdMngr ( nullptr )
+	  m_ok ( false ), mNewDB ( false ), mBackupSynced ( true )
 {
 	openDataBase ();
 	addPostRoutine ( deleteVivenciaDBInstance );
@@ -196,7 +193,6 @@ VivenciaDB::VivenciaDB ()
 
 VivenciaDB::~VivenciaDB ()
 {
-	heap_del ( mRootPasswdMngr );
 	m_db.close ();
 }
 
@@ -267,19 +263,15 @@ bool VivenciaDB::createDatabase ()
 	if ( !openDataBase () )
 	{
 		m_ok = false;
-		QString rootpswd;
-		/* vmNotify::inputBox returns false when empty strings are entered. However, if mysql's root password was never set
-		 * it is null by default and we should consider that possibility. So far, if that is the case, this app will return an
-		 * error and the database will not be created.
-		 */
-		if ( rootPwdManager ()->askPassword ( rootpswd, DB_DRIVER_NAME, APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password "
-										"to create the application's database" ) ) )
+		QString passwd;
+		if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID,
+			APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password to create the application's database" ) ) )
 		{
 			QSqlDatabase dbRoot ( QSqlDatabase::addDatabase ( DB_DRIVER_NAME, ROOT_CONNECTION ) );
 			dbRoot.setDatabaseName ( STR_MYSQL );
 			dbRoot.setHostName ( HOST );
 			dbRoot.setUserName ( QStringLiteral ( "root" ) );
-			dbRoot.setPassword ( rootpswd );
+			dbRoot.setPassword ( passwd );
 
 			if ( dbRoot.open () )
 			{
@@ -291,6 +283,11 @@ bool VivenciaDB::createDatabase ()
 				dbRoot.commit ();
 				dbRoot.close ();
 				rootQuery.clear ();
+				if ( m_ok )
+				{
+					static_cast<void>( APP_PSWD_MANAGER ()->savePassword ( passwordSessionManager::SavePermanment,
+						passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID ) );
+				}
 			}
 			QSqlDatabase::removeDatabase ( ROOT_CONNECTION );
 		}
@@ -303,15 +300,15 @@ bool VivenciaDB::createDatabase ()
 bool VivenciaDB::createUser ()
 {
 	m_ok = false;
-	QString rootpswd;
-	if ( rootPwdManager ()->askPassword ( rootpswd, DB_DRIVER_NAME, APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password "
-									"to create the application's database" ) ) )
+	QString passwd;
+	if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID,
+		APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password to create the application's database" ) ) )
 	{
 		QSqlDatabase dbRoot ( QSqlDatabase::addDatabase ( DB_DRIVER_NAME, ROOT_CONNECTION ) );
 		dbRoot.setDatabaseName ( STR_MYSQL );
 		dbRoot.setHostName ( HOST );
 		dbRoot.setUserName ( QStringLiteral ( "root" ) );
-		dbRoot.setPassword ( rootpswd );
+		dbRoot.setPassword ( passwd );
 
 		if ( dbRoot.open () )
 		{
@@ -321,11 +318,15 @@ bool VivenciaDB::createUser ()
 
 			str_query = QString ( QStringLiteral ( "GRANT ALL ON %1.* TO '%2'@'%3';" ) ).arg ( DB_NAME, USER_NAME, HOST );
 			m_ok = rootQuery.exec ( str_query );
-
 			rootQuery.finish ();
 			dbRoot.commit ();
 			dbRoot.close ();
 			rootQuery.clear ();
+			if ( m_ok )
+			{
+				static_cast<void>( APP_PSWD_MANAGER ()->savePassword ( passwordSessionManager::SavePermanment,
+					passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID ) );
+			}
 		}
 		QSqlDatabase::removeDatabase ( ROOT_CONNECTION );
 
@@ -608,9 +609,13 @@ bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
 		const QString str_query ( QLatin1String ( "DELETE FROM " ) + db_rec->t_info->table_name +
 								  QLatin1String ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK );
 		m_db.exec ( str_query );
-		if ( static_cast<uint>( db_rec->actualRecordInt ( 0 ) ) == highest_id[db_rec->t_info->table_order] )
-			const_cast<VivenciaDB*> ( this )->setHighestID ( db_rec->t_info->table_order,
-					const_cast<VivenciaDB*> ( this )->getHighLowID ( db_rec->t_info->table_order, true ) );
+		
+		// The deletion of a temporary record must decrease the highest id for the table in orer to try to minimize
+		// useless ids
+		const uint id ( static_cast<uint>( db_rec->actualRecordInt ( 0 ) ) );		
+		if ( id >= getHighestID ( db_rec->t_info->table_order ) )
+			const_cast<VivenciaDB*> ( this )->setHighestID ( db_rec->t_info->table_order, id - 1 );
+
 		if ( m_db.lastError ().type () == QSqlError::NoError )
 		{
 			mBackupSynced = false;
@@ -626,24 +631,11 @@ void VivenciaDB::loadDBRecord ( DBRecord* db_rec, const QSqlQuery* const query )
 		setRecValue ( db_rec, i, query->value ( i ).toString () );
 }
 
-int VivenciaDB::lastDBRecord ( const uint table )
-{
-	if ( highest_id[table] == 0 )
-		(void) getHighLowID ( table );
-	return ( highest_id.at ( table ) );
-}
-
-int VivenciaDB::firstDBRecord ( const uint table )
-{
-	(void) getHighLowID ( table, false );
-	return ( lowest_id.at ( table ) );
-}
-
 bool VivenciaDB::insertDBRecord ( DBRecord* db_rec )
 {
 	const uint table_order ( db_rec->t_info->table_order );
 	const bool bOutOfOrder ( db_rec->recordInt ( 0 ) >= 1 );
-	const int new_id ( bOutOfOrder ? db_rec->recordInt ( 0 ) : getNextID ( table_order ) );
+	const uint new_id ( bOutOfOrder ? db_rec->recordInt ( 0 ) : getNextID ( table_order ) );
 
 	db_rec->setIntValue ( 0, new_id );
 	db_rec->setValue ( 0, QString::number ( new_id ) );
@@ -733,27 +725,43 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, co
 	return ret;
 }
 
-uint VivenciaDB::getHighLowID ( const uint table, const bool high ) const
+uint VivenciaDB::getHighestID ( const uint table ) const
 {
-	QSqlQuery query ( QLatin1String ( "SELECT " ) +
-					  QLatin1String ( high ? "MAX(ID) FROM " : "MIN(ID) FROM " ) +
-					  tableInfo ( table )->table_name, m_db );
-	if ( query.exec () )
+	if ( highest_id.at ( table ) == highest_id.defaultValue () )
 	{
-		if ( query.first () )
+		QSqlQuery query;
+		if ( runQuery ( QLatin1String ( "SELECT MAX(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
 		{
 			if ( recordCount ( tableInfo ( table ) ) > 0 )
 			{
-				const int id ( query.value ( 0 ).toInt () );
-				if ( high )
-					highest_id[table] = id;
-				else
-					lowest_id[table] = id;
-				return id;
+				const_cast<VivenciaDB*>( this )->setHighestID ( table, query.value ( 0 ).toUInt () );
 			}
 		}
 	}
-	return high ? 0 : 1;
+	return highest_id.at ( table );
+}
+
+uint VivenciaDB::getLowestID ( const uint table ) const
+{
+	if ( lowest_id.at ( table ) == lowest_id.defaultValue () )
+	{
+		QSqlQuery query;
+		if ( runQuery ( QLatin1String ( "SELECT MIN(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
+		{
+			if ( recordCount ( tableInfo ( table ) ) > 0 )
+			{
+				const_cast<VivenciaDB*>( this )->setLowestID ( table, query.value ( 0 ).toUInt () );
+			}
+		}
+	}
+	return lowest_id.at ( table );
+}
+
+uint VivenciaDB::getNextID ( const uint table )
+{
+	const uint next_id ( getHighestID ( table ) + 1 );
+	setHighestID ( table, next_id );
+	return next_id;
 }
 
 bool VivenciaDB::recordExists ( const QString& table_name, const int id ) const
@@ -784,14 +792,13 @@ bool VivenciaDB::runQuery ( const QString& query_cmd, QSqlQuery& queryRes ) cons
 bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables, BackupDialog* bDlg )
 {
 	QString passwd;
-	rootPwdManager ()->setSaveState ( passwordManager::PWSS_SAVE );
-	if ( rootPwdManager ()->askPassword ( passwd, DB_DRIVER_NAME,
+	if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID,
 			APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password password for backup operations" ) ) )
-	{
+	{			
 		flushAllTables ();
 		BackupDialog::incrementProgress ( bDlg ); //2
 		const QString mysqldump_args ( QLatin1String ( "--user=root --password=" ) +
-				   passwd + CHR_SPACE + DB_NAME + CHR_SPACE + tables );
+			   passwd + CHR_SPACE + DB_NAME + CHR_SPACE + tables );
 
 		const QString dump ( fileOps::executeAndCaptureOutput ( mysqldump_args, backupApp () ) );
 		unlockAllTables ();
@@ -812,6 +819,7 @@ bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables, Back
 				file.close ();
 				BackupDialog::incrementProgress ( bDlg ); //4
 				mBackupSynced = true;
+				static_cast<void>( APP_PSWD_MANAGER ()->savePassword ( passwordSessionManager::SavePermanment, passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID ) );
 				return true;
 			}
 		}
@@ -866,57 +874,57 @@ bool VivenciaDB::checkDumpFile ( const QString& dumpfile )
 
 bool VivenciaDB::doRestore (const QString& filepath, BackupDialog* bDlg )
 {
-	QString rootpswd;
-	rootPwdManager ()->setSaveState ( passwordManager::PWSS_SAVE );
-	if ( !rootPwdManager ()->askPassword ( rootpswd, DB_DRIVER_NAME,
-				APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password to restore from file" ) ) )
-		return false;
-
-	QString uncompressed_file ( QStringLiteral ( "/tmp/vmdb_tempfile" ) );
-
-	const bool bSourceCompressed ( VMCompress::isCompressed ( filepath ) );
-	if ( bSourceCompressed )
+	QString passwd;
+	if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID,
+			APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password to restore from file" ) ) )
 	{
-		fileOps::removeFile ( uncompressed_file );
-		VMCompress::decompress ( filepath, uncompressed_file );
+
+		QString uncompressed_file ( QStringLiteral ( "/tmp/vmdb_tempfile" ) );
+
+		const bool bSourceCompressed ( VMCompress::isCompressed ( filepath ) );
+		if ( bSourceCompressed )
+		{
+			fileOps::removeFile ( uncompressed_file );
+			VMCompress::decompress ( filepath, uncompressed_file );
+		}
+		else
+			uncompressed_file = filepath;
+
+		BackupDialog::incrementProgress ( bDlg ); //3
+		QString restoreapp_args;
+		bool ret ( true );
+
+		//hopefully, by now, Data will have intermediated well the situation, having all the pieces of the program
+		// aware of the changes that might occur.
+		m_db.close ();
+
+		// use a previous dump from mysqldump to create a new database.
+		// Note that DB_NAME must refer to an unexisting database or this will fail
+		// Also I think the dump must be of a complete database, with all tables, to avoid inconsistencies
+		if ( !checkDumpFile ( uncompressed_file ) )
+		{ // some table version mismatch
+			restoreapp_args = QLatin1String ( "--user=root --default_character_set=utf8 --password=" ) + passwd + CHR_SPACE + DB_NAME;
+			ret = fileOps::executeWithFeedFile ( restoreapp_args, importApp (), uncompressed_file );
+		}
+		// use a previous dump from mysqldump to update or replace one or more tables in an existing database
+		// Tables will be overwritten or created. Note that DB_NAME must refer to an existing database
+		else
+		{
+			restoreapp_args = QLatin1String ( "--user=root --password=" ) + passwd + CHR_SPACE + DB_NAME + CHR_SPACE + uncompressed_file;
+			ret = fileOps::executeWait ( restoreapp_args, restoreApp () );
+		}
+		BackupDialog::incrementProgress ( bDlg ); //4
+
+		if ( bSourceCompressed ) // do not leave trash behind
+			fileOps::removeFile ( uncompressed_file );
+
+		if ( ret )
+		{
+			mBackupSynced = true;
+			static_cast<void>( APP_PSWD_MANAGER ()->savePassword ( passwordSessionManager::SavePermanment, passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID ) );
+			return openDataBase ();
+		}
 	}
-	else
-		uncompressed_file = filepath;
-
-	BackupDialog::incrementProgress ( bDlg ); //3
-	QString restoreapp_args;
-	bool ret ( true );
-
-	//hopefully, by now, Data will have intermediated well the situation, having all the pieces of the program
-	// aware of the changes that might occur.
-	m_db.close ();
-
-	// use a previous dump from mysqldump to create a new database.
-	// Note that DB_NAME must refer to an unexisting database or this will fail
-	// Also I think the dump must be of a complete database, with all tables, to avoid inconsistencies
-	if ( !checkDumpFile ( uncompressed_file ) )
-	{ // some table version mismatch
-		restoreapp_args = QLatin1String ( "--user=root --default_character_set=utf8 --password=" ) + rootpswd + CHR_SPACE + DB_NAME;
-		ret = fileOps::executeWithFeedFile ( restoreapp_args, importApp (), uncompressed_file );
-	}
-	// use a previous dump from mysqldump to update or replace one or more tables in an existing database
-	// Tables will be overwritten or created. Note that DB_NAME must refer to an existing database
-	else
-	{
-		restoreapp_args = QLatin1String ( "--user=root --password=" ) + rootpswd + CHR_SPACE + DB_NAME + CHR_SPACE + uncompressed_file;
-		ret = fileOps::executeWait ( restoreapp_args, restoreApp () );
-	}
-	BackupDialog::incrementProgress ( bDlg ); //4
-
-	if ( bSourceCompressed ) // do not leave trash behind
-		fileOps::removeFile ( uncompressed_file );
-
-	if ( ret )
-	{
-		mBackupSynced = true;
-		return openDataBase ();
-	}
-
 	return false;
 }
 
@@ -1098,12 +1106,5 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, Backup
 
 	BackupDialog::incrementProgress ( bDlg ); //5
 	return ( n > 0 );
-}
-
-passwordManager* VivenciaDB::rootPwdManager ()
-{
-	if ( !mRootPasswdMngr )
-		mRootPasswdMngr = new passwordManager ( QStringLiteral ( "VDB" ), passwordManager::PWSS_SAVE_TEMP );
-	return mRootPasswdMngr;
 }
 //-----------------------------------------IMPORT-EXPORT--------------------------------------------
