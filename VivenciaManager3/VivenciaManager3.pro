@@ -51,7 +51,6 @@ SOURCES += main.cpp \
 	inventoryui.cpp \
 	dbsuppliesui.cpp \
 	estimates.cpp \
-	servicesofferedui.cpp \
 	generaltable.cpp \
 	userrecord.cpp \
 	fixdatabase.cpp \
@@ -103,7 +102,6 @@ HEADERS += dbrecord.h \
 	inventoryui.h \
 	dbsuppliesui.h \
 	estimates.h \
-	servicesofferedui.h \
 	generaltable.h \
 	userrecord.h \
 	db_image.h \
