@@ -73,7 +73,8 @@ Inventory::Inventory ( const bool connect_helper_funcs )
 	DBRecord::t_info = & ( Inventory::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
 
-	if ( connect_helper_funcs ) {
+	if ( connect_helper_funcs )
+	{
 		DBRecord::helperFunction = this->helperFunction;
 		setHelperFunction ( FLD_INVENTORY_ITEM, &updateInventoryItemCompleter );
 		setHelperFunction ( FLD_INVENTORY_BRAND, &updateInventoryBrandCompleter );
@@ -90,7 +91,8 @@ Inventory::~Inventory () {}
 uint Inventory::isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const
 {
 	uint rec_field ( 0 );
-	switch ( isr_field ) {
+	switch ( isr_field )
+	{
 		case ISR_NAME:			rec_field = FLD_INVENTORY_ITEM;		break;
 		case ISR_UNIT:			rec_field = FLD_INVENTORY_UNIT;		break;
 		case ISR_BRAND:			rec_field = FLD_INVENTORY_BRAND;	break;

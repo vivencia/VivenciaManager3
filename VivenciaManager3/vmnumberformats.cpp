@@ -646,7 +646,8 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 vmNumber& vmNumber::fromTrustedStrDate ( const QString& date, const VM_DATE_FORMAT format, const bool cache )
 {
 	clear ( false );
-    switch ( format ) {
+    switch ( format )
+	{
 		case VDF_HUMAN_DATE:
             return dateFromHumanDate ( date, cache );
         break;

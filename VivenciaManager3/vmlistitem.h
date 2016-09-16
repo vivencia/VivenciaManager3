@@ -29,12 +29,16 @@ static const uint INFO_TABLE_COLUMNS_OFFSET ( 100 );
 extern QIcon* listIndicatorIcons[4];
 									  
 enum RELATED_LIST_ITEMS {
-	RLI_CLIENTPARENT = 0, RLI_JOBPARENT = 1, RLI_CLIENTITEM = 2, RLI_JOBITEM = 3, RLI_DATEITEM = 4, RLI_EXTRAITEM = 5
+	RLI_CLIENTPARENT = 0, RLI_JOBPARENT = 1, RLI_CLIENTITEM = 2, RLI_JOBITEM = 3, 
+	RLI_CALENDARITEM = 4, RLI_EXTRAITEM_1 = 5, RLI_EXTRAITEM_2 = 6
 };
 
 enum CRASH_FIELDS {
 	CF_SUBTYPE = 0, CF_CLIENTID, CF_JOBID, CF_ID, CF_ACTION, CF_DBRECORD
 };
+
+#define LAST_RELATION RLI_EXTRAITEM_2
+#define LAST_EDITABLE_RELATION RLI_JOBITEM
 
 class vmListItem : public vmTableItem
 {
@@ -105,7 +109,7 @@ private:
 	vmListItem& operator=( const vmListItem& );
 	vmListItem& operator=( const QListWidgetItem& );
 
-	vmListItem* item_related[6];
+	vmListItem* item_related[LAST_RELATION+1];
 	
 	RECORD_ACTION m_action;
 	vmListWidget* m_list;

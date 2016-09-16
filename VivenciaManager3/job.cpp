@@ -7,7 +7,6 @@
 #include "vmnumberformats.h"
 #include "vmwidgets.h"
 #include "stringrecord.h"
-#include "dbcalendar.h"
 
 const double TABLE_VERSION ( 2.0 );
 
@@ -248,26 +247,25 @@ static void updateJobCompleters ( const DBRecord* db_rec )
 }
 
 Job::Job ( const bool connect_helper_funcs )
-	: DBRecord ( JOB_FIELD_COUNT ), ce_list ( 10 )
+	: DBRecord ( JOB_FIELD_COUNT )
 {
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
 
-	if ( connect_helper_funcs ) {
+	if ( connect_helper_funcs )
+	{
 		DBRecord::helperFunction = this->helperFunction;
 		setHelperFunction ( FLD_JOB_TYPE, &updateJobCompleters );
 	}
 }
 
-Job::~Job ()
-{
-	ce_list.clear ( true );
-}
+Job::~Job () {}
 
 int Job::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 {
-	switch ( sc ) {
+	switch ( sc )
+	{
 		case SC_ID: return FLD_JOB_ID;
 		case SC_REPORT_1: return FLD_JOB_REPORT;
 		case SC_ADDRESS_1: return FLD_JOB_PROJECT_PATH;
@@ -283,55 +281,21 @@ int Job::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 	}
 }
 
-void Job::updateCalendarJobInfo ()
-{
-	if ( ce_list.isEmpty () )
-		return;
-
-	dbCalendar* cal ( new dbCalendar );
-	stringRecord calendarIdTrio;
-	calendarIdTrio.fastAppendValue ( actualRecordStr ( FLD_JOB_ID ) );
-	calendarIdTrio.fastAppendValue ( actualRecordStr ( FLD_JOB_CLIENTID ) );
-
-	CALENDAR_EXCHANGE* ce ( nullptr );
-	for ( uint i ( 0 ); i < ce_list.count (); ++i ) {
-		ce = ce_list.at ( i );
-		calendarIdTrio.changeValue ( 2, QString::number ( ce->extra_info ) );
-		switch ( ce->action ) {
-			case CEAO_NOTHING:
-				continue;
-			case CEAO_ADD_DATE1:
-				cal->addDate ( ce->date, FLD_CALENDAR_JOBS, calendarIdTrio );
-			break;
-			case CEAO_DEL_DATE1:
-				cal->delDate ( ce->date, FLD_CALENDAR_JOBS, calendarIdTrio );
-			break;
-			case CEAO_ADD_PRICE_DATE1:
-				cal->addPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED );
-			break;
-			case CEAO_DEL_PRICE_DATE1:
-				cal->delPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED );
-			break;
-			default:
-			break;
-		}
-	}
-	ce_list.clearButKeepMemory ( true );
-	delete cal;
-}
-
 const QString Job::jobAddress ( const Job* const job, Client* client )
 {
-    if ( job ) {
+    if ( job )
+	{
         if ( !recStrValue ( job, FLD_JOB_ADDRESS ).isEmpty () )
             return recStrValue ( job, FLD_JOB_ADDRESS );
     }
-    if ( client == nullptr ) {
+    if ( client == nullptr )
+	{
         Client localClient ( false );
         client = &localClient;
     }
 
-    if ( job != nullptr ) {
+    if ( job != nullptr )
+	{
         if ( !client->readRecord ( recStrValue ( job, FLD_JOB_CLIENTID ).toInt () ) )
             return emptyString;
     }
@@ -343,9 +307,11 @@ const QString Job::jobAddress ( const Job* const job, Client* client )
 
 QString Job::jobSummary ( const QString& jobid )
 {
-	if ( !jobid.isEmpty () ) {
+	if ( !jobid.isEmpty () )
+	{
 		Job job;
-		if ( job.readRecord ( jobid.toInt () ) ) {
+		if ( job.readRecord ( jobid.toInt () ) )
+		{
 			const QLatin1String str_sep ( " - " );
 			return ( recStrValue ( &job, FLD_JOB_TYPE ) + str_sep +
 				 vmNumber ( recStrValue ( &job, FLD_JOB_STARTDATE ), VMNT_DATE, vmNumber::VDF_HUMAN_DATE ).toString () +

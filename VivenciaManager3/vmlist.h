@@ -68,8 +68,9 @@ public:
 		setDefaultValue ( const T& default_value ),
 		setCurrent ( const int pos ) const;
 
-	T&
-		operator[] ( const int pos );
+	T
+		&operator[] ( const int pos ),
+		&operator[] ( const uint pos );
 
 	virtual const VMList<T>&
 		operator= ( const VMList<T>& other );
@@ -79,7 +80,9 @@ public:
 
 	const T
 		&at ( int ) const,
+		&at ( uint ) const,
 		&operator[] ( const int pos ) const,
+		&operator[] ( const uint pos ) const,
 		&first () const,
 		&last () const,
 		&next () const,
@@ -159,10 +162,10 @@ private:
 	T end_value;
 
 	int
-		nItems,
 		ptr;
 
 	uint
+		nItems,
 		capacity,
 		memCapacity, // only when memory is allocated
 		m_nprealloc;
@@ -350,7 +353,8 @@ inline void VMList<T>::copyItems ( T* dest, const T* src, const uint amount )
 template <typename T>
 inline const T& VMList<T>::first () const
 {
-	if ( nItems >= 1 ) {
+	if ( nItems >= 1 )
+	{
 		const_cast<VMList<T>*> ( this )->ptr = 0;
 		return _data[0];
 	}
@@ -371,7 +375,7 @@ inline const T& VMList<T>::last () const
 template <typename T>
 inline const T& VMList<T>::next () const
 {
-	if ( ptr < ( nItems - 1 ) && nItems >= 1 )
+	if ( ptr < static_cast<int>( nItems - 1 ) && nItems >= 1 )
 	{
 		++( const_cast<VMList<T>*> ( this )->ptr );
 		return _data[ptr];
@@ -393,7 +397,7 @@ inline const T& VMList<T>::prev () const
 template <typename T>
 inline const T& VMList<T>::current () const
 {
-	if ( ptr >= 0 && ptr < nItems )
+	if ( ptr >= 0 && ptr < static_cast<int>( nItems ) )
 		return _data[ptr];
 	return end_value;
 }
@@ -401,7 +405,7 @@ inline const T& VMList<T>::current () const
 template <typename T>
 inline void VMList<T>::setCurrent ( const int pos ) const
 {
-	if ( pos < signed ( nItems ) )
+	if ( pos < static_cast<int> ( nItems ) )
 		const_cast<VMList<T>*> ( this )->ptr = pos;
 }
 
@@ -424,7 +428,7 @@ inline const T& VMList<T>::peekLast () const
 template <typename T>
 inline const T& VMList<T>::peekNext () const
 {
-	if ( ptr < ( nItems - 1 ) && nItems >= 1 )
+	if ( ptr < static_cast<int>( nItems - 1 ) && nItems >= 1 )
 		return _data[ptr + 1];
 	return end_value;
 }
@@ -452,7 +456,7 @@ inline const T& VMList<T>::end () const
 template <typename T>
 inline const T& VMList<T>::operator[] ( const int pos ) const
 {
-	if ( (pos >= 0) && (pos < nItems) ) // only return actually inserted items; therefore we use nItems
+	if ( (pos >= 0) && (pos < static_cast<int>( nItems )) ) // only return actually inserted items; therefore we use nItems
 		return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->_data[pos] );
 	return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->end_value );
 }
@@ -462,13 +466,31 @@ inline T& VMList<T>::operator[] ( const int pos )
 {
 	if ( pos >= 0 )
 	{
-		if ( pos >= (signed) capacity ) // capacity was used because the non-const operator[] may be used to insert items into the list
+		if ( pos >= static_cast<int>( capacity ) ) // capacity was used because the non-const operator[] may be used to insert items into the list
 			realloc ( pos + m_nprealloc );
-		if ( pos >= nItems )
+		if ( pos >= static_cast<int>( nItems ) )
 			nItems = pos + 1;
 		return _data[pos];
 	}
 	return end_value;
+}
+
+template <typename T>
+inline const T& VMList<T>::operator[] ( const uint pos ) const
+{
+	if ( pos < nItems ) // only return actually inserted items; therefore we use nItems
+		return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->_data[pos] );
+	return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->end_value );
+}
+
+template <typename T>
+inline T& VMList<T>::operator[] ( const uint pos )
+{
+	if ( pos >= capacity ) // capacity was used because the non-const operator[] may be used to insert items into the list
+		realloc ( pos + m_nprealloc );
+	if ( pos >= nItems )
+		nItems = pos + 1;
+	return _data[pos];
 }
 
 template <typename T>
@@ -495,14 +517,22 @@ const VMList<T>& VMList<T>::operator= ( const VMList<T>& other )
 template <typename T>
 inline const T& VMList<T>::at ( const int pos ) const
 {
-	if ( (pos >= 0) && (pos < nItems) ) // only return actually inserted items; therefore we use nItems
+	if ( (pos >= 0) && (pos < static_cast<int>( nItems )) ) // only return actually inserted items; therefore we use nItems
+		return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->_data[pos] );
+	return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->end_value );
+}
+
+template <typename T>
+inline const T& VMList<T>::at ( const uint pos ) const
+{
+	if ( pos < nItems ) // only return actually inserted items; therefore we use nItems
 		return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->_data[pos] );
 	return const_cast<T&> ( ( const_cast<VMList<T>*> ( this ) )->end_value );
 }
 
 template <typename T>
 VMList<T>::VMList ( const T& default_value, const uint n_prealloc )
-	: _data ( nullptr ), nItems ( 0 ), ptr ( -1 ), capacity ( 0 ), memCapacity ( 0 ), mb_autodel ( false )
+	: _data ( nullptr ), ptr ( -1 ), nItems ( 0 ), capacity ( 0 ), memCapacity ( 0 ), mb_autodel ( false )
 {
 	m_nprealloc = n_prealloc;
 	capacity = m_nprealloc;
@@ -520,7 +550,7 @@ VMList<T>::VMList ( const T& default_value, const uint n_prealloc )
 
 template <typename T>
 inline VMList<T>::VMList ()
-	: _data ( nullptr ), nItems ( 0 ), ptr ( -1 ), capacity ( 0 ),
+	: _data ( nullptr ), ptr ( -1 ), nItems ( 0 ), capacity ( 0 ),
 	  memCapacity ( 0 ), m_nprealloc ( 10 ), mb_autodel ( false )
 {
 	mb_ispointer = checkIsPointer ( &r );
@@ -548,7 +578,7 @@ uint VMList<T>::realloc ( const uint newsize )
 	if ( newsize == capacity )
 		return newsize;
 
-	if ( signed ( newsize ) < nItems )
+	if ( newsize < nItems )
 		nItems = newsize;
 
 	T* new_data = new T[newsize];
@@ -580,7 +610,7 @@ void VMList<T>::clear ( const bool delete_items )
 	{
 		if ( delete_items || mb_autodel )
 		{
-			for ( int pos ( 0 ); pos < nItems; ++pos )
+			for ( uint pos ( 0 ); pos < nItems; ++pos )
 				deletePointer ( &r, pos );
 		}
 		delete [] _data;
@@ -651,7 +681,7 @@ void VMList<T>::clearButKeepMemory ( const bool delete_items )
 		uint i ( 0 );
 		if ( delete_items || mb_autodel )
 		{
-			while ( i < unsigned ( nItems ) )
+			while ( i < nItems )
 				deletePointer ( &r, i++ );
 		}
 		std::fill ( _data, _data + nItems, end_value );
@@ -679,16 +709,16 @@ template <typename T>
 int VMList<T>::remove ( int pos, const bool delete_item )
 {
 	int ret ( -1 );
-	if ( (pos >= 0) && (pos < nItems) )
+	if ( (pos >= 0) && (pos < static_cast<int>( nItems ) ) )
 	{
 		if ( delete_item )
 			deletePointer ( &r, pos );
-		if ( (signed) pos < ( nItems - 1 ) )
+		if ( pos < static_cast<int>( nItems - 1 ) )
 			moveItems ( pos, pos + 1, nItems - pos - 1 );
 		_data[nItems-1] = end_value;
 		--nItems;
 		ret = nItems;
-		if ( ptr >= signed ( pos ) )
+		if ( ptr >= pos )
 			ptr = nItems - 1;
 	}
 	return ret;
@@ -698,7 +728,7 @@ template <typename T>
 int VMList<T>::removeOne ( const T& item, int pos, const bool delete_item )
 {
 	int ret ( -1 );
-	while ( (pos >= 0) && (pos < nItems) )
+	while ( (pos >= 0) && (pos < static_cast<int>( nItems ) ) )
 	{
 		if ( _data[pos] == item )
 		{
@@ -714,7 +744,7 @@ template <typename T>
 int VMList<T>::replace ( const int pos, const T &item )
 {
 	int ret ( -1 );
-	if ( (pos >= 0) && (pos < nItems) )
+	if ( (pos >= 0) && (pos < static_cast<int>( nItems )) )
 	{
 		_data[pos] = item;
 		ret = pos;
@@ -728,13 +758,13 @@ int VMList<T>::contains ( const T& item, int from_pos ) const
 	if ( nItems > 0 ) {
 		bool forward ( true );
 
-		if ( from_pos < 0 || from_pos >= nItems ) {
+		if ( from_pos < 0 || from_pos >= static_cast<int>( nItems ) ) {
 			from_pos = nItems - 1;
 			forward = false;
 		}
 		int i = from_pos;
 		if ( forward ) {
-			for ( ; i < nItems; ++i ) {
+			for ( ; i < static_cast<int>( nItems ); ++i ) {
 				if ( _data[i] == item )
 					return i;
 			}
@@ -756,10 +786,10 @@ int VMList<T>::insert ( const int pos, const T &item )
 
 	if ( pos <= (signed) capacity )
 	{
-		if ( ( m_nprealloc > 0 ) && ( pos == (signed) capacity ) )
+		if ( ( m_nprealloc > 0 ) && ( pos == static_cast<int>( capacity ) ) )
 		{
 			if ( nItems != 0 )
-				ret = unsigned ( this->realloc ( capacity + m_nprealloc ) );
+				ret = static_cast<int>( this->realloc ( capacity + m_nprealloc ) );
 			else
 			{
 				capacity = m_nprealloc;
@@ -772,12 +802,12 @@ int VMList<T>::insert ( const int pos, const T &item )
 	else
 	{
 		if ( m_nprealloc > 0 )
-			ret = unsigned ( this->realloc ( pos + m_nprealloc ) );
+			ret = static_cast<int>( this->realloc ( pos + m_nprealloc ) );
 	}
 
 	if ( ret != 0 )
 	{
-		if ( pos <= ( nItems - 1 ) )
+		if ( pos <= static_cast<int>( nItems - 1 ) )
 			moveItems ( pos + 1, pos, nItems - pos );
 		_data[pos] = item;
 		ret = pos;

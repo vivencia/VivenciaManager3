@@ -24,13 +24,20 @@ public:
 	inline int count () const { return rowCount (); }
 	inline vmListItem* item ( const int row ) const { return static_cast<vmListItem*>( sheetItem ( row >= 0 ? row : mPrevRow, 0 ) ); }
 	
+	/* Default: false. Many items are managed elsewhere because they are used to more than just displaying rows of
+	 * text. This property is used to allow for the proper cleaning of garbage in addition to avoid the inadvertent
+	 * attempt to delete something that may be deleted elsewhere another time.
+	 */
+	inline void setDeleteItemsWhenDestroyed ( const bool b_destroydelete ) { mbDestroyDelete = b_destroydelete; }
+	inline bool isDeleteItemsWhenDestroyed () const { return mbDestroyDelete; }
+	
 	inline void setCallbackForCurrentItemChanged ( std::function<void( vmListItem* current )> func ) {
 		mCurrentItemChangedFunc = func; }
 
 private:
 	void rowSelected ( const int row, const int prev_row );
 	
-	bool mbIgnore;
+	bool mbIgnore, mbDestroyDelete;
 	int mPrevRow;
 	vmListItem* mCurrentItem;
 	std::function<void( vmListItem* current )> mCurrentItemChangedFunc;

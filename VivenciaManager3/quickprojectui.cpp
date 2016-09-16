@@ -1,6 +1,5 @@
 #include "quickprojectui.h"
 #include "global.h"
-#include "servicesofferedui.h"
 #include "simplecalculator.h"
 #include "mainwindow.h"
 #include "dbsuppliesui.h"

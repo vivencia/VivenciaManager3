@@ -92,7 +92,7 @@ static bool s_removeField ( QString& data, const uint field, uint& nfields, cons
 		int i_field ( field );
 		int idx ( 0 );
 		int idx2 ( 0 );
-		const QStringMatcher* sep_matcher = ( is_rec ? &recsep_matcher : &tablesep_matcher );
+		const QStringMatcher* sep_matcher ( is_rec ? &recsep_matcher : &tablesep_matcher );
 		do {
 			idx2 = sep_matcher->indexIn ( data, idx );
 			if ( idx2 >= 0 ) {

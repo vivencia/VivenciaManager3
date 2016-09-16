@@ -6,7 +6,6 @@
 
 class Client;
 class jobListItem;
-struct CALENDAR_EXCHANGE;
 
 class QListWidgetItem;
 
@@ -38,7 +37,8 @@ public:
 
 	enum JOB_REPORT_FIELDS
 	{
-		JRF_DATE = 0, JRF_START_TIME = 1, JRF_END_TIME = 2, JRF_WHEATHER = 3, JRF_REPORT = 4
+		JRF_DATE = 0, JRF_START_TIME = 1, JRF_END_TIME = 2, JRF_WHEATHER = 3, JRF_REPORT = 4, JRF_EXTRA = 5
+		/*Possible JRF_EXTRA values: CHR_ONE: information added / CHR_ZERO: information removed*/
 	};
 
 	explicit Job ( const bool connect_helper_funcs = false );
@@ -48,7 +48,6 @@ public:
 		return static_cast<DB_FIELD_TYPE> ( JOBS_FIELDS_TYPE[field] ); }
 
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
-	void updateCalendarJobInfo ();
 
     inline const QString projectIDTemplate () const {
 		return date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE ) +
@@ -75,8 +74,6 @@ protected:
 
 	RECORD_FIELD m_RECFIELDS[JOB_FIELD_COUNT];
 	void ( *helperFunction[JOB_FIELD_COUNT] ) ( const DBRecord* );
-
-	PointersList<CALENDAR_EXCHANGE*> ce_list;
 };
 
 #endif // JOB_H

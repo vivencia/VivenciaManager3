@@ -155,7 +155,8 @@ static inline uint translateCategory ( const vmCompleters::COMPLETER_CATEGORIES 
 
 void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str )
 {
-	switch ( category ) {
+	switch ( category )
+	{
 		case vmCompleters::CLIENT_NAME:
 		case vmCompleters::SUPPLIER:
 		case vmCompleters::ITEM_NAMES:
@@ -165,9 +166,12 @@ void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES cat
 		{
 			bool b_needadd ( true );
 			const uint field ( translateCategory ( category ) );
-			if ( readFirstRecord () ) {
-				do {
-					if ( recStrValue ( this, field ).isEmpty () ) {
+			if ( readFirstRecord () )
+			{
+				do
+				{
+					if ( recStrValue ( this, field ).isEmpty () )
+					{
 						b_needadd = false;
 						break;
 					}
@@ -216,13 +220,16 @@ void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info,
 {
 	if ( VDB ()->runQuery (
 				QLatin1String ( "SELECT " ) + VivenciaDB::getTableColumnName ( t_info, field ) +
-				QLatin1String ( " FROM " ) + t_info->table_name, query ) ) {
-
+				QLatin1String ( " FROM " ) + t_info->table_name, query ) )
+	{
 		QString value;
-		do {
+		do
+		{
 			value = query.value ( 0 ).toString ();
-			if ( !value.isEmpty () ) {
-				if ( b_check_duplicates ) {
+			if ( !value.isEmpty () )
+			{
+				if ( b_check_duplicates )
+				{
 					if ( results.contains ( value, Qt::CaseInsensitive ) )
 						continue;
 				}
@@ -234,7 +241,8 @@ void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info,
 
 void completerRecord::loadCompleterStrings ( QStringList& completer_strings, const vmCompleters::COMPLETER_CATEGORIES category )
 {
-	switch ( category ) {
+	switch ( category )
+	{
 		case vmCompleters::CLIENT_NAME:
 			runQuery ( completer_strings, &Client::t_info, FLD_CLIENT_NAME );
 		break;

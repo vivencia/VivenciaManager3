@@ -98,6 +98,8 @@ enum REPORT_ACTIONS
 };
 
 static const QString nonClientStr ( QStringLiteral ( "Não-clientes" ) );
+
+// Not used anymore but kept so that we maintain compatibility with the old-style filename, since those files will not be renamed
 static const QString nonClientEstimatesPrefix ( QStringLiteral ( "Orçamento - " ) );
 static const QString nonClientReportsPrefix ( QStringLiteral ( "Relatório - " ) );
 static const QString itemTypeStr[6] =
@@ -899,10 +901,12 @@ void estimateDlg::changeJobData ( jobListItem* const jobItem, const QString& str
 void estimateDlg::estimateActions ( QAction* action )
 {
 	QTreeWidgetItem* item ( treeView->selectedItems ().at ( 0 ) );
-	const QString clientName ( item->parent ()->text ( 0 ) );
+	if ( !item )
+		return;
+	const QString clientName ( item->parent () ? item->parent ()->text ( 0 ) : item->text ( 0 ) );
 	const QString basePath ( clientName != nonClientStr ?
 							 CONFIG ()->estimatesDir ( clientName ) :
-							 CONFIG ()->projectsBaseDir () + configOps::estimatesDirSuffix () );
+							 CONFIG ()->projectsBaseDir () + configOps::estimatesDirSuffix () + CHR_F_SLASH );
 
 	switch ( static_cast<vmAction*> ( action )->id () ) {
 		case EA_CONVERT:
@@ -935,8 +939,8 @@ void estimateDlg::estimateActions ( QAction* action )
 			}
 			
 			estimateName.prepend ( vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
-			if ( clientName == nonClientStr )
-				estimateName.prepend ( nonClientEstimatesPrefix );
+			//if ( clientName == nonClientStr )
+			//	estimateName.prepend ( nonClientEstimatesPrefix );
 
 			f_info = new fileOps::st_fileInfo;
 			if ( static_cast<vmAction*> ( action )->id () == EA_NEW_VMR )

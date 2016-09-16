@@ -26,7 +26,6 @@ public:
 
 protected:
 	friend bool updateSuppliesTable ();
-	bool mb_CompleterUpdated;
 
 	RECORD_FIELD m_RECFIELDS[SUPPLIES_FIELD_COUNT];
 	void ( *helperFunction[SUPPLIES_FIELD_COUNT] ) ( const DBRecord* );

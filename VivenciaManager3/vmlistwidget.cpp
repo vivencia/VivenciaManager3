@@ -2,7 +2,7 @@
 #include "vmlistitem.h"
 
 vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
-	: vmTableWidget ( parent ), mbIgnore ( true ), mPrevRow ( -2 ), mCurrentItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
+	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mPrevRow ( -2 ), mCurrentItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
 {
 	setIsList ();
 	vmTableColumn* cols ( createColumns ( 1 ) );
@@ -13,7 +13,7 @@ vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
 
 vmListWidget::~vmListWidget ()
 {
-	this->vmListWidget::clear ( true, true );
+	this->vmListWidget::clear ( true, isDeleteItemsWhenDestroyed () );
 }
 
 void vmListWidget::setIgnoreChanges ( const bool b_ignore )
@@ -77,7 +77,7 @@ void vmListWidget::clear ( const bool b_ignorechanges, const bool b_del )
 
 void vmListWidget::insertRow ( const uint row, const uint n )
 {
-	if ( row <= (unsigned) rowCount () )
+	if ( row <= static_cast<uint>( rowCount () ) )
 	{
 		setVisibleRows ( visibleRows () +  n );
 		for ( uint i_row ( 0 ); i_row < n; ++i_row )
@@ -88,21 +88,23 @@ void vmListWidget::insertRow ( const uint row, const uint n )
 
 void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
 {
-	if ( row < (unsigned) rowCount () )
+	if ( row < static_cast<uint>( rowCount () ) )
 	{
 		int i_row ( row + n - 1 );
+		const bool b_ignorechanges ( isIgnoringChanges () );
 		const bool bResetCurrentRow ( !isIgnoringChanges () && ( mCurrentItem ? (mCurrentItem->row () >= (signed) row) : true ) );
 		
+		setIgnoreChanges ( true );
 		setVisibleRows ( visibleRows () - n );
-		if ( mPrevRow >= (signed) row )
+		if ( mPrevRow >= static_cast<int>( row ) )
 			mPrevRow -= n;
 		
 		vmListItem* item ( nullptr );
 		if ( bDel )
 		{
-			for ( ; i_row >= (signed) row; --i_row  )
+			for ( ; i_row >= static_cast<int>( row ); --i_row  )
 			{
-				for ( int i_col ( colCount () - 1 ); i_col >= 0; --i_col )
+				for ( int i_col ( static_cast<int>( colCount () ) - 1 ); i_col >= 0; --i_col )
 				{
 					item = static_cast<vmListItem*>( sheetItem ( i_row, i_col ) );
 					if ( item != nullptr )
@@ -116,16 +118,19 @@ void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
 		}
 		else
 		{
-			for ( ; i_row >= (signed) row; --i_row  )
+			for ( ; i_row >= static_cast<int>( row ); --i_row  )
 			{
-				for ( int i_col ( colCount () - 1 ); i_col >= 0; --i_col )
+				for ( int i_col ( static_cast<int>( colCount () ) - 1 ); i_col >= 0; --i_col )
 				{
-					static_cast<vmListItem*>( sheetItem ( i_row, i_col ) )->m_list = nullptr;
+					if ( sheetItem ( i_row, i_col ) != nullptr )
+						static_cast<vmListItem*>( sheetItem ( i_row, i_col ) )->m_list = nullptr;
 					(void) QTableWidget::takeItem ( i_row, i_col );
 				}
 				QTableWidget::removeRow ( i_row );
 			}
 		}
+		
+		setIgnoreChanges ( b_ignorechanges );
 		if ( bResetCurrentRow )
 			setCurrentRow ( -1, true );
 		setLastUsedRow ( rowCount () - 1 );

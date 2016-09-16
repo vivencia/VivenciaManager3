@@ -221,7 +221,10 @@ void VivenciaDB::doPreliminaryWork ()
 	/* This piece of code was created and discarded at 2016/02/14. At this date I discovered that General table
 	 * was empty, for some reason, and I needed to use an update function (in Payment) which would not be called
 	 * for lack of database table version to compare. Fixed it. Code discarded.
-	if ( this->recordCount ( &gen_rec.t_info ) < TABLES_IN_DB ) {
+	 * 
+	 * UPDATE: this happend again and was noted at 2016/09/06. Cause unkown
+	 */
+	/*if ( this->recordCount ( &gen_rec.t_info ) < TABLES_IN_DB ) {
 		for ( uint i ( 0 ); i < TABLES_IN_DB; ++i )
 			gen_rec.insertOrUpdate ( table_info[i] );
 	}
@@ -557,7 +560,8 @@ bool VivenciaDB::insertRecord ( const DBRecord* db_rec ) const
 	
 	str_query += values + QLatin1String ( " )" );
 	m_db.exec ( str_query );
-	if ( m_db.lastError ().type () == QSqlError::NoError ) {
+	if ( m_db.lastError ().type () == QSqlError::NoError )
+	{
 		mBackupSynced = false;
 		return true;
 	}
@@ -595,7 +599,8 @@ bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
 
 	m_db.exec ( str_query );
 
-	if ( m_db.lastError ().type () == QSqlError::NoError ) {
+	if ( m_db.lastError ().type () == QSqlError::NoError )
+	{
 		mBackupSynced = false;
 		return true;
 	}

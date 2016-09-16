@@ -228,12 +228,16 @@ void vmTableItem::computeFormula ()
 	decode_pos ( list.value ( 2 ), &secondRow, &secondCol );
 
 	vmNumber res;
-	if ( mStrOp == SUM ) {
+	if ( mStrOp == SUM )
+	{
 		vmTableItem* tableItem ( nullptr );
-		for ( int r ( firstRow ); r <= secondRow; ++r ) {
-			for ( int c ( firstCol ); c <= secondCol; ++c ) {
+		for ( int r ( firstRow ); r <= secondRow; ++r )
+		{
+			for ( int c ( firstCol ); c <= secondCol; ++c )
+			{
 				tableItem = m_table->sheetItem ( r, c );
-				if ( tableItem ) {
+				if ( tableItem )
+				{
 					if ( textType () >= vmLineEdit::TT_PRICE )
 						res += tableItem->number ();
 				}
@@ -246,7 +250,8 @@ void vmTableItem::computeFormula ()
 		if ( secondRow != -1 )
 			secondVal = m_table->sheetItem ( secondRow, secondCol )->number ();
 
-		switch ( mStrOp.constData ()->toLatin1 () ) {
+		switch ( mStrOp.constData ()->toLatin1 () )
+		{
 			case '+':
 				res = ( firstVal + secondVal ); break;
 			case '-':

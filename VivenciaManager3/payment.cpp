@@ -2,7 +2,6 @@
 #include "vmlistitem.h"
 #include "global.h"
 #include "vivenciadb.h"
-#include "dbcalendar.h"
 #include "stringrecord.h"
 
 #ifdef TRANSITION_PERIOD
@@ -269,15 +268,19 @@ void updateOverdueInfo ( const DBRecord* db_rec )
 {
 	Payment* pay ( static_cast<Payment*> ( const_cast<DBRecord*> ( db_rec ) ) );
 
-	if ( recStrValue ( pay, FLD_PAY_OVERDUE ) != CHR_TWO ) { // CHR_TWO == ignore price differences.
+	if ( recStrValue ( pay, FLD_PAY_OVERDUE ) != CHR_TWO )
+	{
+		// CHR_TWO == ignore price differences.
 		const vmNumber price ( recStrValue ( pay, FLD_PAY_PRICE ), VMNT_PRICE, 1 );
 		const vmNumber total_paid ( recStrValue ( pay, FLD_PAY_TOTALPAID ), VMNT_PRICE, 1 );
 
-		if ( total_paid < price) {
+		if ( total_paid < price)
+		{
 			setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ONE );
 			setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, vmNumber ( price - total_paid ).toPrice () );
 		}
-		else {
+		else
+		{
 			setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ZERO );
 			if ( pay->action () == ACTION_EDIT ) // clear field (if it contains a previous value) for neatness
 				setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, vmNumber::zeroedPrice.toPrice () );
@@ -286,7 +289,7 @@ void updateOverdueInfo ( const DBRecord* db_rec )
 }
 
 Payment::Payment ( const bool )
-	: DBRecord ( PAY_FIELD_COUNT ), ce_list ( 10 )
+	: DBRecord ( PAY_FIELD_COUNT )
 {
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( this->t_info );
@@ -299,75 +302,30 @@ Payment::Payment ( const bool )
 
 }
 
-Payment::~Payment ()
-{
-	ce_list.clear ( true );
-}
+Payment::~Payment () {}
 
 int Payment::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 {
-	switch ( sc ) {
-	case SC_ID:
-		return FLD_PAY_ID;
+	switch ( sc )
+	{
+		case SC_ID:
+			return FLD_PAY_ID;
 //		case SC_REPORT_1: return FLD_PAY_METHOD_EXTRA;
-	case SC_REPORT_2:
-		return FLD_PAY_OBS;
-	case SC_PRICE_1:
-		return FLD_PAY_PRICE;
+		case SC_REPORT_2:
+			return FLD_PAY_OBS;
+		case SC_PRICE_1:
+			return FLD_PAY_PRICE;
 //		case SC_PRICE_2: return FLD_PAY_VALUE;
 //		case SC_DATE_1: return FLD_PAY_DATE;
 //		case SC_DATE_2: return FLD_PAY_USEDATE;
 //		case SC_TYPE: return FLD_PAY_ACCOUNT;
-	case SC_EXTRA_1:
-		return FLD_PAY_CLIENTID;
-	case SC_EXTRA_2:
-		return FLD_PAY_JOBID;
-	default:
-		return -1;
+		case SC_EXTRA_1:
+			return FLD_PAY_CLIENTID;
+		case SC_EXTRA_2:
+			return FLD_PAY_JOBID;
+		default:
+			return -1;
 	}
-}
-
-void Payment::updateCalendarPayInfo ()
-{
-	if ( ce_list.isEmpty () )
-		return;
-
-	dbCalendar* cal ( new dbCalendar );
-	stringRecord calendarIdPair;
-	calendarIdPair.fastAppendValue ( actualRecordStr ( FLD_PAY_ID ) );
-	calendarIdPair.fastAppendValue ( actualRecordStr ( FLD_PAY_CLIENTID ) );
-
-	CALENDAR_EXCHANGE* ce ( nullptr );
-	for ( uint i ( 0 ); i < ce_list.count (); ++i ) {
-		ce = ce_list.at ( i );
-		switch ( ce->action ) {
-			case CEAO_NOTHING:
-				continue;
-			case CEAO_ADD_DATE1:
-				cal->addDate ( ce->date, FLD_CALENDAR_PAYS, calendarIdPair );
-			break;
-			case CEAO_DEL_DATE1:
-				cal->delDate ( ce->date, FLD_CALENDAR_PAYS, calendarIdPair );
-			break;
-			case CEAO_ADD_DATE2:
-				cal->addDate ( ce->date, FLD_CALENDAR_PAYS_USE, calendarIdPair );
-			break;
-			case CEAO_DEL_DATE2:
-				cal->delDate ( ce->date, FLD_CALENDAR_PAYS_USE, calendarIdPair );
-			break;
-			case CEAO_ADD_PRICE_DATE1:
-				cal->addPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_PAY_RECEIVED );
-			break;
-			case CEAO_DEL_PRICE_DATE1:
-				cal->delPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_PAY_RECEIVED );
-			break;
-			case CEAO_ADD_PRICE_DATE2:
-			case CEAO_DEL_PRICE_DATE2:
-			break;
-		}
-	}
-	ce_list.clearButKeepMemory ( true );
-	delete cal;
 }
 
 void Payment::setListItem ( payListItem* pay_item )

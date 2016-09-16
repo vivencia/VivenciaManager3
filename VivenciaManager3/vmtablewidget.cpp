@@ -138,7 +138,7 @@ void vmTableWidget::initTable ( const uint rows )
 			sheet_item->setEditable ( false );
 			if ( i_row == mTotalsRow && !mbPlainTable ) {
 				if ( i_col == 0 )
-					sheet_item->setText ( tr ( "Total:" ), false, false );
+					sheet_item->setText ( TR_FUNC ( "Total:" ), false, false );
 				else {
 					if ( column->text_type >= vmLineEdit::TT_PRICE ) {
 						col_header = QChar ( 'A' + i_col );
@@ -259,36 +259,36 @@ vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidg
 			case ISR_NAME:
 				cols[ISR_NAME].completer_type = vmCompleters::PRODUCT_OR_SERVICE;
 				cols[ISR_NAME].width = 280;
-				cols[ISR_NAME].label = tr ( "Item" );
+				cols[ISR_NAME].label = TR_FUNC ( "Item" );
 			break;
 			case ISR_UNIT:
-				cols[ISR_UNIT].label = tr ( "Unit" );
+				cols[ISR_UNIT].label = TR_FUNC ( "Unit" );
 			break;
 			case ISR_BRAND:
 				cols[ISR_BRAND].completer_type = vmCompleters::BRAND;
 				cols[ISR_BRAND].text_type = vmWidget::TT_UPPERCASE;
-				cols[ISR_BRAND].label = tr ( "Maker" );
+				cols[ISR_BRAND].label = TR_FUNC ( "Maker" );
 			break;
 			case ISR_QUANTITY:
 				cols[ISR_QUANTITY].text_type = vmLineEdit::TT_DOUBLE;
-				cols[ISR_QUANTITY].label = tr ( "Quantity" );
+				cols[ISR_QUANTITY].label = TR_FUNC ( "Quantity" );
 			break;
 			case ISR_UNIT_PRICE:
 				cols[ISR_UNIT_PRICE].text_type = vmLineEdit::TT_PRICE;
 				cols[ISR_UNIT_PRICE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
-				cols[ISR_UNIT_PRICE].label = tr ( "Unit price" );
+				cols[ISR_UNIT_PRICE].label = TR_FUNC ( "Unit price" );
 			break;
 			case ISR_TOTAL_PRICE:
 				cols[ISR_TOTAL_PRICE].text_type = vmLineEdit::TT_PRICE;
 				cols[ISR_TOTAL_PRICE].formula = QStringLiteral ( "* D%1 E%1" );
 				cols[ISR_TOTAL_PRICE].editable = false;
-				cols[ISR_TOTAL_PRICE].label = tr ( "Total price" );
+				cols[ISR_TOTAL_PRICE].label = TR_FUNC ( "Total price" );
 			break;
 			case PURCHASES_TABLE_REG_COL:
 				cols[PURCHASES_TABLE_REG_COL].wtype = WT_CHECKBOX;
 				cols[PURCHASES_TABLE_REG_COL].width = 50;
 				cols[PURCHASES_TABLE_REG_COL].default_value = CHR_ZERO;
-				cols[PURCHASES_TABLE_REG_COL].label = tr ( "Register" );
+				cols[PURCHASES_TABLE_REG_COL].label = TR_FUNC ( "Register" );
 			break;
 		}
 	}
@@ -321,7 +321,8 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 
 	bool bEditable ( false );
 
-	if ( dst_table != nullptr ) {
+	if ( dst_table != nullptr )
+	{
 		bEditable = dst_table->isEditable ();
 		dst_table->setEditable ( true );
 	}
@@ -329,7 +330,8 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 	s_row->field_value[s_row->column[4]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_SUPPLIER ) );
 	s_row->field_value[s_row->column[5]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_DATE ) );
 
-	for ( int i_row ( 0 ); i_row <= src_table->lastUsedRow (); ++i_row ) {
+	for ( int i_row ( 0 ); i_row <= src_table->lastUsedRow (); ++i_row )
+	{
 		if ( src_table->sheetItem ( i_row, PURCHASES_TABLE_REG_COL )->text () == CHR_ZERO ) // item is not marked to be exported
 			continue;
 
@@ -338,11 +340,16 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 		s_row->field_value[s_row->column[2]] = src_table->sheetItem ( i_row, ISR_BRAND )->text ();
 		s_row->field_value[s_row->column[3]] = src_table->sheetItem ( i_row, ISR_UNIT_PRICE )->text ();
 
-		if ( dst_dbrec->readRecord ( s_row->column[0], s_row->field_value[s_row->column[0]] ) ) { //item description
-			if ( recStrValue ( dst_dbrec, s_row->column[1] ) == s_row->field_value[s_row->column[1]] ) { // item unit
-				if ( recStrValue ( dst_dbrec, s_row->column[2] ) == s_row->field_value[s_row->column[2]] ) { // item brand
-					if ( recStrValue ( dst_dbrec, s_row->column[4] ) == s_row->field_value[s_row->column[4]] ) { // item supplier
-						if ( recStrValue ( dst_dbrec, s_row->column[3] ) == s_row->field_value[s_row->column[3]] ) { // item price
+		if ( dst_dbrec->readRecord ( s_row->column[0], s_row->field_value[s_row->column[0]] ) ) //item description
+		{
+			if ( recStrValue ( dst_dbrec, s_row->column[1] ) == s_row->field_value[s_row->column[1]] ) // item unit
+			{
+				if ( recStrValue ( dst_dbrec, s_row->column[2] ) == s_row->field_value[s_row->column[2]] ) // item brand
+				{
+					if ( recStrValue ( dst_dbrec, s_row->column[4] ) == s_row->field_value[s_row->column[4]] ) // item supplier
+					{
+						if ( recStrValue ( dst_dbrec, s_row->column[3] ) == s_row->field_value[s_row->column[3]] ) // item price
+						{
 							if ( recStrValue ( dst_dbrec, s_row->column[5] ) == s_row->field_value[s_row->column[5]] ) // item date
 								continue; // everything is the same, do nothing
 						}
@@ -357,7 +364,8 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 		/* dst_table might be nullptr. For optimization purpose, a table might be uninitialized by the time this function is called
 		 * but the dbrecord must be existent. At a later point, when the table might be created, VivenciaDB::populateTable must be called
 		 */
-		if ( dst_table != nullptr ) {
+		if ( dst_table != nullptr )
+		{
 			if ( dst_dbrec->action () == ACTION_ADD )
 				s_row->row = dst_table->lastUsedRow () + 1;
 			else
@@ -365,8 +373,10 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 			s_row->field_value[dst_dbrec->isrRecordField ( ISR_ID )] = QString::number ( s_row->row );
 			dst_table->setRowData ( s_row, true );
 		}
-		else {
-			if ( dst_dbrec->action () == ACTION_ADD ) {
+		else
+		{
+			if ( dst_dbrec->action () == ACTION_ADD )
+			{
 				setRecValue ( dst_dbrec, s_row->column[0], s_row->field_value[s_row->column[0]] );
 				setRecValue ( dst_dbrec, s_row->column[1], s_row->field_value[s_row->column[1]] );
 				setRecValue ( dst_dbrec, s_row->column[2], s_row->field_value[s_row->column[2]] );
@@ -389,37 +399,39 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 {
 	vmTableColumn* cols ( table->createColumns ( last_column + 1 ) );
 
-	for ( uint i ( 0 ); i <= last_column; ++i ) {
-		switch ( i ) {
+	for ( uint i ( 0 ); i <= last_column; ++i )
+	{
+		switch ( i )
+		{
 			case PHR_DATE:
-				cols[PHR_DATE].label = tr ( "Date" );
+				cols[PHR_DATE].label = TR_FUNC ( "Date" );
 				cols[PHR_DATE].wtype = WT_DATEEDIT;
 			break;
 			case PHR_VALUE:
-				cols[PHR_VALUE].label = tr ( "Value" );
+				cols[PHR_VALUE].label = TR_FUNC ( "Value" );
 				cols[PHR_VALUE].button_type = vmLineEditWithButton::LEBT_CALC_BUTTON;
 				cols[PHR_VALUE].text_type = vmLineEdit::TT_PRICE;
 				cols[PHR_VALUE].wtype = WT_LINEEDIT_WITH_BUTTON;
 			break;
 			case PHR_PAID:
-				cols[PHR_PAID].label = tr ( "Paid?" );
+				cols[PHR_PAID].label = TR_FUNC ( "Paid?" );
 				cols[PHR_PAID].wtype = WT_CHECKBOX;
 				cols[PHR_PAID].width = 50;
 				cols[PHR_PAID].default_value = CHR_ZERO;
 			break;
 			case PHR_METHOD:
-				cols[PHR_METHOD].label = tr ( "Method" );
+				cols[PHR_METHOD].label = TR_FUNC ( "Method" );
 				cols[PHR_METHOD].completer_type = vmCompleters::PAYMENT_METHOD;
 				cols[PHR_METHOD].text_type = vmWidget::TT_UPPERCASE;
 				cols[PHR_METHOD].width = 200;
 			break;
 			case PHR_ACCOUNT:
-				cols[PHR_ACCOUNT].label = tr ( "Account" );
+				cols[PHR_ACCOUNT].label = TR_FUNC ( "Account" );
 				cols[PHR_ACCOUNT].completer_type = vmCompleters::ACCOUNT;
 				cols[PHR_ACCOUNT].width = 120;
 			break;
 			case PHR_USE_DATE:
-				cols[PHR_USE_DATE].label = tr ( "Use Date" );
+				cols[PHR_USE_DATE].label = TR_FUNC ( "Use Date" );
 				cols[PHR_USE_DATE].wtype = WT_DATEEDIT;
 			break;
 		}
@@ -493,7 +505,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 				for ( i = 0; i < modified_rows; ++i ) {
 					if ( row < modifiedRows.at ( i ) ) break;
 					start_modification++; // modified above insertion start point are not affected
-			}
+				}
 				for ( i = start_modification; i < modified_rows; ++i ) {
 					list_value = modifiedRows.at ( i );
 					modifiedRows.replace ( i, list_value + n ); // push down modified rows
@@ -505,7 +517,8 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 void vmTableWidget::removeRow ( const uint row, const uint n )
 {
-	if ( row < (unsigned) rowCount () ) {
+	if ( row < (unsigned) rowCount () )
+	{
 		int i_row ( 0 );
 		m_nVisibleRows -= n;
 		for ( ; i_row < (signed) n; ++i_row )
@@ -574,17 +587,24 @@ void vmTableWidget::clearRow ( const uint row, const uint n )
 {
 	if ( isEditable () )
 	{
-		if ( ( signed )row <= m_lastUsedRow )
-		{
+		if ( static_cast<int>( row ) <= m_lastUsedRow )
+		{	
 			vmTableItem* item ( nullptr );
 			for ( uint i_row ( row ); i_row < row + n; ++i_row )
 			{
-				for ( uint i_col = 0; i_col <= ( colCount () - 1 ); ++i_col )
+				// Callback before removing so that its values might be used for something before they cannot be used anymore
+				if ( rowRemoved_func )
+					rowRemoved_func ( i_row );
+				
+				for ( uint i_col ( 0 ); i_col <= ( colCount () - 1 ); ++i_col )
 				{
 					if ( !isBitSet ( readOnlyColumnsMask, i_col ) )
 					{
 						item = sheetItem ( i_row, i_col );
-						item->setTextToDefault ( true );
+						/* TODO test: In previous versions the argument to setTextToDefault was set to true.
+						 * Now, we issue rowRemoved_func only once
+						*/
+						item->setTextToDefault ();
 						item->highlight ( vmDefault_Color );
 					}
 				}
@@ -646,7 +666,7 @@ void vmTableWidget::setRowData ( const spreadRow* s_row, const bool b_notify )
 		if ( s_row->row >= signed ( totalsRow () ) )
 			appendRow ();
 		for ( uint i_col ( 0 ), used_col ( s_row->column.at ( 0 ) );
-				i_col < unsigned ( s_row->column.count () );
+			i_col < unsigned ( s_row->column.count () );
 				used_col = s_row->column.at ( ++i_col ) )
 			sheetItem ( s_row->row, used_col )->setText ( s_row->field_value.at ( used_col ), false, b_notify );
 	}
@@ -691,6 +711,11 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 	{
 		if ( item->column () == PURCHASES_TABLE_REG_COL )
 			setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
+		else
+		{
+			if ( this->sheetItem ( item->row (), PURCHASES_TABLE_REG_COL )->text () == CHR_ONE )
+				setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
+		}
 	}
 	if ( cellChanged_func )
 		cellChanged_func ( item );
@@ -793,10 +818,10 @@ void vmTableWidget::loadFromStringTable ( const stringTable& data )
 void vmTableWidget::makeStringTable ( stringTable& data )
 {
 	stringRecord rec;
-	uint i_col ( 0 );
-	for ( uint i_row ( 0 ); ( signed )i_row <= lastUsedRow (); ++i_row )
+	int i_col ( 0 );
+	for ( int i_row ( 0 ); i_row <= lastUsedRow (); ++i_row )
 	{
-		for ( i_col = 0; i_col < colCount (); ++i_col )
+		for ( i_col = 0; i_col < static_cast<int>( colCount () ); ++i_col )
 			rec.fastAppendValue ( sheetItem ( i_row, i_col )->text () );
 		data.fastAppendRecord ( rec );
 		rec.clear ();
@@ -1022,9 +1047,11 @@ bool vmTableWidget::isRowSelected ( const uint row ) const
 bool vmTableWidget::isRowSelectedAndNotEmpty ( const uint row ) const
 {
 	vmTableItem* item ( nullptr );
-	for ( uint i_col = 0; i_col < colCount (); ++i_col ) {
+	for ( uint i_col = 0; i_col < colCount (); ++i_col )
+	{
 		item = sheetItem ( row, i_col );
-		if ( item->isSelected () ) {
+		if ( item->isSelected () )
+		{
 			if ( !item->text ().isEmpty () )
 				return ( !isBitSet ( readOnlyColumnsMask, i_col ) );
 		}
@@ -1038,7 +1065,8 @@ void vmTableWidget::setTableUpdated ()
 	mTableChanged = false;
 	setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
 	// Accept user input and save data for newer usage
-	for ( uint i_row ( 0 ); ( signed )i_row <= m_lastUsedRow; ++i_row ) {
+	for ( uint i_row ( 0 ); ( signed )i_row <= lastUsedRow (); ++i_row )
+	{
 		for ( uint i_col = 0; i_col <= ( colCount () - 1 ); ++i_col )
 			sheetItem ( i_row, i_col )->syncOriginalTextWithCurrent ();
 	}
@@ -1047,7 +1075,8 @@ void vmTableWidget::setTableUpdated ()
 void vmTableWidget::setHiddenText ( const uint row, const uint col, const QString& str, const bool notify_change )
 {
 	vmTableItem* item ( sheetItem ( row, col ) );
-	if ( item != nullptr ) {
+	if ( item != nullptr )
+	{
 		item->setData ( Qt::WhatsThisRole, str );
 		if ( notify_change )
 			cellContentChanged ( item );
@@ -1287,11 +1316,11 @@ void vmTableWidget::enableOrDisableActionsForCell ( const vmTableItem* sheetItem
 	if ( this->isEditable () ) { //even if the item is not editable, the formula might be changed
 		if ( mOverrideFormulaAction == nullptr ) {
 			mFormulaTitleAction = new vmAction ( FORMULA_TITLE );
-			mOverrideFormulaAction = new vmAction ( SET_FORMULA_OVERRIDE, tr ( "Allow formula override" ) );
+			mOverrideFormulaAction = new vmAction ( SET_FORMULA_OVERRIDE, TR_FUNC ( "Allow formula override" ) );
 			mOverrideFormulaAction->setCheckable ( true );
 			connect ( mOverrideFormulaAction, &vmAction::triggered, this, [&, sheetItem ] ( const bool checked ) {
 						return setFormulaOverrideForCell ( const_cast<vmTableItem*>( sheetItem ), checked ); } );
-			mSetFormulaAction = new vmAction ( SET_FORMULA, tr ( "Set formula" ) );
+			mSetFormulaAction = new vmAction ( SET_FORMULA, TR_FUNC ( "Set formula" ) );
 			connect ( mSetFormulaAction, &vmAction::triggered, this, [&, sheetItem ] () {
 						return setFormulaForCell ( const_cast<vmTableItem*>( sheetItem ) ); } );
 			mSubMenuFormula->addAction ( mFormulaTitleAction );
@@ -1299,7 +1328,7 @@ void vmTableWidget::enableOrDisableActionsForCell ( const vmTableItem* sheetItem
 			mSubMenuFormula->addAction ( mOverrideFormulaAction );
 			mSubMenuFormula->addAction ( mSetFormulaAction );
 		}
-		mFormulaTitleAction->QAction::setText ( sheetItem->hasFormula () ? sheetItem->formula () : tr ( "No formula" ) );
+		mFormulaTitleAction->QAction::setText ( sheetItem->hasFormula () ? sheetItem->formula () : TR_FUNC ( "No formula" ) );
 		mOverrideFormulaAction->setEnabled ( sheetItem->hasFormula () );
 		mOverrideFormulaAction->setChecked ( sheetItem->formulaOverride () );
 	}
@@ -1320,35 +1349,35 @@ void vmTableWidget::sharedContructorsCode ()
 	if ( vmTableWidget::defaultBGColor.isEmpty () )
 		vmTableWidget::defaultBGColor = palette ().color ( backgroundRole () ).name ();
 
-	mUndoAction = new vmAction ( UNDO, tr ( "Undo change (CTRL+Z)" ), this );
+	mUndoAction = new vmAction ( UNDO, TR_FUNC ( "Undo change (CTRL+Z)" ), this );
 	connect ( mUndoAction, &vmAction::triggered, this, [&] () {
 				return undoChange (); } );
 
-	mCopyCellAction = new vmAction ( COPY_CELL, tr ( "Copy cell contents to clipboard (CTRL+C)" ), this );
+	mCopyCellAction = new vmAction ( COPY_CELL, TR_FUNC ( "Copy cell contents to clipboard (CTRL+C)" ), this );
 	connect ( mCopyCellAction, &vmAction::triggered, this, [&] () {
 				return copyCellContents (); } );
 
-	mCopyRowContents = new vmAction ( COPY_ROW, tr ( "Copy row contents to clipboard (CTRL+B)" ), this );
+	mCopyRowContents = new vmAction ( COPY_ROW, TR_FUNC ( "Copy row contents to clipboard (CTRL+B)" ), this );
 	connect ( mCopyRowContents, &vmAction::triggered, this, [&] () {
 				return copyRowContents (); } );
 
-	mInsertRowAction = new vmAction ( ADD_ROW, tr ( "Insert line here (CTRL+I)" ), this );
+	mInsertRowAction = new vmAction ( ADD_ROW, TR_FUNC ( "Insert line here (CTRL+I)" ), this );
 	connect ( mInsertRowAction, &vmAction::triggered, this, [&] () {
 				return insertRow_slot (); } );
 
-	mAppendRowAction = new vmAction ( APPEND_ROW, tr ( "Append line (CTRL+O)" ), this );
+	mAppendRowAction = new vmAction ( APPEND_ROW, TR_FUNC ( "Append line (CTRL+O)" ), this );
 	connect ( mAppendRowAction, &vmAction::triggered, this, [&] () {
 				return appendRow_slot (); } );
 
-	mDeleteRowAction = new vmAction ( DEL_ROW, tr ( "Remove this line (CTRL+R)" ), this );
+	mDeleteRowAction = new vmAction ( DEL_ROW, TR_FUNC ( "Remove this line (CTRL+R)" ), this );
 	connect ( mDeleteRowAction, &vmAction::triggered, this, [&] () {
 				return removeRow_slot (); } );
 
-	mClearRowAction = new vmAction ( CLEAR_ROW, tr ( "Clear line (CTRL+D)" ), this );
+	mClearRowAction = new vmAction ( CLEAR_ROW, TR_FUNC ( "Clear line (CTRL+D)" ), this );
 	connect ( mClearRowAction, &vmAction::triggered, this, [&] () {
 				return clearRow_slot (); } );
 
-	mClearTableAction = new vmAction ( CLEAR_TABLE, tr ( "Clear table (CTRL+T)" ), this );
+	mClearTableAction = new vmAction ( CLEAR_TABLE, TR_FUNC ( "Clear table (CTRL+T)" ), this );
 	connect ( mClearTableAction, &vmAction::triggered, this, [&] () {
 				return clearTable_slot (); } );
 
@@ -1398,22 +1427,21 @@ void vmTableWidget::interceptCompleterActivated ( const QModelIndex& index, cons
 									index.sibling ( index.row (), 1 ) ).toString () );
 
 
-	if ( record.isOK () ) {
+	if ( record.isOK () )
+	{
 		if ( currentRow () == -1 )
-			setCurrentCell ( 1, 0, QItemSelectionModel::Select );
+			setCurrentCell ( 0, 0, QItemSelectionModel::ClearAndSelect );
 		const int current_row ( currentRow () );
 
-		if ( record.first () ) {
-			sheetItem ( current_row, 0 )->setText ( record.curValue (), false, true );
-			uint i_col ( 1 );
-			do {
-				if ( record.next () )
-					sheetItem ( current_row, i_col++ )->setText ( record.curValue (), false, true );
-				else
-					break;
-			} while ( i_col < ISR_TOTAL_PRICE );
+		if ( record.first () )
+		{
+			uint i_col ( 0 );
+			do
+			{
+				sheetItem ( current_row, i_col++ )->setText ( record.curValue (), false, true );
+			} while ( i_col < ISR_TOTAL_PRICE && record.next () );
+			setCurrentCell ( current_row, ISR_QUANTITY, QItemSelectionModel::ClearAndSelect );
 		}
-		setCurrentCell ( current_row, ISR_QUANTITY, QItemSelectionModel::ClearAndSelect );
 	}
 	mbDoNotUpdateCompleters = false;
 }
@@ -1503,17 +1531,21 @@ void vmTableWidget::appendRow_slot ()
 
 void vmTableWidget::removeRow_slot ()
 {
-	if ( mContextMenuCell && rowRemoved_func ) {
+	if ( mContextMenuCell && rowRemoved_func )
+	{
 		rowRemoved_func ( mContextMenuCell->row () );
 		removeRow ( mContextMenuCell->row () );
 	}
-	else {
+	else
+	{
 		const QModelIndexList selIndexes ( selectedIndexes () );
-		if ( selIndexes.count () > 0 ) {
+		if ( selIndexes.count () > 0 )
+		{
 			// Move from last selected toward the first to avoid conflicts and errors
 			QModelIndexList::const_iterator itr ( selIndexes.constEnd () );
 			const QModelIndexList::const_iterator itr_begin ( selIndexes.constBegin () );
-			for ( --itr; ; --itr ) {
+			for ( --itr; ; --itr )
+			{
 				// Emit the signal before removing the row so that the slot(s) that catch the signal can retrieve information from the row
 				// (i.e. an ID, or name or anything to be used by the database ) before it disappears
 				if ( rowRemoved_func )
@@ -1528,12 +1560,15 @@ void vmTableWidget::removeRow_slot ()
 
 void vmTableWidget::clearRow_slot ()
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		if ( mContextMenuCell != nullptr )
 			clearRow ( mContextMenuCell->row () );
-		else {
+		else
+		{
 			const QModelIndexList selIndexes ( selectedIndexes () );
-			if ( selIndexes.count () > 0 ) {
+			if ( selIndexes.count () > 0 )
+			{
 				QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
 				const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 				for ( ; itr != itr_end; ++itr )
@@ -1561,7 +1596,7 @@ void vmTableWidget::setFormulaOverrideForCell ( vmTableItem* item, const bool bo
 void vmTableWidget::setFormulaForCell ( vmTableItem* item )
 {
 	QString strNewFormula;
-	if ( vmNotify::inputBox ( strNewFormula, this, tr ( "New Formula" ), tr ( "Set new cell formula" ),
+	if ( vmNotify::inputBox ( strNewFormula, this, TR_FUNC ( "New Formula" ), TR_FUNC ( "Set new cell formula" ),
 							  item->formula () ) ) {
 		if ( item->setCustomFormula ( strNewFormula ) )
 			mFormulaTitleAction->QAction::setText ( item->formula () );

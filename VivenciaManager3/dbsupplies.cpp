@@ -94,13 +94,14 @@ const TABLE_INFO dbSupplies::t_info = {
 };
 
 dbSupplies::dbSupplies ( const bool connect_helper_funcs )
-	: DBRecord ( SUPPLIES_FIELD_COUNT ), mb_CompleterUpdated ( false )
+	: DBRecord ( SUPPLIES_FIELD_COUNT )
 {
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( dbSupplies::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
 
-	if ( connect_helper_funcs ) {
+	if ( connect_helper_funcs )
+	{
 		DBRecord::helperFunction = this->helperFunction;
 		setHelperFunction ( FLD_SUPPLIES_ITEM, &updateSuppliesItemCompleter );
 		setHelperFunction ( FLD_SUPPLIES_TYPE, &updateSuppliesTypeCompleter );
@@ -117,35 +118,35 @@ dbSupplies::~dbSupplies () {}
 uint dbSupplies::isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const
 {
 	uint rec_field ( 0 );
-	switch ( isr_field ) {
-	case ISR_NAME:
-		rec_field = FLD_SUPPLIES_ITEM;
+	switch ( isr_field )
+	{
+		case ISR_NAME:
+			rec_field = FLD_SUPPLIES_ITEM;
 		break;
-	case ISR_UNIT:
-		rec_field = FLD_SUPPLIES_UNIT;
+		case ISR_UNIT:
+			rec_field = FLD_SUPPLIES_UNIT;
 		break;
-	case ISR_BRAND:
-		rec_field = FLD_SUPPLIES_BRAND;
+		case ISR_BRAND:
+			rec_field = FLD_SUPPLIES_BRAND;
 		break;
-	case ISR_UNIT_PRICE:
-	case ISR_TOTAL_PRICE:
-		rec_field = FLD_SUPPLIES_PRICE;
+		case ISR_UNIT_PRICE:
+		case ISR_TOTAL_PRICE:
+			rec_field = FLD_SUPPLIES_PRICE;
 		break;
-	case ISR_QUANTITY:
-		rec_field = FLD_SUPPLIES_QUANTITY;
+		case ISR_QUANTITY:
+			rec_field = FLD_SUPPLIES_QUANTITY;
 		break;
-	case ISR_SUPPLIER:
-		rec_field = FLD_SUPPLIES_SUPPLIER;
+		case ISR_SUPPLIER:
+			rec_field = FLD_SUPPLIES_SUPPLIER;
 		break;
-	case ISR_ID:
-		rec_field = FLD_SUPPLIES_ID;
+		case ISR_ID:
+			rec_field = FLD_SUPPLIES_ID;
 		break;
-	case ISR_OWNER:
-		rec_field = FLD_SUPPLIES_TYPE;
+		case ISR_OWNER:
+			rec_field = FLD_SUPPLIES_TYPE;
 		break; // not any other field appropriate; but will not be used anyway
-		break;
-	case ISR_DATE:
-		rec_field = FLD_SUPPLIES_DATE_IN;
+		case ISR_DATE:
+			rec_field = FLD_SUPPLIES_DATE_IN;
 		break;
 	}
 	return rec_field;

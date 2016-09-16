@@ -3,7 +3,6 @@
 #include "global.h"
 #include "stringrecord.h"
 #include "completers.h"
-#include "dbcalendar.h"
 #include "supplierrecord.h"
 
 const double TABLE_VERSION ( 2.0 );
@@ -340,7 +339,7 @@ void updateBuyDeliverCompleter ( const DBRecord* db_rec )
 }
 
 Buy::Buy ( const bool connect_helper_funcs )
-	: DBRecord ( BUY_FIELD_COUNT ), ce_list ( 10 )
+	: DBRecord ( BUY_FIELD_COUNT )
 {
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( this->t_info );
@@ -353,10 +352,7 @@ Buy::Buy ( const bool connect_helper_funcs )
 	}
 }
 
-Buy::~Buy ()
-{
-	ce_list.clear ( true );
-}
+Buy::~Buy () {}
 
 uint Buy::isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const
 {
@@ -410,52 +406,6 @@ int Buy::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 		case SC_EXTRA_2: return FLD_BUY_JOBID;
 		default: return -1;
 	}
-}
-
-void Buy::updateCalendarBuyInfo ()
-{
-	if ( ce_list.isEmpty () )
-		return;
-
-	dbCalendar* cal ( new dbCalendar );
-	stringRecord calendarIdPair;
-	calendarIdPair.fastAppendValue ( actualRecordStr ( FLD_BUY_ID ) );
-	calendarIdPair.fastAppendValue ( actualRecordStr ( FLD_BUY_CLIENTID ) );
-
-	CALENDAR_EXCHANGE* ce ( nullptr );
-	for ( uint i ( 0 ); i < ce_list.count (); ++i ) {
-		ce = ce_list.at ( i );
-		switch ( ce->action ) {
-			case CEAO_NOTHING:
-				continue;
-			case CEAO_ADD_DATE1:
-				cal->addDate ( ce->date, FLD_CALENDAR_BUYS, calendarIdPair );
-			break;
-			case CEAO_DEL_DATE1:
-				cal->delDate ( ce->date, FLD_CALENDAR_BUYS, calendarIdPair );
-			break;
-			case CEAO_ADD_DATE2:
-				cal->addDate ( ce->date, FLD_CALENDAR_BUYS_PAY, calendarIdPair );
-			break;
-			case CEAO_DEL_DATE2:
-				cal->delDate ( ce->date, FLD_CALENDAR_BUYS_PAY, calendarIdPair );
-			break;
-			case CEAO_ADD_PRICE_DATE1:
-				cal->addPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_BUY_BOUGHT );
-			break;
-			case CEAO_DEL_PRICE_DATE1:
-				cal->delPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_BUY_BOUGHT );
-			break;
-			case CEAO_ADD_PRICE_DATE2:
-				cal->addPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_BUY_PAID );
-			break;
-			case CEAO_DEL_PRICE_DATE2:
-				cal->delPrice ( ce->date, ce->price, FLD_CALENDAR_TOTAL_BUY_PAID );
-			break;
-		}
-	}
-	ce_list.clearButKeepMemory ( true );
-	delete cal;
 }
 
 void Buy::setListItem ( buyListItem* buy_item )

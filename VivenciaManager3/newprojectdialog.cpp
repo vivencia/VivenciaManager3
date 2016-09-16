@@ -110,14 +110,17 @@ void newProjectDialog::loadJobsList ( const int clientid )
 	jobListItem* job_parent ( nullptr );
 	QStringList::const_iterator itr ( jobTypesList.constBegin () );
 	const QStringList::const_iterator itr_end ( jobTypesList.constEnd () );
-	for ( ; itr != itr_end; ++itr ) {
+	for ( ; itr != itr_end; ++itr )
+	{
 		jobid = (*itr).mid ( 1, (*itr).indexOf ( CHR_R_PARENTHESIS, 2 ) - 1 );
 		job_parent = globalMainWindow->getJobItem ( mClientItem, jobid.toInt () );
-		if ( job_parent ) {
-			mJobItem = static_cast<jobListItem*>( job_parent->relatedItem ( RLI_EXTRAITEM ) );
-			if ( mJobItem == nullptr ) {
+		if ( job_parent )
+		{
+			mJobItem = static_cast<jobListItem*>( job_parent->relatedItem ( RLI_EXTRAITEM_1 ) );
+			if ( mJobItem == nullptr )
+			{
 				mJobItem = new jobListItem;
-				mJobItem->setRelation ( RLI_EXTRAITEM );
+				mJobItem->setRelation ( RLI_EXTRAITEM_1 );
 				job_parent->syncSiblingWithThis ( mJobItem );
 				mJobItem->setText ( *itr, false, false, false );
 			}
@@ -130,10 +133,13 @@ void newProjectDialog::loadJobsList ( const int clientid )
 
 void newProjectDialog::jobTypeItemSelected ( vmListItem* item )
 {
-	if ( item != nullptr ) {
+	if ( item != nullptr )
+	{
 		mJobItem = static_cast<jobListItem*> ( item );
-		if ( mJobItem->loadData () ) {
-			if ( chkUseDefaultName->isChecked () ) {
+		if ( mJobItem->loadData () )
+		{
+			if ( chkUseDefaultName->isChecked () )
+			{
 				txtProjectName->setText ( mJobItem->jobRecord ()->date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE ) +
 							QLatin1String ( " - " ) + recStrValue ( mJobItem->jobRecord (), FLD_JOB_TYPE ), true );
 			}
@@ -145,11 +151,13 @@ void newProjectDialog::jobTypeItemSelected ( vmListItem* item )
 
 void newProjectDialog::txtProjectNameAltered ( const vmWidget* const )
 {
-	if ( !txtProjectName->text ().contains ( CHR_F_SLASH ) ) {
+	if ( !txtProjectName->text ().contains ( CHR_F_SLASH ) )
+	{
 		mProjectID = mJobItem->jobRecord ()->date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE );
 		mProjectPath = CONFIG ()->getProjectBasePath ( recStrValue ( mClientItem->clientRecord (), FLD_CLIENT_NAME ) ) + txtProjectName->text () + CHR_F_SLASH;
 	}
-	else {
+	else
+	{
 		mProjectID = fileOps::nthDirFromPath ( txtProjectName->text () );
 		mProjectID = mProjectID.left ( mProjectID.indexOf ( CHR_SPACE ) );
 		mProjectPath = txtProjectName->text ();
@@ -163,7 +171,8 @@ void newProjectDialog::btnChooseExistingDir_clicked ()
 {
 	QString newProjectDir ( fileOps::getExistingDir ( CONFIG ()->getProjectBasePath (
 								recStrValue ( static_cast<clientListItem*> ( mJobItem->relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) ) ) );
-	if ( !newProjectDir.isEmpty () ) {
+	if ( !newProjectDir.isEmpty () )
+	{
 		newProjectDir += CHR_F_SLASH;
 		txtProjectName->setText ( newProjectDir, true );
 	}

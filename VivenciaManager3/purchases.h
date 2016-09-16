@@ -13,8 +13,6 @@ const uint BUYS_FIELDS_TYPE[BUY_FIELD_COUNT] = {
 	DBTYPE_LONGTEXT, DBTYPE_LONGTEXT
 };
 
-struct CALENDAR_EXCHANGE;
-
 #ifdef TRANSITION_PERIOD
 bool updateStrReport ( const QString& str_report, QString& new_report );
 #endif
@@ -38,7 +36,6 @@ public:
 	uint isrRecordField ( const ITEMS_AND_SERVICE_RECORD ) const;
 	QString isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_record = -1 ) const;
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
-	void updateCalendarBuyInfo ();
 
     void setListItem ( buyListItem* buy_item );
     buyListItem* buyItem () const;
@@ -50,7 +47,6 @@ protected:
 	void ( *helperFunction[BUY_FIELD_COUNT] ) ( const DBRecord* );
 
 	RECORD_FIELD m_RECFIELDS[BUY_FIELD_COUNT];
-	PointersList<CALENDAR_EXCHANGE*> ce_list;
 };
 
 #endif // PURCHASES_H

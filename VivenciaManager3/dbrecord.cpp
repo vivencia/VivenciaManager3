@@ -255,7 +255,6 @@ bool DBRecord::deleteRecord ()
 bool DBRecord::saveRecord ()
 {
 	bool ret ( false );
-	//setCompleterUpdated ( false );
 	if ( m_action == ACTION_ADD )
 		ret = VDB ()->insertDBRecord ( this );
 	else
@@ -269,7 +268,7 @@ bool DBRecord::saveRecord ()
 		callHelperFunctions ();
 		setAction ( ACTION_READ );
 		setAllModified ( false );
-		//setCompleterUpdated ( false );
+		setCompleterUpdated ( false );
 	}
 	return ret;
 }
@@ -325,7 +324,7 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 					// copy temp values into actual after a save operation. Canceled edits must not be synced
 					if ( !inSync () )
 						sync ( RECORD_FIELD::IDX_TEMP, false );
-                case ACTION_REVERT:
+				case ACTION_REVERT:
                     *const_cast<RECORD_ACTION*>( &m_action ) = ACTION_READ;
                     mb_synced = true;
 					fptr_change = &DBRecord::setValue;

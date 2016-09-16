@@ -517,7 +517,8 @@ void searchUI::listRowSelected ( const int row )
 vmListItem* searchUI::getOtherItem ( const uint typeID, const uint id ) const
 {
 	DBRecord* dbrec ( nullptr );
-	switch ( typeID ) {
+	switch ( typeID )
+	{
 		case SUPPLIES_TABLE:
 			dbrec = new dbSupplies; break;
 		case INVENTORY_TABLE:

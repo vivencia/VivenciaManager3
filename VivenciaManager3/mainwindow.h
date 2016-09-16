@@ -67,10 +67,6 @@ public:
 
 	enum TAB_INDEXES { TI_MAIN = 0, TI_CALENDAR, TI_INVENTORY, TI_SUPPLIES };
 
-	enum { BLOCK_HOURS = 0, ALL_HOURS = 1, ADD_NEW_DAY_TODAY = 2, ADD_NEW_DAY_YESTERDAY = 3 };
-
-	enum { CCO_MIGRATE = 0 };
-
 	enum JOB_INFO_LIST_USER_ROLES
 	{
 		JILUR_DATE = Qt::UserRole + Job::JRF_DATE,
@@ -84,7 +80,7 @@ public:
 	};
 
 	MainWindow ();
-	~MainWindow ();
+	virtual ~MainWindow ();
 
 	void continueStartUp ();
 
@@ -122,7 +118,6 @@ public:
 	void setUpJobButtons ( const QString& path );
 	void setupJobPictureControl ();
 	void displayJobFromCalendar ( vmListItem* cal_item );
-	void updateCalendarWithJobInfo ( Job* const job, const RECORD_ACTION action );
 	void jobKeyPressedSelector ( const QKeyEvent* ke );
 	void jobsListWidget_currentItemChanged ( vmListItem* item );
 	void jobDayReportListWidget_currentItemChanged ( vmListItem* item );
@@ -134,8 +129,8 @@ public:
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
 	void scanJobImages ();
 	void decodeJobReportInfo ( const Job* const job );
-	void updateJobInfo ( const QString& text, const uint user_role );
-	void updateJobInfoByRemoval ( const uint day , const bool bUndo = false );
+	void updateJobInfo ( const QString& text, const uint user_role, const vmListItem* const item = nullptr );
+	void updateJobInfoByRemoval ( const uint day , const bool bUndo, const vmListItem* const item = nullptr  );
 	void addJobPayment ( jobListItem* const job_item );
 	void saveJobPayment ( jobListItem* const job_item );
 	void removeJobPayment ( payListItem* pay_item );
@@ -182,7 +177,6 @@ public:
 	void paysListWidget_currentItemChanged ( vmListItem* item );
 	void paysOverdueListWidget_currentItemChanged ( vmListItem* item );
 	void paysOverdueClientListWidget_currentItemChanged ( vmListItem* item );
-	void updateCalendarWithPayInfo ( Payment* const pay, const RECORD_ACTION action );
 	void addPaymentOverdueItems ( payListItem* pay_item );
 	void removePaymentOverdueItems ( payListItem* pay_item );
 	void updateTotalPayValue (const vmNumber& nAdd, const vmNumber& nSub );
@@ -196,6 +190,8 @@ public:
 	void loadClientOverduesList ();
 	void loadAllOverduesList ();
 	void interceptPaymentCellChange ( const vmTableItem* const item );
+	void interceptPaymentRowRemoved ( const uint row );
+	void processPayInfoForCalendar ( stringTable& pay_data, const vmTableItem* const item );
 	void updatePayTotalPaidValue ();
 	void payKeyPressedSelector ( const QKeyEvent* ke );
 	void tabPaysLists_currentChanged ( const int index );
@@ -215,8 +211,6 @@ public:
 	void buysListWidget_currentItemChanged ( vmListItem* item );
 	void buysJobListWidget_currentItemChanged ( vmListItem* item );
 	void buySuppliersListWidget_currentItemChanged ( vmListItem* item );
-	void updateCalendarWithBuyInfo ( Buy* const buy, const RECORD_ACTION action );
-	void updateCalendarWithBuyPayInfo ( Buy* const buy, const RECORD_ACTION action );
 	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
 	void controlBuyForms ( const buyListItem* const buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
@@ -406,7 +400,6 @@ private:
 	void btnReportGenerator_clicked ();
 	void btnBackupRestore_clicked ();
 	void btnCalculator_clicked ();
-	void btnServicesPrices_clicked ();
 	void btnEstimates_clicked ();
 	void btnCompanyPurchases_clicked ();
 	void btnConfiguration_clicked ();

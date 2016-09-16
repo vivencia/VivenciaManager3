@@ -704,7 +704,7 @@ void vmLineEdit::mousePressEvent ( QMouseEvent *e )
 {
 	if ( e->button () & Qt::RightButton ) {
 		if ( ownerItem () ) {
-			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );	
+			vmTableWidget* table ( static_cast<vmTableWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );	
 			table->displayContextMenuForCell ( e->pos (), this );
 			e->ignore ();
 			return;

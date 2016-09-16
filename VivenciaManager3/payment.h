@@ -4,7 +4,6 @@
 #include "dbrecord.h"
 
 class payListItem;
-struct CALENDAR_EXCHANGE;
 
 const uint PAY_FIELD_COUNT ( 10 );
 const uint PAY_INFO_FIELD_COUNT ( 6 );
@@ -31,7 +30,6 @@ public:
 		return static_cast<DB_FIELD_TYPE> ( PAYS_FIELDS_TYPE[field] );
 	}
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
-	void updateCalendarPayInfo ();
 
     void setListItem ( payListItem* pay_item );
     payListItem* payItem () const;
@@ -43,7 +41,6 @@ protected:
 	void ( *helperFunction[PAY_FIELD_COUNT] ) ( const DBRecord* );
 
 	RECORD_FIELD m_RECFIELDS[PAY_FIELD_COUNT];
-	PointersList<CALENDAR_EXCHANGE*> ce_list;
 };
 
 #endif // PAYMENT_H
