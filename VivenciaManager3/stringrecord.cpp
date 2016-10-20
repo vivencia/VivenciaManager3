@@ -1,29 +1,23 @@
 #include "stringrecord.h"
 #include "global.h"
 
-#include <QStringMatcher>
-
-static const QStringMatcher recsep_matcher ( record_sep );
-static const QStringMatcher tablesep_matcher ( table_sep );
-
 static const stringRecord emptyStringRecord;
 static const stringTable emptyStringTable;
 
-static void s_appendEmptyFields ( QString& data, const uint field, uint& nfields, const bool is_rec = true )
+static void s_appendEmptyFields ( QString& data, const uint field, uint& nfields, const QChar* separator )
 {
     if ( field >= nfields ) {
-        const QChar* separator ( is_rec ? &record_sep : &table_sep );
-        int i_field ( field - nfields + 1 );
+        uint i_field ( field - nfields + 1 );
         nfields += i_field;
         while ( i_field-- > 0 )
             data += *separator;
     }
 }
 
-static void s_insertFieldValue ( QString& data, const uint field, const QString& value, uint& nfields, const bool is_rec = true )
+static void s_insertFieldValue ( QString& data, const uint field, const QString& value, uint& nfields, 
+								 const QChar* const separator, const QStringMatcher* const sep_matcher )
 {
-    s_appendEmptyFields ( data, field, nfields, is_rec );
-	const QChar* separator ( is_rec ? &record_sep : &table_sep );
+    s_appendEmptyFields ( data, field, nfields, separator );
 	if ( field == 0 ) {
 		if ( data.at ( 0 ) == *separator )
 			data.insert ( 0, value );
@@ -36,9 +30,8 @@ static void s_insertFieldValue ( QString& data, const uint field, const QString&
 
 	int idx ( -1 );
 	int idx2 ( 0 );
-	int i_field ( field );
+	int i_field ( static_cast<int>(field) );
 
-	const QStringMatcher* sep_matcher ( is_rec ? &recsep_matcher : &tablesep_matcher );
 	do {
 		idx2 = sep_matcher->indexIn ( data, idx + 1 );
 		if ( idx2 >= 0 ) {
@@ -62,14 +55,14 @@ static void s_insertFieldValue ( QString& data, const uint field, const QString&
 	}
 }
 
-static void s_changeFieldValue ( QString& data, const uint field, const QString& value, uint& nfields, const bool is_rec = true )
+static void s_changeFieldValue ( QString& data, const uint field, const QString& value, uint& nfields,
+								 const QChar* const separator, const QStringMatcher* const sep_matcher )
 {
-	s_appendEmptyFields ( data, field, nfields, is_rec );
+	s_appendEmptyFields ( data, field, nfields, separator );
 	int idx ( 0 );
 	int idx2 ( 0 );
-	int i_field ( field );
+	int i_field ( static_cast<int>(field) );
 
-	const QStringMatcher* sep_matcher ( is_rec ? &recsep_matcher : &tablesep_matcher );
 	do {
 		idx2 = sep_matcher->indexIn ( data, idx );
 		if ( idx2 >= 0 ) {
@@ -86,16 +79,18 @@ static void s_changeFieldValue ( QString& data, const uint field, const QString&
 		data.replace ( idx, cur_value.length (), value );
 }
 
-static bool s_removeField ( QString& data, const uint field, uint& nfields, const bool is_rec = true )
+static bool s_removeField ( QString& data, const uint field, uint& nfields, const QStringMatcher* const sep_matcher  )
 {
-	if ( field < nfields ) {
-		int i_field ( field );
+	if ( field < nfields )
+	{
+		int i_field ( static_cast<int>(field) );
 		int idx ( 0 );
 		int idx2 ( 0 );
-		const QStringMatcher* sep_matcher ( is_rec ? &recsep_matcher : &tablesep_matcher );
-		do {
+		do
+		{
 			idx2 = sep_matcher->indexIn ( data, idx );
-			if ( idx2 >= 0 ) {
+			if ( idx2 >= 0 )
+			{
 				if ( i_field > 0 )
 					idx = idx2 + 1;
 			}
@@ -103,7 +98,8 @@ static bool s_removeField ( QString& data, const uint field, uint& nfields, cons
 				break;
 			--i_field;
 		} while ( i_field >= 0 );
-		if ( idx >= 0 ) {
+		if ( idx >= 0 )
+		{
 			data.remove ( idx, ( idx2 - idx ) + 1 );
 			--nfields;
 			return true;
@@ -116,23 +112,27 @@ static bool s_removeField ( QString& data, const uint field, uint& nfields, cons
 //------------------------------------------------------RECORD-----------------------------------------------
 bool stringRecord::isOK () const
 {
-	switch ( mState.state () ) {
-		case TRI_ON: return true; break;
-		case TRI_OFF: return mData.endsWith ( record_sep ) ? true : false; break;
-		default: return false; break;
+	switch ( mState.state () )
+	{
+		case TRI_ON:	return true;
+		case TRI_OFF:	return mData.endsWith ( record_sep ) ? true : false;
+		case TRI_UNDEF:	return false;
 	}
+	return false;
 }
 
 void stringRecord::fromString ( const QString& str )
 {
 	// making the stringRecord load an empty string or a unformatted string, sets mState
 	// to Undefined, a means for callers to check the returned value and see that it is an invalid result.
-	// Off is not and invalid result, only marks the stringRecord as being empty
-	if ( str.isEmpty () ) {
+	// Off is not an invalid result, only marks the stringRecord as being empty
+	if ( str.isEmpty () )
+	{
 		clear ();
 		mState.setUndefined (); // is this a good idea? is it really needed? is it useful?
 	}
-	else {
+	else
+	{
 		mData = str;
 		if ( !mData.endsWith ( record_sep ) )
 			mData += record_sep;
@@ -150,27 +150,25 @@ void stringRecord::clear ()
 	mState.setOff ();
 }
 
-void stringRecord::insertField ( const int field, const QString& value )
+void stringRecord::insertField ( const uint field, const QString& value )
 {
-	if ( field >= 0 )
-		s_insertFieldValue ( mData, field, value, mFields );
+	s_insertFieldValue ( mData, field, value, mFields, &record_sep, &recsep_matcher );
 }
 
-void stringRecord::changeValue ( const int field, const QString& value )
+void stringRecord::changeValue ( const uint field, const QString& value )
 {
-	if ( field >= 0 )
-		s_changeFieldValue ( mData, field, value, mFields );
+	s_changeFieldValue ( mData, field, value, mFields, &record_sep, &recsep_matcher );
 }
 
-void stringRecord::removeField ( const int field )
+void stringRecord::removeField ( const uint field )
 {
-	if ( field >= 0 )
-		s_removeField ( mData, field, mFields );
+	s_removeField ( mData, field, mFields, &recsep_matcher );
 }
 
 bool stringRecord::removeFieldByValue ( const QString& value, const bool b_allmatches )
 {
-	if ( nFields () > 0 ) {
+	if ( nFields () > 0 )
+	{
 		uint field ( 0 );
 		/* Save variables state so that this function can be used while this instance
 		 * is being iterated elsewhere, without interfering with what is being done with it
@@ -178,10 +176,13 @@ bool stringRecord::removeFieldByValue ( const QString& value, const bool b_allma
 		const QString mCurValue_backup ( mCurValue );
 		const QString value2 ( value );
 		const int mFastIdx_backup ( mFastIdx );
-		if ( first () ) {
+		if ( first () )
+		{
 			bool found ( false );
-			do {
-				if ( curValue () == value2 ) {
+			do
+			{
+				if ( curValue () == value2 )
+				{
 					removeField ( field );
 					found = true;
 					if ( !b_allmatches )
@@ -219,49 +220,62 @@ const QString stringRecord::section ( const uint start_field, int end_field ) co
 		int field ( 0 );
 		int idx ( 0 );
 		int idx2 ( 0 );
-		do {
+		do
+		{
 			idx2 = recsep_matcher.indexIn ( mData, idx );
-			if ( idx2 >= 0 ) {
-				if ( field < ( signed )start_field )
+			if ( idx2 >= 0 )
+			{
+				if ( static_cast<uint>(field) < start_field )
 					idx = idx2 + 1;
+				else
+					break;
 			}
 			++field;
-		} while ( field < ( signed )start_field );
+		} while ( true );
+		
 		const int left ( idx );
 		--field;
 		++idx;
 		if ( start_field == 0 )
 			--field;
-		do {
+		do
+		{
 			idx2 = recsep_matcher.indexIn ( mData, idx );
-			if ( idx2 >= 0 ) {
+			if ( idx2 >= 0 )
+			{
 				if ( field < end_field )
 					idx = idx2 + 1;
+				else
+					break;
 			}
 			++field;
-		} while ( field < end_field );
+		} while ( true );
 		const int right ( idx );
 		return mData.mid ( left, right - left );
 	}
 	return emptyString;
 }
 
-const QString stringRecord::fieldValue ( int field ) const
+const QString stringRecord::fieldValue ( uint field ) const
 {
-	if ( field >= 0 ) {
-		const uint fields ( nFields () );
-		if ( field < signed ( fields ) ) {
-			int idx ( 0 );
-			int idx2 ( 0 );
-			do {
-				idx2 = recsep_matcher.indexIn ( mData, idx );
-				if ( idx2 >= 0 ) {
-					if ( field > 0 )
-						idx = idx2 + 1;
-				}
-			} while ( --field >= 0 );
-			return mData.mid ( idx, idx2 - idx );
-		}
+	const uint fields ( nFields () );
+	if ( field < fields )
+	{
+		int idx ( 0 );
+		int idx2 ( 0 );
+		do
+		{
+			idx2 = recsep_matcher.indexIn ( mData, idx );
+			if ( idx2 >= 0 )
+			{
+				if ( field > 0 )
+					idx = idx2 + 1;
+			}
+			if ( field == 0 )
+				break;
+			--field;
+		} while ( true );
+		return mData.mid ( idx, idx2 - idx );
 	}
 	return emptyString;
 }
@@ -274,19 +288,24 @@ void stringRecord::fastAppendValue ( const QString& value )
 
 int stringRecord::field ( const QString& value, const int init_idx, const bool bprecise ) const
 {
-	if ( isOK () ) {
+	if ( isOK () )
+	{
 		int idx ( init_idx + 1 );
 		int idx2 ( 0 );
 		uint field ( 0 );
-		do {
+		do
+		{
 			idx2 = recsep_matcher.indexIn ( mData, idx );
-			if ( idx2 >= 0 ) {
-				if ( bprecise ) {
+			if ( idx2 >= 0 )
+			{
+				if ( bprecise )
+				{
 					if ( value == mData.midRef ( idx, idx2 - idx ) )
 						return field;
 				}
-				else {
-					if ( mData.midRef ( idx, idx2 - idx ).contains ( value, Qt::CaseInsensitive ) )
+				else
+				{
+					if ( mData.midRef ( idx, idx2 - idx ).contains ( value ) )
 						return field;
 				}
 				idx = idx2 + 1;
@@ -296,14 +315,17 @@ int stringRecord::field ( const QString& value, const int init_idx, const bool b
 	return -1;
 }
 
-const QString stringRecord::fieldValue ( const QString& str_record, const uint field )
+const QString stringRecord::fieldValue ( const QString& str_record, const uint field, const QChar& rec_sep )
 {
 	int idx ( 0 );
 	int idx2 ( 0 );
 	int fld ( field );
-	do {
+	QStringMatcher recsep_matcher ( rec_sep );
+	do
+	{
 		idx2 = recsep_matcher.indexIn ( str_record, idx );
-		if ( idx2 >= 0 ) {
+		if ( idx2 >= 0 )
+		{
 			if ( fld > 0 )
 				idx = idx2 + 1;
 		}
@@ -316,7 +338,8 @@ const QString stringRecord::fieldValue ( const QString& str_record, const uint f
 bool stringRecord::first () const
 {
 	const int idx2 ( mData.indexOf ( record_sep, 0 ) );
-	if ( idx2 != -1 ) {
+	if ( idx2 != -1 )
+	{
 		mCurValue = mData.mid ( 0, idx2 );
 		const_cast<stringRecord*> ( this )->mFastIdx = idx2 + 1;
 		return true;
@@ -327,7 +350,8 @@ bool stringRecord::first () const
 bool stringRecord::next () const
 {
 	const int idx2 ( mData.indexOf ( record_sep, mFastIdx ) );
-	if ( idx2 != -1 && idx2 < mData.count () ) {
+	if ( idx2 != -1 && idx2 < mData.count () )
+	{
 		mCurValue = mData.mid ( mFastIdx, idx2 - mFastIdx );
 		const_cast<stringRecord*> ( this )->mFastIdx = idx2 + 1;
 		return true;
@@ -338,7 +362,8 @@ bool stringRecord::next () const
 bool stringRecord::prev () const
 {
 	const int idx2 ( mData.lastIndexOf ( record_sep, mFastIdx - mData.count () - 2 ) );
-	if ( idx2 != -1 || mFastIdx > 0 ) {
+	if ( idx2 != -1 || mFastIdx > 0 )
+	{
 		mCurValue = mData.mid ( idx2 + 1, mFastIdx - idx2 - 2 );
 		const_cast<stringRecord*> ( this )->mFastIdx = idx2 + 1;
 		return true;
@@ -349,7 +374,8 @@ bool stringRecord::prev () const
 bool stringRecord::last () const
 {
 	const int idx2 ( mData.lastIndexOf ( record_sep, -2 ) );
-	if ( idx2 != -1 ) {
+	if ( idx2 != -1 )
+	{
 		mCurValue = mData.mid ( idx2 + 1, mData.count () - idx2 - 2 );
 		const_cast<stringRecord*> ( this )->mFastIdx = idx2 + 1;
 		return true;
@@ -362,9 +388,11 @@ bool stringRecord::moveToRec ( const uint rec ) const
 	int idx ( -1 ), idx2 ( 0 );
 	uint counter ( 0 );
 	const int length ( mData.count () );
-	while ( idx < length ) {
+	while ( idx < length )
+	{
 		idx2 = mData.indexOf ( record_sep, idx + 1 );
-		if ( idx2 != -1 ) {
+		if ( idx2 != -1 )
+		{
 			if ( counter == rec )
 				return next ();
 			++counter;
@@ -383,15 +411,14 @@ bool stringTable::isOK () const
 
 void stringTable::fromString ( const QString& str )
 {
-	if ( !str.isEmpty () ) {
+	clear ();
+	if ( !str.isEmpty () )
+	{
 		mRecords = str;
 		if ( !mRecords.endsWith ( table_sep ) )
 			mRecords += table_sep;
-		nRecords = mRecords.count ( table_sep );
-		mFastIdx = -1;
+		nRecords = static_cast<uint>(mRecords.count ( table_sep ));
 	}
-	else
-		clear ();
 }
 
 void stringTable::clear ()
@@ -401,16 +428,18 @@ void stringTable::clear ()
 	mRecord.clear ();
 	nRecords = 0;
 	mFastIdx = -1;
+	mCurIdx = -1;
 }
 
 void stringTable::insertRecord ( const uint row, const QString& record )
 {
-	s_insertFieldValue ( mRecords, row, record, nRecords, false );
+	s_insertFieldValue ( mRecords, row, record, nRecords, &table_sep, &tablesep_matcher );
+	mCurIdx = static_cast<int>(row);
 }
 
 void stringTable::changeRecord ( const uint row, const QString& record )
 {
-	s_changeFieldValue ( mRecords, row, record, nRecords, false );
+	s_changeFieldValue ( mRecords, row, record, nRecords, &table_sep, &tablesep_matcher );
 }
 
 void stringTable::changeRecord ( const uint row, const uint field, const QString& new_value )
@@ -422,16 +451,21 @@ void stringTable::changeRecord ( const uint row, const uint field, const QString
 
 void stringTable::removeRecord ( const uint row )
 {
-	s_removeField ( mRecords, row, nRecords, false );
+	s_removeField ( mRecords, row, nRecords, &tablesep_matcher );
+	if ( mCurIdx >= static_cast<int>(row) )
+		mCurIdx--;
 }
 
 bool stringTable::removeRecordByValue ( const QString& record, const bool b_allmatches )
 {
 	bool found ( false );
-	if ( nRecords > 0 ) {
+	if ( nRecords > 0 )
+	{
 		uint row ( 0 );
-		do {
-			if ( readRecord ( row ).toString () == record ) {
+		do
+		{
+			if ( readRecord ( row ).toString () == record )
+			{
 				removeRecord ( row );
 				found = true;
 				if ( !b_allmatches )
@@ -442,25 +476,30 @@ bool stringTable::removeRecordByValue ( const QString& record, const bool b_allm
 	return found;
 }
 
-const stringRecord& stringTable::readRecord ( int row ) const
+const stringRecord& stringTable::readRecord ( uint row ) const
 {
-	if ( row >= 0 ) {
-		const int rows ( countRecords () );
-		if ( row < rows ) {
-			int idx ( 0 );
-			int idx2 ( 0 );
-			do {
-				idx2 = tablesep_matcher.indexIn ( mRecords, idx );
-				if ( idx2 >= 0 ) {
-					if ( row > 0 )
-						idx = idx2 + 1;
-				}
-			} while ( --row >= 0 );
-			mRecord.fromString ( mRecords.mid ( idx, idx2 - idx ) );
-		}
-		else
-			mRecord.clear ();
+	const uint rows ( countRecords () );
+	if ( row < rows )
+	{
+		int idx ( 0 );
+		int idx2 ( 0 );
+		mCurIdx = static_cast<int>(row);
+		do
+		{
+			idx2 = tablesep_matcher.indexIn ( mRecords, idx );
+			if ( idx2 >= 0 )
+			{
+				if ( row > 0 )
+					idx = idx2 + 1;
+			}
+			if ( row == 0 )
+				break;
+			row--;
+		} while ( true );
+		mRecord.fromString ( mRecords.mid ( idx, idx2 - idx ) );
 	}
+	else
+		mRecord.clear ();
 	return mRecord;
 }
 
@@ -470,12 +509,16 @@ int stringTable::findRecordRowByFieldValue ( const QString& value, const uint fi
 	int row ( -1 );
 	bool found ( false );
 
-	if ( first ().isOK () ) {
+	if ( first ().isOK () )
+	{
 		uint n_occurrences ( 0 );
 		row++;
-		do {
-			if ( mRecord.fieldValue ( field ) == value ) {
-				if ( n_occurrences == nth_occurrence ) {
+		do
+		{
+			if ( mRecord.fieldValue ( field ) == value )
+			{
+				if ( n_occurrences == nth_occurrence )
+				{
 					found = true;
 					break;
 				}
@@ -485,7 +528,7 @@ int stringTable::findRecordRowByFieldValue ( const QString& value, const uint fi
 		} while ( next ().isOK () );
 	}
 	const_cast<stringTable*> ( this )->mFastIdx = fast_idx_backup;
-	return found ? row : -1;
+	return found ? mCurIdx = row : -1;
 }
 
 int stringTable::findRecordRowThatContainsWord ( const QString& word, podList<uint>* dayAndFieldList, const int field, const uint nth_occurrence ) const
@@ -493,19 +536,23 @@ int stringTable::findRecordRowThatContainsWord ( const QString& word, podList<ui
 	const int fast_idx_backup ( mFastIdx );
 	int row ( -1 );
 
-	if ( first ().isOK () ) {
+	if ( first ().isOK () )
+	{
 		uint n_occurrences ( 0 );
 		int foundField ( -1 );
 		row++;
-		do {
-			if ( field != -1 ) {
-				if ( mRecord.fieldValue ( field ).contains ( word, Qt::CaseInsensitive ) )
+		do
+		{
+			if ( field != -1 )
+			{
+				if ( mRecord.fieldValue ( field ).contains ( word ) )
 					foundField = field;
 			}
 			else
 				foundField = mRecord.field ( word, -1, false );
 
-			if ( foundField != -1 ) {
+			if ( foundField != -1 )
+			{
 				if ( dayAndFieldList != nullptr )
 					dayAndFieldList->operator [] ( row ) = foundField;
 				if ( n_occurrences == nth_occurrence )
@@ -518,7 +565,7 @@ int stringTable::findRecordRowThatContainsWord ( const QString& word, podList<ui
 		} while ( next ().isOK () );
 	}
 	const_cast<stringTable*> ( this )->mFastIdx = fast_idx_backup;
-    return dayAndFieldList != nullptr ? dayAndFieldList->isEmpty () ? -1 : row : -1;
+    return (dayAndFieldList != nullptr ? (dayAndFieldList->isEmpty () ? -1 : mCurIdx = row) : -1);
 }
 
 void stringTable::fastAppendRecord ( const QString& record )
@@ -529,7 +576,8 @@ void stringTable::fastAppendRecord ( const QString& record )
 
 void stringTable::appendTable ( const QString& inserting_table )
 {
-	if ( inserting_table.endsWith ( table_sep ) ) {
+	if ( inserting_table.endsWith ( table_sep ) )
+	{
 		mRecords += inserting_table.left ( inserting_table.count () - 1 ) + table_sep;
 		nRecords += inserting_table.count ( table_sep );
 	}
@@ -538,9 +586,11 @@ void stringTable::appendTable ( const QString& inserting_table )
 bool stringTable::firstStr () const
 {
 	const int idx2 ( mRecords.indexOf ( table_sep, 0 ) );
-	if ( idx2 != -1 ) {
+	if ( idx2 != -1 )
+	{
 		mCurRecord = mRecords.mid ( 0, idx2 );
 		const_cast<stringTable*> ( this )->mFastIdx = idx2 + 1;
+		mCurIdx = 0;
 		return true;
 	}
 	return false;
@@ -549,9 +599,11 @@ bool stringTable::firstStr () const
 bool stringTable::nextStr () const
 {
 	const int idx2 ( mRecords.indexOf ( table_sep, mFastIdx ) );
-	if ( idx2 != -1 && idx2 < mRecords.count () ) {
+	if ( idx2 != -1 && idx2 < mRecords.count () )
+	{
 		mCurRecord = mRecords.mid ( mFastIdx, idx2 - mFastIdx );
 		const_cast<stringTable*> ( this )->mFastIdx = idx2 + 1;
+		mCurIdx++;
 		return true;
 	}
 	return false;
@@ -560,9 +612,11 @@ bool stringTable::nextStr () const
 bool stringTable::prevStr () const
 {
 	const int idx2 ( mRecords.lastIndexOf ( table_sep, mFastIdx - mRecords.count () - 2 ) );
-	if ( idx2 != -1 || mFastIdx > 0 ) {
+	if ( idx2 != -1 || mFastIdx > 0 )
+	{
 		mCurRecord = mRecords.mid ( idx2 + 1, mFastIdx - idx2 - 2 );
 		const_cast<stringTable*> ( this )->mFastIdx = idx2 + 1;
+		mCurIdx--;
 		return true;
 	}
 	return false;
@@ -571,9 +625,11 @@ bool stringTable::prevStr () const
 bool stringTable::lastStr () const
 {
 	const int idx2 ( mRecords.indexOf ( table_sep, -2 ) );
-	if ( idx2 != -1 ) {
+	if ( idx2 != -1 )
+	{
 		mCurRecord = mRecords.mid ( idx2 + 1, mRecords.count () - idx2 - 2 );
 		const_cast<stringTable*> ( this )->mFastIdx = idx2 + 1;
+		mCurIdx = nRecords;
 		return true;
 	}
 	return false;
@@ -581,8 +637,9 @@ bool stringTable::lastStr () const
 
 const stringRecord& stringTable::first () const
 {
-	if ( firstStr () ) {
-		mRecord.fromString ( curRecord () );
+	if ( firstStr () )
+	{
+		mRecord.fromString ( mCurRecord );
 		return mRecord;
 	}
 	else
@@ -591,8 +648,9 @@ const stringRecord& stringTable::first () const
 
 const stringRecord& stringTable::next () const
 {
-	if ( nextStr () ) {
-		mRecord.fromString ( curRecord () );
+	if ( nextStr () )
+	{
+		mRecord.fromString ( mCurRecord );
 		return mRecord;
 	}
 	else
@@ -601,8 +659,9 @@ const stringRecord& stringTable::next () const
 
 const stringRecord& stringTable::prev () const
 {
-	if ( prevStr () ) {
-		mRecord.fromString ( curRecord () );
+	if ( prevStr () )
+	{
+		mRecord.fromString ( mCurRecord );
 		return mRecord;
 	}
 	else
@@ -611,8 +670,9 @@ const stringRecord& stringTable::prev () const
 
 const stringRecord& stringTable::last () const
 {
-	if ( lastStr () ) {
-		mRecord.fromString ( curRecord () );
+	if ( lastStr () )
+	{
+		mRecord.fromString ( mCurRecord );
 		return mRecord;
 	}
 	else

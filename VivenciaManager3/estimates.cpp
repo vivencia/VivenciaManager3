@@ -432,7 +432,7 @@ void estimateDlg::scanDir ()
 	const uint lastClientID ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
 	for ( uint c_id ( 1 ); c_id <= lastClientID; ++c_id )
 	{
-		clientName = Client::clientName ( c_id );
+		clientName = Client::clientName ( static_cast<int>(c_id) );
 		if ( !clientName.isEmpty () )
 		{
 			dirName = CONFIG ()->getProjectBasePath ( clientName );
@@ -476,7 +476,7 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 
 	if ( !files.isEmpty () )
 	{
-		uint i ( 0 ), itemType ( newItemType == -1 ? TYPE_REPORT_ITEM : newItemType );
+		uint i ( 0 ), itemType ( newItemType == -1 ? TYPE_REPORT_ITEM : static_cast<uint>(newItemType) );
 		uint dirType ( 0 );
 		QString filename;
 
@@ -1059,7 +1059,7 @@ void estimateDlg::removeFiles ( QTreeWidgetItem* item, const bool bSingleFile, c
 		const QString baseFileName ( fileName.left ( fileName.lastIndexOf ( CHR_DOT ) + 1 ) );
 		QTreeWidgetItem* parentItem ( item->parent () );
 		QTreeWidgetItem* child ( nullptr );
-		uint i ( 0 );
+		int i ( 0 );
 		if ( parentItem->childCount () > 0 )
 		{
 			do
@@ -1191,6 +1191,7 @@ void estimateDlg::execAction ( const QTreeWidgetItem* item, const int action_id 
 				case FILETYPE_VMR:
 					EDITOR ()->startNewReport ()->load ( filename, true );
 					EDITOR ()->show ();
+					return;
 				default:
 					return;
 			}

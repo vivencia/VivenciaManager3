@@ -77,7 +77,6 @@ private:
 	bool getSelectedItems ( QString& selected );
 
 	void initProgressBar ( const uint max );
-	void increaseProgressBar ( const uint accrete );
 	static bool checkThatFileDoesNotExist ( const QString& filepath, const bool bUserInteraction );
 	static bool checkDir ( const QString& dir );
 	static bool checkFile ( const QString& file );

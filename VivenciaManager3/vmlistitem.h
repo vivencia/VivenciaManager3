@@ -93,7 +93,9 @@ public:
 			return searchFields ? static_cast<SEARCH_STATUS> ( searchFields[field].state () ) : SS_NOT_SEARCHING; }
 
 	void setSearchArray ();
-
+	inline bool itemIsSorted () const { return mbSorted; }
+	inline void setItemIsSorted ( const bool b_sorted ) { mbSorted = b_sorted; }
+	
 protected:
 	void changeAppearance ();
 	void deleteRelatedItem ( const RELATED_LIST_ITEMS rel_idx );
@@ -117,7 +119,7 @@ private:
 	bool* badInputs_ptr;
 	int n_badInputs;
 	uint mTotal_badInputs;
-	bool mbSearchCreated, mbInit;
+	bool mbSearchCreated, mbInit, mbSorted;
 };
 
 class clientListItem : public vmListItem

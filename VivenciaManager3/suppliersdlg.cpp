@@ -31,7 +31,7 @@ suppliersDlg::suppliersDlg ()
 	: QDialog ( nullptr ), supRec ( new supplierRecord ( true ) ),
 	  m_supchanged ( true ), m_bEditing ( false ), widgetList ( SUPPLIER_FIELD_COUNT + 1 )
 {
-	setWindowTitle ( tr ( "Suppliers" ) );
+	setWindowTitle ( TR_FUNC ( "Suppliers" ) );
 	setWindowFlags ( Qt::Tool | Qt::WindowStaysOnTopHint );
 	setupUI ();
 	addPostRoutine ( deleteSuppliersInstance );
@@ -62,7 +62,7 @@ void suppliersDlg::setupUI ()
 	txtSupID->setEditable ( false );
 
 	QHBoxLayout* hLayout1 ( new QHBoxLayout );
-	hLayout1->addWidget ( new QLabel ( tr ( "Name: " ) ) );
+	hLayout1->addWidget ( new QLabel ( TR_FUNC ( "Name: " ) ) );
 	hLayout1->addWidget ( txtSupName, 1 );
 	hLayout1->addWidget ( new QLabel ( QStringLiteral ( "ID" ) ) );
 	hLayout1->addWidget ( txtSupID );
@@ -84,7 +84,7 @@ void suppliersDlg::setupUI ()
 		return keyPressedSelector ( ke ); } );
 
 	QHBoxLayout* hLayout2 ( new QHBoxLayout );
-	hLayout2->addWidget ( new QLabel ( tr ( "Address: " ) ), 0 );
+	hLayout2->addWidget ( new QLabel ( TR_FUNC ( "Address: " ) ), 0 );
 	hLayout2->addWidget ( txtSupStreet, 1 );
 	hLayout2->addWidget ( new QLabel ( QStringLiteral ( "#: " ) ), 0 );
 	hLayout2->addWidget ( txtSupNbr, 0 );
@@ -106,9 +106,9 @@ void suppliersDlg::setupUI ()
 	APP_COMPLETERS ()->setCompleter ( txtSupCity, vmCompleters::ADDRESS );
 
 	QHBoxLayout* hLayout3 ( new QHBoxLayout );
-	hLayout3->addWidget ( new QLabel ( tr ( "District: " ) ), 0 );
+	hLayout3->addWidget ( new QLabel ( TR_FUNC ( "District: " ) ), 0 );
 	hLayout3->addWidget ( txtSupDistrict, 1 );
-	hLayout3->addWidget ( new QLabel ( tr ( "City: " ) ), 0 );
+	hLayout3->addWidget ( new QLabel ( TR_FUNC ( "City: " ) ), 0 );
 	hLayout3->addWidget ( txtSupCity, 1 );
 
 	contactsPhones = new contactsManagerWidget ( nullptr );
@@ -119,7 +119,7 @@ void suppliersDlg::setupUI ()
 		return contactsAdd ( phone, sender ); } );
 	contactsPhones->setCallbackForRemoval ( [&] ( const int idx, const vmWidget* const sender ) {
 		return contactsDel ( idx, sender ); } );
-	QLabel* lblPhone ( new QLabel ( tr ( "Phones: " ) ) );
+	QLabel* lblPhone ( new QLabel ( TR_FUNC ( "Phones: " ) ) );
 	lblPhone->setBuddy ( contactsPhones );
 
 	QFrame* vline ( new QFrame );
@@ -133,7 +133,7 @@ void suppliersDlg::setupUI ()
 		return contactsAdd ( addrs, sender ); } );
 	contactsEmails->setCallbackForRemoval ( [&] ( const int idx, const vmWidget* const sender ) {
 		return contactsDel ( idx, sender ); } );
-	QLabel* lblEMail ( new QLabel ( QStringLiteral ( "EMail/Site: " ) ) );
+	QLabel* lblEMail ( new QLabel ( TR_FUNC ( "EMail/Site: " ) ) );
 	lblEMail->setBuddy ( contactsEmails );
 
 	QHBoxLayout* hLayout4 ( new QHBoxLayout );
@@ -153,20 +153,20 @@ void suppliersDlg::setupUI ()
 	connect ( btnEdit, static_cast<void (QPushButton::*)( bool )>( &QPushButton::clicked ), this, [&] ( const bool checked ) {
 		return btnEditClicked ( checked ); } );
 
-	btnCancel = new QPushButton ( ICON ( "cancel" ), tr ( "Cancel" ) );
+	btnCancel = new QPushButton ( ICON ( "cancel" ), TR_FUNC ( "Cancel" ) );
 	connect ( btnCancel, &QPushButton::clicked, this, [&] () {
 		return btnCancelClicked (); } );
 
-	btnRemove = new QPushButton ( ICON ( "browse-controls/remove" ), tr ( "Remove" ) );
+	btnRemove = new QPushButton ( ICON ( "browse-controls/remove" ), TR_FUNC ( "Remove" ) );
 	connect ( btnRemove, &QPushButton::clicked, this, [&] () {
 		return btnRemoveClicked (); } );
 
-	btnCopyToEditor = new QPushButton ( tr ( "Open in editor" ) );
+	btnCopyToEditor = new QPushButton ( TR_FUNC ( "Open in editor" ) );
 	connect ( btnCopyToEditor, &QPushButton::clicked, this, [&] () {
 		return btnCopyToEditorClicked (); } );
 
-	btnCopyAllToEditor = new QPushButton ( tr ( "Open all in editor" ) );
-	btnCopyToEditor = new QPushButton ( tr ( "Open in editor" ) );
+	btnCopyAllToEditor = new QPushButton ( TR_FUNC ( "Open all in editor" ) );
+	btnCopyToEditor = new QPushButton ( TR_FUNC ( "Open in editor" ) );
 	connect ( btnCopyAllToEditor, &QPushButton::clicked, this, [&] () {
 		return btnCopyAllToEditorClicked (); } );
 
@@ -219,11 +219,11 @@ void suppliersDlg::controlForms ()
 	contactsEmails->setEditable ( editing_action );
 
 	btnInsert->setEnabled ( supRec->action () != ACTION_EDIT );
-	btnInsert->setText ( supRec->action () != ACTION_ADD ? tr ( "Add" ) : tr ( "Save" ) );
+	btnInsert->setText ( supRec->action () != ACTION_ADD ? TR_FUNC ( "Add" ) : TR_FUNC ( "Save" ) );
 	btnInsert->setIcon ( supRec->action () != ACTION_ADD ?  ICON ( "browse-controls/add" ) : ICON ( "document-save" ) );
 
 	btnEdit->setEnabled ( supRec->action () != ACTION_ADD );
-	btnEdit->setText ( supRec->action () != ACTION_EDIT ? tr ( "Edit" ) : tr ( "Save" ) );
+	btnEdit->setText ( supRec->action () != ACTION_EDIT ? TR_FUNC ( "Edit" ) : TR_FUNC ( "Save" ) );
 	btnEdit->setIcon ( supRec->action () != ACTION_EDIT ?  ICON ( "browse-controls/edit" ) : ICON ( "document-save" ) );
 
 	btnCancel->setEnabled ( editing_action );
@@ -271,7 +271,7 @@ void suppliersDlg::txtSupplier_textAltered ( const vmWidget* const sender )
 void suppliersDlg::contactsAdd ( const QString& info, const vmWidget* const sender )
 {
 	setRecValue ( supRec, sender->id (),
-				  addToStringRecord ( recStrValue ( supRec, sender->id () ), info ) );
+				  stringRecord::joinStringRecords ( recStrValue ( supRec, sender->id () ), info ) );
 }
 
 void suppliersDlg::contactsDel ( const int idx, const vmWidget* const sender )

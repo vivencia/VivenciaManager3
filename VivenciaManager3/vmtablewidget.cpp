@@ -453,26 +453,48 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 	return table;
 }
 
+void vmTableWidget::processPayHistoryForCalendar ( stringTable& pay_data, const vmTableItem* const item, vmTableWidget* table  )
+{
+	const int row ( item->row () );
+	
+	// Only save the values for the extra fields one time, the first
+	if ( pay_data.readRecord ( row ).fieldValue ( PHR_EXTRA_INFO + PHR_EXTRA_INFO ).isEmpty () )
+	{
+		stringRecord extrainfo;
+		const int action ( item->prevText () == item->defaultValue () ? ACTION_ADD : ACTION_EDIT );
+
+		if ( action == ACTION_EDIT )
+		{
+			// Save the original values to be replaced in dbCalendar with the new ones. Since aone single payinfo
+			// depends on a date, a value and a paid property, it's easier to save all the fields
+			for ( uint i_col ( PHR_DATE ); i_col < PHR_USE_DATE; ++i_col )
+				extrainfo.changeValue ( i_col, table->sheetItem ( row, i_col )->originalText () );
+		}
+		extrainfo.changeValue ( PHR_EXTRA_INFO, QString::number ( action ) );
+		pay_data.changeRecord ( static_cast<uint>( row ), PHR_EXTRA_INFO, extrainfo.toString () );
+	}
+}
+
 void vmTableWidget::insertRow ( const uint row, const uint n )
 {
 	if ( row <= static_cast<uint> ( rowCount () ) )
 	{
-		int i_row ( 0 );
+		uint i_row ( 0 );
 		m_nVisibleRows += n;
 		uint i_col ( 0 );
 		QString new_formula;
 		vmTableItem* sheet_item ( nullptr ), *new_SheetItem ( nullptr );
 		
 		mTotalsRow += n;
-		for ( ; i_row < static_cast<int>( n ); ++i_row )
+		for ( ; i_row < n; ++i_row )
 		{ // Insert new rows accordingly, i.e., compute their formulas, if they have
-			QTableWidget::insertRow ( row + i_row );
+			QTableWidget::insertRow ( static_cast<int>(row + i_row) );
 			for ( i_col = 0; i_col < colCount (); ++i_col )
 			{
 				new_SheetItem = new vmTableItem ( mCols[i_col].wtype, mCols[i_col].text_type, mCols[i_col].default_value, this );
 				new_SheetItem->setButtonType ( mCols[i_col].button_type );
 				new_SheetItem->setCompleterType ( mCols[i_col].completer_type );
-				setItem ( row + i_row, i_col, new_SheetItem );
+				setItem ( static_cast<int>(row + i_row), static_cast<int>(i_col), new_SheetItem );
 				setCellWidget ( new_SheetItem );
 
 				/* The formula must be set for last because setFormula calls vmTableItem::targetsFromFormula ();
@@ -488,9 +510,9 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 		if ( !mbPlainTable ) {
 			// update all rows after the inserted ones, so that their formula reflects the row changes
-			for ( i_row = row + n; i_row < mTotalsRow; ++i_row ) {
+			for ( i_row = row + n; static_cast<int>(i_row) < mTotalsRow; ++i_row ) {
 				for ( i_col = 0; i_col < colCount (); ++i_col ) {
-					sheet_item = sheetItem ( i_row, i_col );
+					sheet_item = sheetItem ( static_cast<int>(i_row), static_cast<int>(i_col) );
 					if ( sheet_item->hasFormula () ) {
 						new_formula = sheet_item->formulaTemplate ();
 						sheet_item->setFormula ( new_formula, QString::number ( i_row ) );
@@ -508,7 +530,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 				}
 				for ( i = start_modification; i < modified_rows; ++i ) {
 					list_value = modifiedRows.at ( i );
-					modifiedRows.replace ( i, list_value + n ); // push down modified rows
+					modifiedRows.replace ( static_cast<int>(i), list_value + n ); // push down modified rows
 				}
 			}
 		}
@@ -517,25 +539,25 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 void vmTableWidget::removeRow ( const uint row, const uint n )
 {
-	if ( row < (unsigned) rowCount () )
+	if ( static_cast<int>(row) < rowCount () )
 	{
 		int i_row ( 0 );
 		m_nVisibleRows -= n;
-		for ( ; i_row < (signed) n; ++i_row )
-			QTableWidget::removeRow ( row );
+		for ( ; i_row < static_cast<int>(n); ++i_row )
+			QTableWidget::removeRow ( static_cast<int>(row) );
 
-		if ( ( signed )( row + n ) >= m_lastUsedRow )
-			m_lastUsedRow = row - 1;
+		if ( static_cast<int>(row + n) >= m_lastUsedRow )
+			m_lastUsedRow = static_cast<int>(row - 1);
 			
 		if ( !mbPlainTable )
 		{
 			mTotalsRow -= n;
 			vmTableItem* sheet_item ( nullptr );
-			uint i_col ( 0 );
+			int i_col ( 0 );
 			QString new_formula;
-			for ( i_row = row; i_row < (signed) mTotalsRow; ++i_row )
+			for ( i_row = static_cast<int>(row); i_row < mTotalsRow; ++i_row )
 			{
-				for ( i_col = 0; i_col < colCount (); ++i_col )
+				for ( i_col = 0; i_col < static_cast<int>(colCount ()); ++i_col )
 				{
 					sheet_item = sheetItem ( i_row, i_col );
 					if ( sheet_item->hasFormula () )
@@ -560,7 +582,7 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 				for ( i = start_modification; i < modifiedRows.count (); ++i )
 				{
 					list_value = modifiedRows.at ( i );
-					modifiedRows.replace ( i, list_value - n ); // push up modified rows
+					modifiedRows.replace ( static_cast<int>(i), list_value - n ); // push up modified rows
 				}
 				modifiedRows.removeOne ( row, 0 );
 			}

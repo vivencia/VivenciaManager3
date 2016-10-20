@@ -21,12 +21,12 @@ static const QChar csv_sep ( QChar ( char ( 29 ) ) );
 //--------------------------------------------TEXT-FILE--------------------------------
 textFile::textFile ()
 	: m_type ( TF_TEXT ), m_open ( false ), m_needsaving ( false ),
-	  m_buffersize ( 0 )
+	  m_buffersize ( 0 ), m_headerSize ( 0 )
 {}
 
 textFile::textFile ( const QString& filename )
 	: m_type ( TF_TEXT ), m_open ( false ), m_needsaving ( false ),
-	  m_buffersize ( 0 ), m_filename ( filename )
+	  m_buffersize ( 0 ), m_headerSize ( 0 ), m_filename ( filename )
 {}
 
 textFile::~textFile ()
@@ -112,16 +112,17 @@ void textFile::readType ()
 	if ( m_open )
 	{
 		char buf[20] = { '\0' };
-		int n_chars;
 		QString data;
 
 		m_file.seek ( 0 );
 
-		n_chars = m_file.readLine ( buf, sizeof ( buf ) );
-		if ( n_chars != -1 ) {
+		m_headerSize = m_file.readLine ( buf, sizeof ( buf ) );
+		if ( m_headerSize != -1 )
+		{
 			data = QString::fromUtf8 ( buf, strlen ( buf ) - 1 );
 			m_type = TF_TEXT;
-			if ( data.contains ( HEADER_ID ) ) {
+			if ( data.contains ( HEADER_ID ) )
+			{
 				if ( data.contains ( QStringLiteral ( "@CFG" ) ) )
 					m_type = TF_CONFIG;
 				else if ( data.contains ( QStringLiteral ( "@CSV" ) ) )
@@ -164,7 +165,8 @@ void textFile::writeHeader ()
 		QString str;
 		str = HEADER_ID + ( m_type == TF_CONFIG ? CFG_TYPE_LINE : DATA_TYPE_LINE )
 			  .arg ( QString::number ( m_buffersize ) );
-		m_file.write ( str.toUtf8 () .data (), qstrlen ( str.toUtf8 ().data () ) );
+		m_headerSize = qstrlen ( str.toUtf8 ().data () );
+		m_file.write ( str.toUtf8 ().data (), m_headerSize );
 		m_file.flush ();
 	}
 }
@@ -507,7 +509,7 @@ void dataFile::insertRecord ( const int pos, const stringRecord& rec )
 	if ( pos >= 0 )
 	{
 		recData.insertRecord ( pos, rec );
-		if ( rec.toString ().count () > ( signed ) m_buffersize )
+		if ( rec.toString ().count () > static_cast<int>( m_buffersize ) )
 			m_buffersize = rec.toString ().count () + 1;
 		m_needsaving = true;
 	}
@@ -570,17 +572,12 @@ void dataFile::clearData ()
 
 bool dataFile::loadData ()
 {
-	const int buf_size ( m_buffersize * sizeof ( int ) );
-
-	QString buf;
-	do {
-		buf = m_file.readLine ( buf_size );
-		if ( buf.length () > 1 )
-			recData.fastAppendRecord ( buf );
-		else
-			break;
-	} while ( true );
-
+	QString buf ( m_file.readAll () );
+	if ( buf.length () > 1 )
+	{
+		buf.remove ( 0, m_headerSize );
+		recData.fromString ( buf );
+	}
 	return recData.isOK ();
 }
 
@@ -589,11 +586,8 @@ bool dataFile::writeData ()
 	int written ( 0 );
 	if ( recData.isOK () )
 	{
-		QByteArray data ( recData.first ().toString ().toLocal8Bit () );
-		do {
-			written += m_file.write ( data, data.size () );
-			data = recData.next ().toString ().toLocal8Bit ();
-		} while ( !data.isEmpty () );
+		const QByteArray data ( recData.toString ().toUtf8() );
+		written = m_file.write ( data, data.size () );
 	}
 	return ( written > 0 );
 }

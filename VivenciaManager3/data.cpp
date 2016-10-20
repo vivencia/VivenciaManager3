@@ -126,7 +126,6 @@ void Data::checkSetup ()
 	(void) checkSystem ();
 	checkDatabase ();
 
-	const QString dataDir ( CONFIG ()->appDataDir () );
 	if ( !fileOps::exists ( CONFIG ()->projectDocumentFile () ).isOn () ) {
 		const QString installedDir ( QFileDialog::getExistingDirectory ( nullptr,
 									 APP_TR_FUNC ( "VivenciaManager needs to be setup. Choose the directory into which the download file was extracted." ),
@@ -142,6 +141,7 @@ void Data::checkSetup ()
 				::exit ( ERR_SETUP_FILES_MISSING );
 		}
 		else {
+			const QString dataDir ( CONFIG ()->appDataDir () );
 			fileOps::createDir ( dataDir );
 			fileOps::copyFile ( dataDir, installedDir + CHR_F_SLASH + STR_PROJECT_DOCUMENT_FILE );
 			fileOps::copyFile ( dataDir, installedDir + CHR_F_SLASH + STR_PROJECT_SPREAD_FILE );
@@ -235,7 +235,7 @@ void Data::loadDataIntoMemory ()
 			client_item->setRelation ( RLI_CLIENTITEM );
 			client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 			(void) client_item->loadData ();
-			client_item->addToList ( globalMainWindow->clientsList );
+			client_item->addToList ( globalMainWindow->ui->clientsList );
 
 			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) ) {
 				do {
@@ -296,29 +296,29 @@ const QString Data::currentClientName () const
 
 Client* Data::currentClient () const
 {
-	if ( globalMainWindow->clientsList->currentItem () )
-		return static_cast<clientListItem*> ( globalMainWindow->clientsList->currentItem () )->clientRecord ();
+	if ( globalMainWindow->ui->clientsList->currentItem () )
+		return static_cast<clientListItem*> ( globalMainWindow->ui->clientsList->currentItem () )->clientRecord ();
 	return nullptr;
 }
 
 Job* Data::currentJob () const
 {
-	if ( globalMainWindow->jobsList->currentItem () )
-		return static_cast<jobListItem*> ( globalMainWindow->jobsList->currentItem () )->jobRecord ();
+	if ( globalMainWindow->ui->jobsList->currentItem () )
+		return static_cast<jobListItem*> ( globalMainWindow->ui->jobsList->currentItem () )->jobRecord ();
 	return nullptr;
 }
 
 Payment* Data::currentPay () const
 {
-	if ( globalMainWindow->paysList->currentItem () )
-		return static_cast<payListItem*> ( globalMainWindow->paysList->currentItem () )->payRecord ();
+	if ( globalMainWindow->ui->paysList->currentItem () )
+		return static_cast<payListItem*> ( globalMainWindow->ui->paysList->currentItem () )->payRecord ();
 	return nullptr;
 }
 
 Buy* Data::currentBuy () const
 {
-	if ( globalMainWindow->buysList->currentItem () )
-		return static_cast<buyListItem*> ( globalMainWindow->buysList->currentItem () )->buyRecord ();
+	if ( globalMainWindow->ui->buysList->currentItem () )
+		return static_cast<buyListItem*> ( globalMainWindow->ui->buysList->currentItem () )->buyRecord ();
 	return nullptr;
 }
 

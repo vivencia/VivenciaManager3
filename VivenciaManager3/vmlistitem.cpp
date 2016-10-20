@@ -29,7 +29,7 @@ vmListItem::vmListItem ( const uint type_id, const uint nbadInputs, bool* const 
 	: vmTableItem (), m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ), 
 		searchFields ( nullptr ), item_related { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
 		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( badinputs_ptr ),
-		n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false ), mbInit ( true )
+		n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false ), mbInit ( true ), mbSorted ( false )
 {
 	setSubType ( type_id );
 	setAction ( ACTION_READ, true );
@@ -41,7 +41,7 @@ vmListItem::vmListItem ( const QString& label )
 	: vmTableItem ( label ), m_crashid ( -1 ), m_dbrec ( nullptr ), mRelation ( RLI_CLIENTITEM ),
 		searchFields ( nullptr ), item_related { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr },
 		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( nullptr ),
-		n_badInputs ( 0 ), mTotal_badInputs ( 0 ), mbSearchCreated ( false ), mbInit ( true )
+		n_badInputs ( 0 ), mTotal_badInputs ( 0 ), mbSearchCreated ( false ), mbInit ( true ), mbSorted ( false )
 {
 	setAction ( ACTION_READ );
 	setFlags ( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren ); //TEST
@@ -128,6 +128,25 @@ void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 {
 	if ( action != m_action )
 	{
+		/* When this item was added to listWidget () for the first time, sorting was disabled if it were previously enabled.
+		 * This item was in adding mode so it went right to the top of the list. Now this is being saved, in other words,
+		 * it's accepted into the list, so we remove the item (do not delete it), enable sorting back on and re-add it to the
+		 * list. It will go to the right row
+		 */
+		
+		if ( itemIsSorted () && action == ACTION_READ )
+		{
+			if ( m_action == ACTION_ADD )
+			{
+				vmListWidget* parentList ( listWidget () );
+				parentList->setIgnoreChanges ( true );
+				parentList->removeItem ( this );
+				parentList->setSortingEnabled ( true );
+				parentList->setIgnoreChanges ( false );
+				addToList ( parentList );
+			}
+		}
+		
 		m_action = action != ACTION_REVERT ? action : ACTION_READ;
 		// Since m_dbrec is a shared pointer among all related items, only the first -external- call
 		// to setAction must change. All subsequent calls -internal- can skip these steps
@@ -543,7 +562,7 @@ void buyListItem::update ()
 
 		if ( relation () <= LAST_EDITABLE_RELATION ) //EXTRAITEM(s) do not produce changes on other items, so we do not need to waste time updating the others when updating them
 		{
-			relatedItem ( RLI_CLIENTITEM )->setText ( strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS, false, false, false );
+			relatedItem ( RLI_CLIENTITEM )->setText ( strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS, false, false, false );			
 			relatedItem ( RLI_CLIENTITEM )->vmListItem::update ();
 
 			if ( relatedItem ( RLI_JOBITEM ) != nullptr )

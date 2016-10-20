@@ -49,6 +49,7 @@ protected:
 	bool m_open;
 	bool m_needsaving;
 	uint m_buffersize;
+	int m_headerSize;
 	QString m_filename;
 	QString data;
 };
@@ -97,6 +98,12 @@ public:
 	explicit dataFile ();
 	dataFile ( const QString& filename );
 	virtual ~dataFile ();
+
+	inline void setRecordSeparationChar ( const QChar& table_sep = table_separator, const QChar& rec_sep = record_separator )
+	{
+		recData.setRecordSeparationChar ( table_sep );
+		recData.setRecordFieldSeparationChar ( rec_sep );
+	}
 
 	void insertRecord ( const int pos, const stringRecord& rec );
 	void changeRecord ( const int pos, const stringRecord& rec );

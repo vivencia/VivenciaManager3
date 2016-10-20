@@ -87,6 +87,8 @@ public:
 	static vmTableWidget* createPayHistoryTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr,
 			const PAY_HISTORY_RECORD last_column = PHR_USE_DATE );
 
+	static void processPayHistoryForCalendar ( stringTable& pay_data, const vmTableItem* const item, vmTableWidget* table  );
+	
 	virtual void insertRow ( const uint row, const uint n = 1 );
 	virtual void removeRow ( const uint row, const uint n = 1 );
 	void setRowVisible ( const uint row, const bool bVisible );

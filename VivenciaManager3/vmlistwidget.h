@@ -18,7 +18,7 @@ public:
 	inline vmListItem* currentItem () const { return mCurrentItem; }
 	void addItem ( vmListItem* item, const bool b_makecall = true );
 	inline void removeItem ( vmListItem* item, const bool bDel = false ) { removeRow ( item->row (), 1, bDel ); }
-	void insertRow ( const uint row, const uint n );
+	void insertRow ( const uint row, const uint n = 1 );
 	void removeRow ( const uint row, const uint n = 1, const bool bDel = false );
 	void clear ( const bool b_ignorechanges = true, const bool b_del = false );
 	inline int count () const { return rowCount (); }

@@ -34,7 +34,6 @@ private:
     void chkUseDefaultName_checked ();
     void btnOK_clicked ();
     void btnCancel_clicked ();
-    void closeCleanUp ();
 
     vmListWidget* lstJobTypes;
     vmLineEdit* txtProjectName;

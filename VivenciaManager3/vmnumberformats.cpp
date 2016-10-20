@@ -688,7 +688,8 @@ vmNumber& vmNumber::dateFromDBDate ( const QString& date, const bool cache )
 	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_DB_DATE;
-	if ( cache ) {
+	if ( cache )
+	{
 		setCached ( true );
 		cached_str = date;
 	}
@@ -702,7 +703,8 @@ vmNumber& vmNumber::dateFromDropboxDate ( const QString& date, const bool cache 
 	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_DROPBOX_DATE;
-	if ( cache ) {
+	if ( cache )
+	{
 		setCached ( true );
 		cached_str = date;
 	}
@@ -722,7 +724,8 @@ vmNumber& vmNumber::dateFromFilenameDate ( const QString& date, const bool cache
 		nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
 		setType ( VMNT_DATE );
 		nbr_upart[VM_IDX_STRFORMAT] = VDF_FILE_DATE;
-		if ( cache ) {
+		if ( cache )
+		{
 			setCached ( true );
 			cached_str = date;
 		}
@@ -736,10 +739,13 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
     const QString strMonth ( date.section ( QStringLiteral ( "de" ), 1, 1 ).remove ( CHR_SPACE ) );
     const QString strYear ( date.section ( QStringLiteral ( "de" ), 2, 2 ).remove ( CHR_SPACE ) );
 
-	if ( !strDay.isEmpty () ) {
+	if ( !strDay.isEmpty () )
+	{
         nbr_upart[VM_IDX_DAY] = strDay.toInt ( &mb_valid );
-        if ( !mb_valid ) { // day is not a number, but a word
-            if ( strDay.startsWith ( QStringLiteral ( "vi" ) ) ) {
+        if ( !mb_valid )
+		{	// day is not a number, but a word
+            if ( strDay.startsWith ( QStringLiteral ( "vi" ) ) )
+			{
                 if ( strDay.contains ( QStringLiteral ( "um" ) ) ) nbr_upart[VM_IDX_DAY] = 21;
                 else if ( strDay.contains ( QStringLiteral ( "do" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 22;
                 else if ( strDay.contains ( QStringLiteral ( "qu" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 24;
@@ -753,19 +759,23 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
             else if ( strDay.startsWith ( QStringLiteral ( "prim" ), Qt::CaseInsensitive ) ||
                       strDay.startsWith ( QStringLiteral ( "um" ), Qt::CaseInsensitive ) )
 				nbr_upart[VM_IDX_DAY] = 1;
-            else if ( strDay.startsWith ( QStringLiteral ( "do" ), Qt::CaseInsensitive ) ) {
+            else if ( strDay.startsWith ( QStringLiteral ( "do" ), Qt::CaseInsensitive ) )
+			{
                 if ( strDay.startsWith ( QStringLiteral ( "doi" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 2;
 				else nbr_upart[VM_IDX_DAY] = 12;
 			}
-            else if ( strDay.startsWith ( QStringLiteral ( "tr" ), Qt::CaseInsensitive ) ) {
+            else if ( strDay.startsWith ( QStringLiteral ( "tr" ), Qt::CaseInsensitive ) )
+			{
                 if ( strDay.startsWith ( QStringLiteral ( "treze" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 13;
-                else if ( strDay.startsWith ( QStringLiteral ( "tri" ), Qt::CaseInsensitive ) ) {
+                else if ( strDay.startsWith ( QStringLiteral ( "tri" ), Qt::CaseInsensitive ) )
+				{
                     if ( strDay.contains ( QStringLiteral ( "um" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 31;
 					else nbr_upart[VM_IDX_DAY] = 30;
 				}
 				else nbr_upart[VM_IDX_DAY] = 3;
 			}
-            else if ( strDay.startsWith ( QStringLiteral ( "quat" ), Qt::CaseInsensitive ) ) {
+            else if ( strDay.startsWith ( QStringLiteral ( "quat" ), Qt::CaseInsensitive ) )
+			{
                 if ( strDay.startsWith ( QStringLiteral ( "quatro" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 4;
 				else nbr_upart[VM_IDX_DAY] = 14;
 			}
@@ -774,7 +784,8 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
             else if ( strDay.startsWith ( QStringLiteral ( "set" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 7;
             else if ( strDay.startsWith ( QStringLiteral ( "oi" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 8;
             else if ( strDay.startsWith ( QStringLiteral ( "no" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 9;
-            else if ( strDay.startsWith ( QStringLiteral ( "dez" ), Qt::CaseInsensitive ) ) {
+            else if ( strDay.startsWith ( QStringLiteral ( "dez" ), Qt::CaseInsensitive ) )
+			{
                 if ( strDay.compare ( QStringLiteral ( "dez" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 10;
                 else if ( strDay.contains ( QStringLiteral ( "set" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 17;
                 else if ( strDay.contains ( QStringLiteral ( "oit" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_DAY] = 18;
@@ -790,9 +801,11 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
 	else // day was not provided
 		nbr_upart[VM_IDX_DAY] = vmNumber::currentDate.day ();
 
-	if ( !strMonth.isEmpty () ) {
+	if ( !strMonth.isEmpty () )
+	{
         nbr_upart[VM_IDX_MONTH] = strMonth.toInt ( &mb_valid );
-        if ( !mb_valid ) { // month is not a number, but a word
+        if ( !mb_valid )
+		{	// month is not a number, but a word
             if ( strMonth.startsWith ( QStringLiteral ( "ja" ) ) ) nbr_upart[VM_IDX_MONTH] = 1;
             else if ( strMonth.startsWith ( QStringLiteral ( "fe" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_MONTH] = 2;
             else if ( strMonth.startsWith ( QStringLiteral ( "mar" ), Qt::CaseInsensitive ) ) nbr_upart[VM_IDX_MONTH] = 3;
@@ -807,32 +820,38 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
 			else nbr_upart[VM_IDX_MONTH] = 12;
 		}
 	}
-	else { // month was not provided
+	else
+	{ // month was not provided
 		if ( nbr_upart[VM_IDX_DAY] == 0 ) // str is not a date string at all
 			nbr_upart[VM_IDX_MONTH] = 0;
 		else
 			nbr_upart[VM_IDX_MONTH] = vmNumber::currentDate.month ();
 	}
 
-	if ( !strYear.isEmpty () ) {
+	if ( !strYear.isEmpty () )
+	{
         nbr_upart[VM_IDX_YEAR] = strYear.toInt ( &mb_valid );
-        if ( mb_valid ) {
+        if ( mb_valid )
+		{
 			if ( nbr_upart[VM_IDX_YEAR] < 30 )
 				nbr_upart[VM_IDX_YEAR] += 2000;
 		}
 		else // year is not a number, but a word
 			nbr_upart[VM_IDX_YEAR] = vmNumber::currentDate.year (); // too many possibilities. Eventually I will return to this code
 	}
-	else { // year was not provided
+	else
+	{ // year was not provided
 		if ( nbr_upart[VM_IDX_MONTH] == 0 )
 			nbr_upart[VM_IDX_YEAR] = 0;
 		else
 			nbr_upart[VM_IDX_YEAR] = vmNumber::currentDate.year ();
 	}
-	if ( nbr_upart[VM_IDX_YEAR] != 0 ) {
+	if ( nbr_upart[VM_IDX_YEAR] != 0 )
+	{
 		nbr_upart[VM_IDX_STRFORMAT] = VDF_LONG_DATE;
 		setType ( VMNT_DATE );
-		if ( cache ) {
+		if ( cache )
+		{
 			setCached ( true );
 			cached_str = date;
 		}
@@ -846,16 +865,19 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 	if ( m_type == VMNT_UNSET )
 		const_cast<vmNumber*> ( this )->setType ( VMNT_DATE );
 
-	if ( isDate () ) {
+	if ( isDate () )
+	{
 		if ( isCached () && format == nbr_upart[VM_IDX_STRFORMAT] )
 			return cached_str;
-		else {
+		else
+		{
             const QString strYear ( year () < 100 ? QStringLiteral ( "20" ) + QString::number ( year () ) : QString::number ( year () ) );
             const QString strDay ( day () < 10 ? QStringLiteral ( "0" ) + QString::number ( day () ) : QString::number ( day () ) );
             const QString strMonth ( month () < 10 ? QStringLiteral ( "0" ) + QString::number ( month () ) : QString::number ( month () ) );
 			const_cast<vmNumber*> ( this )->nbr_upart[VM_IDX_STRFORMAT] = format;
 
-			switch ( format ) {
+			switch ( format )
+			{
 				case VDF_HUMAN_DATE:
 					cached_str = strDay + CHR_F_SLASH + strMonth + CHR_F_SLASH + strYear;
 				break;
@@ -883,7 +905,8 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 
 void vmNumber::fromQDate ( const QDate& date )
 {
-	if ( !isDate () ) {
+	if ( !isDate () )
+	{
 		nbr_upart[VM_IDX_DAY] = nbr_upart[VM_IDX_MONTH] = nbr_upart[VM_IDX_YEAR] = 0;
 		setType ( VMNT_DATE );
 	}

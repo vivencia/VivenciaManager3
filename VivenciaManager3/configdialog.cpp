@@ -3,12 +3,13 @@
 #include "global.h"
 #include "configops.h"
 #include "fileops.h"
+#include "vmwidgets.h"
 #include "emailconfigdialog.h"
 
 configDialog::configDialog ( QWidget* parent )
 	: QDialog ( parent ), ui ( new Ui::configDialog )
 {
-	ui->setupUi ( this );
+	setupUi ();
 	setWindowTitle ( PROGRAM_NAME + windowTitle () );
 	fillForms ();
 }
@@ -16,6 +17,53 @@ configDialog::configDialog ( QWidget* parent )
 configDialog::~configDialog ()
 {
 	delete ui;
+}
+
+void configDialog::setupUi ()
+{
+	ui->setupUi ( this );
+	ui->txtCfgConfigFile->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setAppConfigFile ( txtWidget->text () ); } );
+	ui->txtCfgDataFolder->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setAppDataDir ( txtWidget->text () ); } );
+	ui->txtCfgFileManager->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setFileManager ( txtWidget->text () ); } );
+	ui->txtCfgPictureViewer->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setPictureViewer ( txtWidget->text () ); } );
+	ui->txtCfgPictureEditor->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setPictureEditor ( txtWidget->text () ); } );
+	ui->txtCfgDocumentViewer->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setUniversalViewer ( txtWidget->text () ); } );
+	ui->txtCfgDocEditor->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setDocEditor ( txtWidget->text () ); } );
+	ui->txtCfgXlsEditor->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setXlsEditor ( txtWidget->text () ); } );
+	ui->txtCfgJobsPrefix->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setProjectsBaseDir ( txtWidget->text () ); } );
+	ui->txtCfgEstimate->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setEstimatesDir ( txtWidget->text () ); } );
+	ui->txtCfgReports->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setReportsDir ( txtWidget->text () ); } );
+	ui->txtCfgHtmlDir->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setHTMLDir ( txtWidget->text () ); } );
+	ui->txtCfgDropbox->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
+			return CONFIG ()->setDropboxDir ( txtWidget->text () ); } );
+	
+	ui->txtCfgConfigFile->setEditable ( true );
+	ui->txtCfgDataFolder->setEditable ( true );
+	ui->txtCfgFileManager->setEditable ( true );
+	ui->txtCfgPictureViewer->setEditable ( true );
+	ui->txtCfgPictureEditor->setEditable ( true );
+	ui->txtCfgDocumentViewer->setEditable ( true );
+	ui->txtCfgDocEditor->setEditable ( true );
+	ui->txtCfgXlsEditor->setEditable ( true );
+	ui->txtCfgJobsPrefix->setEditable ( true );
+	ui->txtCfgEstimate->setEditable ( true );
+	ui->txtCfgReports->setEditable ( true );
+	ui->txtCfgHtmlDir->setEditable ( true );
+	ui->txtCfgDropbox->setEditable ( true );
+	
+	ui->btnClose->connect ( ui->btnClose, &QPushButton::clicked, this, [&] ( const bool ) { return close (); } );
 }
 
 void configDialog::fillForms ()
@@ -30,13 +78,10 @@ void configDialog::fillForms ()
 	ui->txtCfgXlsEditor->setText ( CONFIG ()->xlsEditor () );
 	ui->txtCfgJobsPrefix->setText ( CONFIG ()->projectsBaseDir () );
 	ui->txtCfgEmailClient->setText ( CONFIG ()->emailClient () );
-	ui->txtCfgESTIMATE->setText ( CONFIG ()->estimatesDirSuffix () );
+	ui->txtCfgEstimate->setText ( CONFIG ()->estimatesDirSuffix () );
 	ui->txtCfgReports->setText ( CONFIG ()->reportsDirSuffix () );
-}
-
-void configDialog::on_txtCfgConfigFile_editingFinished ()
-{
-	CONFIG ()->setAppConfigFile ( ui->txtCfgConfigFile->text () );
+	ui->txtCfgHtmlDir->setText ( CONFIG ()->HTMLDir () );
+	ui->txtCfgDropbox->setText ( CONFIG ()->dropboxDir() );
 }
 
 void configDialog::on_btnCfgChooseConfigFile_clicked ()
@@ -54,11 +99,6 @@ void configDialog::on_btnCfgUseDefaultConfigFile_clicked ()
 	ui->txtCfgConfigFile->setFocus ();
 }
 
-void configDialog::on_txtCfgDataFolder_editingFinished ()
-{
-	CONFIG ()->setAppDataDir ( ui->txtCfgDataFolder->text () );
-}
-
 void configDialog::on_btnCfgChooseDataFolder_clicked ()
 {
 	const QString dir ( fileOps::getExistingDir ( CONFIG ()->appDataDir ( true ) ) );
@@ -74,15 +114,11 @@ void configDialog::on_btnCfgUseDefaultDataFolder_clicked ()
 	ui->txtCfgDataFolder->setFocus ();
 }
 
-void configDialog::on_txtCfgFileManager_editingFinished ()
-{
-	CONFIG ()->setFileManager ( ui->txtCfgFileManager->text () );
-}
-
 void configDialog::on_btnCfgChooseFileManager_clicked ()
 {
-	const QString filename = fileOps::getOpenFileName ( "/usr/bin/", "*.*" );
-	if ( !filename.isEmpty () ) {
+	const QString filename ( fileOps::getOpenFileName ( QStringLiteral ( "/usr/bin/" ), QStringLiteral ( "*.*" ) ) );
+	if ( !filename.isEmpty () )
+	{
 		ui->txtCfgFileManager->setText ( filename );
 		ui->txtCfgFileManager->setFocus ();
 	}
@@ -94,15 +130,11 @@ void configDialog::on_btnCfgUseDefaultFileManager_clicked ()
 	ui->txtCfgFileManager->setFocus ();
 }
 
-void configDialog::on_txtCfgPictureViewer_editingFinished ()
-{
-	CONFIG ()->setPictureViewer ( ui->txtCfgPictureViewer->text () );
-}
-
 void configDialog::on_btnCfgChoosePictureViewer_clicked ()
 {
-	const QString filename = fileOps::getOpenFileName ( "/usr/bin/", "*.*" );
-	if ( !filename.isEmpty () ) {
+	const QString filename ( fileOps::getOpenFileName ( QStringLiteral ( "/usr/bin/" ), QStringLiteral ( "*.*" ) ) );
+	if ( !filename.isEmpty () )
+	{
 		ui->txtCfgPictureViewer->setText ( filename );
 		ui->txtCfgPictureViewer->setFocus ();
 	}
@@ -114,17 +146,11 @@ void configDialog::on_btnCfgUseDefaultPictureViewer_clicked ()
 	ui->txtCfgPictureViewer->setFocus ();
 }
 
-void configDialog::on_txtCfgPictureEditor_editingFinished ()
-{
-	const QString corrected_filename ( CONFIG ()->setPictureEditor ( ui->txtCfgPictureEditor->text () ) );
-	if ( corrected_filename != ui->txtCfgPictureEditor->text () )
-		ui->txtCfgPictureEditor->setText ( corrected_filename );
-}
-
 void configDialog::on_btnCfgChoosePictureEditor_clicked ()
 {
-	const QString filename = fileOps::getOpenFileName ( "/usr/bin/", "*.*" );
-	if ( !filename.isEmpty () ) {
+	const QString filename ( fileOps::getOpenFileName ( QStringLiteral ( "/usr/bin/" ), QStringLiteral ( "*.*" ) ) );
+	if ( !filename.isEmpty () )
+	{
 		ui->txtCfgPictureEditor->setText ( filename );
 		ui->txtCfgPictureEditor->setFocus ();
 	}
@@ -142,15 +168,11 @@ void configDialog::on_btnCfgChooseEMailClient_clicked ()
 	ui->txtCfgEmailClient->setText ( CONFIG ()->emailClient () ); // EMAIL_CONFIG will set the client
 }
 
-void configDialog::on_txtCfgDocumentViewer_editingFinished ()
-{
-	CONFIG ()->setUniversalViewer ( ui->txtCfgDocumentViewer->text () );
-}
-
 void configDialog::on_btnCfgChooseDocViewer_clicked ()
 {
-	const QString filename = fileOps::getOpenFileName ( "/usr/bin/", "*.*" );
-	if ( !filename.isEmpty () ) {
+	const QString filename ( fileOps::getOpenFileName ( QStringLiteral ( "/usr/bin/" ), QStringLiteral ( "*.*" ) ) );
+	if ( !filename.isEmpty () )
+	{
 		ui->txtCfgDocumentViewer->setText ( filename );
 		ui->txtCfgDocumentViewer->setFocus ();
 	}
@@ -162,15 +184,11 @@ void configDialog::on_btnCfgUseDefaultDocumentViewer_clicked ()
 	ui->txtCfgDocumentViewer->setFocus ();
 }
 
-void configDialog::on_txtCfgDocEditor_editingFinished ()
-{
-	CONFIG ()->setDocEditor ( ui->txtCfgDocEditor->text () );
-}
-
 void configDialog::on_btnCfgChooseDocEditor_clicked ()
 {
-	const QString filename = fileOps::getOpenFileName ( "/usr/bin/", "*.*" );
-	if ( !filename.isEmpty () ) {
+	const QString filename ( fileOps::getOpenFileName ( QStringLiteral ( "/usr/bin/" ), QStringLiteral ( "*.*" ) ) );
+	if ( !filename.isEmpty () )
+	{
 		ui->txtCfgDocEditor->setText ( filename );
 		ui->txtCfgDocEditor->setFocus ();
 	}
@@ -182,15 +200,11 @@ void configDialog::on_btnCfgUseDefaultDocEditor_clicked ()
 	ui->txtCfgDocEditor->setFocus ();
 }
 
-void configDialog::on_txtCfgXlsEditor_editingFinished()
-{
-	CONFIG ()->setXlsEditor ( ui->txtCfgXlsEditor->text () );
-}
-
 void configDialog::on_btnCfgChooseXlsEditor_clicked ()
 {
-	const QString filename = fileOps::getOpenFileName ( "/usr/bin/", "*.*" );
-	if ( !filename.isEmpty () ) {
+	const QString filename ( fileOps::getOpenFileName ( QStringLiteral ( "/usr/bin/" ), QStringLiteral ( "*.*" ) ) );
+	if ( !filename.isEmpty () )
+	{
 		ui->txtCfgXlsEditor->setText ( filename );
 		ui->txtCfgXlsEditor->setFocus ();
 	}
@@ -200,11 +214,6 @@ void configDialog::on_btnCfgUseDefaultXlsEditor_clicked ()
 {
 	ui->txtCfgXlsEditor->setText ( CONFIG ()->docEditor ( true ) );
 	ui->txtCfgXlsEditor->setFocus ();
-}
-
-void configDialog::on_txtCfgJobsPrefix_editingFinished ()
-{
-	CONFIG ()->setProjectsBaseDir ( ui->txtCfgJobsPrefix->text () );
 }
 
 void configDialog::on_btnCfgChooseBaseDir_clicked ()
@@ -222,20 +231,10 @@ void configDialog::on_btnCfgUseDefaultBaseDir_clicked ()
 	ui->txtCfgJobsPrefix->setFocus ();
 }
 
-void configDialog::on_txtCfgESTIMATE_editingFinished ()
-{
-	CONFIG ()->setEstimatesDir ( ui->txtCfgESTIMATE->text () );
-}
-
 void configDialog::on_btnCfgUseDefaultESTIMATEDir_clicked ()
 {
-	ui->txtCfgESTIMATE->setText ( CONFIG ()->estimatesDirSuffix () );
-	ui->txtCfgESTIMATE->setFocus ();
-}
-
-void configDialog::on_txtCfgReports_editingFinished ()
-{
-	CONFIG ()->setReportsDir ( ui->txtCfgReports->text () );
+	ui->txtCfgEstimate->setText ( CONFIG ()->estimatesDirSuffix () );
+	ui->txtCfgEstimate->setFocus ();
 }
 
 void configDialog::on_btnCfgUseDefaultReportsDir_clicked ()

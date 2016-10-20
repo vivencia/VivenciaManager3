@@ -164,7 +164,7 @@ passwdManagerPrivate_Delete::passwdManagerPrivate_Delete ( const QString& servic
 {}
 
 passwdManagerPrivate_Read::passwdManagerPrivate_Read (const QString& service_, passwdManager_Read* qq )
-	: passwdManagerPrivate (service_, qq )
+	: passwdManagerPrivate ( service_, qq )
 {}
 
 passwdManagerPrivate::passwdManagerPrivate ( const QString& service_, passwdManager* qq )
@@ -189,6 +189,6 @@ passwdManagerPrivate::Mode passwdManagerPrivate::stringToMode ( const QString& s
 		return Text;
 }
 
-passwdManagerPrivate_Write::passwdManagerPrivate_Write(const QString& service_, passwdManager_Write* qq )
+passwdManagerPrivate_Write::passwdManagerPrivate_Write( const QString& service_, passwdManager_Write* qq )
 	: passwdManagerPrivate ( service_, qq )
 {}

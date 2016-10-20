@@ -12,15 +12,15 @@ class configDialog;
 
 class configDialog : public QDialog
 {
-	Q_OBJECT
 
 public:
 	explicit configDialog ( QWidget* parent = nullptr );
 	virtual ~configDialog ();
 
+	void setupUi ();
 	void fillForms ();
 
-private slots:
+private:
 	void on_btnCfgChooseConfigFile_clicked ();
 	void on_btnCfgUseDefaultConfigFile_clicked ();
 	void on_btnCfgChooseDataFolder_clicked ();
@@ -41,17 +41,6 @@ private slots:
 	void on_btnCfgChooseBaseDir_clicked ();
 	void on_btnCfgUseDefaultBaseDir_clicked ();
 	void on_btnCfgUseDefaultESTIMATEDir_clicked ();
-	void on_txtCfgConfigFile_editingFinished ();
-	void on_txtCfgDataFolder_editingFinished ();
-	void on_txtCfgFileManager_editingFinished ();
-	void on_txtCfgPictureViewer_editingFinished ();
-	void on_txtCfgPictureEditor_editingFinished ();
-	void on_txtCfgDocumentViewer_editingFinished ();
-	void on_txtCfgDocEditor_editingFinished ();
-	void on_txtCfgXlsEditor_editingFinished ();
-	void on_txtCfgJobsPrefix_editingFinished ();
-	void on_txtCfgESTIMATE_editingFinished ();
-	void on_txtCfgReports_editingFinished ();
 	void on_btnCfgUseDefaultReportsDir_clicked ();
 
 private:

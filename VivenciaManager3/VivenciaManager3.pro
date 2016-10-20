@@ -84,7 +84,8 @@ SOURCES += main.cpp \
     keychain/keychain_unix.cpp \
     keychain/keychain.cpp \
     keychain/kwallet_interface.cpp \
-    keychain/passwordsessionmanager.cpp
+    keychain/passwordsessionmanager.cpp \
+    htmldb.cpp
 
 HEADERS += dbrecord.h \
 	vmnumberformats.h \
@@ -169,12 +170,15 @@ HEADERS += dbrecord.h \
     keychain/keychain_p.h \
     keychain/keychain.h \
     keychain/kwallet_interface.h \
-    keychain/passwordsessionmanager.h
+    keychain/passwordsessionmanager.h \
+    htmldb.h
 
 FORMS += mainwindow.ui \
 	backupdialog.ui \
     companypurchasesui.ui \
-    configdialog.ui
+    configdialog.ui \
+    simplecalculator.ui
+
 RESOURCES += \
     resources.qrc
 LIBS += -L/usr/lib -lhunspell -lbz2

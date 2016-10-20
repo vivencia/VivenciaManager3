@@ -345,7 +345,7 @@ QString Job::concatenateJobInfo ( const Job& job )
 		if ( jobReport.firstStr () ) {
 			stringRecord jobDay;
 			do {
-				jobDay.fromString ( jobReport.curRecord () );
+				jobDay.fromString ( jobReport.curRecord ().toString () );
 				info += CHR_NEWLINE + jobDay.fieldValue ( JRF_DATE ) + QLatin1String ( " - " ) +
 						jobDay.fieldValue ( JRF_WHEATHER ) + QLatin1String ( ": " ) +
 						jobDay.fieldValue ( JRF_REPORT ) + CHR_NEWLINE;

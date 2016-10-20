@@ -938,12 +938,14 @@ bool VivenciaDB::importFromCSV ( const QString& filename, BackupDialog* bDlg )
 	dataFile* tdb ( new dataFile ( filename ) );
 	if ( !tdb->open () )
 		return false;
+	tdb->setRecordSeparationChar ( CHR_NEWLINE );
 	if ( !tdb->load ().isOn () )
 		return false;
 
 	BackupDialog::incrementProgress ( bDlg ); //3
 
 	stringRecord rec;
+	rec.setFieldSeparationChar ( CHR_SEMICOLON );
 	if ( !tdb->getRecord ( rec, 0 ) )
 		return false;
 
@@ -994,8 +996,9 @@ bool VivenciaDB::importFromCSV ( const QString& filename, BackupDialog* bDlg )
 
 	BackupDialog::incrementProgress ( bDlg ); //4
 	bool bSuccess ( false );
+	//we don't import if there is a version mismatch
 	if ( rec.fieldValue ( 0 ).toFloat () == db_rec->t_info->version )
-	{ //we don't import if there is a version mismatch
+	{
 		uint fld ( 1 );
 		uint idx ( 1 );
 		do
@@ -1075,9 +1078,11 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, Backup
 	dataFile* tdb ( new dataFile ( filename ) );
 	if ( !tdb->open () )
 		return false;
+	tdb->setRecordSeparationChar ( CHR_NEWLINE, CHR_PIPE );
 	BackupDialog::incrementProgress ( bDlg ); //2
 
 	stringRecord rec;
+	rec.setFieldSeparationChar ( CHR_PIPE );
 	rec.fastAppendValue ( QString::number ( t_info->table_id ) ); //Record table_id information
 	rec.fastAppendValue ( QString::number ( t_info->version, 'f', 1 ) ); //Record version information
 	tdb->insertRecord ( 0, rec );
@@ -1092,13 +1097,12 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, Backup
 	if ( query.first () )
 	{
 		uint pos ( 1 ), i ( 0 );
-
 		do
 		{
+			rec.clear ();
 			for ( i = 0; i < t_info->field_count; ++i )
 				rec.fastAppendValue ( query.value ( i ).toString () );
 			tdb->insertRecord ( pos, rec );
-			rec.clear ();
 			++pos;
 		} while ( query.next () );
 	}

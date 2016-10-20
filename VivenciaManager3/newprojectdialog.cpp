@@ -154,7 +154,10 @@ void newProjectDialog::txtProjectNameAltered ( const vmWidget* const )
 	if ( !txtProjectName->text ().contains ( CHR_F_SLASH ) )
 	{
 		mProjectID = mJobItem->jobRecord ()->date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE );
-		mProjectPath = CONFIG ()->getProjectBasePath ( recStrValue ( mClientItem->clientRecord (), FLD_CLIENT_NAME ) ) + txtProjectName->text () + CHR_F_SLASH;
+		if ( !txtProjectName->text ().startsWith ( mProjectID ) )
+			txtProjectName->setText ( mProjectID + QLatin1String ( " - " ) + txtProjectName->text (), false );
+		mProjectPath = CONFIG ()->getProjectBasePath ( recStrValue ( mClientItem->clientRecord (), FLD_CLIENT_NAME ) ) 
+				+ txtProjectName->text () + CHR_F_SLASH;
 	}
 	else
 	{
@@ -199,9 +202,4 @@ void newProjectDialog::btnCancel_clicked ()
 {
 	bresult = false;
 	close ();
-}
-
-void newProjectDialog::closeCleanUp ()
-{
-
 }

@@ -150,13 +150,15 @@ void passwdManagerPrivate_Read::fallbackOnError(const QDBusError& err )
 	QScopedPointer<QSettings> local( !q->settings() ? new QSettings( q->service() ) : 0 );
 	QSettings* actual = q->settings() ? q->settings() : local.data();
 
-	if ( q->insecureFallback() && actual->contains( dataKey( key ) ) ) {
-
+	if ( q->insecureFallback() && actual->contains( dataKey( key ) ) )
+	{
 		mode = passwdManagerPrivate::stringToMode( actual->value( typeKey( key ) ).toString() );
 		data = actual->value( dataKey( key ) ).toByteArray();
 
 		q->emitFinished();
-	} else {
+	}
+	else
+	{
 		if ( err.type() == QDBusError::ServiceUnknown ) //KWalletd not running
 			q->emitFinishedWithError( NoBackendAvailable, tr("No keychain service available") );
 		else

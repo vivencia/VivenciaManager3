@@ -17,7 +17,7 @@
 #include <QDesktopServices>
 #endif
 
-constexpr const int CFG_CATEGORIES ( 18 );
+constexpr const int CFG_CATEGORIES ( 20 );
 static const QString CFG_FILE_FIELDS_STR[CFG_CATEGORIES] =
 {
 	QStringLiteral ( "MAINWINDOW_GEOMETRY" ), QStringLiteral ( "HOME_DIR" ), QStringLiteral ( "LAST_VIEWED_RECORDS" ),
@@ -25,7 +25,8 @@ static const QString CFG_FILE_FIELDS_STR[CFG_CATEGORIES] =
 	QStringLiteral ( "FILEMANAGER" ), QStringLiteral ( "PICTURE_VIEWER" ), QStringLiteral ( "PICTURE_EDITOR" ),
 	QStringLiteral ( "EMAIL_CLIENT" ), QStringLiteral ( "DOC_VIEWER" ), QStringLiteral ( "DOC_EDITOR" ),
 	QStringLiteral ( "XLS_EDITOR" ), QStringLiteral ( "BASE_PROJECT_DIR" ), QStringLiteral ( "ESTIMATE_DIR" ),
-	QStringLiteral ( "REPORT_DIR" ), QStringLiteral ( "BACKUP_DIR" ), QStringLiteral ( "EMAIL_ADDRESS" )
+	QStringLiteral ( "REPORT_DIR" ), QStringLiteral ( "BACKUP_DIR" ), QStringLiteral ( "HTML_DIR" ), 
+	QStringLiteral ( "DROPBOX_DIR" ), QStringLiteral ( "EMAIL_ADDRESS" )
 };
 
 static const QString HOME_DIR_DIR ( QLatin1String ( ::getenv ( "HOME" ) ) + CHR_F_SLASH );
@@ -57,13 +58,16 @@ static const QString DEFAULT_OPTS[CFG_CATEGORIES] = {
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/" ) ), // DEFAULT_PROJECTS_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::estimatesDirSuffix () + CHR_F_SLASH ), // DEFAULT_ESTIMATE_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::reportsDirSuffix () + CHR_F_SLASH ), // DEFAULT_REPORTS_DIR
-	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QString::fromUtf8 ( "/Vivencia/VMDB/" ) ), // BACKUP_DIR
+	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/VMDB/" ) ), // BACKUP_DIR
+	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/HTML/" ) ), // HTML_DIR
 #elif QT4
 	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QLatin1String ( "/Vivencia/" ) ), // DEFAULT_PROJECTS_DIR
 	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::estimatesDirSuffix () + CHR_F_SLASH ), // DEFAULT_ESTIMATE_DIR
 	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::reportsDirSuffix () + CHR_F_SLASH ), // DEFAULT_REPORTS_DIR
 	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/VMDB/" ) ), // BACKUP_DIR
+	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/HTML/" ) ), // HTML_DIR
 #endif
+	( HOME_DIR_DIR ) + QLatin1String ( "Dropbox/" ), // DROPBOX_DIR
 	( QStringLiteral ( "vivencia@gmail.com" ) ) // DEFAULT_EMAIL
 };
 
@@ -115,7 +119,8 @@ const QString& configOps::setApp ( const CFG_FIELDS field, const QString& app )
 
 const QString& configOps::setDir ( const CFG_FIELDS field, const QString& dir )
 {
-    if ( fileOps::isDir ( dir ).isOn () ) {
+    if ( fileOps::isDir ( dir ).isOn () )
+	{
 		writeConfigFile ( field, dir );
 		return dir;
 	}
@@ -124,7 +129,8 @@ const QString& configOps::setDir ( const CFG_FIELDS field, const QString& dir )
 
 bool configOps::setConfigFile ( const QString& filename )
 {
-    if ( fileOps::canWrite ( fileOps::dirFromPath ( filename ) ).isOn () ) {
+    if ( fileOps::canWrite ( fileOps::dirFromPath ( filename ) ).isOn () )
+	{
         m_cfgFile->remove ();
         heap_del ( m_cfgFile );
         m_cfgFile = new configFile ( filename );
@@ -132,7 +138,8 @@ bool configOps::setConfigFile ( const QString& filename )
         m_filename = filename;
 
         generalTable gen_rec;
-        if ( gen_rec.readFirstRecord () ) {
+        if ( gen_rec.readFirstRecord () )
+		{
             gen_rec.setAction ( ACTION_EDIT );
             setRecValue ( &gen_rec, FLD_GENERAL_CONFIG_FILE, m_filename );
             if ( gen_rec.saveRecord () )
@@ -144,11 +151,13 @@ bool configOps::setConfigFile ( const QString& filename )
 
 const QString& configOps::readConfigFile ( const int category, QString category_name ) const
 {
-    if ( fileOps::exists ( m_filename ).isOn () ) {
+    if ( fileOps::exists ( m_filename ).isOn () )
+	{
 		if ( m_cfgFile->sectionCount () == 0 )// First time read. Load data
 			m_cfgFile->load ();
 
-		if ( m_cfgFile->setWorkingSection ( 0 ) ) {
+		if ( m_cfgFile->setWorkingSection ( 0 ) )
+		{
 			if ( category >= 0 )
 				category_name = CFG_FILE_FIELDS_STR[category];
 			const QString value ( m_cfgFile->fieldValue ( category_name ) );
@@ -167,7 +176,8 @@ const QString& configOps::readConfigFile ( const int category, QString category_
 
 void configOps::writeConfigFile ( const int category, const QString& fieldValue, QString category_name )
 {
-	if ( !fieldValue.isEmpty () ) {
+	if ( !fieldValue.isEmpty () )
+	{
 		if ( !m_cfgFile->setWorkingSection ( 0 ) ) // config file empty
 			m_cfgFile->insertNewSection ( QStringLiteral ( "CONFIG" ), true );
 		if ( category >= 0 )
@@ -196,7 +206,8 @@ void configOps::saveGeometry ( const int* coords )
 void configOps::geometryFromConfigFile ( int* coords )
 {
 	stringRecord str_geometry ( readConfigFile ( MAINWINDOW_GEOMETRY ) );
-	if ( str_geometry.isOK () ) {
+	if ( str_geometry.isOK () )
+	{
 		str_geometry.first ();
 		coords[0] = str_geometry.curValue ().toInt ();
 		str_geometry.next ();
@@ -222,18 +233,14 @@ int configOps::lastViewedRecord ( const uint table ) const
 {
 	stringRecord lvr ( lastViewedRecords () );
 
-	if ( lvr.isOK () ) {
+	if ( lvr.isOK () )
+	{
 		int field ( -1 );
-		switch ( table ) {
-			case CLIENT_TABLE:
-				field = 0;
-			break;
-			case JOB_TABLE:
-				field = 1;
-			break;
-			case PURCHASE_TABLE:
-				field = 2;
-			break;
+		switch ( table )
+		{
+			case CLIENT_TABLE:		field = 0;		break;
+			case JOB_TABLE:			field = 1;		break;
+			case PURCHASE_TABLE:	field = 2;		break;
 		}
 		return lvr.fieldValue ( field ).toInt ();
 	}
@@ -248,7 +255,8 @@ const QString& configOps::defaultConfigDir () const
 const QString configOps::kdesu ( const QString& message )
 {
     QString ret ( fileOps::appPath ( QStringLiteral ( "kdesudo" ) ) );
-	if ( ret.isEmpty () ) {
+	if ( ret.isEmpty () )
+	{
 		ret = QStringLiteral ( "/etc/alternatives/kdesu" );
         if ( !fileOps::fileOps::exists ( ret ).isOn () )
 			return gksu ( message, emptyString );
@@ -269,7 +277,8 @@ bool configOps::isSystem ( const QString& os_name )
 {
 	bool ret ( false );
     QFile file ( QStringLiteral ( "/etc/issue" ) );
-    if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) ) {
+    if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
+	{
         QTextStream in ( &file );
         if ( in.readLine ().contains ( os_name, Qt::CaseInsensitive ) )
             ret = true;
@@ -297,7 +306,8 @@ const QString& configOps::appConfigFile ( const bool use_default ) const
 
 const QString configOps::setAppConfigFile ( const QString& str )
 {
-    if ( fileOps::isDir ( fileOps::dirFromPath ( str ) ).isOn () ) {
+    if ( fileOps::isDir ( fileOps::dirFromPath ( str ) ).isOn () )
+	{
 		writeConfigFile ( CONFIG_FILE, str );
 		return str;
 	}
@@ -352,7 +362,8 @@ QString configOps::readConfig ( const QString& filename, const QString& field )
 	QString value ( emptyString );
 	configFile* cfgFile ( new configFile ( filename ) );
 
-	if ( cfgFile->open () ) {
+	if ( cfgFile->open () )
+	{
 		if ( cfgFile->load ().isOn () )
 			value = cfgFile->fieldValue ( field );
 	}
@@ -365,8 +376,10 @@ bool configOps::writeConfig ( const QString& filename, const QString& field, con
 	bool ret ( false );
 	configFile* cfgFile ( new configFile ( filename ) );
 
-	if ( cfgFile->open () ) {
-		if ( !cfgFile->load ().isOff () ) {
+	if ( cfgFile->open () )
+	{
+		if ( !cfgFile->load ().isOff () )
+		{
 			if ( !cfgFile->setWorkingSection ( 0 ) ) // config file empty
 				cfgFile->insertNewSection ( QStringLiteral ( "CONFIG" ), true );
 			const int idx ( cfgFile->fieldIndex ( field ) );

@@ -380,11 +380,11 @@ dbCalendar::~dbCalendar () {}
 
 void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 {
-	const stringTable jobReport ( recStrValue ( job, FLD_JOB_REPORT ) );
+	stringTable jobReport ( recStrValue ( job, FLD_JOB_REPORT ) );
 	const int n_days ( static_cast<int>( jobReport.countRecords () ) );
 	vmNumber date;
 	const vmNumber pricePerDay ( job->price ( FLD_JOB_PRICE ) / n_days );
-	const stringRecord* dayRecord ( nullptr );
+	stringRecord* dayRecord ( nullptr );
 	const RECORD_ACTION action ( job->action () == ACTION_DEL ? ACTION_DEL : job->prevAction () );
 	PointersList<CALENDAR_EXCHANGE*> ce_list ( 5 );
 	
@@ -396,7 +396,7 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		{					// The prevAction for those DBRecords that have just been created/read is ACTION_NONE
 			for ( int i ( 0 ); i < n_days ; ++i )
 			{
-				dayRecord = &jobReport.readRecord ( i );
+				dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 				date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
 				addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
 				if ( !pricePerDay.isNull () )
@@ -408,9 +408,9 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		{
 			for ( int i ( 0 ); i < n_days ; ++i )
 			{
-				dayRecord = &jobReport.readRecord ( i );
+				dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 				date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date );
+				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, i + 1 );
 				if ( !pricePerDay.isNull () )
 					addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, pricePerDay );
 			}
@@ -420,14 +420,14 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		{
 			if ( job->wasModified ( FLD_JOB_REPORT ) )
 			{
-				const stringTable& originalJobReport ( recStrValueAlternate ( job, FLD_JOB_REPORT ) );
-				const vmNumber oldPricePerDay ( vmNumber ( recStrValueAlternate ( job, FLD_JOB_PRICE ), VMNT_PRICE, 1 ) / originalJobReport.countRecords () );
-				bool b_ok ( false );
+				const stringTable& oldJobReport ( recStrValueAlternate ( job, FLD_JOB_REPORT ) );
+				const vmNumber oldPricePerDay ( vmNumber ( recStrValueAlternate ( job, FLD_JOB_PRICE ), VMNT_PRICE, 1 ) / oldJobReport.countRecords () );
+				bool b_ok ( false ), b_jobreport_modified ( false );
 				RECORD_ACTION infoAction ( ACTION_NONE );
 				
 				for ( int i ( 0 ); i < n_days ; ++i )
 				{
-					dayRecord = &jobReport.readRecord ( i );
+					dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 					infoAction = static_cast<RECORD_ACTION>( dayRecord->fieldValue ( Job::JRF_EXTRA + 0 ).toInt ( &b_ok ) );
 					if ( b_ok )
 					{
@@ -439,46 +439,55 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 								if ( !pricePerDay.isNull () )
 									addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
 							break;
+							case ACTION_DEL:
+								date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_EXTRA + 1 ), vmNumber::VDF_DB_DATE );
+								addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, i + 1 );
+								if ( !oldPricePerDay.isNull () )
+									addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, oldPricePerDay );
+							break;
 							case ACTION_EDIT:
 								date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_EXTRA + 2 ), vmNumber::VDF_DB_DATE );
-								addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date );
+								addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, i + 1 );
 								if ( !oldPricePerDay.isNull () )
 									addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, oldPricePerDay );
 								date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_EXTRA + 1 ), vmNumber::VDF_DB_DATE );
 								addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
 								if ( !pricePerDay.isNull () )
 									addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
+								
+								dayRecord->removeField ( Job::JRF_EXTRA + 2 );
 							break;
 							default: break;
 						}
+						if ( infoAction != ACTION_DEL )
+						{
+							// Do not perpetuate this information, else everytime a job is edited and saved, this information will be replicated
+							dayRecord->removeField ( Job::JRF_EXTRA + 1 );
+							dayRecord->removeField ( Job::JRF_EXTRA + 0 );
+							jobReport.changeRecord ( static_cast<uint>( i ), *dayRecord );
+						}
+						else
+							jobReport.removeRecord ( static_cast<uint>( i ) );
+						
+						b_jobreport_modified = true;
 					}
 				}
 				
-				const int old_n_days ( static_cast<int>( originalJobReport.countRecords () ) );
-				for ( int i ( 0 ); i < old_n_days ; ++i )
+				if ( b_jobreport_modified )
 				{
-					dayRecord = &jobReport.readRecord ( i );
-					infoAction = static_cast<RECORD_ACTION>( dayRecord->fieldValue ( Job::JRF_EXTRA + 0 ).toInt ( &b_ok ) );
-					if ( b_ok )
-					{
-						if ( infoAction == ACTION_DEL )
-						{
-							date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_EXTRA + 1 ), vmNumber::VDF_DB_DATE );
-							addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date );
-							if ( !oldPricePerDay.isNull () )
-								addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, oldPricePerDay );
-						}
-					}
+					const_cast<Job*>( job )->setAction ( ACTION_EDIT );
+					setRecValue ( const_cast<Job*>( job ), FLD_JOB_REPORT, jobReport.toString () );
+					const_cast<Job*>( job )->saveRecord ();
 				}
 			}
 			
 			if ( job->wasModified ( FLD_JOB_PRICE ) )
 			{
-				const stringTable& originalJobReport ( recStrValueAlternate ( job, FLD_JOB_REPORT ) );
-				const vmNumber oldPricePerDay ( vmNumber ( recStrValueAlternate ( job, FLD_JOB_PRICE ), VMNT_PRICE, 1 ) / originalJobReport.countRecords () );
+				const stringTable& oldJobReport ( recStrValueAlternate ( job, FLD_JOB_REPORT ) );
+				const vmNumber oldPricePerDay ( vmNumber ( recStrValueAlternate ( job, FLD_JOB_PRICE ), VMNT_PRICE, 1 ) / oldJobReport.countRecords () );
 				for ( int i ( 0 ); i < n_days ; ++i )
 				{
-					dayRecord = &jobReport.readRecord ( i );
+					dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 					date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
 					addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE1, date, pricePerDay );
 					ce_list[ce_list.currentIndex()]->price2 = oldPricePerDay;
@@ -503,17 +512,17 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 		default:
 		{
 			vmNumber date, price;
-			const stringTable payInfo ( recStrValue ( pay, FLD_PAY_INFO ) );
-			const int n_pays ( static_cast<int>( payInfo.countRecords () ) );
-			const stringRecord* payRecord ( nullptr );
+			stringTable payInfo ( recStrValue ( pay, FLD_PAY_INFO ) );
+			const uint n_pays ( payInfo.countRecords () );
+			stringRecord* payRecord ( nullptr );
 			PointersList<CALENDAR_EXCHANGE*> ce_list ( 5 );
 			
 			switch ( action )
 			{
 				case ACTION_NONE: // see updateCalendarWithJobInfo
-					for ( int i ( 0 ); i < n_pays ; ++i )
+					for ( uint i ( 0 ); i < n_pays ; ++i )
 					{
-						payRecord = &payInfo.readRecord ( i );
+						payRecord = const_cast<stringRecord* >( &payInfo.readRecord ( i ) );
 						price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 						date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
@@ -527,9 +536,9 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 					}
 				break;
 				case ACTION_DEL:
-					for ( int i ( 0 ); i < n_pays ; ++i )
+					for ( uint i ( 0 ); i < n_pays ; ++i )
 					{
-						payRecord = &payInfo.readRecord ( i );
+						payRecord = const_cast<stringRecord* >( &payInfo.readRecord ( i ) );
 						price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 						date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 						addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber );
@@ -546,18 +555,15 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 				{
 					if ( pay->wasModified ( FLD_PAY_INFO ) )
 					{
-						stringRecord* oldPayInfoRecord ( nullptr );
-						const stringTable prevPayInfo ( recStrValueAlternate ( pay, FLD_PAY_INFO ) );
-						bool b_ok ( false );
+						bool b_ok ( false ), b_payinfo_modified ( false );
 						RECORD_ACTION infoAction ( ACTION_NONE );
-						int extrafield_col ( 0 );
 						vmNumber use_date;
 						bool b_paid ( false );
 				
-						for ( int i ( 0 ); i < n_pays ; ++i )
+						for ( uint i ( 0 ); i < n_pays ; ++i )
 						{
-							payRecord = &payInfo.readRecord ( i );
-							infoAction = static_cast<RECORD_ACTION>( payRecord->fieldValue ( PHR_EXTRA_INFO + 0 ).toInt ( &b_ok ) );
+							payRecord = const_cast<stringRecord* >( &payInfo.readRecord ( i ) );
+							infoAction = static_cast<RECORD_ACTION>( payRecord->fieldValue ( PHR_EXTRA_INFO + PHR_EXTRA_INFO ).toInt ( &b_ok ) );
 							if ( b_ok )
 							{
 								price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
@@ -588,56 +594,65 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 									break;
 									case ACTION_EDIT:
 									{
-										oldPayInfoRecord = const_cast<stringRecord*>( &prevPayInfo.readRecord ( i ) );
-										const bool b_paid_old ( oldPayInfoRecord->fieldValue ( PHR_PAID ) == CHR_ONE );
-										const vmNumber date_old ( oldPayInfoRecord->fieldValue ( PHR_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
-										const vmNumber use_date_old ( oldPayInfoRecord->fieldValue ( PHR_USE_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
-										const vmNumber price_old ( oldPayInfoRecord->fieldValue ( PHR_VALUE ), VMNT_PRICE, 1 );
-										extrafield_col = 1;
+										const bool b_paid_old ( payRecord->fieldValue ( PHR_EXTRA_INFO + PHR_PAID ) == CHR_ONE );			
+										const vmNumber date_old ( payRecord->fieldValue ( PHR_EXTRA_INFO + PHR_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
+										const vmNumber use_date_old ( payRecord->fieldValue ( PHR_EXTRA_INFO + PHR_USE_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
+										const vmNumber price_old ( payRecord->fieldValue ( PHR_EXTRA_INFO + PHR_VALUE ), VMNT_PRICE, 1 );
 										
-										do
+										if ( date_old != date )
 										{
-											if ( payRecord->fieldValue ( PHR_EXTRA_INFO + extrafield_col ) != CHR_ONE )
+											addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
+											addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE1, date, price );
+											addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date_old, vmNumber::emptyNumber, i + 1 );
+										}
+										if ( price_old != price )
+										{
+											addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE1, date, price );
+											if ( b_paid )
+												addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE2, use_date, price );
+										}
+										
+										if ( b_paid_old != b_paid )
+										{
+											if ( b_paid )
 											{
-												switch ( extrafield_col )
-												{
-													case PHR_DATE:
-														addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
-														addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE1, date, price );
-														addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date_old, vmNumber::emptyNumber, i + 1 );
-													break;
-													case PHR_USE_DATE:
-													case PHR_PAID:
-														if ( b_paid )
-														{
-															addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, use_date, vmNumber::emptyNumber, i + 1 );
-															addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE2, use_date, price );
-														}
-														if ( b_paid_old )
-														{
-															addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE2, use_date_old );
-															//addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, use_date_old, price_old );
-														}
-													break;
-													case PHR_VALUE:
-														addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE1, date, price );
-														if ( b_paid )
-															addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE2, use_date, price );
-														ce_list[ce_list.currentIndex()]->price2 = price_old;
-													break;
-												}
+												addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, use_date, vmNumber::emptyNumber, i + 1 );
+												addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE2, use_date, price );
 											}
-										} while ( ++extrafield_col <= 4 );
+											if ( b_paid_old )
+											{
+												addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE2, use_date_old );
+												//addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, use_date_old, price_old );
+											}
+										}
+										ce_list[ce_list.currentIndex()]->price2 = price_old;
+										payRecord->removeField ( PHR_EXTRA_INFO + PHR_USE_DATE );
+										payRecord->removeField ( PHR_EXTRA_INFO + PHR_ACCOUNT );
+										payRecord->removeField ( PHR_EXTRA_INFO + PHR_METHOD );
+										payRecord->removeField ( PHR_EXTRA_INFO + PHR_PAID );
+										payRecord->removeField ( PHR_EXTRA_INFO + PHR_VALUE );
+										payRecord->removeField ( PHR_EXTRA_INFO + PHR_DATE );
 									}
 									break; // infoAction == ACTION_EDIT
 									default: break;
 								}
-							}
+								
+								payRecord->removeField ( PHR_EXTRA_INFO + PHR_EXTRA_INFO );
+								payInfo.changeRecord ( i, *payRecord );
+								b_payinfo_modified = true;
+							} // if ( b_ok )
+						} // for ( int i ( 0 ); i < n_pays ; ++i )
+						
+						if ( b_payinfo_modified )
+						{
+							const_cast<Payment*>( pay )->setAction ( ACTION_EDIT );
+							setRecValue ( const_cast<Payment*>( pay ), FLD_PAY_INFO, payInfo.toString () );
+							const_cast<Payment*>( pay )->saveRecord ();
 						}
-					}
+					} // if ( pay->wasModified ( FLD_PAY_INFO ) )
 				}
 				break; // action == ACTION_EDIT
-			default: break;
+				default: break;
 			}
 			updateCalendarDB ( pay, ce_list );
 		}
@@ -710,58 +725,115 @@ void dbCalendar::updateCalendarWithBuyPayInfo ( const Buy* const buy, const RECO
 			return;
 	}
 
-	stringRecord rec;
+	stringRecord* rec ( nullptr );
 	vmNumber date, price;
+	stringTable newTable ( recStrValue ( buy, FLD_BUY_PAYINFO ) );
 
-	if ( action != ACTION_ADD )
+	switch ( action )
 	{
-		// Remove old info - only when deleting or editing. Easier than trying to compare what's the same, what's not, what's removed, what's added
-		const stringTable origTable ( recStrValueAlternate ( buy, FLD_BUY_PAYINFO ) );
-		if ( origTable.firstStr () )
+		case ACTION_ADD:
+		case ACTION_NONE:
 		{
-			do
+			rec = const_cast<stringRecord*>(&newTable.first ());
+			while ( rec->isOK () )
 			{
-				rec.fromString ( origTable.curRecord () );
-				if ( rec.first () )
+				date.fromTrustedStrDate ( rec->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
+				addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, newTable.currentIndex () + 1 );
+				if ( rec->fieldValue ( PHR_PAID ) == CHR_ONE )
 				{
-					do
-					{
-						date.fromStrDate ( rec.fieldValue ( PHR_DATE ) );
-						addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE2, date );
-						if ( rec.fieldValue ( PHR_PAID ) == CHR_ONE )
-						{
-							price.fromStrPrice ( rec.fieldValue ( PHR_VALUE ) );
-							addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, date, price );
-						}
-					} while ( rec.next () );
+					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ) );
+					addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
 				}
-			} while ( origTable.nextStr () );
+				rec = const_cast<stringRecord*>(&newTable.next ());
+			}
 		}
-	}
-
-	if ( action != ACTION_DEL )
-	{ // Now, insert new occurences, only when editing or inserting
-		const stringTable newTable ( recStrValue ( buy, FLD_BUY_PAYINFO ) );
-		if ( newTable.firstStr () )
+		break;
+		
+		case ACTION_DEL:
 		{
-			do
+			rec = const_cast<stringRecord*>(&newTable.first ());
+			while ( rec->isOK () )
 			{
-				rec.fromString ( newTable.curRecord () );
-				if ( rec.first () )
+				date.fromTrustedStrDate ( rec->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
+				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE2, date, vmNumber::emptyNumber, newTable.currentIndex () + 1 );
+				if ( rec->fieldValue ( PHR_PAID ) == CHR_ONE )
 				{
-					do
+					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ) );
+					addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, date, price );
+				}
+				rec = const_cast<stringRecord*>(&newTable.next ());
+			}
+		}
+		break;
+		
+		case ACTION_EDIT:
+		{
+			bool b_ok ( false ), b_payinfo_modified ( false );
+			RECORD_ACTION infoAction ( ACTION_NONE );
+			int pay_number ( 0 );
+			
+			rec = const_cast<stringRecord*>(&newTable.first ());
+			while ( rec->isOK () )
+			{
+				++pay_number;
+				infoAction = static_cast<RECORD_ACTION>( rec->fieldValue ( PHR_EXTRA_INFO + PHR_EXTRA_INFO ).toInt ( &b_ok ) );	
+				if ( b_ok )
+				{
+					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ), 1 );
+					date.fromTrustedStrDate ( rec->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
+					
+					switch ( infoAction )
 					{
-						date.fromStrDate ( rec.fieldValue ( PHR_DATE ) );
-						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date );
-						if ( rec.fieldValue ( PHR_PAID ) == CHR_ONE )
-						{
-							price.fromStrPrice ( rec.fieldValue ( PHR_VALUE ) );
+						case ACTION_ADD:
+							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, pay_number );
 							addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
+						break;
+						case ACTION_DEL:
+							addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE2, date, vmNumber::emptyNumber, pay_number );
+							addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, date, price );
+						break;
+						case ACTION_EDIT:
+						{
+							const vmNumber date_old ( rec->fieldValue ( PHR_EXTRA_INFO + PHR_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
+							const vmNumber price_old ( rec->fieldValue ( PHR_EXTRA_INFO + PHR_VALUE ), VMNT_PRICE, 1 );
+						
+							if ( date_old != date )
+							{
+								addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, pay_number );
+								addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE2, date, price );
+								addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE2, date_old, vmNumber::emptyNumber, pay_number );
+							}
+							if ( price_old != price )
+							{
+								addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE2, date, price );
+							}
+						
+							ce_list[ce_list.currentIndex()]->price2 = price_old;
+							rec->removeField ( PHR_EXTRA_INFO + PHR_METHOD );
+							rec->removeField ( PHR_EXTRA_INFO + PHR_PAID );
+							rec->removeField ( PHR_EXTRA_INFO + PHR_VALUE );
+							rec->removeField ( PHR_EXTRA_INFO + PHR_DATE );
 						}
-					} while ( rec.next () );
-				}
-			} while ( newTable.nextStr () );
-		}
+						break; // infoAction == ACTION_EDIT
+						default: break;
+					}				
+					rec->removeField ( PHR_EXTRA_INFO + PHR_EXTRA_INFO );
+					newTable.changeRecord ( pay_number-1, *rec );
+					b_payinfo_modified = true;
+				} // if ( b_ok )
+				rec = const_cast<stringRecord*>(&newTable.next ());	
+			} // while ( rec->isOK () )
+		
+			if ( b_payinfo_modified )
+			{
+				const_cast<Buy*>( buy )->setAction ( ACTION_EDIT );
+				setRecValue ( const_cast<Buy*>( buy ), FLD_BUY_PAYINFO, newTable.toString () );
+				const_cast<Buy*>( buy )->saveRecord ();
+			}
+		} //case ACTION_EDIT
+		break;
+		default:
+		break;
 	}
 }
 
@@ -913,8 +985,8 @@ void dbCalendar::addDate ( const vmNumber& date, const uint field, const stringR
 void dbCalendar::delDate ( const vmNumber& date, const uint field, const stringRecord& id_trio )
 {
 	if ( readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) )
-	{
-        setAction ( ACTION_EDIT );
+	{		
+		setAction ( ACTION_EDIT );
 		stringTable ids;
 		ids.fromString ( recStrValue ( this, field ) );
 		if ( ids.removeRecordByValue ( id_trio ) )

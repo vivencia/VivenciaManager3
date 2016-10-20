@@ -104,7 +104,8 @@ void BackupDialog::setupConnections ()
 bool BackupDialog::canDoBackup () const
 {
 	bool ret ( ui->tablesList->count () > 0 );
-	if ( ret ) {
+	if ( ret )
+	{
 		ret = !( fileOps::appPath ( VivenciaDB::backupApp () ).isEmpty () );
         backupNotify->notifyMessage ( TR_FUNC ( "Backup" ), ret
                 ? TR_FUNC ( "Choose backup method" ) : VivenciaDB::backupApp () + TR_FUNC ( " must be installed to do backups" ) );
@@ -116,12 +117,14 @@ bool BackupDialog::canDoBackup () const
 
 bool BackupDialog::canDoRestore () const
 {
-	if ( fileOps::appPath ( VivenciaDB::restoreApp () ).isEmpty () ) {
+	if ( fileOps::appPath ( VivenciaDB::restoreApp () ).isEmpty () )
+	{
         backupNotify->notifyMessage ( TR_FUNC ( "Restore - Error" ),
                 VivenciaDB::restoreApp () + TR_FUNC ( " must be installed to restore a database" ) );
 		return false;
 	}
-	else {
+	else
+	{
         backupNotify->notifyMessage ( TR_FUNC ( "Restore - Next step" ), ( ui->restoreList->count () > 0 )
             ? TR_FUNC ( "Choose restore method" ) : TR_FUNC ( "Choose a file containing a saved database to be restored" ) );
 	}
@@ -157,9 +160,11 @@ void BackupDialog::showWindow ()
 
 void BackupDialog::fillTable ()
 {
-	if ( VDB () != nullptr ) {
+	if ( VDB () != nullptr )
+	{
 		// this function will be called by Data after a restore. Because the tables might be different, we must clear the last used list
-		if ( ui->tablesList->count () != 0 ) {
+		if ( ui->tablesList->count () != 0 )
+		{
 			ui->tablesList->clear ();
 			disconnect ( ui->tablesList, nullptr, nullptr, nullptr );
 		}
@@ -169,7 +174,8 @@ void BackupDialog::fillTable ()
 		widgetitem->setFlags ( Qt::ItemIsEnabled|Qt::ItemIsTristate|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable );
 		widgetitem->setCheckState ( Qt::Checked );
 
-		for ( uint i ( 0 ); i < TABLES_IN_DB; ++i ) {
+		for ( uint i ( 0 ); i < TABLES_IN_DB; ++i )
+		{
 			widgetitem = new QListWidgetItem ( ui->tablesList );
 			widgetitem->setText ( VivenciaDB::tableInfo ( i )->table_name );
 			widgetitem->setFlags ( Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable );
@@ -183,12 +189,14 @@ void BackupDialog::fillTable ()
 bool BackupDialog::doBackup ( const QString& filename, const QString& path, const bool bUserInteraction )
 {
 	BackupDialog* bDlg ( bUserInteraction ? BACKUP () : nullptr );
-	if ( !BackupDialog::checkDir ( path ) ) {
+	if ( !BackupDialog::checkDir ( path ) )
+	{
 		if ( bDlg )
             bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Backup - Error"), TR_FUNC ( "You must select a valid directory before proceeding" ) );
 		return false;
 	}
-	if ( filename.isEmpty () ) {
+	if ( filename.isEmpty () )
+	{
 		if ( bDlg )
             bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Backup - Error"), TR_FUNC ( "A filename must be supplied" ) );
 		return false;
@@ -197,23 +205,29 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 	QString backupFile ( path + filename + QLatin1String ( ".sql" ) );
 
 	bool ok ( false );
-	if ( EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) ) {
+	if ( EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) )
+	{
 		QString tables;
-		if ( bDlg ) {
+		if ( bDlg )
+		{
 			if ( bDlg->ui->chkDocs->isChecked () )
 				bDlg->addDocuments ( backupFile );
 			if ( bDlg->ui->chkImages->isChecked () )
 				bDlg->addImages ( backupFile );
 
-			if ( bDlg->ui->chkTables->isChecked () ) {
+			if ( bDlg->ui->chkTables->isChecked () )
+			{
 				bDlg->initProgressBar ( 7 );
-				if ( bDlg->ui->tablesList->item ( 0 )->checkState () == Qt::Unchecked ) {
+				if ( bDlg->ui->tablesList->item ( 0 )->checkState () == Qt::Unchecked )
+				{
                     bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Backup - Error" ), TR_FUNC ( "One table at least must be selected." ) );
 					return false;
 				}
 
-				if ( bDlg->ui->tablesList->item ( 0 )->checkState () == Qt::PartiallyChecked ) {
-					for ( uint i ( 1 ); i < unsigned ( bDlg->ui->tablesList->count () ); ++i ) {
+				if ( bDlg->ui->tablesList->item ( 0 )->checkState () == Qt::PartiallyChecked )
+				{
+					for ( uint i ( 1 ); i < unsigned ( bDlg->ui->tablesList->count () ); ++i )
+					{
 						if ( bDlg->ui->tablesList->item ( i )->checkState () == Qt::Checked )
 							tables += bDlg->ui->tablesList->item ( i )->text () + CHR_SPACE;
 					}
@@ -224,20 +238,22 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 		ok = VDB ()->doBackup ( backupFile, tables, bDlg );
 		BackupDialog::incrementProgress ( bDlg ); //5
 
-		if ( ok ) {
-			if ( VMCompress::compress ( backupFile, backupFile + QLatin1String ( ".bz2" ) ) ) {
+		if ( ok )
+		{
+			if ( VMCompress::compress ( backupFile, backupFile + QLatin1String ( ".bz2" ) ) )
+			{
 				fileOps::removeFile ( backupFile );
 				backupFile += QLatin1String ( ".bz2" );
 				BackupDialog::incrementProgress ( bDlg ); //6
 
-				//In the future, add an option on configDialog to specify a dropbox folder. For now, hardcode it
-				const QString dropBoxDir ( CONFIG ()->homeDir () + QLatin1String ( "Dropbox/" ) );
+				const QString dropBoxDir ( CONFIG ()->dropboxDir () );
                 if ( fileOps::isDir ( dropBoxDir ).isOn () )
 					fileOps::copyFile ( dropBoxDir, backupFile );
 				BackupDialog::incrementProgress ( bDlg ); //7
 			}
 		}
-		if ( bDlg ) {
+		if ( bDlg )
+		{
 			bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Backup" ), TR_FUNC ( "Standard backup to file %1 was %2" ).arg (
 					filename, QLatin1String ( ok ? " successfull" : " unsuccessfull" ) ) );
 		}
@@ -253,45 +269,69 @@ void BackupDialog::doDayBackup ()
         BackupDialog::doBackup ( standardDefaultBackupFilename (), CONFIG ()->backupDir () );
 }
 
-bool BackupDialog::doExport (const QString& prefix, const QString& path, const bool bUserInteraction )
+bool BackupDialog::doExport ( const QString& prefix, const QString& path, const bool bUserInteraction )
 {
-	if ( bUserInteraction ) {
-		if ( ui->tablesList->item ( 0 )->checkState () == Qt::Unchecked ) {
-			backupNotify->notifyMessage ( TR_FUNC ( "Export - Error" ), TR_FUNC ( "One table at least must be selected." ) );
+	BackupDialog* bDlg ( bUserInteraction ? BACKUP () : nullptr );
+	if ( bDlg )
+	{
+		if ( bDlg->ui->tablesList->item ( 0 )->checkState () == Qt::Unchecked )
+		{
+			bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Export - Error" ), TR_FUNC ( "One table at least must be selected." ) );
 			return false;
 		}
 	}
 
-	if ( !BackupDialog::checkDir ( path ) ) {
-		if ( bUserInteraction )
-			backupNotify->notifyMessage ( TR_FUNC ( "Export - Error" ), TR_FUNC ( "Error: you must select a valid directory before proceeding" ) );
+	if ( !BackupDialog::checkDir ( path ) )
+	{
+		if ( bDlg )
+			bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Export - Error" ), TR_FUNC ( "Error: you must select a valid directory before proceeding" ) );
 		return false;
 	}
-	if ( prefix.isEmpty () ) {
-		if ( bUserInteraction )
-			backupNotify->notifyMessage ( TR_FUNC ( "Export - Error" ), TR_FUNC ( "Error: a prefix must be supplied" ) );
+	if ( prefix.isEmpty () )
+	{
+		if ( bDlg )
+			bDlg->backupNotify->notifyMessage ( TR_FUNC ( "Export - Error" ), TR_FUNC ( "Error: a prefix must be supplied" ) );
 		return false;
 	}
 
 	QString filepath;
 	bool ok ( false );
 
-	initProgressBar ( unsigned ( ui->tablesList->count () - 1 ) * 5 );
+	if ( bDlg )
+	{
+		bDlg->initProgressBar ( (bDlg->ui->tablesList->count () - 1) * 5 );
 
-	for ( int i ( 0 ); i <  ui->tablesList->count () - 1; ++i ) {
-		if ( ui->tablesList->item ( i )->checkState () == Qt::Checked ) {
-			filepath = path + CHR_F_SLASH + prefix + ui->tablesList->item ( i )->text ();
-			if ( checkThatFileDoesNotExist ( filepath, true ) ) {
-				BackupDialog::incrementProgress ( this ); //1
-				ok = VDB ()->exportToCSV ( ( 2<<i ), filepath, this );
-				if ( ok )
-					BackupDialog::addToRestoreList ( filepath, this );
+		for ( int i ( 1 ); i < bDlg->ui->tablesList->count (); ++i )
+		{
+			if ( bDlg->ui->tablesList->item ( i )->checkState () == Qt::Checked )
+			{
+				filepath = path + CHR_F_SLASH + prefix + bDlg->ui->tablesList->item ( i )->text ();
+				if ( checkThatFileDoesNotExist ( filepath, true ) )
+				{
+					BackupDialog::incrementProgress ( bDlg ); //1
+					ok = VDB ()->exportToCSV ( ( 2<<(i-1) ), filepath, bDlg );
+					if ( ok )
+						BackupDialog::addToRestoreList ( filepath, bDlg );
+				}
 			}
 		}
-	}
-	ui->pBar->hide ();
-	if ( bUserInteraction )
+		
+		ui->pBar->hide ();
 		backupNotify->notifyMessage ( TR_FUNC ( "Export" ), TR_FUNC ( "Export to CSV file was " ) + ( ok ? TR_FUNC ( " successfull" ) : TR_FUNC ( " unsuccessfull" ) ) );
+	}
+	else
+	{
+		for ( uint i ( 0 ); i < TABLES_IN_DB; ++i )
+		{
+			filepath = path + CHR_F_SLASH + prefix + VDB ()->tableName ( static_cast<TABLE_ORDER>(i) );
+			if ( checkThatFileDoesNotExist ( filepath, false ) )
+			{
+				ok = VDB ()->exportToCSV ( static_cast<uint>(2)<<i, filepath, bDlg );
+				if ( ok )
+					BackupDialog::addToRestoreList ( filepath, bDlg );
+			}
+		}	
+	}
 	return ok;
 }
 
@@ -368,14 +408,19 @@ void BackupDialog::readFromBackupList ()
 {
 	if ( !tdb )
 		tdb = new dataFile ( CONFIG ()->appDataDir () + QLatin1String ( "/backups.db" ) );
-	if ( tdb->load ().isOn () ) {
+	if ( tdb->load ().isOn () )
+	{
 		stringRecord files;
-		if ( tdb->getRecord ( files, 0 ) ) {
-			if ( files.first () ) {
-				do {
+		if ( tdb->getRecord ( files, 0 ) )
+		{
+			if ( files.first () )
+			{
+				do
+				{
 					if ( checkFile ( files.curValue () ) )
 						ui->restoreList->addItem ( files.curValue () );
-					else { // file does not exist; do not add to the list and remove it from database
+					else // file does not exist; do not add to the list and remove it from database
+					{
 						files.removeFieldByValue ( files.curValue (), true );
 						tdb->changeRecord ( 0, files );
 					}
@@ -388,7 +433,8 @@ void BackupDialog::readFromBackupList ()
 
 void BackupDialog::incrementProgress ( BackupDialog* bDlg )
 {
-	if ( bDlg != nullptr ) {
+	if ( bDlg != nullptr )
+	{
 		static uint current_val ( 0 );
 		if ( current_val < bDlg->progress_bar_steps )
 			bDlg->ui->pBar->setValue ( ++current_val );
@@ -401,7 +447,8 @@ void BackupDialog::showNoDatabaseOptionsWindow ()
 {
 	mb_nodb = true;
     m_after_close_action = ACA_RETURN_TO_PREV_WINDOW;
-	if ( dlgNoDB == nullptr ) {
+	if ( dlgNoDB == nullptr )
+	{
 		dlgNoDB = new QDialog ( this );
 		dlgNoDB->setWindowIcon ( ICON ( "vm-logo-22x22" ) );
         dlgNoDB->setWindowTitle ( TR_FUNC ( "Database inexistent" ) );
@@ -446,21 +493,26 @@ void BackupDialog::showNoDatabaseOptionsWindow ()
 
 void BackupDialog::btnNoDBProceed_clicked ()
 {
-	if ( !rdNothing->isChecked () ) {
+	if ( !rdNothing->isChecked () )
+	{
 		ui->toolBox->setCurrentIndex ( 1 );
 		ui->toolBox->setEnabled ( true );
 		ui->toolBox->widget ( 0 )->setEnabled ( false );
 		crashRestore::setNewDBSession ();
 
-		if ( VDB ()->createDatabase () ) {
-			if ( VDB ()->createUser () ) {
-				if ( rdImport->isChecked ( ) ) {
+		if ( VDB ()->createDatabase () )
+		{
+			if ( VDB ()->createUser () )
+			{
+				if ( rdImport->isChecked ( ) )
+				{
 					dlgNoDB->hide ();
 					exec ();
 				}
 				else
 					mb_success = VDB ()->createAllTables ();
-				if ( actionSuccess () ) {
+				if ( actionSuccess () )
+				{
 					mb_nodb = false;
 					dlgNoDB->done ( QDialog::Accepted );
 					return;
@@ -481,13 +533,16 @@ void BackupDialog::selectAll ( QListWidgetItem* item )
 	if ( b_IgnoreItemListChange ) return;
 
 	b_IgnoreItemListChange = true;
-	if ( item == ui->tablesList->item ( 0 ) ) {
-		for ( uint i = 1; i < unsigned ( ui->tablesList->count () ); ++i )
+	if ( item == ui->tablesList->item ( 0 ) )
+	{
+		for ( int i ( 1 ); i < ui->tablesList->count (); ++i )
 			ui->tablesList->item ( i )->setCheckState ( item->checkState () );
 	}
-	else {
+	else
+	{
 		int checked ( 0 );
-		for ( uint i = 1; i < unsigned ( ui->tablesList->count () ); ++i ) {
+		for ( int i ( 1 ); i < ui->tablesList->count (); ++i )
+		{
 			if ( ui->tablesList->item ( i )->checkState () == Qt::Checked )
 				++checked;
 			else
@@ -519,7 +574,7 @@ void BackupDialog::btnApply_clicked ()
 			}
 		}
 		else
-			mb_success = doExport ( ui->txtExportPrefix->text (), ui->txtExportFolder->text () );
+			mb_success = doExport ( ui->txtExportPrefix->text (), ui->txtExportFolder->text (), true );
 	}
 	else
 	{ // restore
@@ -571,7 +626,8 @@ void BackupDialog::grpExportToText_clicked ( const bool checked )
 
 bool BackupDialog::getSelectedItems ( QString& selected )
 {
-	if ( !ui->restoreList->selectedItems ().isEmpty () ) {
+	if ( !ui->restoreList->selectedItems ().isEmpty () )
+	{
 		selected.clear ();
 		QList<QListWidgetItem*>::const_iterator itr ( ui->restoreList->selectedItems ().constBegin () );
 		const QList<QListWidgetItem*>::const_iterator itr_end ( ui->restoreList->selectedItems ().constEnd () );
@@ -596,12 +652,6 @@ void BackupDialog::initProgressBar ( const uint max )
 	ui->pBar->setVisible ( true );
 }
 
-void BackupDialog::increaseProgressBar ( const uint accrete )
-{
-	progress_bar_steps += accrete;
-	ui->pBar->setRange ( 0, progress_bar_steps );
-}
-
 bool BackupDialog::checkThatFileDoesNotExist ( const QString& filepath, const bool bUserInteraction )
 {
     if ( fileOps::exists ( filepath ).isOn () )
@@ -621,8 +671,10 @@ bool BackupDialog::checkThatFileDoesNotExist ( const QString& filepath, const bo
 
 bool BackupDialog::checkDir ( const QString& dir )
 {
-    if ( fileOps::isDir ( dir ).isOn () ) {
-        if ( fileOps::canWrite ( dir ).isOn () ) {
+    if ( fileOps::isDir ( dir ).isOn () )
+	{
+        if ( fileOps::canWrite ( dir ).isOn () )
+		{
             if ( fileOps::canRead ( dir ).isOn () )
                 return fileOps::canExecute ( dir ).isOn ();
         }

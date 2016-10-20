@@ -9,20 +9,20 @@
 
 const uint CMW_N_TYPES ( 2 );
 
-const char* const BTN_ADD_TOOLTIP_CHECKED[CMW_N_TYPES] = {
-	"Click again to save phone number", "Click again to save the email address"
+static const QString BTN_ADD_TOOLTIP_CHECKED[CMW_N_TYPES] = {
+	APP_TR_FUNC ( "Click again to save phone number" ), APP_TR_FUNC ( "Click again to save the email address" )
 };
 
-const char* const BTN_ADD_TOOLTIP_UNCHECKED[CMW_N_TYPES] = {
-	"Insert a new phone number", "Insert a new email address"
+static const QString BTN_ADD_TOOLTIP_UNCHECKED[CMW_N_TYPES] = {
+	APP_TR_FUNC ( "Insert a new phone number" ), APP_TR_FUNC ( "Insert a new email address" )
 };
 
-const char* const BTN_DEL_TOOLTIP[CMW_N_TYPES] = {
-	"Remove selected telephone number", "Remove selected address"
+static const QString BTN_DEL_TOOLTIP[CMW_N_TYPES] = {
+	APP_TR_FUNC ( "Remove selected telephone number" ), APP_TR_FUNC ( "Remove selected address" )
 };
 
-const char* const BTN_CANCEL_TOOLTIP[CMW_N_TYPES] = {
-	"Cancel insertion of telephone number", "Cancel insertion of email or site address"
+static const QString BTN_CANCEL_TOOLTIP[CMW_N_TYPES] = {
+	APP_TR_FUNC ( "Cancel insertion of telephone number" ), APP_TR_FUNC ( "Cancel insertion of email or site address" )
 };
 
 contactsManagerWidget::contactsManagerWidget ( QWidget* parent, const CMW_TYPE type )
@@ -132,7 +132,7 @@ void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 	{
 		cboInfoData->setText ( emptyString );
 		cboInfoData->setFocus ();
-		btnAdd->setToolTip ( tr ( BTN_ADD_TOOLTIP_CHECKED[static_cast<uint> ( m_contact_type )] ) );
+		btnAdd->setToolTip ( BTN_ADD_TOOLTIP_CHECKED[static_cast<uint> ( m_contact_type )] );
 		btnDel->setToolTip ( BTN_CANCEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
 		btnDel->setEnabled ( true );
 	}
@@ -155,16 +155,16 @@ void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 		{
 			btnDel->setToolTip ( BTN_DEL_TOOLTIP[static_cast<uint> ( m_contact_type )] );
 			btnDel->setEnabled ( true );
-			btnAdd->setToolTip ( tr ( BTN_ADD_TOOLTIP_UNCHECKED[static_cast<uint> ( m_contact_type )] ) );
+			btnAdd->setToolTip ( BTN_ADD_TOOLTIP_UNCHECKED[static_cast<uint> ( m_contact_type )] );
 			insertItem ();
 			if ( insertFunc )
 				insertFunc ( cboInfoData->text (), this );
 		}
 		else
 		{
-			VM_NOTIFY ()->notifyMessage ( tr ( "Error" ), cboInfoData->text () + tr ( "is not a valid " ) +
-										  ( m_contact_type == CMW_PHONES ? tr ( "phone number." ) : tr ( "email or site address." ) ) +
-										  tr ( "\nCannot add it." ) );
+			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Error" ), cboInfoData->text () + TR_FUNC ( "is not a valid " ) +
+										  ( m_contact_type == CMW_PHONES ? TR_FUNC ( "phone number." ) : TR_FUNC ( "email or site address." ) ) +
+										  TR_FUNC ( "\nCannot add it." ) );
 		}
 	}
 	btnAdd->setChecked ( checked ); // for indirect calls, i.e. enter or esc keys pressed when within combo's line edit

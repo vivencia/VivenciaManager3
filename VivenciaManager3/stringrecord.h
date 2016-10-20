@@ -6,24 +6,42 @@
 
 #include <QString>
 #include <QChar>
+#include <QStringMatcher>
 
 static const QLatin1Char public_sep ( 31 );
-static const QChar record_sep ( 30 );
-static const QChar table_sep  ( 29 );
+static const QChar record_separator ( 30 );
+static const QChar table_separator ( 29 );
 
 //------------------------------------------------------RECORD-----------------------------------------------
 class stringRecord
 {
 
 public:
-	inline explicit stringRecord () : mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_OFF ) {}
+	inline explicit stringRecord ( const QChar& sep = record_separator ) : mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_UNDEF )
+	{
+		setFieldSeparationChar ( sep );	
+	}
+	
 	inline stringRecord ( const stringRecord &other )
-		: mData ( other.mData ), mFields ( other.mFields ), mFastIdx ( other.mFastIdx ), mState ( other.mState ) {}
-	inline stringRecord ( const QString& str ) {
+		: mData ( other.mData ), mFields ( other.mFields ), mFastIdx ( other.mFastIdx ), mState ( other.mState )
+	{
+		setFieldSeparationChar ( other.record_sep );
+	}
+	
+	inline stringRecord ( const QString& str, const QChar& sep = record_separator )
+	{
+		setFieldSeparationChar ( sep );
 		fromString ( str );
 	}
 
-	inline static uint countFields ( const QString& str ) {
+	inline void setFieldSeparationChar ( const QChar& chr )
+	{
+		record_sep = chr;
+		recsep_matcher.setPattern ( record_sep );
+	}
+	
+	inline uint countFields ( const QString& str ) const
+	{
 		return str.count ( record_sep );
 	}
 
@@ -33,9 +51,9 @@ public:
 		return mFields;
 	}
 	void clear ();
-	void insertField ( const int field, const QString& value = QString::null );
-	void changeValue ( const int field, const QString& value );
-	void removeField ( const int field );
+	void insertField ( const uint field, const QString& value = QString::null );
+	void changeValue ( const uint field, const QString& value );
+	void removeField ( const uint field );
 	bool removeFieldByValue ( const QString& value, const bool b_allmatches = false );
 	void insertStrRecord ( const int field, const QString& inserting_rec );
 	inline void insertStrRecord ( const int field, const stringRecord& inserting_rec ) {
@@ -47,14 +65,14 @@ public:
 	}
 
 	const QString section ( const uint start_field, int end_field = -1 ) const;
-	const QString fieldValue ( int field ) const;
+	const QString fieldValue ( uint field ) const;
 	void fastAppendValue ( const QString& value );
 	int field ( const QString& value, const int init_idx = -1, const bool bprecise = true ) const;
 	inline const QString& toString () const {
 		return mData;
 	}
 
-	static const QString fieldValue ( const QString& str_record, const uint field );
+	static const QString fieldValue ( const QString& str_record, const uint field, const QChar& rec_sep = record_separator );
 
 	/* Do not rely on curValue () alone after calling any of these functions, rather rely on
 	 * their return value. In order to speed things up I will not clear mCurValue if a result is
@@ -72,7 +90,10 @@ public:
 		return mCurValue;
 	}
 
-#define addToStringRecord(strRec,value) strRec + value + record_sep
+	static inline QString joinStringRecords ( const QString& rec1, const QString& rec2, const QChar& sep = record_separator )
+	{
+		return rec1 + rec2 + sep;
+	}
 
 	// a Null stringRecord is not to be used, unless when returning an invalid result. This is so the caller
 	// knows that it should not use that returned object, and discard it
@@ -87,6 +108,8 @@ public:
 	}
 
 private:
+	QChar record_sep;
+	QStringMatcher recsep_matcher;
 	QString mData;
 	mutable QString mCurValue;
 	uint mFields;
@@ -102,26 +125,43 @@ class stringTable
 {
 
 public:
-	inline explicit stringTable () : nRecords ( 0 ), mFastIdx ( -1 ) {}
-	inline stringTable ( const stringTable& other )
-		: mRecords ( other.mRecords ), nRecords ( other.nRecords ), mFastIdx ( other.mFastIdx ) {}
-	inline stringTable ( const QString& str ) {
+	inline explicit stringTable ( const QChar& sep = table_separator ) : nRecords ( 0 ), mFastIdx ( -1 ), mCurIdx ( -1 )
+	{
+		setRecordSeparationChar ( sep );
+	}
+	
+	inline stringTable ( const stringTable& other, const QChar& sep = table_separator )
+		: mRecords ( other.mRecords ), nRecords ( other.nRecords ), mFastIdx ( other.mFastIdx ), mCurIdx ( other.mCurIdx )
+	{
+		setRecordSeparationChar ( sep );
+	}
+	
+	inline stringTable ( const QString& str, const QChar& sep = table_separator )
+	{
+		setRecordSeparationChar ( sep );
 		fromString ( str );
+	}
+	
+	inline void setRecordSeparationChar ( const QChar& chr )
+	{
+		table_sep = chr;
+		tablesep_matcher.setPattern ( table_sep );
+	}
+
+	inline void setRecordFieldSeparationChar ( const QChar& chr )
+	{
+		mRecord.setFieldSeparationChar ( chr );
 	}
 
 	bool isOK () const;
 	void fromString ( const QString& str );
-	inline uint countRecords () const {
-		return nRecords;
-	}
-	static inline uint countRecords ( const QString& str_table ) {
-		return str_table.count ( table_sep );
-	}
-
+	
+	inline uint countRecords () const { return nRecords; }
 	void clear ();
 
 	void insertRecord ( const uint row, const QString& record );
-	inline void insertRecord ( const uint row, const stringRecord& record ) {
+	inline void insertRecord ( const uint row, const stringRecord& record )
+	{
 		insertRecord ( row, record.toString () );
 	}
 	void changeRecord ( const uint row, const QString& record );
@@ -135,7 +175,7 @@ public:
 	}
 	void removeRecord ( const uint row );
 
-	const stringRecord& readRecord ( int row ) const;
+	const stringRecord& readRecord ( uint row ) const;
 	int findRecordRowByFieldValue ( const QString& value, const uint field, const uint nth_occurrence = 0 ) const;
 	int findRecordRowThatContainsWord ( const QString& word, podList<uint>* dayAndFieldList = nullptr, const int field = -1, const uint nth_occurrence = 0 ) const;
 	void fastAppendRecord ( const QString& record );
@@ -158,16 +198,22 @@ public:
 	bool prevStr () const;
 	bool lastStr () const;
 
-	inline const QString& curRecord () const {
-		return mCurRecord;
+	inline const stringRecord& curRecord () const {
+		return mRecord;
+	}
+	inline int currentIndex () const {
+		return mCurIdx;
 	}
 
 private:
+	QChar table_sep;
+	QStringMatcher tablesep_matcher;
 	QString mRecords;
 	mutable stringRecord mRecord;
 	mutable QString mCurRecord;
 	uint nRecords;
 	int mFastIdx;
+	mutable int mCurIdx;
 };
 //------------------------------------------------------TABLE------------------------------------------------
 

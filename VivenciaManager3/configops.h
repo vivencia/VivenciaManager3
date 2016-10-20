@@ -13,7 +13,7 @@ enum CFG_FIELDS
 	MAINWINDOW_GEOMETRY = 0, HOME_DIR = 1, LAST_VIEWED_RECORDS = 2, LAST_LOGGED_USER = 3,
 	CONFIG_FILE = 4, DATA_DIR = 5, FILEMANAGER = 6, PICTURE_VIEWER = 7, PICTURE_EDITOR = 8,
 	EMAIL_CLIENT = 9, DOC_VIEWER = 10, DOC_EDITOR = 11 , XLS_EDITOR = 12, BASE_PROJECT_DIR = 13,
-	ESTIMATE_DIR = 14, REPORT_DIR = 15, BACKUP_DIR = 16, EMAIL_ADDRESS = 17
+	ESTIMATE_DIR = 14, REPORT_DIR = 15, BACKUP_DIR = 16, HTML_DIR = 17, DROPBOX_DIR = 18, EMAIL_ADDRESS = 19
 };
 
 static const QLatin1String STR_VIVENCIA_LOGO ( "vivencia.jpg" );
@@ -81,6 +81,26 @@ public:
 		return setDir ( BACKUP_DIR, str );
 	}
 
+	inline const QString& HTMLDir ( const bool use_default = false ) const
+	{
+		return getConfigValue ( HTML_DIR, use_default );
+	}
+	
+	inline const QString& setHTMLDir ( const QString& str )
+	{
+		return setDir ( HTML_DIR, str );
+	}
+	
+	inline const QString& dropboxDir ( const bool use_default = false ) const
+	{
+		return getConfigValue ( DROPBOX_DIR, use_default );
+	}
+	
+	inline const QString& setDropboxDir ( const QString& str )
+	{
+		return setDir ( DROPBOX_DIR, str );
+	}
+	
 	inline const QString& fileManager ( const bool use_default = false ) const
 	{
 		return getConfigValue ( FILEMANAGER, use_default );

@@ -138,7 +138,7 @@ bool DBRecord::readRecord ( const uint field, const QString& search, const bool 
 	if ( search.isEmpty () )
 		return false;
 
-	if ( signed ( field ) != stquery.field || search != stquery.search )
+	if ( field != static_cast<uint>( stquery.field ) || search != stquery.search )
 	{
 		stquery.reset = true;
 		stquery.field = field;
@@ -361,7 +361,7 @@ void DBRecord::createTemporaryRecord ( DBRecord* dbrec )
 {
 	const uint table ( dbrec->t_info->table_order );
 	const uint new_id ( VDB ()->getNextID ( table ) );
-	dbrec->setIntValue ( 0, new_id ); // this is set so that VivenciaDB::insertDBREcord can use the already evaluated value
+	dbrec->setIntValue ( 0, new_id ); // this is set so that VivenciaDB::insertDBRecord can use the already evaluated value
 	dbrec->setIntBackupValue ( 0, new_id ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
 	const QString str_id ( QString::number ( new_id ) );
 	dbrec->setValue ( 0, str_id );

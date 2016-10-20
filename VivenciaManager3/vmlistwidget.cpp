@@ -52,15 +52,26 @@ void vmListWidget::addItem ( vmListItem* item, const bool b_makecall )
 {
 	if ( item != nullptr )
 	{
-		const uint row ( rowCount () );
-		appendRow ();
+		uint row ( 0 );
+		if ( isSortingEnabled () && !item->itemIsSorted () )
+		{
+			item->setItemIsSorted ( true );
+			setSortingEnabled ( false );
+			insertRow ( 0 );
+		}
+		else
+		{
+			row = static_cast<uint>(rowCount ());
+			appendRow ();
+		}
+		
 		item->update ();
 		setItem ( row, 0, item );
 		if ( !isIgnoringChanges () )
 		{
 			mCurrentItem = item;
 			scrollToItem ( mCurrentItem );
-			setCurrentCell ( row, 0, QItemSelectionModel::ClearAndSelect );
+			setCurrentCell ( item->row (), 0, QItemSelectionModel::ClearAndSelect );
 			if ( b_makecall && mCurrentItemChangedFunc )
 				mCurrentItemChangedFunc ( mCurrentItem );
 		}
@@ -79,7 +90,7 @@ void vmListWidget::insertRow ( const uint row, const uint n )
 {
 	if ( row <= static_cast<uint>( rowCount () ) )
 	{
-		setVisibleRows ( visibleRows () +  n );
+		setVisibleRows ( visibleRows () + n );
 		for ( uint i_row ( 0 ); i_row < n; ++i_row )
 			QTableWidget::insertRow ( row + i_row );
 		setLastUsedRow ( rowCount () - 1 );

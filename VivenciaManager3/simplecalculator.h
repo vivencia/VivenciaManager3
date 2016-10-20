@@ -1,14 +1,16 @@
 #ifndef SIMPLECALCULATOR_H
 #define SIMPLECALCULATOR_H
 
-#include <QDockWidget>
+#include <QDialog>
 
 class vmLineEdit;
-class QTextEdit;
-class QKeyEvent;
-class QPushButton;
 
-class SimpleCalculator : public QDockWidget
+namespace Ui
+{
+	class SimpleCalculator;
+}
+
+class SimpleCalculator : public QDialog
 {
 
 public:
@@ -28,11 +30,7 @@ private:
 
 	QString mStrResult;
 	vmLineEdit* txtReceiveResult;
-	vmLineEdit* txtInput;
-	QTextEdit* txtResult;
-	QPushButton* btnCalc;
-	QPushButton* btnClose;
-	QPushButton* btnCopyResult;
+	Ui::SimpleCalculator *ui;
 };
 
 inline SimpleCalculator *CALCULATOR ()

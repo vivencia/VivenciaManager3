@@ -138,7 +138,7 @@ public:
 	void calcJobTime ();
 	void showJobTotalTime ( const vmNumber& time ) const;
 	triStateType dateIsInDaysList ( const QString& str_date );
-	void rescanJobDaysList ();
+	void rescanJobDaysList ( jobListItem* const job_item );
 	void fillCalendarJobsList ( const stringTable& jobids, vmListWidget* list );
 	void controlFormsForJobSelection ( const bool bStartSelection );
 	void selectJob ();
@@ -191,7 +191,6 @@ public:
 	void loadAllOverduesList ();
 	void interceptPaymentCellChange ( const vmTableItem* const item );
 	void interceptPaymentRowRemoved ( const uint row );
-	void processPayInfoForCalendar ( stringTable& pay_data, const vmTableItem* const item );
 	void updatePayTotalPaidValue ();
 	void payKeyPressedSelector ( const QKeyEvent* ke );
 	void tabPaysLists_currentChanged ( const int index );
@@ -238,11 +237,8 @@ public:
 	bool restoreItem ( const stringRecord& restore_info );
 	void restoreLastSession ();
 	void searchCallbackSelector ( const QKeyEvent* ke );
-	void setupLeftPanel ();
 	void setupWorkFlow ();
 	void setupTabNavigationButtons ();
-	void syncLeftPanelWithWorkFlow ( const int value );
-	void syncWorkFlowWithLeftPanel ( const int value );
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 
 //--------------------------------------------CALENDAR-----------------------------------------------------------
@@ -308,29 +304,12 @@ private:
 	QAction* jobsPicturesMenuAction;
 	vmAction* actCountDayHours, *actCountAllHours, *actAppendDayToday, *actAppendDayYesterday;
 
-	vmTaskPanel* clientTaskPanel;
 	vmTaskPanel* mainTaskPanel;
-	vmActionGroup* agClientOps, *agClientJobs, *agClientPays, *agClientBuys;
-
-	vmListWidget* clientsList;
-	vmListWidget* jobsList;
-	vmListWidget* paysList, *paysOverdueList, *paysOverdueClientList, *paysCurrentList;
-	vmListWidget* buysList, *buysJobList;
-
-	/*clientListItem* CLIENT_PREV_ITEM;
-	jobListItem* JOB_PREV_ITEM;
-	payListItem* PAY_PREV_ITEM;
-	buyListItem* BUY_PREV_ITEM;
-	buyListItem* BUY_JOB_PREV_ITEM;*/
 
 	vmActionGroup* grpClients;
 	vmActionGroup* grpJobs;
 	vmActionGroup* grpPays;
 	vmActionGroup* grpBuys;
-
-	QTabWidget* tabPaysLists;
-	vmLineEdit* txtPayTotals;
-	QFrame* frmPayTotals;
 	
 	std::function<void ( const int )> selJob_callback;
 	bool mb_jobPosActions;
