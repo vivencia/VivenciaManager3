@@ -225,7 +225,7 @@ void quickProjectUI::cellModified ( const vmTableItem* const item )
 		qDebug () << "auto column modified";
 		return;
 	}
-	if ( (unsigned) item->row () < m_table->totalsRow () ) {
+	if ( item->row () < m_table->totalsRow () ) {
 		stringRecord rowRec ( recStrValue ( qp_rec, guiColumnToDBColumn ( item->column () ) ) );
 		rowRec.changeValue ( item->row (), item->text () );
 		setRecValue ( qp_rec, guiColumnToDBColumn ( item->column () ), rowRec.toString () );

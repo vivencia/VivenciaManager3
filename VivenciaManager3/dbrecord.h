@@ -111,7 +111,7 @@ public:
 	bool readNextRecord ( const bool follow_search = false, const bool load_data = true );
 	bool readPrevRecord ( const bool follow_search = false, const bool load_data = true );
 	bool deleteRecord ();
-	bool saveRecord ();
+	bool saveRecord ( const bool b_changeAction = true );
 	void contains ( const QString& value, podList<uint>& fields ) const;
 
 	inline bool isModified () const { return mb_modified; }

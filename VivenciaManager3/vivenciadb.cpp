@@ -244,7 +244,7 @@ void VivenciaDB::doPreliminaryWork ()
 			}
 			++i;
 		} while ( gen_rec.readNextRecord () );
-		if ( i == ( TABLES_IN_DB - 1 ) )
+		if ( i == ( TABLES_IN_DB - 1 ) ) // New table. Information not yet recorded in General Table
 		{
 			if ( ( *table_info[i]->update_func ) () )
 				gen_rec.insertOrUpdate ( table_info[i] );

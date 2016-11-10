@@ -252,7 +252,7 @@ bool DBRecord::deleteRecord ()
 	return false;
 }
 
-bool DBRecord::saveRecord ()
+bool DBRecord::saveRecord ( const bool b_changeAction )
 {
 	bool ret ( false );
 	if ( m_action == ACTION_ADD )
@@ -266,7 +266,8 @@ bool DBRecord::saveRecord ()
 	if ( ret )
 	{
 		callHelperFunctions ();
-		setAction ( ACTION_READ );
+		if ( b_changeAction )
+			setAction ( ACTION_READ );
 		setAllModified ( false );
 		setCompleterUpdated ( false );
 	}

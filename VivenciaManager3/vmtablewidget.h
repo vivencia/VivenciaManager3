@@ -86,8 +86,6 @@ public:
 
 	static vmTableWidget* createPayHistoryTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr,
 			const PAY_HISTORY_RECORD last_column = PHR_USE_DATE );
-
-	static void processPayHistoryForCalendar ( stringTable& pay_data, const vmTableItem* const item, vmTableWidget* table  );
 	
 	virtual void insertRow ( const uint row, const uint n = 1 );
 	virtual void removeRow ( const uint row, const uint n = 1 );
@@ -141,11 +139,11 @@ public:
 	inline bool isEmpty () const {
 		return static_cast<bool> ( m_lastUsedRow == 0 ); }
 
-	inline vmTableItem* sheetItem ( const int row, const int col ) const {
-		return static_cast<vmTableItem*> ( this->item ( row, col ) ); }
+	inline vmTableItem* sheetItem ( const uint row, const uint col ) const {
+		return static_cast<vmTableItem*> ( this->item ( static_cast<int>(row), static_cast<int>(col) ) ); }
 
 	inline uint colCount () const { return m_ncols; }
-	inline uint totalsRow () const { return mTotalsRow; }
+	inline int totalsRow () const { return mTotalsRow; }
 	void setLastUsedRow ( const int row );
 	inline int lastUsedRow () const { return m_lastUsedRow; }
 

@@ -357,22 +357,13 @@ Buy::~Buy () {}
 uint Buy::isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const
 {
 	uint rec_field ( 0 );
-	switch ( isr_field ) {
-		case ISR_SUPPLIER:
-			rec_field = FLD_BUY_SUPPLIER;
-		break;
-		case ISR_ID:
-			rec_field = FLD_BUY_ID;
-		break;
-		case ISR_OWNER:
-			rec_field = FLD_BUY_JOBID;
-		break;
-		case ISR_DATE:
-			rec_field = FLD_BUY_DATE;
-		break;
-		default:
-			rec_field = FLD_BUY_REPORT;
-		break;
+	switch ( isr_field )
+	{
+		case ISR_SUPPLIER:				rec_field = FLD_BUY_SUPPLIER;	break;
+		case ISR_ID:					rec_field = FLD_BUY_ID;			break;
+		case ISR_OWNER:					rec_field = FLD_BUY_JOBID;		break;
+		case ISR_DATE:					rec_field = FLD_BUY_DATE;		break;
+		default:						rec_field = FLD_BUY_REPORT;		break;
 	}
 	return rec_field;
 }
@@ -380,8 +371,10 @@ uint Buy::isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const
 QString Buy::isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_record ) const
 {
 	const uint rec_field ( isrRecordField ( isr_field ) );
-	if ( rec_field == FLD_BUY_REPORT ) {
-		if ( sub_record >= 0 ) {
+	if ( rec_field == FLD_BUY_REPORT )
+	{
+		if ( sub_record >= 0 )
+		{
 			const stringTable table ( recStrValue ( this, FLD_BUY_REPORT ) );
 			const stringRecord rec ( table.readRecord ( sub_record ) );
 			return rec.fieldValue ( isr_field );
@@ -394,17 +387,18 @@ QString Buy::isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_
 
 int Buy::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 {
-	switch ( sc ) {
-		case SC_ID: return FLD_BUY_ID;
-		case SC_REPORT_1: return FLD_BUY_REPORT;
-		case SC_REPORT_2: return FLD_BUY_NOTES;
-		case SC_ADDRESS_1: return FLD_BUY_SUPPLIER;
-		case SC_PRICE_1: return FLD_BUY_PRICE;
-		case SC_DATE_1: return FLD_BUY_DATE;
-		case SC_DATE_3: return FLD_BUY_DELIVERDATE;
-		case SC_EXTRA_1: return FLD_BUY_CLIENTID;
-		case SC_EXTRA_2: return FLD_BUY_JOBID;
-		default: return -1;
+	switch ( sc )
+	{
+		case SC_ID:			return FLD_BUY_ID;
+		case SC_REPORT_1:	return FLD_BUY_REPORT;
+		case SC_REPORT_2:	return FLD_BUY_NOTES;
+		case SC_ADDRESS_1:	return FLD_BUY_SUPPLIER;
+		case SC_PRICE_1:	return FLD_BUY_PRICE;
+		case SC_DATE_1:		return FLD_BUY_DATE;
+		case SC_DATE_3:		return FLD_BUY_DELIVERDATE;
+		case SC_EXTRA_1:	return FLD_BUY_CLIENTID;
+		case SC_EXTRA_2:	return FLD_BUY_JOBID;
+		default:			return -1;
 	}
 }
 

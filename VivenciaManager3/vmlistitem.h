@@ -30,15 +30,15 @@ extern QIcon* listIndicatorIcons[4];
 									  
 enum RELATED_LIST_ITEMS {
 	RLI_CLIENTPARENT = 0, RLI_JOBPARENT = 1, RLI_CLIENTITEM = 2, RLI_JOBITEM = 3, 
-	RLI_CALENDARITEM = 4, RLI_EXTRAITEM_1 = 5, RLI_EXTRAITEM_2 = 6
+	RLI_CALENDARITEM = 4, RLI_EXTRAITEMS = 5
 };
+
+constexpr uint PAY_ITEM_OVERDUE_CLIENT (static_cast<uint>(RLI_EXTRAITEMS) + 0 );
+constexpr uint PAY_ITEM_OVERDUE_ALL ( static_cast<uint>(RLI_EXTRAITEMS) + 1 );
 
 enum CRASH_FIELDS {
 	CF_SUBTYPE = 0, CF_CLIENTID, CF_JOBID, CF_ID, CF_ACTION, CF_DBRECORD
 };
-
-#define LAST_RELATION RLI_EXTRAITEM_2
-#define LAST_EDITABLE_RELATION RLI_JOBITEM
 
 class vmListItem : public vmTableItem
 {
@@ -54,8 +54,8 @@ public:
 	void highlight ( const VMColors vm_color, const QString& = QString::null );
 
 	inline RECORD_ACTION action () const { return m_action; }
-	void setRelation ( const RELATED_LIST_ITEMS relation  );
-	inline RELATED_LIST_ITEMS relation () const { return mRelation; }
+	void setRelation ( const uint relation  );
+	inline uint relation () const { return mRelation; }
 	void disconnectRelation ( const uint start_relation, vmListItem* item );
 	void syncSiblingWithThis ( vmListItem* sibling );
 
@@ -75,8 +75,8 @@ public:
 	virtual bool loadData ();
 	virtual void update ();
 	virtual void relationActions ( vmListItem* = nullptr ) { ; }
-	void setRelatedItem ( const RELATED_LIST_ITEMS rel_idx, vmListItem* const item );
-	vmListItem* relatedItem ( const RELATED_LIST_ITEMS rel_idx ) const;
+	void setRelatedItem ( const uint rel_idx, vmListItem* const item );
+	vmListItem* relatedItem ( const uint rel_idx ) const;
 	
 	virtual uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 
@@ -95,14 +95,18 @@ public:
 	void setSearchArray ();
 	inline bool itemIsSorted () const { return mbSorted; }
 	inline void setItemIsSorted ( const bool b_sorted ) { mbSorted = b_sorted; }
-	
+
+	inline uint lastRelation () const { return mLastRelation; }
+	inline void setLastRelation ( const uint relation ) { mLastRelation = static_cast<RELATED_LIST_ITEMS>(relation); }
+
 protected:
 	void changeAppearance ();
-	void deleteRelatedItem ( const RELATED_LIST_ITEMS rel_idx );
+	void deleteRelatedItem ( const uint rel_idx );
 
 	int m_crashid;
 	DBRecord* m_dbrec;
-	RELATED_LIST_ITEMS mRelation;
+	uint mRelation;
+	uint mLastRelation;
 	triStateType* searchFields;
 
 private:
@@ -111,7 +115,7 @@ private:
 	vmListItem& operator=( const vmListItem& );
 	vmListItem& operator=( const QListWidgetItem& );
 
-	vmListItem* item_related[LAST_RELATION+1];
+	vmListItem* item_related[20];
 	
 	RECORD_ACTION m_action;
 	vmListWidget* m_list;
@@ -229,6 +233,8 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
+	void updateExtraItem ( const QString& bodyText );
+	void updateCalendarItem ();
 	void relationActions ( vmListItem* subordinateItem = nullptr );
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;

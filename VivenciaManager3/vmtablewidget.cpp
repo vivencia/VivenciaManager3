@@ -95,16 +95,15 @@ vmTableColumn* vmTableWidget::createColumns ( const uint nCols )
 void vmTableWidget::initTable ( const uint rows )
 {
 	uint i_col ( 0 );
-	int i_row ( 0 );
+	uint i_row ( 0 );
 
-	uint colWidth ( 0 );
 	vmTableColumn* column ( nullptr );
 	vmTableItem* sheet_item ( nullptr );
 	QString col_header;
 
-	mTotalsRow = rows;
+	mTotalsRow = static_cast<int>(rows);
 	m_nVisibleRows = rows + static_cast<uint>( !mbPlainTable );
-	setRowCount ( m_nVisibleRows );
+	setRowCount ( static_cast<int>(m_nVisibleRows) );
 
 	if ( !mbTableIsList ) {
 		QFont titleFont ( font () );
@@ -120,23 +119,23 @@ void vmTableWidget::initTable ( const uint rows )
 	do
 	{
 		column = &mCols[i_col];
-		insertColumn ( i_col );
+		insertColumn ( static_cast<int>(i_col) );
 
 		if ( !column->editable )
 			setBit ( readOnlyColumnsMask, i_col ); // bit is set? read only cell : cell can be cleared or other actions
 
-		for ( i_row = 0; i_row < (signed) m_nVisibleRows; ++i_row ) {
-			if ( !mbPlainTable && i_row != mTotalsRow ) // last row, read-only, displays formulas like "sum" for the previous rows
+		for ( i_row = 0; i_row < m_nVisibleRows; ++i_row ) {
+			if ( !mbPlainTable && i_row != static_cast<uint>(totalsRow ()) ) // last row, read-only, displays formulas like "sum" for the previous rows
 				sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
 			else if ( !mbTableIsList )
 				sheet_item = new vmTableItem ( WT_LINEEDIT, i_col != 0 ? column->text_type : vmWidget::TT_TEXT, emptyString, this );
 			
-			setItem ( i_row, i_col, sheet_item );
+			setItem ( static_cast<int>(i_row), static_cast<int>(i_col), sheet_item );
 			sheet_item->setButtonType ( column->button_type );
 			sheet_item->setCompleterType ( column->completer_type );
 			setCellWidget ( sheet_item );
 			sheet_item->setEditable ( false );
-			if ( i_row == mTotalsRow && !mbPlainTable ) {
+			if ( i_row == static_cast<uint>(totalsRow ()) && !mbPlainTable ) {
 				if ( i_col == 0 )
 					sheet_item->setText ( TR_FUNC ( "Total:" ), false, false );
 				else {
@@ -154,9 +153,9 @@ void vmTableWidget::initTable ( const uint rows )
 		}
 
 		if ( !mbTableIsList )
-			setHorizontalHeaderItem ( i_col, new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
+			setHorizontalHeaderItem ( static_cast<int>(i_col), new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
 			
-		colWidth = column->width;
+		uint colWidth ( column->width );
 		if ( colWidth == 0 ) {
 			switch ( column->wtype ) {
 				case WT_DATEEDIT:
@@ -173,13 +172,13 @@ void vmTableWidget::initTable ( const uint rows )
 				break;
 			}
 		}
-		setColumnWidth ( i_col, colWidth );
+		setColumnWidth ( static_cast<int>(i_col), static_cast<int>(colWidth) );
 		++i_col;
 	}
 	while ( i_col < m_ncols );
 	
 	//All the items that could not have their formula calculated at the time of creation will now
-	for ( i_row = 0; i_row < (signed) m_itemsToReScan.count (); ++i_row )
+	for ( i_row = 0; i_row < m_itemsToReScan.count (); ++i_row )
 		m_itemsToReScan.at ( i_row )->targetsFromFormula ();
 }
 
@@ -453,28 +452,6 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 	return table;
 }
 
-void vmTableWidget::processPayHistoryForCalendar ( stringTable& pay_data, const vmTableItem* const item, vmTableWidget* table  )
-{
-	const int row ( item->row () );
-	
-	// Only save the values for the extra fields one time, the first
-	if ( pay_data.readRecord ( row ).fieldValue ( PHR_EXTRA_INFO + PHR_EXTRA_INFO ).isEmpty () )
-	{
-		stringRecord extrainfo;
-		const int action ( item->prevText () == item->defaultValue () ? ACTION_ADD : ACTION_EDIT );
-
-		if ( action == ACTION_EDIT )
-		{
-			// Save the original values to be replaced in dbCalendar with the new ones. Since aone single payinfo
-			// depends on a date, a value and a paid property, it's easier to save all the fields
-			for ( uint i_col ( PHR_DATE ); i_col < PHR_USE_DATE; ++i_col )
-				extrainfo.changeValue ( i_col, table->sheetItem ( row, i_col )->originalText () );
-		}
-		extrainfo.changeValue ( PHR_EXTRA_INFO, QString::number ( action ) );
-		pay_data.changeRecord ( static_cast<uint>( row ), PHR_EXTRA_INFO, extrainfo.toString () );
-	}
-}
-
 void vmTableWidget::insertRow ( const uint row, const uint n )
 {
 	if ( row <= static_cast<uint> ( rowCount () ) )
@@ -512,7 +489,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 			// update all rows after the inserted ones, so that their formula reflects the row changes
 			for ( i_row = row + n; static_cast<int>(i_row) < mTotalsRow; ++i_row ) {
 				for ( i_col = 0; i_col < colCount (); ++i_col ) {
-					sheet_item = sheetItem ( static_cast<int>(i_row), static_cast<int>(i_col) );
+					sheet_item = sheetItem ( i_row, i_col );
 					if ( sheet_item->hasFormula () ) {
 						new_formula = sheet_item->formulaTemplate ();
 						sheet_item->setFormula ( new_formula, QString::number ( i_row ) );
@@ -530,7 +507,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 				}
 				for ( i = start_modification; i < modified_rows; ++i ) {
 					list_value = modifiedRows.at ( i );
-					modifiedRows.replace ( static_cast<int>(i), list_value + n ); // push down modified rows
+					modifiedRows.replace ( i, list_value + n ); // push down modified rows
 				}
 			}
 		}
@@ -539,11 +516,11 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 void vmTableWidget::removeRow ( const uint row, const uint n )
 {
-	if ( static_cast<int>(row) < rowCount () )
+	if ( static_cast<int>(row) < totalsRow () )
 	{
-		int i_row ( 0 );
+		uint i_row ( 0 );
 		m_nVisibleRows -= n;
-		for ( ; i_row < static_cast<int>(n); ++i_row )
+		for ( ; i_row < n; ++i_row )
 			QTableWidget::removeRow ( static_cast<int>(row) );
 
 		if ( static_cast<int>(row + n) >= m_lastUsedRow )
@@ -553,11 +530,11 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 		{
 			mTotalsRow -= n;
 			vmTableItem* sheet_item ( nullptr );
-			int i_col ( 0 );
+			uint i_col ( 0 );
 			QString new_formula;
-			for ( i_row = static_cast<int>(row); i_row < mTotalsRow; ++i_row )
+			for ( i_row = row; static_cast<int>(i_row) < totalsRow (); ++i_row )
 			{
-				for ( i_col = 0; i_col < static_cast<int>(colCount ()); ++i_col )
+				for ( i_col = 0; i_col < colCount (); ++i_col )
 				{
 					sheet_item = sheetItem ( i_row, i_col );
 					if ( sheet_item->hasFormula () )
@@ -582,7 +559,7 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 				for ( i = start_modification; i < modifiedRows.count (); ++i )
 				{
 					list_value = modifiedRows.at ( i );
-					modifiedRows.replace ( static_cast<int>(i), list_value - n ); // push up modified rows
+					modifiedRows.replace ( i, list_value - n ); // push up modified rows
 				}
 				modifiedRows.removeOne ( row, 0 );
 			}
@@ -674,7 +651,7 @@ void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 void vmTableWidget::setCellValue ( const QString& value, const uint row, const uint col )
 {
 	if ( col < colCount () ) {
-		if ( row >= (unsigned) rowCount () )
+		if ( static_cast<int>(row) >= totalsRow () )
 			appendRow ();
 		sheetItem ( row, col )->setText ( value, false, false );
 	}
@@ -690,15 +667,15 @@ void vmTableWidget::setRowData ( const spreadRow* s_row, const bool b_notify )
 		for ( uint i_col ( 0 ), used_col ( s_row->column.at ( 0 ) );
 			i_col < unsigned ( s_row->column.count () );
 				used_col = s_row->column.at ( ++i_col ) )
-			sheetItem ( s_row->row, used_col )->setText ( s_row->field_value.at ( used_col ), false, b_notify );
+			sheetItem ( static_cast<uint>(s_row->row), used_col )->setText ( s_row->field_value.at ( used_col ), false, b_notify );
 	}
 }
 
 void vmTableWidget::rowData ( const uint row, spreadRow* s_row ) const
 {
-	if ( row < (unsigned)mTotalsRow ) {
+	if ( static_cast<int>(row) < mTotalsRow ) {
 		uint i_col ( 0 );
-		s_row->row = row;
+		s_row->row = static_cast<int>(row);
 		s_row->field_value.clearButKeepMemory ();
 
 		for ( ; i_col < colCount (); ++i_col )
@@ -710,17 +687,17 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 {
 	mTableChanged = true;
 	if ( mbKeepModRec ) {
-		const uint row ( item->row () );
+		const uint row ( static_cast<uint>(item->row ()) );
 		uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
 		for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i )
 		{
-			if ( unsigned ( row ) == modifiedRows.at ( i ) )
+			if ( row == modifiedRows.at ( i ) )
 			{
 				if ( cellChanged_func )
 					cellChanged_func ( item );
 				return;
 			}
-			else if ( unsigned ( row ) > modifiedRows.at ( i ) )
+			else if ( row > modifiedRows.at ( i ) )
 			{
 				break;
 			}
@@ -854,7 +831,7 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 {
 	vmWidget* widget ( nullptr );
 	// read only columns do not connect signals, do not need completers
-	const bool bCellReadOnly ( isBitSet ( readOnlyColumnsMask, sheet_item->column () ) || sheet_item->row () == (signed) totalsRow () );
+	const bool bCellReadOnly ( isBitSet ( readOnlyColumnsMask, sheet_item->column () ) || sheet_item->row () == totalsRow () );
 
 	switch ( sheet_item->widgetType () )
 	{
@@ -1133,7 +1110,7 @@ int vmTableWidget::isCellMonitored ( const vmTableItem* const item )
 //todo: monitoredCellChanged_func gets called before the item's text is updated, so we get the old text instead of the new one
 void vmTableWidget::insertMonitoredCell ( const uint row, const uint col )
 {
-	const vmTableItem* item ( this->sheetItem ( row, col ) );
+	const vmTableItem* item ( sheetItem ( row, col ) );
 	if ( isCellMonitored ( item ) == -1 ) {
 		mMonitoredCells.append ( item );
 		/* Most likely, a monitored cell will be read only, and display the result of some formula dependant on changes happening
@@ -1142,8 +1119,10 @@ void vmTableWidget::insertMonitoredCell ( const uint row, const uint col )
 		 * widget because vmTableItem already does it, and, in fact, monitoredCellChanged_func will be called by the setText method
 		 * of widget which, in turn, is called by vmTableItem::setText
 		*/
-		if ( isBitSet ( readOnlyColumnsMask, col ) || row == totalsRow () ) {
-			if ( item->widget () ) { // call setCallbackForMonitoredCellChanged with nullptr as argument when you wish to handle the monitoring outside this class
+		if ( isBitSet ( readOnlyColumnsMask, col ) || row == static_cast<uint>(totalsRow ()) )
+		{
+			if ( item->widget () ) 
+			{ // call setCallbackForMonitoredCellChanged with nullptr as argument when you wish to handle the monitoring outside this class
 				item->widget ()->setCallbackForContentsAltered ( [&, item] ( const vmWidget* const ) {
 						return monitoredCellChanged_func ( item ); } );
 			}

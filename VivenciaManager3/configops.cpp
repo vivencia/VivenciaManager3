@@ -10,12 +10,7 @@
 #include "heapmanager.h"
 
 #include <QTextStream>
-
-#ifdef QT5
 #include <QStandardPaths>
-#elif QT4
-#include <QDesktopServices>
-#endif
 
 constexpr const int CFG_CATEGORIES ( 20 );
 static const QString CFG_FILE_FIELDS_STR[CFG_CATEGORIES] =
@@ -38,14 +33,10 @@ static const QString DEFAULT_OPTS[CFG_CATEGORIES] = {
 	( QStringLiteral ( "0:0:0:0:0:" ) ), // DEFAULT_LAST_VIEWED_RECORDS
 	( emptyString ), // DEFAULT_LAST_LOGGED_USER
 	( DEFAULT_CONFIG_DIR + QLatin1String ( "vmngr3.conf" ) ), // DEFAULT_OPTS[CONFIG_FILE]
-#ifdef QT5
 	/* I am assuming the QStringList has at least one item. I will play along with this because I think it will have at least one item
 	 * under all circurmstances. If I encounter an error at some point I will create a static function which will check for emptiness in the list
 	 */
 	( QStandardPaths::standardLocations ( QStandardPaths::DataLocation ).at ( 0 ) + QLatin1String ( "/data/" ) + PROGRAM_NAME + CHR_F_SLASH ), // DEFAULT_DATA_DIR
-#elif QT4
-	( QDesktopServices::storageLocation ( QDesktopServices::DataLocation ) + PROGRAM_NAME + CHR_F_SLASH ), // DEFAULT_DATA_DIR
-#endif
 	( XDG_OPEN ), // DEFAULT_FILE_MANAGER
 	( XDG_OPEN ), // DEFAULT_PICTURE_VIEWER
 	( QStringLiteral ( "gimp" ) ), // DEFAULT_PICTURE_EDITOR
@@ -53,20 +44,12 @@ static const QString DEFAULT_OPTS[CFG_CATEGORIES] = {
 	( XDG_OPEN ), // DEFAULT_PDF_VIEWER
 	( XDG_OPEN ), // DEFAULT_DOC_EDITOR
 	( XDG_OPEN ), // DEFAULT_XLS_EDITOR
-#ifdef QT5
-	// idem
+	// the same (regarding QStringList)
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/" ) ), // DEFAULT_PROJECTS_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::estimatesDirSuffix () + CHR_F_SLASH ), // DEFAULT_ESTIMATE_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::reportsDirSuffix () + CHR_F_SLASH ), // DEFAULT_REPORTS_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/VMDB/" ) ), // BACKUP_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/HTML/" ) ), // HTML_DIR
-#elif QT4
-	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QLatin1String ( "/Vivencia/" ) ), // DEFAULT_PROJECTS_DIR
-	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::estimatesDirSuffix () + CHR_F_SLASH ), // DEFAULT_ESTIMATE_DIR
-	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/%1/" ) + configOps::reportsDirSuffix () + CHR_F_SLASH ), // DEFAULT_REPORTS_DIR
-	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/VMDB/" ) ), // BACKUP_DIR
-	( QDesktopServices::storageLocation ( QDesktopServices::DocumentsLocation ) + QString::fromUtf8 ( "/Vivencia/HTML/" ) ), // HTML_DIR
-#endif
 	( HOME_DIR_DIR ) + QLatin1String ( "Dropbox/" ), // DROPBOX_DIR
 	( QStringLiteral ( "vivencia@gmail.com" ) ) // DEFAULT_EMAIL
 };

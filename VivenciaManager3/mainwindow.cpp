@@ -77,9 +77,6 @@ MainWindow::MainWindow ()
 	ui->setupUi ( this );
 	setWindowIcon ( ICON ( "vm-logo-22x22" ) );
 	setWindowTitle ( PROGRAM_NAME + QLatin1String ( " - " ) + PROGRAM_VERSION );
-
-	ui->buysList = new vmListWidget;
-
 	createTrayIcon (); // create the icon for VM_NOTIFY () use
 }
 
@@ -880,14 +877,6 @@ void MainWindow::jobKeyPressedSelector ( const QKeyEvent* ke )
 
 void MainWindow::jobsListWidget_currentItemChanged ( vmListItem* item )
 {
-	/*if ( !item ) {
-		if ( JOB_PREV_ITEM->row () >= 0 ) // make sure PREV_ITEM exists
-			item = JOB_PREV_ITEM;
-		else { // PREV_ITEM was the deleted item. Select the last entry in the list
-			item = static_cast<vmListItem*>( ui->jobsList->item ( ui->jobsList->count () - 1 ) );
-			JOB_PREV_ITEM = nullptr;
-		}
-	}*/
 	insertNavItem ( item );
 	displayJob ( static_cast<jobListItem*> ( item ) );
 }
@@ -1004,6 +993,7 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 {
 	if ( job_item ) {
 		if ( job_item->loadData () ) {
+			ui->tabMain->setCurrentIndex ( 0 );
 			controlJobForms ( job_item );
 			loadJobInfo ( job_item->jobRecord () );
 			if ( job_item != mJobCurItem ) {
@@ -1094,6 +1084,7 @@ void MainWindow::scanJobImages ()
 		}
 	}
 	ui->cboJobPictures->setEditText ( ui->jobImageViewer->imageFileName () );
+	controlJobPictureControls ();
 }
 
 void MainWindow::decodeJobReportInfo ( const Job* const job )
@@ -1172,43 +1163,15 @@ void MainWindow::decodeJobReportInfo ( const Job* const job )
 	}
 }
 
-void MainWindow::updateJobInfo ( const QString& text, const uint user_role, const vmListItem* const item )
+void MainWindow::updateJobInfo ( const QString& text, const uint user_role, vmListItem* const item )
 {
-	vmListItem* day_entry ( ui->lstJobDayReport->currentItem () );
+	vmListItem* const day_entry ( item ? item : ui->lstJobDayReport->currentItem () );
 	if ( day_entry )
 	{
 		const int cur_row ( ui->lstJobDayReport->currentRow () );
 		day_entry->setData ( static_cast<int>( user_role ), text );
 		stringTable job_report ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_REPORT ) );
 		stringRecord rec ( job_report.readRecord ( cur_row ) );
-
-		/* When updating the calendar with an addition or a removal the operation is straightforward. dbCalendar
-		 * will check the prevAction of the record (since it's called after a save and add or remove information. When
-		 * editing, there is a need to either/both remove the old info or/and add some new. To help dbCalendar to know
-		 * which, we append some extra information to the record
-		 */
-		if ( item && mJobCurItem->action () ==	ACTION_EDIT )
-		{
-			if ( user_role == JILUR_DATE )
-			{
-				stringRecord extrainfo;
-				if ( item->data ( JILUR_ADDED ).toBool () == true ) // new day added
-				{
-					extrainfo.changeValue ( 0, QString::number ( ACTION_ADD ) );
-					extrainfo.changeValue ( 1, text );
-				}
-				else // existing day edited
-				{
-					const QString orignalDate ( stringTable ( recStrValueAlternate ( 
-						mJobCurItem->jobRecord (), FLD_JOB_REPORT ) ).readRecord ( cur_row ).fieldValue ( JILUR_DATE ) );
-					extrainfo.changeValue ( 0, QString::number ( ACTION_EDIT ) );
-					extrainfo.changeValue ( 1, text ); // new date to add to calendar
-					extrainfo.changeValue ( 2, orignalDate ); // old date to remove from calendar
-				}
-				rec.changeValue ( Job::JRF_EXTRA, extrainfo.toString () );
-			}
-		}
-		
 		rec.changeValue ( user_role - Qt::UserRole, text );
 		job_report.changeRecord ( cur_row, rec );
 		setRecValue ( mJobCurItem->jobRecord (), FLD_JOB_REPORT, job_report.toString () );
@@ -1282,7 +1245,6 @@ void MainWindow::saveJobPayment ( jobListItem* const job_item )
 	{
 		job_item->payItem ()->setAction ( pay->action () );
 		job_item->payItem ()->setDBRecID ( recIntValue ( pay, FLD_PAY_ID ) );
-		mCal->updateCalendarWithPayInfo ( pay );
 		crash->eliminateRestoreInfo ( job_item->payItem ()->crashID () );
 		addPaymentOverdueItems ( job_item->payItem () );
 		payOverdueGUIActions ( pay, ACTION_ADD );
@@ -1787,8 +1749,6 @@ void MainWindow::setupPayPanel ()
 	//ui->tablePayments->setUtilitiesPlaceLayout ( ui->layoutPayUtilities );
 	ui->tablePayments->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 		return interceptPaymentCellChange ( item ); } );
-	ui->tablePayments->setCallbackForRowRemoved ( [&] ( const uint row ) {
-		return interceptPaymentRowRemoved ( row ); } );
 	ui->tablePayments->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return payKeyPressedSelector ( ke ); } );
 
@@ -1856,7 +1816,7 @@ void MainWindow::addPaymentOverdueItems ( payListItem* pay_item )
 		bOldState = ui->paysOverdueClientList->isIgnoringChanges ();
 		ui->paysOverdueClientList->setIgnoreChanges ( true );
 		payListItem* pay_item_overdue_client ( new payListItem );
-		pay_item_overdue_client->setRelation ( RLI_EXTRAITEM_2 );
+		pay_item_overdue_client->setRelation ( PAY_ITEM_OVERDUE_CLIENT );
 		pay_item->syncSiblingWithThis ( pay_item_overdue_client );
 		pay_item_overdue_client->update ();
 		pay_item_overdue_client->addToList ( ui->paysOverdueClientList );
@@ -1868,7 +1828,7 @@ void MainWindow::addPaymentOverdueItems ( payListItem* pay_item )
 		bOldState = ui->paysOverdueList->isIgnoringChanges ();
 		ui->paysOverdueList->setIgnoreChanges ( true );
 		payListItem* pay_item_overdue ( new payListItem );
-		pay_item_overdue->setRelation ( RLI_EXTRAITEM_1 );
+		pay_item_overdue->setRelation ( PAY_ITEM_OVERDUE_ALL );
 		pay_item->syncSiblingWithThis ( pay_item_overdue );
 		pay_item_overdue->update ();
 		pay_item_overdue->addToList ( ui->paysOverdueList );
@@ -1879,19 +1839,19 @@ void MainWindow::addPaymentOverdueItems ( payListItem* pay_item )
 void MainWindow::removePaymentOverdueItems ( payListItem* pay_item )
 {
 	bool bOldState ( true );
-	if ( pay_item->relatedItem ( RLI_EXTRAITEM_2 ) )
+	if ( pay_item->relatedItem ( PAY_ITEM_OVERDUE_CLIENT ) )
 	{
 		bOldState = ui->paysOverdueClientList->isIgnoringChanges ();
 		ui->paysOverdueClientList->setIgnoreChanges ( true );
-		ui->paysOverdueClientList->removeRow ( static_cast<uint>( pay_item->relatedItem ( RLI_EXTRAITEM_2 )->row () ), 1, true );
+		ui->paysOverdueClientList->removeRow ( static_cast<uint>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_CLIENT )->row () ), 1, true );
 		ui->paysOverdueClientList->setIgnoreChanges ( bOldState );
 	}
 	
-	if ( pay_item->relatedItem ( RLI_EXTRAITEM_1 ) )
+	if ( pay_item->relatedItem ( PAY_ITEM_OVERDUE_ALL ) )
 	{
 		bOldState = ui->paysOverdueList->isIgnoringChanges ();
 		ui->paysOverdueList->setIgnoreChanges ( true );
-		ui->paysOverdueList->removeRow ( static_cast<uint>( pay_item->relatedItem ( RLI_EXTRAITEM_1 )->row () ), 1, true );
+		ui->paysOverdueList->removeRow ( static_cast<uint>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_ALL )->row () ), 1, true );
 		ui->paysOverdueList->setIgnoreChanges ( bOldState );
 	}
 }
@@ -2030,6 +1990,7 @@ void MainWindow::displayPay ( payListItem* pay_item, const bool b_select )
 	{
 		if ( pay_item->loadData () )
 		{
+			ui->tabMain->setCurrentIndex ( 0 );
 			controlPayForms ( pay_item );
 			loadPayInfo ( pay_item->payRecord () );
 			if ( pay_item != mPayCurItem )
@@ -2170,7 +2131,7 @@ void MainWindow::loadClientOverduesList ()
 	for ( uint x ( 0 ); x < mClientCurItem->pays->count (); ++x )
 	{
 		pay_item = mClientCurItem->pays->at ( x );
-		pay_item_overdue_client = static_cast<payListItem*>( pay_item->relatedItem ( RLI_EXTRAITEM_2 ) );
+		pay_item_overdue_client = static_cast<payListItem*>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_CLIENT ) );
 		if ( !pay_item_overdue_client )
 		{
 			if ( pay_item->loadData () )
@@ -2178,7 +2139,7 @@ void MainWindow::loadClientOverduesList ()
 				if ( recStrValue ( pay_item->payRecord (), FLD_PAY_OVERDUE ) == CHR_ONE )
 				{
 					pay_item_overdue_client = new payListItem;
-					pay_item_overdue_client->setRelation ( RLI_EXTRAITEM_2 );
+					pay_item_overdue_client->setRelation ( PAY_ITEM_OVERDUE_CLIENT );
 					pay_item->syncSiblingWithThis ( pay_item_overdue_client );
 					pay_item_overdue_client->update ();
 					pay_item_overdue_client->addToList ( ui->paysOverdueClientList );
@@ -2215,7 +2176,7 @@ void MainWindow::loadAllOverduesList ()
 					if ( recStrValue ( pay_item->payRecord (), FLD_PAY_OVERDUE ) == CHR_ONE ) 
 					{
 						pay_item_overdue = new payListItem;
-						pay_item_overdue->setRelation ( RLI_EXTRAITEM_1 );
+						pay_item_overdue->setRelation ( PAY_ITEM_OVERDUE_ALL );
 						pay_item->syncSiblingWithThis ( pay_item_overdue );
 						pay_item_overdue->update ();
 						pay_item_overdue->addToList ( ui->paysOverdueList );
@@ -2232,7 +2193,7 @@ void MainWindow::loadAllOverduesList ()
 void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 {
 	const uint row ( static_cast<uint>( item->row () ) );
-	if ( row == ui->tablePayments->totalsRow () )
+	if ( static_cast<int>(row) == ui->tablePayments->totalsRow () )
 		return;
 
 	const uint col ( static_cast<uint>( item->column () ) );
@@ -2311,45 +2272,12 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 				APP_COMPLETERS ()->updateCompleter ( item->text (), vmCompleters::ACCOUNT );
 			break;
 			default:
-				if ( mPayCurItem->action () == ACTION_EDIT )
-					vmTableWidget::processPayHistoryForCalendar ( pay_data, item, ui->tablePayments );
 			break;
 		}
 		
 		setRecValue ( mPayCurItem->payRecord (), FLD_PAY_INFO, pay_data.toString () );
 	}
 	postFieldAlterationActions ( mPayCurItem );
-}
-
-void MainWindow::interceptPaymentRowRemoved ( const uint row )
-{
-	vmTableItem* item ( nullptr );
-	uint extrafield_col ( 0 );
-	stringRecord extrainfo;
-	
-	for ( uint i_col ( 0 ); i_col <= ( ui->tablePayments->colCount () - 1 ); ++i_col )
-	{
-		item = ui->tablePayments->sheetItem ( row, static_cast<int>( i_col ) );
-		if ( item->prevText () != item->defaultValue () ) // clearing or deleting an empty row should not produce any result
-		{
-			switch ( i_col )
-			{
-				case PHR_DATE:		extrafield_col = 1;	break;
-				case PHR_USE_DATE:	extrafield_col = 2; break;
-				case PHR_PAID:		extrafield_col = 3; break;
-				case PHR_VALUE:		extrafield_col = 4; break;
-				default: continue;
-			}
-			extrainfo.changeValue ( extrafield_col, CHR_ONE );
-		}
-	}
-	if ( extrainfo.nFields () > 0 )
-	{
-		extrainfo.changeValue ( 0, QString::number ( ACTION_DEL ) );
-		stringTable pay_data ( recStrValue ( mPayCurItem->payRecord (), FLD_PAY_INFO ) );
-		pay_data.changeRecord ( static_cast<uint>( row ), PHR_EXTRA_INFO, extrainfo.toString () );
-		setRecValue ( mPayCurItem->payRecord (), FLD_PAY_INFO, pay_data.toString () );
-	}
 }
 
 void MainWindow::updatePayTotalPaidValue ()
@@ -2592,8 +2520,8 @@ void MainWindow::displayBuyFromCalendar ( vmListItem* cal_item )
 
 void MainWindow::buysListWidget_currentItemChanged ( vmListItem* item )
 {
-	insertNavItem ( item );
 	if ( item ) {
+		insertNavItem ( item );
 		if ( static_cast<jobListItem*> ( item->relatedItem ( RLI_JOBPARENT ) ) != mJobCurItem )
 			displayJob ( static_cast<jobListItem*> ( item->relatedItem ( RLI_JOBPARENT ) ), true, static_cast<buyListItem*>( item ) );
 		else
@@ -2605,9 +2533,6 @@ void MainWindow::buysListWidget_currentItemChanged ( vmListItem* item )
 
 void MainWindow::buysJobListWidget_currentItemChanged ( vmListItem* item )
 {
-	//buyListItem* buy_jobitem ( static_cast<buyListItem*> ( item ) );
-	//if ( !buy_jobitem )
-	//	buy_jobitem = BUY_JOB_PREV_ITEM;
 	displayBuy ( item ? static_cast<buyListItem*>( item->relatedItem ( RLI_CLIENTITEM ) ) : nullptr, true );
 }
 
@@ -2615,6 +2540,7 @@ void MainWindow::buySuppliersListWidget_currentItemChanged ( vmListItem* item )
 {
 	if ( item )
 	{
+		insertNavItem ( item );
 		ui->lstBuySuppliers->setIgnoreChanges ( true );
 		buyListItem* buy_item ( static_cast<buyListItem*> ( item ) );
 		if ( static_cast<clientListItem*> ( buy_item->relatedItem ( RLI_CLIENTPARENT ) ) != mClientCurItem )
@@ -2698,6 +2624,7 @@ void MainWindow::displayBuy ( buyListItem* buy_item, const bool b_select )
 {
 	if ( buy_item && buy_item->loadData () )
 	{
+		ui->tabMain->setCurrentIndex ( 0 );
 		controlBuyForms ( buy_item );
 		loadBuyInfo ( buy_item->buyRecord () );
 		if ( buy_item != mBuyCurItem )
@@ -2708,8 +2635,8 @@ void MainWindow::displayBuy ( buyListItem* buy_item, const bool b_select )
 				ui->buysJobList->setCurrentItem ( buy_item->relatedItem ( RLI_JOBITEM ), false );
 			}
 			mBuyCurItem = buy_item;
-			if ( buy_item->relatedItem ( RLI_EXTRAITEM_1 ) != nullptr )
-				ui->lstBuySuppliers->setCurrentItem ( static_cast<buyListItem*> ( buy_item->relatedItem ( RLI_EXTRAITEM_1 ) ), false );
+			if ( buy_item->relatedItem ( RLI_EXTRAITEMS ) != nullptr )
+				ui->lstBuySuppliers->setCurrentItem ( static_cast<buyListItem*> ( buy_item->relatedItem ( RLI_EXTRAITEMS ) ), false );
 		}
 	}
 	else
@@ -2807,55 +2734,36 @@ void MainWindow::fillCalendarBuysList ( const stringTable& buyids, vmListWidget*
 		stringRecord str_rec ( buyids.first () );
 		if ( str_rec.isOK () )
 		{
-			int buyid ( -1 );
 			buyListItem* buy_item ( nullptr ), *buy_parent ( nullptr );
 			clientListItem* client_parent ( nullptr );
-			Buy buy;
-			QString paynumber, curLabel, priceInfo;
 			list->setIgnoreChanges ( true );
 			do
-			{
-				buyid =  str_rec.fieldValue ( 0 ).toInt () ;
-				if ( buy.readRecord ( buyid ) )
+			{	
+				client_parent = getClientItem ( str_rec.fieldValue ( 1 ).toInt () );
+				buy_parent = getBuyItem ( client_parent, str_rec.fieldValue ( 0 ).toInt () );
+				if ( buy_parent )
 				{
-					client_parent = getClientItem ( recIntValue ( &buy, FLD_BUY_CLIENTID ) );
-					buy_parent = getBuyItem ( client_parent, recIntValue ( &buy, FLD_BUY_ID ) );
-					
-					if ( buy_parent )
+					buy_item = static_cast<buyListItem*>( buy_parent->relatedItem ( RLI_CALENDARITEM ) );
+					if ( !buy_item )
 					{
-						buy_item = static_cast<buyListItem*>( buy_parent->relatedItem ( RLI_CALENDARITEM ) );
-						if ( !buy_item )
-						{
-							buy_item = new buyListItem;
-							buy_item->setRelation ( RLI_CALENDARITEM );
-							buy_parent->syncSiblingWithThis ( buy_item );
-						}
-
-						if ( pay_date )
-						{
-							paynumber = str_rec.fieldValue ( 2 );
-							buy_item->setData ( Qt::UserRole, paynumber.toInt () );
-							priceInfo = stringTable ( recStrValue ( &buy, FLD_BUY_PAYINFO ) ).readRecord ( paynumber.toInt () - 1 ).fieldValue ( PHR_VALUE ) +
-									TR_FUNC ( " (payment #" ) + paynumber + CHR_R_PARENTHESIS;
-						}
-						else
-							priceInfo = recStrValue ( &buy, FLD_BUY_PRICE ) + TR_FUNC ( " (purchase)" );
-
-						if ( buy_item->listWidget () != list )
-						{
-							buy_item->setText ( recStrValue ( client_parent->clientRecord (), FLD_CLIENT_NAME ) +
-												 CHR_SPACE + CHR_HYPHEN + CHR_SPACE +
-												 recStrValue ( &buy, FLD_BUY_SUPPLIER ) +
-												 CHR_SPACE + CHR_HYPHEN + CHR_SPACE + priceInfo, false, false, false );
-							buy_item->addToList ( list );
-						}
-						else
-						{
-							curLabel = buy_item->text ();
-							curLabel.insert ( curLabel.count () - 1, paynumber );
-							buy_item->setText ( curLabel, false, false, false );
-						}
+						buy_item = new buyListItem;
+						buy_item->setRelation ( RLI_CALENDARITEM );
+						buy_parent->syncSiblingWithThis ( buy_item );
+						buy_item->setData ( Qt::UserRole, 0 ); // payment number
+						buy_item->setData ( Qt::UserRole + 1, false ); // purchase date
+						buy_item->setData ( Qt::UserRole + 2, false ); // payment date
 					}
+					
+					if ( pay_date )
+					{
+						buy_item->setData ( Qt::UserRole + 2, true );
+						buy_item->setData ( Qt::UserRole, str_rec.fieldValue ( 2 ).toInt () );
+					}
+					else
+						buy_item->setData ( Qt::UserRole + 1, true );
+						if ( buy_item->listWidget () != list )
+						buy_item->addToList ( list );
+					buy_item->update ();
 				}
 				str_rec = buyids.next ();
 			} while ( str_rec.isOK () );
@@ -2866,8 +2774,8 @@ void MainWindow::fillCalendarBuysList ( const stringTable& buyids, vmListWidget*
 
 void MainWindow::interceptBuyItemsCellChange ( const vmTableItem* const item )
 {
-	const uint row ( item->row () );
-	if ( row == ui->tableBuyItems->totalsRow () )
+	const uint row ( static_cast<uint>(item->row ()) );
+	if ( static_cast<int>(row) == ui->tableBuyItems->totalsRow () )
 		return;
 
 	stringTable buy_items;
@@ -2881,11 +2789,11 @@ void MainWindow::interceptBuyItemsCellChange ( const vmTableItem* const item )
 */
 void MainWindow::interceptBuyPaymentCellChange ( const vmTableItem* const item )
 {
-	const uint row ( item->row () );
-	if ( row == ui->tableBuyPayments->totalsRow () )
+	const uint row ( static_cast<uint>(item->row ()) );
+	if ( static_cast<int>(row) == ui->tableBuyPayments->totalsRow () )
 		return;
 
-	const uint col ( item->column () );
+	const uint col ( static_cast<uint>(item->column ()) );
 	switch ( col )
 	{
 		case PHR_ACCOUNT: return; // never reached
@@ -2924,8 +2832,6 @@ void MainWindow::interceptBuyPaymentCellChange ( const vmTableItem* const item )
 
 	stringTable pay_data;
 	ui->tableBuyPayments->makeStringTable ( pay_data );
-	if ( mBuyCurItem->action () == ACTION_EDIT )
-		vmTableWidget::processPayHistoryForCalendar ( pay_data, item, ui->tableBuyPayments );
 	setRecValue ( mBuyCurItem->buyRecord (), FLD_BUY_PAYINFO, pay_data.toString () );
 	postFieldAlterationActions ( mBuyCurItem );
 }
@@ -2935,8 +2841,8 @@ void MainWindow::updateBuyTotalPaidValue ()
 	vmNumber total;
 	for ( int i ( 0 ); i <= ui->tableBuyPayments->lastUsedRow (); ++i )
 	{
-		if ( ui->tableBuyPayments->sheetItem ( i, PHR_PAID )->text () == CHR_ONE )
-			total += vmNumber ( ui->tableBuyPayments->sheetItem ( i, PHR_VALUE )->text (), VMNT_PRICE );
+		if ( ui->tableBuyPayments->sheetItem ( static_cast<uint>(i), PHR_PAID )->text () == CHR_ONE )
+			total += vmNumber ( ui->tableBuyPayments->sheetItem ( static_cast<uint>(i), PHR_VALUE )->text (), VMNT_PRICE );
 	}
 	ui->txtBuyTotalPaid->setText ( total.toPrice () );
 	setRecValue ( mBuyCurItem->buyRecord (), FLD_BUY_TOTALPAID, total.toPrice () );
@@ -2956,40 +2862,27 @@ void MainWindow::buyKeyPressedSelector ( const QKeyEvent* ke )
 void MainWindow::getPurchasesForSuppliers ( const QString& supplier )
 {
 	ui->lstBuySuppliers->clear ();
-	int client_id ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) );
-	if ( client_id != -1 )
+	Buy buy;
+	buyListItem* buy_client ( nullptr ), *new_buyitem ( nullptr );
+	buy.stquery.str_query = QLatin1String ( "SELECT * FROM PURCHASES WHERE `SUPPLIER`='" ) + supplier + CHR_CHRMARK;
+	if ( buy.readFirstRecord ( FLD_BUY_SUPPLIER, supplier, false ) )
 	{
-		Buy buy;
-		buyListItem* buy_client ( nullptr ), *new_buyitem ( nullptr );
-		QString str_clientid;
-		const int last_id ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
 		do
 		{
-			str_clientid = QString::number ( client_id );
-			buy.stquery.str_query = QLatin1String ( "SELECT * FROM PURCHASES WHERE `SUPPLIER`='" ) +
-									supplier + CHR_CHRMARK + QLatin1String ( " AND `CLIENTID`='" ) + str_clientid + CHR_CHRMARK;
-
-			if ( buy.readFirstRecord ( FLD_BUY_SUPPLIER, supplier, false ) )
+			buy_client = getBuyItem ( getClientItem ( recIntValue ( &buy, FLD_BUY_CLIENTID ) ), recIntValue ( &buy, FLD_BUY_ID ) );
+			if ( buy_client )
 			{
-				do
+				new_buyitem = static_cast<buyListItem*> ( buy_client->relatedItem ( RLI_EXTRAITEMS ) );
+				if ( !new_buyitem )
 				{
-					buy_client = getBuyItem ( getClientItem ( client_id ), recIntValue ( &buy, FLD_BUY_ID ) );
-					if ( buy_client )
-					{
-						new_buyitem = static_cast<buyListItem*> ( buy_client->relatedItem ( RLI_EXTRAITEM_1 ) );
-						if ( !new_buyitem )
-						{
-							new_buyitem = new buyListItem;
-							new_buyitem->setRelation ( RLI_EXTRAITEM_1 );
-							buy_client->syncSiblingWithThis ( new_buyitem );
-						}
-						(void) new_buyitem->loadData ();
-						new_buyitem->addToList ( ui->lstBuySuppliers );
-					}
-				} while ( buy.readNextRecord ( true, false ) );
+					new_buyitem = new buyListItem;
+					new_buyitem->setRelation ( RLI_EXTRAITEMS );
+					buy_client->syncSiblingWithThis ( new_buyitem );
+				}
+				(void) new_buyitem->loadData ();
+				new_buyitem->addToList ( ui->lstBuySuppliers );
 			}
-		} while ( ++client_id <= last_id );
-		++client_id;
+		} while ( buy.readNextRecord ( true, false ) );
 	}
 }
 
@@ -3003,8 +2896,8 @@ void MainWindow::setBuyPayValueToBuyPrice ( const QString& price )
 	}
 	//if ( row == 0 )
 	//{
-		ui->tableBuyPayments->sheetItem ( row, PHR_VALUE )->setText ( price, false, true );
-		ui->tableBuyPayments->sheetItem ( row, PHR_DATE )->setDate ( ui->dteBuyDate->date () );
+		ui->tableBuyPayments->sheetItem ( static_cast<uint>(row), PHR_VALUE )->setText ( price, false, true );
+		ui->tableBuyPayments->sheetItem ( static_cast<uint>(row), PHR_DATE )->setDate ( ui->dteBuyDate->date () );
 	//}
 }
 //--------------------------------------------BUY------------------------------------------------------------
@@ -3040,14 +2933,15 @@ void MainWindow::dteBuy_dateAltered ( const vmWidget* const sender )
 
 void MainWindow::cboBuySuppliers_textAltered ( const QString& text )
 {
-	const bool input_ok ( !text.isEmpty () );
-	if ( input_ok )
+	int idx ( -2 );
+	if ( !text.isEmpty () )
 	{
 		setRecValue ( mBuyCurItem->buyRecord (), FLD_BUY_SUPPLIER, ui->cboBuySuppliers->text () );
 		mBuyCurItem->update ();
+		idx = ui->cboBuySuppliers->findText ( text );
 	}
-	cboBuySuppliers_indexChanged ( input_ok ? ui->cboBuySuppliers->currentIndex () : -1 );
-	mBuyCurItem->setFieldInputStatus ( FLD_BUY_SUPPLIER, input_ok, ui->cboBuySuppliers );
+	cboBuySuppliers_indexChanged ( idx );
+	mBuyCurItem->setFieldInputStatus ( FLD_BUY_SUPPLIER, idx != -2, ui->cboBuySuppliers );
 	postFieldAlterationActions ( mBuyCurItem );
 }
 
@@ -3405,6 +3299,7 @@ void MainWindow::tboxCalJobs_currentChanged ( const int index )
 				ui->txtCalPriceJobMonth->setText ( price );
 			}
 		break;
+		default: return;
 	}
 }
 
@@ -3431,11 +3326,12 @@ void MainWindow::tboxCalPays_currentChanged ( const int index )
 			list = ui->lstCalPaysMonth;
 			line = ui->txtCalPricePayMonth;
 		break;
+		default: return;
 	}
 	if ( bFillList )
 	{
 		QString price;
-		const int search_field ( FLD_CALENDAR_DAY_DATE + index );
+		const uint search_field ( FLD_CALENDAR_DAY_DATE + static_cast<uint>(index) );
 		fillCalendarPaysList ( mCal->dateLog ( mCalendarDate, search_field,
 				FLD_CALENDAR_PAYS, price, FLD_CALENDAR_TOTAL_PAY_RECEIVED ), list );
 		line->setText ( price );
@@ -3467,17 +3363,16 @@ void MainWindow::tboxCalBuys_currentChanged ( const int index )
 			list = ui->lstCalBuysMonth;
 			line = ui->txtCalPriceBuyMonth;
 		break;
+		default: return;
 	}
 	if ( bFillList )
 	{
 		QString price;
-		const int search_field ( FLD_CALENDAR_DAY_DATE + index );
-		fillCalendarBuysList (
-			mCal->dateLog ( mCalendarDate, search_field,
+		const uint search_field ( FLD_CALENDAR_DAY_DATE + static_cast<uint>(index) );
+		fillCalendarBuysList ( mCal->dateLog ( mCalendarDate, search_field,
 							FLD_CALENDAR_BUYS, price, FLD_CALENDAR_TOTAL_BUY_BOUGHT ), list );
 		line->setText ( price );
-		fillCalendarBuysList (
-			mCal->dateLog ( mCalendarDate, search_field,
+		fillCalendarBuysList ( mCal->dateLog ( mCalendarDate, search_field,
 							FLD_CALENDAR_BUYS_PAY, price, FLD_CALENDAR_TOTAL_BUY_PAID ), list, true );
 		if ( !price.isEmpty () )
 			line->setText ( line->text () + QLatin1String ( " (" ) + price + CHR_R_PARENTHESIS );
@@ -3665,6 +3560,7 @@ void MainWindow::saveView ()
 	ui->lblCurInfoJob->setText ( mJobCurItem ? mJobCurItem->text () : TR_FUNC ( "No job selected" ) );
 	ui->lblCurInfoPay->setText ( mPayCurItem ? mPayCurItem->text () : TR_FUNC ( "No payment selected" ) );
 	ui->lblCurInfoBuy->setText ( mBuyCurItem ? mBuyCurItem->text () : TR_FUNC ( "No purchase selected" ) );
+	ui->lblBuyAllPurchases_client->setText ( mClientCurItem ? mClientCurItem->text () : TR_FUNC ( "NONE" ) );
 	
 	stringRecord ids;
 	ids.fastAppendValue ( mClientCurItem ?
@@ -4110,13 +4006,12 @@ void MainWindow::on_btnJobSave_clicked ()
 	if ( mJobCurItem )
 	{
 		Job* job ( mJobCurItem->jobRecord () );
-		if ( job->saveRecord () )
+		if ( job->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
 		{
-			mJobCurItem->setAction ( job->action () );
 			if ( mJobCurItem->dbRecID () == -1 )
 			{
 				mJobCurItem->setDBRecID ( recIntValue ( job, FLD_JOB_ID ) );
-				ui->jobImageViewer->setID ( job->actualRecordInt ( FLD_JOB_ID ) );
+				ui->jobImageViewer->setID ( recIntValue ( job, FLD_JOB_ID ) );
 				saveJobPayment ( mJobCurItem );
 			}
 			else
@@ -4125,6 +4020,8 @@ void MainWindow::on_btnJobSave_clicked ()
 					alterJobPayPrice ( mJobCurItem );
 			}
 			mCal->updateCalendarWithJobInfo ( job );
+			mJobCurItem->setAction ( ACTION_READ, true ); // now we can change indexes
+			
 			rescanJobDaysList ( mJobCurItem );
 			crash->eliminateRestoreInfo ( mJobCurItem->crashID () );
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), TR_FUNC ( "Job data saved!" ) );
@@ -4406,10 +4303,8 @@ void MainWindow::on_btnPayInfoSave_clicked ()
 		Payment* pay ( mPayCurItem->payRecord () );
 		const bool bWasOverdue ( pay->actualRecordStr ( FLD_PAY_OVERDUE ) == CHR_ONE );
 		
-		if ( pay->saveRecord () )
-		{
-			mPayCurItem->setAction ( pay->action () );
-			
+		if ( pay->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
+		{	
 			if ( pay->wasModified ( FLD_PAY_OVERDUE ) )
 			{
 				const bool bIsOverdue ( recStrValue ( pay, FLD_PAY_OVERDUE ) == CHR_ONE );
@@ -4423,6 +4318,7 @@ void MainWindow::on_btnPayInfoSave_clicked ()
 				mCal->updateCalendarWithPayInfo ( pay );
 				ui->tablePayments->setTableUpdated ();
 			}
+			mPayCurItem->setAction ( ACTION_READ, true );
 			crash->eliminateRestoreInfo ( mPayCurItem->crashID () );
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), TR_FUNC ( "Payment data saved!" ) );
 			controlPayForms ( mPayCurItem );
@@ -4485,14 +4381,13 @@ void MainWindow::on_btnBuySave_clicked ()
 	if ( mBuyCurItem )
 	{
 		Buy* buy ( mBuyCurItem->buyRecord () );
-		if ( buy->saveRecord () )
+		if ( buy->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
 		{
-			mBuyCurItem->setAction ( buy->action () );
-			if ( mBuyCurItem->buyRecord ()->prevAction () == ACTION_ADD )
-			{
+			if ( mBuyCurItem->buyRecord ()->action () == ACTION_ADD )
 				mBuyCurItem->setDBRecID ( recIntValue ( buy, FLD_JOB_ID ) );
-			}
+
 			mCal->updateCalendarWithBuyInfo ( buy );
+			mBuyCurItem->setAction ( ACTION_READ, true ); // now we can change indexes
 			if ( ui->tableBuyPayments->tableChanged () )
 			{
 				vmTableWidget::exchangePurchaseTablesInfo ( ui->tableBuyItems, SUPPLIES ()->table (), buy, SUPPLIES ()->supplies_rec );
@@ -4501,6 +4396,8 @@ void MainWindow::on_btnBuySave_clicked ()
 			updateBuyTotalPriceWidgets ( mBuyCurItem );
 
 			Data::insertComboItem ( ui->cboBuySuppliers, recStrValue ( buy, FLD_BUY_SUPPLIER ) );
+			cboBuySuppliers_indexChanged ( ui->cboBuySuppliers->findText ( ui->cboBuySuppliers->text() ) ); // update suppliers' list with - possibly - a new entry
+			
 			crash->eliminateRestoreInfo ( mBuyCurItem->crashID () );
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), recStrValue ( mBuyCurItem->buyRecord (), FLD_BUY_SUPPLIER ) + 
 										  TR_FUNC ( " purchase info saved!" ) );

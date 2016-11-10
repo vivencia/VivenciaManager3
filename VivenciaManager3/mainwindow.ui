@@ -443,7 +443,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>7</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -1288,7 +1288,7 @@ p, li { white-space: pre-wrap; }
                   <widget class="vmListWidget" name="paysList">
                    <property name="minimumSize">
                     <size>
-                     <width>200</width>
+                     <width>0</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1903,7 +1903,7 @@ p, li { white-space: pre-wrap; }
               <widget class="vmListWidget" name="clientsList">
                <property name="minimumSize">
                 <size>
-                 <width>200</width>
+                 <width>0</width>
                  <height>0</height>
                 </size>
                </property>
@@ -2840,7 +2840,7 @@ p, li { white-space: pre-wrap; }
                 <widget class="vmListWidget" name="jobsList">
                  <property name="minimumSize">
                   <size>
-                   <width>200</width>
+                   <width>0</width>
                    <height>0</height>
                   </size>
                  </property>
@@ -3163,9 +3163,7 @@ p, li { white-space: pre-wrap; }
                   <widget class="vmDateEdit" name="dteJobEnd" native="true"/>
                  </item>
                  <item row="6" column="4">
-                  <widget class="vmDateEdit" name="dteJobStart" native="true">
-                   <zorder>lblJobPrice</zorder>
-                  </widget>
+                  <widget class="vmDateEdit" name="dteJobStart" native="true"/>
                  </item>
                  <item row="0" column="5">
                   <widget class="QLabel" name="lblJobID">
@@ -3931,7 +3929,7 @@ p, li { white-space: pre-wrap; }
             <widget class="vmListWidget" name="lstJobDayReport">
              <property name="minimumSize">
               <size>
-               <width>200</width>
+               <width>0</width>
                <height>0</height>
               </size>
              </property>
@@ -3951,8 +3949,8 @@ p, li { white-space: pre-wrap; }
          <rect>
           <x>7</x>
           <y>7</y>
-          <width>1581</width>
-          <height>735</height>
+          <width>830</width>
+          <height>708</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -4002,115 +4000,30 @@ p, li { white-space: pre-wrap; }
           <enum>QFrame::Plain</enum>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_12">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <property name="leftMargin">
+           <number>2</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
           <item>
-           <layout class="QGridLayout" name="gLayoutBuyListPanel">
+           <layout class="QGridLayout" name="gLayoutBuyJobListPanel" columnstretch="0,0,0,0,0">
             <property name="spacing">
              <number>2</number>
             </property>
-            <item row="1" column="0">
-             <widget class="QToolButton" name="btnBuyEdit">
-              <property name="toolTip">
-               <string>Edit current selected purchase record</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QToolButton" name="btnBuySave">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save alterations to the current purchase record&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset theme="document-save">
-                <normaloff>.</normaloff>.</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QToolButton" name="btnBuyCancel">
-              <property name="toolTip">
-               <string>Cancel alterations to currentpurchase record</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/cancel.png</normaloff>:/resources/cancel.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QToolButton" name="btnBuyDel">
-              <property name="toolTip">
-               <string>Remove current purchase record</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QToolButton" name="btnBuyAdd">
-              <property name="toolTip">
-               <string>Insert a new purchase record</string>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <spacer name="verticalSpacer_5">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>20</width>
-                <height>40</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item row="0" column="1" rowspan="6">
-             <widget class="vmListWidget" name="buysList">
-              <property name="minimumSize">
-               <size>
-                <width>200</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QGridLayout" name="gLayoutBuyJobListPanel" columnstretch="0,1,0,0">
-            <property name="spacing">
-             <number>2</number>
-            </property>
-            <item row="4" column="2" colspan="2">
+            <item row="4" column="3" colspan="2">
              <widget class="vmLineEdit" name="txtBuyTotalPaidForJob"/>
             </item>
-            <item row="1" column="3">
+            <item row="1" column="4">
              <widget class="QToolButton" name="btnShowSuppliersDlg">
               <property name="minimumSize">
                <size>
@@ -4130,37 +4043,27 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="3" column="0" colspan="2">
-             <widget class="QLabel" name="lblBuyTotalPurchasePriceForJob">
-              <property name="text">
-               <string>Total purchase price:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0" colspan="4">
+            <item row="2" column="1" colspan="4">
              <widget class="vmListWidget" name="buysJobList">
               <property name="minimumSize">
                <size>
-                <width>200</width>
+                <width>0</width>
                 <height>0</height>
                </size>
               </property>
              </widget>
             </item>
-            <item row="3" column="2" colspan="2">
-             <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob"/>
-            </item>
-            <item row="4" column="0" colspan="2">
+            <item row="4" column="1" colspan="2">
              <widget class="QLabel" name="lblBuyTotalPaidForJob">
               <property name="text">
                <string>Total amoun paid:</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1" colspan="2">
+            <item row="1" column="2" colspan="2">
              <widget class="vmComboBox" name="cboBuySuppliers"/>
             </item>
-            <item row="1" column="0">
+            <item row="1" column="1">
              <widget class="QLabel" name="lblBuySupplier_2">
               <property name="minimumSize">
                <size>
@@ -4190,6 +4093,164 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
+            <item row="3" column="3" colspan="2">
+             <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob"/>
+            </item>
+            <item row="3" column="1" colspan="2">
+             <widget class="QLabel" name="lblBuyTotalPurchasePriceForJob">
+              <property name="text">
+               <string>Total purchase price:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" rowspan="4">
+             <widget class="QFrame" name="frame_8">
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_7">
+               <property name="spacing">
+                <number>2</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QToolButton" name="btnBuyEdit">
+                 <property name="toolTip">
+                  <string>Edit current selected purchase record</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnBuyAdd">
+                 <property name="toolTip">
+                  <string>Insert a new purchase record</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnBuySave">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save alterations to the current purchase record&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset theme="document-save">
+                   <normaloff>.</normaloff>.</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnBuyDel">
+                 <property name="toolTip">
+                  <string>Remove current purchase record</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="btnBuyCancel">
+                 <property name="toolTip">
+                  <string>Cancel alterations to currentpurchase record</string>
+                 </property>
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="resources.qrc">
+                   <normaloff>:/resources/cancel.png</normaloff>:/resources/cancel.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_5">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="Line" name="line_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gLayoutBuyListPanel">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblBuyAllPurchases">
+              <property name="text">
+               <string>All Purchases for client</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" rowspan="5" colspan="2">
+             <widget class="vmListWidget" name="buysList">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="lblBuyAllPurchases_client">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
@@ -4208,7 +4269,7 @@ p, li { white-space: pre-wrap; }
              <widget class="vmListWidget" name="lstBuySuppliers">
               <property name="minimumSize">
                <size>
-                <width>200</width>
+                <width>0</width>
                 <height>0</height>
                </size>
               </property>

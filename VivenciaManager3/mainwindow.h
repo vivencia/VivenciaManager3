@@ -52,11 +52,6 @@ namespace Ui
 class MainWindow;
 }
 
-/*#define CLIENT_CUR_ITEM static_cast<clientListItem*> ( clientsList->currentItem () )
-#define JOB_CUR_ITEM static_cast<jobListItem*> ( jobsList->currentItem () )
-#define PAY_CUR_ITEM static_cast<payListItem*> ( paysList->currentItem () )
-#define BUY_CUR_ITEM static_cast<buyListItem*> ( buysList->currentItem () )*/
-
 class MainWindow : public QMainWindow
 {
 
@@ -129,7 +124,7 @@ public:
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
 	void scanJobImages ();
 	void decodeJobReportInfo ( const Job* const job );
-	void updateJobInfo ( const QString& text, const uint user_role, const vmListItem* const item = nullptr );
+	void updateJobInfo ( const QString& text, const uint user_role, vmListItem* const item = nullptr );
 	void updateJobInfoByRemoval ( const uint day , const bool bUndo, const vmListItem* const item = nullptr  );
 	void addJobPayment ( jobListItem* const job_item );
 	void saveJobPayment ( jobListItem* const job_item );
@@ -190,7 +185,6 @@ public:
 	void loadClientOverduesList ();
 	void loadAllOverduesList ();
 	void interceptPaymentCellChange ( const vmTableItem* const item );
-	void interceptPaymentRowRemoved ( const uint row );
 	void updatePayTotalPaidValue ();
 	void payKeyPressedSelector ( const QKeyEvent* ke );
 	void tabPaysLists_currentChanged ( const int index );

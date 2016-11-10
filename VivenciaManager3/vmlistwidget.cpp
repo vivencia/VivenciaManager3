@@ -1,14 +1,17 @@
 #include "vmlistwidget.h"
 #include "vmlistitem.h"
 
+#include <QResizeEvent>
+#include <QHeaderView>
+
 vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
 	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mPrevRow ( -2 ), mCurrentItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
 {
 	setIsList ();
-	vmTableColumn* cols ( createColumns ( 1 ) );
-	cols[0].width = 1000;
+	(void) ( createColumns ( 2 ) );
 	initTable ( nRows );
 	setIgnoreChanges ( false );
+	setHorizontalScrollMode ( QAbstractItemView::ScrollPerPixel );
 }
 
 vmListWidget::~vmListWidget ()
@@ -165,4 +168,10 @@ void vmListWidget::rowSelected ( const int row, const int prev_row )
 		if ( mCurrentItemChangedFunc )
 			mCurrentItemChangedFunc ( mCurrentItem );
 	}
+}
+
+void vmListWidget::resizeEvent ( QResizeEvent* e )
+{
+	setColumnWidth ( 0, width () );
+	e->accept ();
 }

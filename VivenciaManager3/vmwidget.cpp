@@ -52,7 +52,8 @@ vmWidget* vmWidget::stringToWidget ( const QString& /*str_widget*/ )
 
 void vmWidget::setFontAttributes ( const bool italic, const bool bold )
 {
-	if ( toQWidget () ) {
+	if ( toQWidget () )
+	{
 		QFont fnt ( toQWidget ()->font () );
 		fnt.setItalic ( italic );
 		fnt.setBold ( bold );
@@ -62,12 +63,15 @@ void vmWidget::setFontAttributes ( const bool italic, const bool bold )
 
 void vmWidget::setTextType ( const TEXT_TYPE t_type )
 {
-	if ( t_type != mTextType ) {
+	if ( t_type != mTextType )
+	{
 		mTextType = t_type;
 		QWidget* widget ( toQWidget () );
-		if ( widget ) {
+		if ( widget )
+		{
 			vmLineEdit* line ( nullptr );
-			switch ( type () ) {
+			switch ( type () )
+			{
 				case WT_LINEEDIT:
 					line = static_cast<vmLineEdit*> ( widget );
 				break;
@@ -85,7 +89,8 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 
 			QValidator* qval ( nullptr );
 			Qt::InputMethodHints imh ( Qt::ImhNone );
-			switch ( t_type ) {
+			switch ( t_type )
+			{
 				case TT_PHONE:
 					qval = new QDoubleValidator ( 0.0, 99999999999.0, 0 );
 					imh = Qt::ImhDigitsOnly;
@@ -109,7 +114,8 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 				case TT_TEXT:
 				break;
 			}
-			if ( line ) {
+			if ( line )
+			{
 				line->mTextType = this->mTextType;
 				line->setValidator ( qval );
 			}

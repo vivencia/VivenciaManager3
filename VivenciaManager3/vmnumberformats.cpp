@@ -10,15 +10,12 @@
 //#include <cstdlib>
 #include <climits>
 
-#ifdef QT5
 /* you cannot use QStringLiteral outside a function in all compilers,
  * since GCC statement expressions don’t support that.
  * Moreover, the code for QT4 would work, but isn’t read-only sharable:
  */
 static const auto CURRENCY = QStringLiteral ( "R$" );
-#else
-static const QLatin1String CURRENCY ( "R$" );
-#endif
+
 
 constexpr const char* const MONTHS[13] = { "", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" };
 

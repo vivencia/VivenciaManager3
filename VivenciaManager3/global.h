@@ -1,14 +1,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include <qglobal.h>
-
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-#define QT5
-#else
-#define QT4
-#endif
-
 #ifdef DEBUG
 #include <QDebug>
 #define DBG_OUT(str,desc,separate) \
@@ -102,9 +94,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 0
-#define VERSION_REVISION 30
-constexpr const QLatin1String VERSION_APPEND ( "Not to work, for a while", 24 );
-constexpr const QLatin1String VERSION_DATE ( "2016-09-06", 10 );
+#define VERSION_REVISION 90
+constexpr const QLatin1String VERSION_APPEND ( "Starting to learn german!!", 26 );
+constexpr const QLatin1String VERSION_DATE ( "2016-11-09", 10 );
 
 static const QString PROGRAM_VERSION (
     QUOTEME(VERSION_MAJOR) + CHR_DOT +
@@ -128,18 +120,9 @@ static const QString UPSTART ( QStringLiteral ( "upstart" ) );
 static const QString SYSTEM_ROOT_SERVICE ( QStringLiteral ( "SYSTEM_ROOT_SERVICE" ) );
 static const QString SYSTEM_ROOT_PASSWORD_ID ( QStringLiteral ( "SYSTEM_ROOT_PASSWORD_ID" ) );
 
-//#ifdef TRANSITION_PERIOD
 static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase3" ) );
 static const QString USER_NAME ( QStringLiteral ( "vivenciamngr3" ) );
 static const QString PASSWORD ( QStringLiteral ( "fenixfenix3" ) ) ;
-
-//extern int getNewClientID ( const int old_id );
-//extern int getOldClientID ( const int new_id );
-//#else
-//static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase" ) );
-//static const QString USER_NAME ( QStringLiteral ( "vivenciamngr" ) );
-//static const QString PASSWORD ( QStringLiteral ( "fenixfenix" ) );
-//#endif
 
 class MainWindow;
 extern MainWindow* globalMainWindow;

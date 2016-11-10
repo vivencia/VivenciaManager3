@@ -113,6 +113,7 @@ private:
 	void startMessageTimer ( Message* const message );
 	void fadeWidget ();
 	void showMenu ();
+	void enterEventLoop ();
 	void addMessage ( Message* message );
 	void removeMessage ( Message* message );
 	void setupWidgets ( const Message* message );

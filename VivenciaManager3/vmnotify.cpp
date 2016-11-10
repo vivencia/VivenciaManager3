@@ -26,12 +26,6 @@
 #include <QHBoxLayout>
 #include <QPoint>
 
-#ifdef QT5
-//#include <QtX11Extras/QX11Info>
-#elif QT4
-#include <QtGui/QX11Info>
-#endif
-
 extern "C"
 {
 #include <X11/X.h>
@@ -58,7 +52,7 @@ static const QString urgency_tag[3] = { QStringLiteral ( "<b>" ), QStringLiteral
 
 Message::Message ( vmNotify* parent )
 	: timeout ( -1 ), isModal ( false ), mbClosable ( true ),
-	  mbAutoRemove ( true ), widgets ( 5 ), m_parent ( parent ), mBtnID ( MESSAGE_BTN_CANCEL ),
+	  mbAutoRemove ( true ), widgets ( 5 ), m_parent ( parent ), mBtnID ( -1 ),
 	  icon ( nullptr ), mGroup ( nullptr ), timer ( nullptr ), messageFinishedFunc ( nullptr )
 {}
 
@@ -116,6 +110,26 @@ void vmNotify::initNotify ()
 	}
 }
 
+void vmNotify::enterEventLoop ()
+{
+	setWindowModality ( Qt::ApplicationModal );
+	show ();
+	activateWindow ();
+	QPointer<QDialog> guard = this;
+	QEventLoop eventLoop;
+	mEventLoop = &eventLoop;
+	QTimer::singleShot ( 0, this, [&] () { mEventLoop->processEvents ( QEventLoop::AllEvents );
+		return mEventLoop->exit ( 0 ); } );
+	(void) eventLoop.exec ( QEventLoop::DialogExec );
+	if ( guard.isNull () )
+		return;
+	
+	mEventLoop = nullptr;
+	setAttribute ( Qt::WA_ShowModal, false );
+	setAttribute( Qt::WA_SetWindowModality, false );
+	setWindowModality ( Qt::NonModal );
+}
+
 void vmNotify::addMessage ( Message* message )
 {
 	// if a message was issued modal or with an undefined timeout
@@ -153,9 +167,10 @@ void vmNotify::removeMessage ( Message* message )
 		if ( message->mbAutoRemove )
 			delete message;
 		adjustSizeAndPosition ();
+		if ( mEventLoop )
+            mEventLoop->exit ();
 	}
 }
-
 
 void vmNotify::buttonClicked ( QPushButton* btn, Message* const message )
 {
@@ -605,25 +620,13 @@ vmNotify* vmNotify::progressBox ( vmNotify* box, QWidget* parent, const uint max
 		labelWdg->setText ( label );
 		pBar = static_cast<QProgressBar*>( message->widgets.at ( 1 )->widget );
 		pBar->setValue ( next_value );
-		box->setWindowModality ( Qt::ApplicationModal );
-		box->show ();
-		box->activateWindow ();
-		( void ) box->mEventLoop->processEvents ();
-		box->setWindowModality ( Qt::NonModal );
+		box->enterEventLoop ();
 	}
 
-	if ( next_value >= max_value )
+	if ( next_value >= max_value || message->mBtnID == MESSAGE_BTN_CANCEL )
 	{
 		box->removeMessage ( message );
 		box->deleteLater ();
-	}
-	if ( message->mBtnID == MESSAGE_BTN_CANCEL )
-	{
-		box->deleteLater ();
-		// Force some things to happen faster. Qt seems a little slow to return control to caller window
-		box->setWindowModality ( Qt::NonModal );
-		box->mEventLoop->processEvents ( QEventLoop::AllEvents );
-		box->mEventLoop->exit ( 0 );
 		return nullptr;
 	}
 	return box;

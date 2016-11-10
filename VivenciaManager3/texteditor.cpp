@@ -17,15 +17,9 @@
 #include <QTextDocumentWriter>
 #include <QApplication>
 
-#ifdef QT5
 #include <QtPrintSupport/QPrintDialog>
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintPreviewDialog>
-#elif QT4
-#include <QtGui/QPrintDialog>
-#include <QtGui/QPrinter>
-#include <QtGui/QPrintPreviewDialog>
-#endif
 
 #include <QTextTable>
 #include <QPainter>

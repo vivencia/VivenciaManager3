@@ -4,6 +4,8 @@
 #include "vmtablewidget.h"
 #include "vmlistitem.h"
 
+class QResizeEvent;
+
 class vmListWidget : public vmTableWidget
 {
 
@@ -34,6 +36,9 @@ public:
 	inline void setCallbackForCurrentItemChanged ( std::function<void( vmListItem* current )> func ) {
 		mCurrentItemChangedFunc = func; }
 
+protected:
+	void resizeEvent ( QResizeEvent* e );
+	
 private:
 	void rowSelected ( const int row, const int prev_row );
 	

@@ -116,11 +116,11 @@ void newProjectDialog::loadJobsList ( const int clientid )
 		job_parent = globalMainWindow->getJobItem ( mClientItem, jobid.toInt () );
 		if ( job_parent )
 		{
-			mJobItem = static_cast<jobListItem*>( job_parent->relatedItem ( RLI_EXTRAITEM_1 ) );
+			mJobItem = static_cast<jobListItem*>( job_parent->relatedItem ( RLI_EXTRAITEMS ) );
 			if ( mJobItem == nullptr )
 			{
 				mJobItem = new jobListItem;
-				mJobItem->setRelation ( RLI_EXTRAITEM_1 );
+				mJobItem->setRelation ( RLI_EXTRAITEMS );
 				job_parent->syncSiblingWithThis ( mJobItem );
 				mJobItem->setText ( *itr, false, false, false );
 			}

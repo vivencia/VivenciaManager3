@@ -52,8 +52,8 @@ public:
 
 	int
 		contains ( const T&, int from_pos = 0 ) const,
-		insert ( const int pos, const T& item ), //returns pos
-		replace ( const int pos, const T& item ), //returns pos
+		insert ( const uint pos, const T& item ), //returns pos
+		replace ( const uint pos, const T& item ), //returns pos
 		removeOne ( const T& item, int from_pos = 0, const bool delete_item = false ), //removes an item from pos
 		remove ( const int = 0, const bool delete_item = false ); //returns nItems
 
@@ -288,25 +288,23 @@ inline int VMList<T>::prepend ( const T &item )
 template <typename T>
 void VMList<T>::moveItems ( const uint to, const uint from, const uint amount )
 {
-	int i ( 0 );
 	if ( to > from )
 	{
-		i = amount - 1;
+		int i (static_cast<int>(amount) - 1);
 		do
 		{
 			_data[to + i] = _data[from + i];
 			_data[from + i] = end_value;
-			--i;
-		} while ( i >= 0 );
+		} while ( --i >= 0 );
 	}
 	else
 	{
+		uint i ( 0 );
 		do
 		{
 			_data[to+i] = _data[from + i];
 			_data[from + i] = end_value;
-			++i;
-		} while ( i < signed ( amount )  );
+		} while ( ++i < amount );
 	}
 }
 
@@ -741,13 +739,13 @@ int VMList<T>::removeOne ( const T& item, int pos, const bool delete_item )
 }
 
 template <typename T>
-int VMList<T>::replace ( const int pos, const T &item )
+int VMList<T>::replace ( const uint pos, const T &item )
 {
 	int ret ( -1 );
-	if ( (pos >= 0) && (pos < static_cast<int>( nItems )) )
+	if ( pos < nItems )
 	{
 		_data[pos] = item;
-		ret = pos;
+		ret = static_cast<int>(pos);
 	}
 	return ret;
 }
@@ -780,13 +778,13 @@ int VMList<T>::contains ( const T& item, int from_pos ) const
 }
 
 template <typename T>
-int VMList<T>::insert ( const int pos, const T &item )
+int VMList<T>::insert ( const uint pos, const T &item )
 {
 	int ret ( 1 );
 
-	if ( pos <= (signed) capacity )
+	if ( pos <= capacity )
 	{
-		if ( ( m_nprealloc > 0 ) && ( pos == static_cast<int>( capacity ) ) )
+		if ( ( m_nprealloc > 0 ) && ( pos == capacity ) )
 		{
 			if ( nItems != 0 )
 				ret = static_cast<int>( this->realloc ( capacity + m_nprealloc ) );
@@ -807,10 +805,10 @@ int VMList<T>::insert ( const int pos, const T &item )
 
 	if ( ret != 0 )
 	{
-		if ( pos <= static_cast<int>( nItems - 1 ) )
+		if ( pos <= (nItems - 1) )
 			moveItems ( pos + 1, pos, nItems - pos );
 		_data[pos] = item;
-		ret = pos;
+		ret = static_cast<int>(pos);
 		ptr = pos; // the inserted item becomes the current item
 		++nItems;
 	}

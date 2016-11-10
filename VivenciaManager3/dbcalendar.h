@@ -41,7 +41,7 @@ public:
 	void updateCalendarWithJobInfo ( const Job* const job );
 	void updateCalendarWithPayInfo ( const Payment* const pay );
 	void updateCalendarWithBuyInfo ( const Buy* const buy );
-	void updateCalendarWithBuyPayInfo ( const Buy* const buy, const RECORD_ACTION action, PointersList<CALENDAR_EXCHANGE*>& ce_list );
+	void updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersList<CALENDAR_EXCHANGE*>& ce_list );
 	
 	const stringTable& dateLog ( const vmNumber& date, const uint search_field, const uint requested_field,
                                  QString& price, const uint requested_field_price, const bool bIncludeDates = false );

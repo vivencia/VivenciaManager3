@@ -18,7 +18,7 @@ public:
 	virtual ~generalTable ();
 
 	void insertOrUpdate ( const TABLE_INFO* const t_info );
-
+	
 protected:
 	friend bool updateGeneralTable ();
 	static const TABLE_INFO t_info;
