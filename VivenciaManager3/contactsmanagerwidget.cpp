@@ -61,7 +61,7 @@ void contactsManagerWidget::initInterface ()
 
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );
-	mainLayout->setSpacing ( 5 );
+	mainLayout->setSpacing ( 1 );
 	mainLayout->addWidget ( cboInfoData, 1 );
 	mainLayout->addWidget ( btnAdd );
 	mainLayout->addWidget ( btnDel );

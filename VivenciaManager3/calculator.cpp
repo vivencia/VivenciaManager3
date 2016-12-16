@@ -11,17 +11,12 @@
 class Tokens : public QVector<Token>
 {
 public:
-	explicit inline Tokens () : QVector<Token> () , m_valid ( true ) {}
-	inline ~Tokens () {
-		this->clear ();
-	}
+	inline Tokens () : QVector<Token> () , m_valid ( true ) {}
+	inline Tokens ( const Tokens& t ) : QVector<Token> ( t ), m_valid ( t.valid () ) {}
+	inline ~Tokens () {	this->clear (); }
 
-	inline bool valid () const {
-		return m_valid;
-	}
-	inline void setValid ( const bool v ) {
-		m_valid = v;
-	}
+	inline bool valid () const { return m_valid; }
+	inline void setValid ( const bool v ) {	m_valid = v; }
 
 protected:
 	bool m_valid;
@@ -31,34 +26,29 @@ class TokenStack: public QVector<Token>
 {
 public:
 
-	explicit inline TokenStack (): QVector<Token> () {
-		topIndex = 0;
-		ensureSpace ();
-	}
+	explicit inline TokenStack (): QVector<Token> (), topIndex ( 0 ) {}
 
-	inline bool isEmpty () const {
-		return topIndex == 0;
-	}
-	inline uint itemCount () const {
-		return unsigned ( topIndex );
-	}
-	inline Token pop () {
-		return topIndex > 0 ? Token ( at ( --topIndex ) ): Token ();
-	}
-	inline void push ( const Token &token ) {
+	inline bool isEmpty () const { return topIndex == 0; }
+	inline uint itemCount () const { return topIndex; }
+	inline Token pop () { return topIndex > 0 ? Token ( at ( static_cast<int>(--topIndex) ) ) : Token (); }
+	inline void push ( const Token &token )
+	{
 		ensureSpace ();
-		( *this ) [topIndex++] = token;
+		( *this ) [static_cast<int>(topIndex++)] = token;
 	}
-	inline const Token & top () const {
-		return top ( 0 );
-	}
-	inline const Token & top ( uint index ) const {
-		return ( topIndex > index ) ? at ( topIndex - index - 1 ): Token::null;
+	
+	inline const Token & top () const { return top ( 0 ); }
+	inline const Token & top ( uint index ) const
+	{
+		return ( topIndex > index ) ? at ( static_cast<int>(topIndex - index - 1) ) : Token::null;
 	}
 
 private:
-	inline void ensureSpace () {
-		while ( topIndex >= unsigned ( size () ) ) resize ( size () +10 );
+	inline void ensureSpace ()
+	{
+		//while ( topIndex >= unsigned ( size () ) ) resize ( size () + 10 );
+		if ( static_cast<int>(topIndex) >= size () )
+			resize ( static_cast<int>(topIndex) + 10 );
 	}
 	uint topIndex;
 };
@@ -143,7 +133,8 @@ Token::Token ( const Token& token )
 Token& Token::operator= ( const Token& token )
 {
 	// OPT_CS #2
-	if ( this != &token ) {
+	if ( this != &token )
+	{
 		m_type = token.m_type;
 		m_text = token.m_text;
 		m_pos = token.m_pos;
@@ -218,14 +209,15 @@ static enum { Start = 0, Finish, Bad, InNumber, InDecimal } state;
 
 struct Calculator::Private
 {
-	bool dirty;
+	QStringList constants;
 	QString error;
 	QString expression;
-	bool valid;
-
 	QString assignId;
+	
 	QVector<Opcode> codes;
-	QStringList constants;
+		
+	bool dirty;
+	bool valid;
 
 	Private (): dirty ( true ) , valid ( false ) {}
 };

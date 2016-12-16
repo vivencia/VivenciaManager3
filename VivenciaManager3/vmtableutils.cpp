@@ -51,6 +51,8 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	mLayout->addStretch ( 2 );
 	mLayout->addWidget ( chkSearchAllTable, 0, Qt::AlignRight );
 	setLayout ( mLayout );
+	
+	setMaximumHeight ( 30 );
 }
 
 void vmTableSearchPanel::showEvent ( QShowEvent* se )
@@ -157,6 +159,8 @@ vmTableFilterPanel::vmTableFilterPanel ( const vmTableWidget * const table )
 	mainLayout->addWidget ( m_txtFilter, 2 );
 	mainLayout->addWidget ( m_btnClose );
 	setLayout ( mainLayout );
+	
+	setMaximumHeight ( 30 );
 }
 
 void vmTableFilterPanel::showEvent ( QShowEvent* se )

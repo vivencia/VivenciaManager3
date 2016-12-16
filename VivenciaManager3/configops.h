@@ -102,7 +102,7 @@ public:
 	}
 	
 	inline const QString& fileManager ( const bool use_default = false ) const
-	{
+	{//TODO
 		return getConfigValue ( FILEMANAGER, use_default );
 	}
 

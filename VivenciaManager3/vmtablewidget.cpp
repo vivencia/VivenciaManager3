@@ -904,7 +904,10 @@ void vmTableWidget::addToLayout ( QGridLayout* glayout, const uint row, const ui
 void vmTableWidget::addToLayout ( QVBoxLayout* vblayout, const uint stretch )
 {
 	if ( setParentLayout ( vblayout ) )
+	{
 		vblayout->addWidget ( this, stretch );
+		setUtilitiesPlaceLayout ( vblayout );
+	}
 }
 
 bool vmTableWidget::setParentLayout ( QGridLayout* glayout )
@@ -1203,52 +1206,71 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 	const bool ctrlKey ( k->modifiers () & Qt::ControlModifier );
 	if ( ctrlKey ) {
 		bool b_accept ( false );
-		if ( k->key () == Qt::Key_F ) {
-			if ( !m_searchPanel ) 
-				m_searchPanel = new vmTableSearchPanel ( this );
-			if ( m_searchPanel->isVisible () ) {
+		if ( k->key () == Qt::Key_F )
+		{
+			if ( mLayoutUtilities != nullptr )
+			{
+				if ( !m_searchPanel ) 
+					m_searchPanel = new vmTableSearchPanel ( this );
+				if ( m_searchPanel->isVisible () ) {
+					mLayoutUtilities->removeWidget ( m_searchPanel );
+					m_searchPanel->setVisible ( false );
+				}
+				else
+				{
+					const int tableIndex ( mLayoutUtilities->indexOf ( this ) );
+					mLayoutUtilities->insertWidget ( tableIndex >= 0 ? tableIndex : 0, m_searchPanel, 1 );
+					m_searchPanel->setVisible ( true );
+				}
+				b_accept = true;
+			}
+		}
+		if ( k->key () == Qt::Key_L )
+		{
+			if ( mLayoutUtilities != nullptr )
+			{
+				if ( !m_filterPanel ) 
+					m_filterPanel = new vmTableFilterPanel ( this );
+				if ( m_filterPanel->isVisible () ) {
+					mLayoutUtilities->removeWidget ( m_filterPanel );
+					m_filterPanel->setVisible ( false );
+				}
+				else
+				{
+					const int tableIndex ( mLayoutUtilities->indexOf ( this ) );
+					mLayoutUtilities->insertWidget ( tableIndex >= 0 ? tableIndex : 0, m_filterPanel, 1 );
+					m_filterPanel->setVisible ( true );
+				}
+				b_accept = true;
+			}
+		}
+		if ( k->key () == Qt::Key_Escape )
+		{
+			if ( m_searchPanel && m_searchPanel->isVisible () )
+			{
 				mLayoutUtilities->removeWidget ( m_searchPanel );
 				m_searchPanel->setVisible ( false );
 			}
-			else {
-				mLayoutUtilities->addWidget ( m_searchPanel, 1 );
-				m_searchPanel->setVisible ( true );
-			}
-			b_accept = true;
-		}
-		if ( k->key () == Qt::Key_L ) {
-			if ( !m_filterPanel ) 
-				m_filterPanel = new vmTableFilterPanel ( this );
-			if ( m_filterPanel->isVisible () ) {
-				mLayoutUtilities->removeWidget ( m_filterPanel );
-				m_filterPanel->setVisible ( false );
-			}
-			else {
-				mLayoutUtilities->addWidget ( m_filterPanel, 1 );
-				m_filterPanel->setVisible ( true );
-			}
-			b_accept = true;
-		}
-		if ( k->key () == Qt::Key_Escape ) {
-			if ( m_searchPanel && m_searchPanel->isVisible () ) {
-				mLayoutUtilities->removeWidget ( m_searchPanel );
-				m_searchPanel->setVisible ( false );
-			}
-			if ( m_filterPanel && m_filterPanel->isVisible () ) {
+			if ( m_filterPanel && m_filterPanel->isVisible () )
+			{
 				mLayoutUtilities->removeWidget ( m_filterPanel );
 				m_filterPanel->setVisible ( false );
 			}
 			b_accept = true;
 		}
-		if ( b_accept ) {
+		if ( b_accept )
+		{
 			k->setAccepted ( true );
 			return;
 		}
 	}
 	
-	if ( isEditable () ) {
-		if ( ctrlKey ) {
-			switch ( k->key () ) {
+	if ( isEditable () )
+	{
+		if ( ctrlKey )
+		{
+			switch ( k->key () )
+			{
 				case Qt::Key_Enter:
 				case Qt::Key_Return:
 					if ( keypressed_func )
@@ -1280,8 +1302,10 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 				return;
 			}
 		}
-		else { // no CTRL modifier
-			switch ( k->key () ) {
+		else
+		{ // no CTRL modifier
+			switch ( k->key () )
+			{
 				case Qt::Key_Enter:
 				case Qt::Key_Return:
 					if ( keypressed_func )
@@ -1290,7 +1314,8 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 				case Qt::Key_F2:
 				case Qt::Key_F3:
 				case Qt::Key_F4:
-					if ( m_searchPanel && m_searchPanel->isVisible () ) {
+					if ( m_searchPanel && m_searchPanel->isVisible () )
+					{
 						QApplication::sendEvent ( m_searchPanel, k ); // m_searchPanel will propagate the event its children
 						QApplication::sendPostedEvents ( m_searchPanel, 0 ); // force event to be processed before posting another one to que queue
 					}

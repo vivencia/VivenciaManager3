@@ -307,13 +307,16 @@ void updateCalendarWithBuyInfo ( const Buy* const buy )
 }
 #endif
 
+#ifdef TABLE_UPDATE_AVAILABLE
 #include "vivenciadb.h"
 #include "calculator.h"
 #include "stringrecord.h"
 #include "vmnotify.h"
+#endif
 
 bool updateCalendarTable ()
 {
+#ifdef TABLE_UPDATE_AVAILABLE
 	//( void )VDB ()->database ()->exec ( QStringLiteral ( "RENAME TABLE `CALENDAR` TO `OLD_CALENDAR`" ) );
     //VDB ()->createTable ( &dbCalendar::t_info );
 
@@ -356,7 +359,8 @@ bool updateCalendarTable ()
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_pbar_value, i++, QString::null, QStringLiteral( "Done. Calendar table updated" ) );
     VDB ()->optimizeTable( &dbCalendar::t_info );
 	return true;
-	//return false;
+#endif
+	return false;
 }
 
 const TABLE_INFO dbCalendar::t_info = {

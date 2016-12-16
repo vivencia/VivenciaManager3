@@ -503,7 +503,7 @@ bool fileOps::executeWait ( const QString& arguments, const QString& program,
 	if ( !arguments.isEmpty () )
 	{
 		prog += CHR_SPACE;
-		prog += arguments;
+		prog += CHR_QUOTES + arguments + CHR_QUOTES;
 	}
 	if ( !as_root_message.isEmpty () )
         prog = suProgram ( as_root_message, prog );

@@ -24,7 +24,8 @@ public:
 	}
 };
 
-enum DB_FIELD_TYPE {
+enum DB_FIELD_TYPE
+{
 	DBTYPE_ID = 0, DBTYPE_YESNO = 1, DBTYPE_LIST, DBTYPE_FILE,
 	DBTYPE_SHORTTEXT, DBTYPE_LONGTEXT, DBTYPE_SUBRECORD,
 	DBTYPE_DATE, DBTYPE_TIME, DBTYPE_PHONE, DBTYPE_PRICE, DBTYPE_NUMBER
@@ -51,7 +52,7 @@ struct TABLE_INFO //compile-time set
 	bool ( *update_func ) ();// New field: From version 2.0, upates are conducted within the originating module
 #ifdef TRANSITION_PERIOD
 	/* certain routines in the transition period from the 2 to the 3 series (re)create tables. These
-	 * tables are crated orderly and do not need, for example, to have their IDs rearranged. Other update
+	 * tables are created orderly and do not need, for example, to have their IDs rearranged. Other update
 	 * routines might check this flag, although none does so far
 	 */
 

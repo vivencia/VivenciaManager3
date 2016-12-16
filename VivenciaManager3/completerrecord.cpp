@@ -12,7 +12,11 @@
 #include "purchases.h"
 #include "generaltable.h"
 
-const double TABLE_VERSION ( 1.2 );
+#ifdef TABLE_UPDATE_AVAILABLE
+#include "vmnotify.h"
+#endif
+
+const double TABLE_VERSION ( 1.3 );
 
 const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
@@ -22,7 +26,14 @@ const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] = {
 
 bool updateCompleterRecordTable ()
 {
-#ifdef TRANSITION_PERIOD
+#ifdef TABLE_UPDATE_AVAILABLE
+	vmNotify* pBox ( nullptr );
+	uint step ( 0 );
+	const uint max_steps ( 9 );
+	pBox = vmNotify::progressBox ( nullptr, nullptr, max_steps, step++,
+			QStringLiteral ( "Updating the Completers database. This might take a while..." ),
+			QStringLiteral ( "Starting...." ) );
+	
 	VDB ()->deleteTable ( &completerRecord::t_info );
 	VDB ()->createTable ( &completerRecord::t_info );
 
@@ -33,17 +44,21 @@ bool updateCompleterRecordTable ()
 	stringTable payinfo;
 	QString str_temp;
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for brands" ) );
 	cr.runQuery ( results, &Inventory::t_info, FLD_INVENTORY_BRAND, true );
 	cr.runQuery ( results, &dbSupplies::t_info, FLD_SUPPLIES_BRAND, true );
 	cr.updateCompleterInternal ( FLD_CR_BRAND, results );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for inventory type" ) );
 	cr.runQuery ( results, &Inventory::t_info, FLD_INVENTORY_TYPE, true );
 	cr.updateCompleterInternal ( FLD_CR_STOCK_TYPE, results );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for inventory and supplies place" ) );
 	cr.runQuery ( results, &Inventory::t_info, FLD_INVENTORY_PLACE, true );
 	cr.runQuery ( results, &dbSupplies::t_info, FLD_SUPPLIES_PLACE, true );
 	cr.updateCompleterInternal ( FLD_CR_STOCK_PLACE, results );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for addresses" ) );
 	cr.runQuery ( results, &Client::t_info, FLD_CLIENT_STREET, true );
 	cr.runQuery ( results, &Client::t_info, FLD_CLIENT_CITY, true );
 	cr.runQuery ( results, &Client::t_info, FLD_CLIENT_DISTRICT, true );
@@ -52,9 +67,11 @@ bool updateCompleterRecordTable ()
 	cr.runQuery ( results, &supplierRecord::t_info, FLD_SUPPLIER_DISTRICT, true );
 	cr.updateCompleterInternal ( FLD_CR_ADDRESS, results );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for delivery method" ) );
 	cr.runQuery ( results, &Buy::t_info, FLD_BUY_DELIVERMETHOD, true );
 	cr.updateCompleterInternal ( FLD_CR_DELIVERY_METHOD, results );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for payment methods" ) );
 	cr.runQuery ( results, &Buy::t_info, FLD_BUY_PAYINFO, true );
 	if ( !results.isEmpty () ) {
 		for ( i = 0; i < results.count (); ++i ) {
@@ -71,6 +88,7 @@ bool updateCompleterRecordTable ()
 		results.clear ();
 	}
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for accounts" ) );
 	cr.runQuery ( results, &Payment::t_info, FLD_PAY_INFO, true );
 	if ( !results.isEmpty () ) {
 		for ( i = 0; i < results.count (); ++i ) {
@@ -93,9 +111,11 @@ bool updateCompleterRecordTable ()
 	cr.updateCompleterInternal ( FLD_CR_PAYMENT_METHOD, results_2 );
 	cr.updateCompleterInternal ( FLD_CR_ACCOUNT, results_3 );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for job types" ) );
 	cr.runQuery ( results, &Job::t_info, FLD_JOB_TYPE, true );
 	cr.updateCompleterInternal ( FLD_CR_JOB_TYPE, results );
 
+	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for supply item strings" ) );
 	dbSupplies db_sup;
 	if ( db_sup.readFirstRecord () ) {
 		stringRecord info;
@@ -115,6 +135,7 @@ bool updateCompleterRecordTable ()
 		cr.updateCompleterInternal ( FLD_CR_PRODUCT_OR_SERVICE_1, results_2 );
 		cr.updateCompleterInternal ( FLD_CR_PRODUCT_OR_SERVICE_2, results_3 );
 	}
+	VDB ()->optimizeTable( &completerRecord::t_info );
 	return true;
 #endif //TRANSITION_PERIOD
 	return false;
@@ -150,7 +171,7 @@ completerRecord::~completerRecord () {}
 
 static inline uint translateCategory ( const vmCompleters::COMPLETER_CATEGORIES category )
 {
-	return ( category <= vmCompleters::ADDRESS ? category : category - 2 );
+	return static_cast<uint>( category <= vmCompleters::ADDRESS ? category : category - 2 );
 }
 
 void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str )
@@ -184,7 +205,8 @@ void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES cat
 	}
 }
 
-#ifdef TRANSITION_PERIOD
+//#ifdef TRANSITION_PERIOD
+#ifdef TABLE_UPDATE_AVAILABLE
 void completerRecord::updateCompleterInternal ( const uint field, const QStringList& str_list )
 {
 	if ( str_list.isEmpty () )
@@ -203,7 +225,8 @@ void completerRecord::updateCompleterInternal ( const uint field, const QStringL
 				}
 			} while ( readNextRecord () );
 		}
-		if ( action () == ACTION_READ ) {
+		if ( action () == ACTION_READ )
+		{
 			clearAll ();
 			setAction ( ACTION_ADD );
 		}

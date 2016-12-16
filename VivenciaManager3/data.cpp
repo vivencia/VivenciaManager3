@@ -69,14 +69,13 @@ bool Data::isMySQLRunning ()
 {
 	QString outStr ( fileOps::executeAndCaptureOutput ( QStringLiteral ( "status" ), MYSQL_INIT_SCRIPT ) );
 
-	if ( configOps::isSystem ( UBUNTU ) ) {
+	if ( fileOps::exists ( QStringLiteral ( "/etc/lsb-release" ) ).isOn () ) // *buntu derivatives
+	{
 		if ( configOps::initSystem ( SYSTEMD ) )
 			return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "active (running)" ) ) != -1 ) );
 		else
 			return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "start/running, process" ) ) != -1 ) );
 	}
-	else if ( configOps::isSystem ( OPENSUSE ) )
-		return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "running" ) ) != -1 ) );
 	else
 		return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "OK" ) ) != -1 ) );
 }

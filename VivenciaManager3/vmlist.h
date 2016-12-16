@@ -291,20 +291,22 @@ void VMList<T>::moveItems ( const uint to, const uint from, const uint amount )
 	if ( to > from )
 	{
 		int i (static_cast<int>(amount) - 1);
-		do
+		while ( i >= 0 )
 		{
 			_data[to + i] = _data[from + i];
 			_data[from + i] = end_value;
-		} while ( --i >= 0 );
+			--i;
+		};
 	}
 	else
 	{
 		uint i ( 0 );
-		do
+		while ( i < amount )
 		{
 			_data[to+i] = _data[from + i];
 			_data[from + i] = end_value;
-		} while ( ++i < amount );
+			++i;
+		}
 	}
 }
 

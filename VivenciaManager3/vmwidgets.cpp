@@ -170,7 +170,6 @@ pvmDateEdit::pvmDateEdit ( vmDateEdit* owner )
       mDateBeforeFocus ( 2000, 1, 1 ), mbHasFocus ( false ), mEmitSignal ( TRI_UNDEF )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	setFrame ( false );
 	setCalendarPopup ( true );
 	setDisplayFormat ( DATE_FORMAT_HUMAN );
 }
@@ -193,9 +192,9 @@ QString pvmDateEdit::defaultStyleSheet () const
 
 void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 {
-    if ( date.isDate () ) {
+    //if ( date.isDate () ) {
 		const triStateType mEmitSignalOriginal ( mEmitSignal );
-		mEmitSignal = b_notify;
+		mEmitSignal = b_notify && date.isDate ();
 		QDateEdit::setDate ( date.toQDate () );
 		mEmitSignal = mEmitSignalOriginal;
         /*if ( isEditable () ) {
@@ -204,7 +203,7 @@ void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
             vmDateChanged ( date.toQDate () );
             mEmitSignal = mEmitSignalOriginal;
         }*/
-    }
+    //}
 }
 
 void pvmDateEdit::setEditable ( const bool editable )
@@ -429,7 +428,6 @@ vmTimeEdit::vmTimeEdit ( QWidget* parent )
 	: QTimeEdit ( parent ), vmWidget ( WT_TIMEEDIT )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	setFrame ( false );
 }
 
 vmTimeEdit::~vmTimeEdit () {}
@@ -503,7 +501,6 @@ vmLineEdit::vmLineEdit ( QWidget* parent, QWidget* ownerWindow )
 	  mouseClicked_func ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	setFrame ( false );
 	if  ( ownerWindow != nullptr ) {
 		if ( ( ownerWindow->windowFlags () & Qt::Drawer ) == Qt::Drawer )
 			b_widgetCannotGetFocus = true;
@@ -848,7 +845,6 @@ vmComboBox::vmComboBox ( QWidget* parent )
 		keyEnter_func ( nullptr ), keyEsc_func ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	setFrame ( false );
 	setLineEdit ( mLineEdit );
 	mLineEdit->setVmParent ( this );
 	setInsertPolicy ( QComboBox::NoInsert );

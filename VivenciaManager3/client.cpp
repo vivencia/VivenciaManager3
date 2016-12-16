@@ -118,15 +118,18 @@ const TABLE_INFO Client::t_info = {
 
 static void clientNameChangeActions ( const DBRecord* db_rec )
 {
-	if ( db_rec->action () == ACTION_ADD ) {
+	if ( db_rec->action () == ACTION_ADD )
+	{
 		const QString baseClientDir ( CONFIG ()->projectsBaseDir () + recStrValue ( db_rec, FLD_CLIENT_NAME ) + CHR_F_SLASH );
 		fileOps::createDir ( baseClientDir );
 		fileOps::createDir ( baseClientDir + QLatin1String ( "Pictures/" ) + QString::number ( vmNumber::currentDate.year () ) );
 	}
 	else if ( db_rec->action () == ACTION_EDIT )
+	{
 		fileOps::rename ( CONFIG ()->projectsBaseDir () + db_rec->actualRecordStr ( FLD_CLIENT_NAME ),
 						  CONFIG ()->projectsBaseDir () + db_rec->backupRecordStr ( FLD_CLIENT_NAME ) );
-
+	}
+	
 	APP_COMPLETERS ()->updateCompleter ( recStrValue ( db_rec, FLD_CLIENT_NAME ), vmCompleters::CLIENT_NAME );
 }
 
@@ -152,7 +155,8 @@ Client::Client ( const bool connect_helper_funcs )
 	DBRecord::t_info = &( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
 
-	if ( connect_helper_funcs ) {
+	if ( connect_helper_funcs )
+	{
 		DBRecord::helperFunction = this->helperFunction;
 		setHelperFunction ( FLD_CLIENT_NAME, &clientNameChangeActions );
 		setHelperFunction ( FLD_CLIENT_STREET, &updateClientStreetCompleter );
@@ -165,7 +169,8 @@ Client::~Client () {}
 
 int Client::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 {
-	switch ( sc ) {
+	switch ( sc )
+	{
 		case SC_ID:			return FLD_CLIENT_ID;
 		case SC_ADDRESS_1:	return FLD_CLIENT_STREET;
 		case SC_ADDRESS_2:	return FLD_CLIENT_NUMBER;
@@ -203,7 +208,8 @@ QString Client::concatenateClientInfo ( const Client& client )
 {
 	QString info;
 	info = recStrValue ( &client, FLD_CLIENT_NAME );
-	if ( !info.isEmpty () ) {
+	if ( !info.isEmpty () )
+	{
 		info += QLatin1String ( client.opt ( FLD_CLIENT_STATUS ) == true ? "(*)\n" : "\n" );
 		if ( !recStrValue ( &client, FLD_CLIENT_STREET ).isEmpty () )
 			info += recStrValue ( &client, FLD_CLIENT_STREET ) + QLatin1String ( ", " );
@@ -221,19 +227,23 @@ QString Client::concatenateClientInfo ( const Client& client )
 		if ( !recStrValue ( &client, FLD_CLIENT_CITY ).isEmpty () )
 			info += recStrValue ( &client, FLD_CLIENT_CITY ) + QLatin1String ( "/SP" );
 
-		if ( !recStrValue ( &client, FLD_CLIENT_PHONES ).isEmpty () ) {
+		if ( !recStrValue ( &client, FLD_CLIENT_PHONES ).isEmpty () )
+		{
 			info += CHR_NEWLINE;
 			const stringRecord phones_rec ( recStrValue ( &client, FLD_CLIENT_PHONES ) );
-			if ( phones_rec.first () ) {
+			if ( phones_rec.first () )
+			{
 				info += QLatin1String ( "Telefone(s): " ) + phones_rec.curValue ();
 				while ( phones_rec.next () )
 					info += QLatin1String ( " / " ) + phones_rec.curValue ();
 			}
 		}
-		if ( !recStrValue ( &client, FLD_CLIENT_EMAIL ).isEmpty () ) {
+		if ( !recStrValue ( &client, FLD_CLIENT_EMAIL ).isEmpty () )
+		{
 			info += CHR_NEWLINE;
 			const stringRecord emails_rec ( recStrValue ( &client, FLD_CLIENT_EMAIL ) );
-			if ( emails_rec.first () ) {
+			if ( emails_rec.first () )
+			{
 				info += QLatin1String ( "email(s)/site(s): " ) + emails_rec.curValue ();
 				while ( emails_rec.next () )
 					info += QLatin1String ( " / " ) + emails_rec.curValue ();

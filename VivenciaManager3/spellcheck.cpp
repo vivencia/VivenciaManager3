@@ -51,8 +51,8 @@ void spellCheck::updateUserDict ()
 			unknownWordList.replace ( 0, QString::number ( unknownWordList.count () + 1 ) );
 
 		QTextStream out ( &file );
-		QStringList::const_iterator itr = unknownWordList.constBegin ();
-		const QStringList::const_iterator itr_end = unknownWordList.constEnd ();
+		QStringList::const_iterator itr ( unknownWordList.constBegin () );
+		const QStringList::const_iterator itr_end ( unknownWordList.constEnd () );
 		while ( itr != itr_end )
 		{
 			out << static_cast<QString> ( *itr ) << CHR_NEWLINE;
@@ -70,7 +70,7 @@ bool spellCheck::suggestionsList ( const QString& word, QStringList& wordList )
 		const int ns ( mChecker->suggest ( &wlst, mCodec->fromUnicode ( word ).constData () ) );
 		if ( ns > 0 )
 		{
-			for ( int i = 0; i < ns; ++i )
+			for ( int i ( 0 ); i < ns; ++i )
 				wordList.append ( mCodec->toUnicode ( wlst[i] ) );
 			mChecker->free_list ( &wlst, ns );
 			return true;
@@ -81,9 +81,11 @@ bool spellCheck::suggestionsList ( const QString& word, QStringList& wordList )
 
 void spellCheck::addWord ( const QString& word, const bool b_add )
 {
-	if ( mChecker ) {
+	if ( mChecker )
+	{
 		mChecker->add ( word.toLocal8Bit ().constData () );
-		if ( b_add ) {
+		if ( b_add )
+		{
 			unknownWordList.append ( word );
 			updateUserDict ();
 		}
@@ -92,7 +94,8 @@ void spellCheck::addWord ( const QString& word, const bool b_add )
 
 QMenu* spellCheck::menuAvailableDicts ()
 {
-	if ( mMenu == nullptr ) {
+	if ( mMenu == nullptr )
+	{
 		// QMenu::addMenu () for some reason crashes if we pass a null pointer. So, regardless of having
 		// any dictionary on the system, we must create a menu to pass to it. A bug, in my opinion.
 		mMenu = new QMenu ( APP_TR_FUNC ( "Choose spell language" ) );
@@ -107,10 +110,11 @@ QMenu* spellCheck::menuAvailableDicts ()
 			qaction = new vmAction ( -1, APP_TR_FUNC ( "Disable spell checking" ) );
 			mMenu->addAction ( qaction );
 			mMenu->addSeparator ();
-			for ( uint i ( 0 ); i < dics.count (); ++i ) {
+			for ( uint i ( 0 ); i < dics.count (); ++i )
+			{
 				menuText = dics.at ( i )->filename;
 				menuText.chop ( 4 ); // remove ".dic"
-				qaction = new vmAction ( i, menuText );
+				qaction = new vmAction ( static_cast<int>(i), menuText );
 				mMenu->addAction ( qaction );
 			}
 		}
@@ -122,7 +126,8 @@ void spellCheck::menuEntrySelected ( const QAction* action )
 {
 	if ( action->text ().startsWith ( QStringLiteral ( "Disab" ) ) )
 		heap_del ( mChecker );
-	else {
+	else
+	{
 		setDictionaryLanguage ( action->text () );
 		createDictionaryInterface ();
 	}
@@ -132,10 +137,8 @@ void spellCheck::menuEntrySelected ( const QAction* action )
 
 void spellCheck::getDictionariesPath ()
 {
-	if ( configOps::isSystem ( UBUNTU ) )
+	if ( fileOps::exists ( QStringLiteral ( "/etc/lsb-release" ) ).isOn () ) // *buntu derivatives
 		mDicPath = QStringLiteral ( "/usr/share/hunspell/" );
-	else if ( configOps::isSystem ( OPENSUSE ) )
-		mDicPath = QStringLiteral ( "/usr/share/myspell/" );
 	else
 		mDicPath = QStringLiteral ( "/usr/share/myspell/dicts/" );
 }
@@ -155,7 +158,8 @@ inline void spellCheck::getDictionaryAff ( QString& dicAff ) const
 
 void spellCheck::createDictionaryInterface ()
 {
-	if ( fileOps::canRead ( mDictionary ).isOn () ) {
+	if ( fileOps::canRead ( mDictionary ).isOn () )
+	{
 		heap_del ( mChecker );
 		QString dicAff;
 		getDictionaryAff( dicAff );
@@ -168,7 +172,8 @@ bool spellCheck::setUserDictionary ()
 {
 	mUserDict = CONFIG ()->appDataDir () + QLatin1String ( "User_" ) + fileOps::fileNameWithoutPath ( mDictionary );
 	QFile file ( mUserDict );
-	if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) ) {
+	if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
+	{
 		QTextStream in ( &file );
 		in.readLine (); //skip word count
 		while ( !in.atEnd () )

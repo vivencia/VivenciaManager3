@@ -17,7 +17,6 @@
 #include "heapmanager.h"
 #include "fast_library_functions.h"
 
-#include <QTimer>
 #include <QKeyEvent>
 
 companyPurchasesUI* companyPurchasesUI::s_instance ( nullptr );
@@ -182,6 +181,7 @@ void companyPurchasesUI::setupUI ()
 			return relevantKeyPressed ( ke ); } );
 
 	saveWidget ( ui->txtCPPayValue, FLD_CP_PAY_VALUE );
+	ui->txtCPPayValue->lineControl ()->setTextType ( vmLineEdit::TT_PRICE );
 	ui->txtCPPayValue->setButtonType ( vmLineEditWithButton::LEBT_CALC_BUTTON );
 	ui->txtCPPayValue->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 			return txtCP_textAltered ( sender ); } );

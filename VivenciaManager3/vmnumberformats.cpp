@@ -116,16 +116,12 @@ void vmNumber::clear ( const bool b_unset_type )
         case VMNT_PRICE:
         case VMNT_TIME:
             for ( uint i ( 0 ); i < 5; ++i )
-			{
-                nbr_part[i] = 0;
-			}
+				nbr_part[i] = 0;
         break;
         case VMNT_PHONE:
         case VMNT_DATE:
             for ( uint i ( 0 ); i < 5; ++i )
-			{
-                nbr_upart[i] = 0;
-			}
+				 nbr_upart[i] = 0;
 		break;
         default:
 		break;
@@ -569,11 +565,13 @@ void vmNumber::fixDate ()
 
 void vmNumber::setDate ( const int day, const int month, const int year, const bool update )
 {
-	if ( !isDate () ) {
+	if ( !isDate () )
+	{
 		nbr_upart[VM_IDX_DAY] = nbr_upart[VM_IDX_MONTH] = nbr_upart[VM_IDX_YEAR] = 0;
 		setType ( VMNT_DATE );
 	}
-	else {
+	else
+	{
 		if ( !update )
 			nbr_upart[VM_IDX_DAY] = nbr_upart[VM_IDX_MONTH] = nbr_upart[VM_IDX_YEAR] = 0;
 	}
@@ -582,7 +580,8 @@ void vmNumber::setDate ( const int day, const int month, const int year, const b
 	nbr_part[VM_IDX_MONTH] = month;
 	nbr_part[VM_IDX_YEAR] = year;
 
-	if ( !update && year != 0 ) {
+	if ( !update && year != 0 )
+	{
 		if ( nbr_part[VM_IDX_YEAR] < 100 )
 			nbr_part[VM_IDX_YEAR] += 2000;
 	}
@@ -596,22 +595,28 @@ void vmNumber::setDate ( const int day, const int month, const int year, const b
 
 vmNumber& vmNumber::fromStrDate ( const QString& date )
 {
-	if ( !date.isEmpty () ) {
+	if ( !date.isEmpty () )
+	{
 		int n ( date.indexOf ( CHR_F_SLASH ) );
-		if ( n != -1 ) { //DB_DATE or HUMAN_DATE
+		if ( n != -1 ) //DB_DATE or HUMAN_DATE
+		{
 			const int idx ( date.indexOf ( CHR_F_SLASH, n + 1 ) );
 
-			if ( n == 4 ) { // day starts with year
-				nbr_upart[VM_IDX_YEAR] = date.left ( n ).toInt ();
+			if ( n == 4 ) // day starts with year
+			{
+				nbr_upart[VM_IDX_YEAR] = date.left ( n ).toUInt ();
 				nbr_upart[VM_IDX_DAY] = date.right ( date.length () - idx - 1 ).toInt ();
 			}
-			else { // date may start with day or a two digit year
-				nbr_upart[VM_IDX_DAY] = date.left ( n ).toInt ();
-				if ( nbr_upart[VM_IDX_DAY] > 31 ) { // year
+			else // date may start with day or a two digit year
+			{
+				nbr_upart[VM_IDX_DAY] = date.left ( n ).toUInt ();
+				if ( nbr_upart[VM_IDX_DAY] > 31 ) // year
+				{
 					nbr_upart[VM_IDX_YEAR] = nbr_upart[VM_IDX_DAY];
 					nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
 				}
-				else {
+				else
+				{
 					nbr_upart[VM_IDX_YEAR] = date.right ( date.length () -
 														  date.lastIndexOf ( CHR_F_SLASH ) - 1 ).toInt ();
 				}
@@ -623,7 +628,8 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 
 			setType ( VMNT_DATE );
 		}
-		else {
+		else
+		{
 			if ( date.contains ( QStringLiteral ( "de" ) ) )
 				return dateFromLongString ( date );
 			else
@@ -631,7 +637,8 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 		}
 		setCached ( false );
 	}
-	else {
+	else
+	{
 		clear ( false );
 		nbr_upart[VM_IDX_YEAR] = 2000;
 		nbr_upart[VM_IDX_MONTH] = 1;
@@ -643,35 +650,45 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 vmNumber& vmNumber::fromTrustedStrDate ( const QString& date, const VM_DATE_FORMAT format, const bool cache )
 {
 	clear ( false );
-    switch ( format )
+	if ( !date.isEmpty () )
 	{
-		case VDF_HUMAN_DATE:
-            return dateFromHumanDate ( date, cache );
-        break;
-        case VDF_DB_DATE:
-            return dateFromDBDate ( date, cache );
-        break;
-        case VDF_FILE_DATE:
-            return dateFromFilenameDate ( date, cache );
-        break;
-        case VDF_LONG_DATE:
-            return dateFromLongString ( date, cache );
-        break;
-		case VDF_DROPBOX_DATE:
-			return dateFromDropboxDate( date, cache );
-		break;
+		switch ( format )
+		{
+			case VDF_HUMAN_DATE:
+	            return dateFromHumanDate ( date, cache );
+		    break;
+			case VDF_DB_DATE:
+				return dateFromDBDate ( date, cache );
+	        break;
+		    case VDF_FILE_DATE:
+			    return dateFromFilenameDate ( date, cache );
+	        break;
+		    case VDF_LONG_DATE:
+			    return dateFromLongString ( date, cache );
+	        break;
+			case VDF_DROPBOX_DATE:
+				return dateFromDropboxDate( date, cache );
+			break;
+		}
+	}
+	else
+	{
+		nbr_upart[VM_IDX_YEAR] = 2000;
+		nbr_upart[VM_IDX_MONTH] = 1;
+		nbr_upart[VM_IDX_DAY] = 1;
 	}
 	return *this;
 }
 
 vmNumber& vmNumber::dateFromHumanDate ( const QString& date, const bool cache )
 {
-    nbr_upart[VM_IDX_YEAR] = date.right ( 4 ).toInt ();
-    nbr_upart[VM_IDX_MONTH] = date.mid ( 3, 2 ).toInt ();
-    nbr_upart[VM_IDX_DAY] = date.left ( 2 ).toInt ();
+    nbr_upart[VM_IDX_YEAR] = date.right ( 4 ).toUInt ();
+    nbr_upart[VM_IDX_MONTH] = date.mid ( 3, 2 ).toUInt ();
+    nbr_upart[VM_IDX_DAY] = date.left ( 2 ).toUInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_HUMAN_DATE;
-	if ( cache ) {
+	if ( cache )
+	{
 		setCached ( true );
 		cached_str = date;
 	}
@@ -680,9 +697,9 @@ vmNumber& vmNumber::dateFromHumanDate ( const QString& date, const bool cache )
 
 vmNumber& vmNumber::dateFromDBDate ( const QString& date, const bool cache )
 {
-	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toInt ();
-	nbr_upart[VM_IDX_MONTH] = date.mid ( 5, 2 ).toInt ();
-	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
+	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toUInt ();
+	nbr_upart[VM_IDX_MONTH] = date.mid ( 5, 2 ).toUInt ();
+	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toUInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_DB_DATE;
 	if ( cache )
@@ -695,9 +712,9 @@ vmNumber& vmNumber::dateFromDBDate ( const QString& date, const bool cache )
 
 vmNumber& vmNumber::dateFromDropboxDate ( const QString& date, const bool cache )
 {
-	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toInt ();
-	nbr_upart[VM_IDX_MONTH] = date.mid ( 5, 2 ).toInt ();
-	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
+	nbr_upart[VM_IDX_YEAR] = date.left ( 4 ).toUInt ();
+	nbr_upart[VM_IDX_MONTH] = date.mid ( 5, 2 ).toUInt ();
+	nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toUInt ();
 	setType ( VMNT_DATE );
 	nbr_upart[VM_IDX_STRFORMAT] = VDF_DROPBOX_DATE;
 	if ( cache )
@@ -716,9 +733,9 @@ vmNumber& vmNumber::dateFromFilenameDate ( const QString& date, const bool cache
 	if ( date.length () >= 6 )
 	{
 		const int year_end_idx ( date.length () > 6 ? 4 : 2 );
-		nbr_upart[VM_IDX_YEAR] = date.left ( year_end_idx ).toInt ();
-		nbr_upart[VM_IDX_MONTH] = date.mid ( year_end_idx, 2 ).toInt ();
-		nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toInt ();
+		nbr_upart[VM_IDX_YEAR] = date.left ( year_end_idx ).toUInt ();
+		nbr_upart[VM_IDX_MONTH] = date.mid ( year_end_idx, 2 ).toUInt ();
+		nbr_upart[VM_IDX_DAY] = date.right ( 2 ).toUInt ();
 		setType ( VMNT_DATE );
 		nbr_upart[VM_IDX_STRFORMAT] = VDF_FILE_DATE;
 		if ( cache )
@@ -738,7 +755,7 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
 
 	if ( !strDay.isEmpty () )
 	{
-        nbr_upart[VM_IDX_DAY] = strDay.toInt ( &mb_valid );
+        nbr_upart[VM_IDX_DAY] = strDay.toUInt ( &mb_valid );
         if ( !mb_valid )
 		{	// day is not a number, but a word
             if ( strDay.startsWith ( QStringLiteral ( "vi" ) ) )
@@ -827,7 +844,7 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
 
 	if ( !strYear.isEmpty () )
 	{
-        nbr_upart[VM_IDX_YEAR] = strYear.toInt ( &mb_valid );
+        nbr_upart[VM_IDX_YEAR] = strYear.toUInt ( &mb_valid );
         if ( mb_valid )
 		{
 			if ( nbr_upart[VM_IDX_YEAR] < 30 )
@@ -891,7 +908,6 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 				case VDF_DROPBOX_DATE:
 					cached_str = strYear + CHR_HYPHEN + strMonth + CHR_HYPHEN + strDay;
 				break;
-				break;
 			}
 			setCached ( true );
 			return cached_str;
@@ -907,9 +923,9 @@ void vmNumber::fromQDate ( const QDate& date )
 		nbr_upart[VM_IDX_DAY] = nbr_upart[VM_IDX_MONTH] = nbr_upart[VM_IDX_YEAR] = 0;
 		setType ( VMNT_DATE );
 	}
-	nbr_upart[VM_IDX_DAY] = date.day ();
-	nbr_upart[VM_IDX_MONTH] = date.month ();
-	nbr_upart[VM_IDX_YEAR] = date.year ();
+	nbr_upart[VM_IDX_DAY] = static_cast<uint>(date.day ());
+	nbr_upart[VM_IDX_MONTH] = static_cast<uint>(date.month ());
+	nbr_upart[VM_IDX_YEAR] = static_cast<uint>(date.year ());
 	setCached ( false );
 }
 
@@ -1355,16 +1371,17 @@ static void numberToTime ( const unsigned int n, int &hours, unsigned int &minut
 
 	abs_hour = n / 60;
 	minutes = n % 60;
-	if ( minutes > 59 ) {
+	if ( minutes > 59 )
+	{
 		++abs_hour;
 		minutes = 0;
 	}
 	if ( abs_hour > 9999 )
 		hours = 9999;
 	else if ( hours < 0 )
-		hours = 0 - abs_hour;
+		hours = static_cast<int>(0 - abs_hour);
 	else
-		hours = signed ( abs_hour );
+		hours = static_cast<int>(abs_hour);
 }
 
 /*void getTimeFromFancyTimeString ( const QString& str_time, vmNumber& time, const bool check = false )
@@ -1376,29 +1393,35 @@ void vmNumber::setTime ( const int hours, const int minutes, const bool update )
 {
 	setType ( VMNT_TIME );
 	setCached ( false );
-	if ( !update ) {
+	if ( !update )
+	{
 		nbr_part[VM_IDX_HOUR] = ( hours > -10000 && hours < 10000 ) ? hours : 0;
 		nbr_part[VM_IDX_MINUTE] = ( minutes >= 0 && minutes <= 59 ) ? minutes : 0;
 	}
-	else {
+	else
+	{
 		int n ( 0 );
 		nbr_part[VM_IDX_MINUTE] += minutes;
-		if ( nbr_part[VM_IDX_MINUTE] > 59 ) {
+		if ( nbr_part[VM_IDX_MINUTE] > 59 )
+		{
 			n = static_cast<int> ( nbr_part[VM_IDX_MINUTE] / 60 );
 			nbr_part[VM_IDX_HOUR] += n;
 			nbr_part[VM_IDX_MINUTE] -= ( n * 60 );
 		}
-		else if ( nbr_part[VM_IDX_MINUTE] < 0 ) {
+		else if ( nbr_part[VM_IDX_MINUTE] < 0 )
+		{
 			n = static_cast<int> ( ::fabs ( static_cast<double> ( nbr_part[VM_IDX_MINUTE] ) / 60 ) ) + 1;
 			nbr_part[VM_IDX_HOUR] -= n;
 			nbr_part[VM_IDX_MINUTE] += ( n * 60 );
 		}
 
-		if ( hours >= 1 ) {
+		if ( hours >= 1 )
+		{
 			if ( ( nbr_part[VM_IDX_HOUR] + hours ) < 10000 )
 				nbr_part[VM_IDX_HOUR] += hours;
 		}
-		else if ( hours <= -1 ) {
+		else if ( hours <= -1 )
+		{
 			if ( ( nbr_part[VM_IDX_HOUR] + hours ) > -10000 )
 				nbr_part[VM_IDX_HOUR] += hours;
 		}
@@ -1407,13 +1430,16 @@ void vmNumber::setTime ( const int hours, const int minutes, const bool update )
 
 vmNumber& vmNumber::fromStrTime ( const QString& time )
 {
-	if ( !time.isEmpty () ) {
+	if ( !time.isEmpty () )
+	{
 		bool is_negative ( false );
 		const int idx ( time.indexOf ( CHR_COLON ) );
 		int hours ( 0 ), mins ( 0 );
-		if ( idx != -1 ) {
+		if ( idx != -1 )
+		{
 			QString temp_time ( time );
-			if ( temp_time.remove ( CHR_SPACE ).startsWith ( CHR_HYPHEN ) ) {
+			if ( temp_time.remove ( CHR_SPACE ).startsWith ( CHR_HYPHEN ) )
+			{
 				is_negative = true;
 				temp_time.remove ( CHR_HYPHEN );
 			}
@@ -1436,24 +1462,28 @@ vmNumber& vmNumber::fromStrTime ( const QString& time )
 vmNumber& vmNumber::fromTrustedStrTime ( const QString& time, const VM_TIME_FORMAT format, const bool cache )
 {
 	clear ( false );
-	switch ( format ) {
-        case VTF_24_HOUR:
-            nbr_part[VM_IDX_HOUR] = time.left ( 2 ).toInt ();
-            nbr_part[VM_IDX_MINUTE] = time.right ( 2 ).toInt ();
-		break;
-        case VTF_DAYS:
-            nbr_part[VM_IDX_HOUR] = time.left ( 4 ).toInt ();
-            nbr_part[VM_IDX_MINUTE] = time.right ( 2 ).toInt ();
-		break;
-        case VTF_FANCY:
-            //getTimeFromFancyTimeString ( time, mQString );
-		break;
-	}
-	nbr_part[VM_IDX_STRFORMAT] = format;
-	setType ( VMNT_TIME );
-	if ( cache ) {
-		setCached ( true );
-		cached_str = time;
+	if ( !time.isEmpty () )
+	{
+		switch ( format )
+		{
+			case VTF_24_HOUR:
+				nbr_part[VM_IDX_HOUR] = time.left ( 2 ).toInt ();
+				nbr_part[VM_IDX_MINUTE] = time.right ( 2 ).toInt ();
+			break;
+			case VTF_DAYS:
+	            nbr_part[VM_IDX_HOUR] = time.left ( 4 ).toInt ();
+		        nbr_part[VM_IDX_MINUTE] = time.right ( 2 ).toInt ();
+			break;
+	        case VTF_FANCY:
+		        //getTimeFromFancyTimeString ( time, mQString );
+			break;
+		}
+		nbr_part[VM_IDX_STRFORMAT] = format;
+		setType ( VMNT_TIME );
+		if ( cache ) {
+			setCached ( true );
+			cached_str = time;
+		}
 	}
 	return *this;
 }

@@ -29,13 +29,6 @@
    <property name="spacing">
     <number>2</number>
    </property>
-   <item row="1" column="1">
-    <widget class="QLabel" name="lblCPID">
-     <property name="text">
-      <string>ID:</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="5">
     <widget class="QPushButton" name="btnClose">
      <property name="maximumSize">
@@ -326,6 +319,39 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="lblCPID">
+         <property name="text">
+          <string>ID:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="vmLineEdit" name="txtCPID">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>30</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="Line" name="line">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -493,25 +519,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="1" column="2">
-    <widget class="vmLineEdit" name="txtCPID">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>80</width>
-       <height>30</height>
-      </size>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

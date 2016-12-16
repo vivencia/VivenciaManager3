@@ -517,7 +517,7 @@ uint VivenciaDB::recordCount ( const TABLE_INFO* t_info ) const
 }
 
 void VivenciaDB::populateTable ( const DBRecord* db_rec, vmTableWidget* table ) const
-{
+{	
 	const QString cmd ( QLatin1String ( "SELECT * FROM " ) + db_rec->t_info->table_name );
 
 	QSqlQuery query ( m_db );

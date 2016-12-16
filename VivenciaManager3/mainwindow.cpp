@@ -387,6 +387,7 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 			totalPays += pay_item->payRecord ()->price ( FLD_PAY_PRICE );
 		}
 		ui->paysList->setProperty ( PROPERTY_TOTAL_PAYS, totalPays.toPrice () );
+		ui->txtClientPayTotals->setText ( totalPays.toPrice () );
 
 		buyListItem* buy_item ( nullptr );
 		for ( i = 0; i < client_item->buys->count (); ++i )
@@ -806,6 +807,8 @@ void MainWindow::setupJobPictureControl ()
 
 	connect ( menuJobClientsYearPictures, &QMenu::triggered, this, [&] ( QAction* act ) {
 		return showClientsYearPictures ( act ); } );
+	
+	connect ( ui->btnJobAddPictures, &QToolButton::clicked, this, [&] () { return addJobPictures (); } );
 	ui->btnJobClientsYearPictures->setMenu ( menuJobClientsYearPictures );
 	connect ( ui->btnJobClientsYearPictures, &QToolButton::clicked, ui->btnJobClientsYearPictures, [&] () { return
 				ui->btnJobClientsYearPictures->showMenu (); } );
@@ -1787,7 +1790,8 @@ void MainWindow::displayPayFromCalendar ( vmListItem* cal_item )
 void MainWindow::paysListWidget_currentItemChanged ( vmListItem* item )
 {
 	insertNavItem ( item );
-	displayJob ( static_cast<jobListItem*> ( item->relatedItem ( RLI_JOBPARENT ) ), true );
+	if ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT )) != mJobCurItem )
+		displayJob ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT )), true );
 }
 
 void MainWindow::paysOverdueListWidget_currentItemChanged ( vmListItem* item )
@@ -2472,7 +2476,7 @@ void MainWindow::setupBuyPanel ()
 	ui->tableBuyItems->setKeepModificationRecords ( false );
 	saveBuyWidget ( ui->tableBuyItems, FLD_BUY_REPORT );
 	//ui->tableBuyItems->setParentLayout ( ui->gLayoutBuyForms );
-	ui->tableBuyItems->setUtilitiesPlaceLayout ( ui->layoutBuyItemsUtilities );
+	//ui->tableBuyItems->setUtilitiesPlaceLayout ( ui->layoutBuyItemsUtilities );
 	ui->tableBuyItems->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 		return interceptBuyItemsCellChange ( item ); } );
 	ui->tableBuyItems->setCallbackForMonitoredCellChanged ( [&] ( const vmTableItem* const item ) {
@@ -2484,7 +2488,7 @@ void MainWindow::setupBuyPanel ()
 	ui->tableBuyPayments->setKeepModificationRecords ( false );
 	saveBuyWidget ( ui->tableBuyPayments, FLD_BUY_PAYINFO );
 	//ui->tableBuyPayments->setParentLayout ( ui->gLayoutBuyForms );
-	ui->tableBuyPayments->setUtilitiesPlaceLayout ( ui->layoutBuyPaymentsUtilities );
+	//ui->tableBuyPayments->setUtilitiesPlaceLayout ( ui->layoutBuyPaymentsUtilities );
 	ui->tableBuyPayments->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 		return interceptBuyPaymentCellChange ( item ); } );
 	ui->tableBuyPayments->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
@@ -4078,6 +4082,46 @@ void MainWindow::on_btnJobCancel_clicked ()
 			default:
 			break;
 		}
+	}
+}
+
+void MainWindow::addJobPictures ()
+{
+	if ( mJobCurItem )
+	{
+		QString strPicturePath ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_PICTURE_PATH ) );
+		if ( strPicturePath.isEmpty () )
+		{
+			strPicturePath = recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_PROJECT_ID );
+			if ( !strPicturePath.isEmpty () )
+				strPicturePath.prepend ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_TYPE ) + QLatin1String ( " - " ) );
+			else
+			{
+				strPicturePath = recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_TYPE ) 
+						+ QLatin1String ( " - " ) + vmNumber ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_STARTDATE ), 
+							VMNT_DATE, vmNumber::VDF_DB_DATE ).toDate ( vmNumber::VDF_FILE_DATE ) + CHR_F_SLASH;
+			}
+			
+			const QString simpleJobBaseDir ( CONFIG ()->getProjectBasePath ( recStrValue ( mClientCurItem->clientRecord (), FLD_CLIENT_NAME ) )
+											 + QStringLiteral ( "Serviços simples/" ) );
+			if ( fileOps::exists ( simpleJobBaseDir ).isOff () )
+				fileOps::createDir ( simpleJobBaseDir );
+			strPicturePath.prepend ( simpleJobBaseDir );
+			fileOps::createDir ( strPicturePath );
+			if ( static_cast<TRI_STATE> ( mJobCurItem->action () >= ACTION_READ ) )
+			{
+				mJobCurItem->setAction ( ACTION_EDIT, true );
+				ui->txtJobPicturesPath->setText ( strPicturePath, true );
+				mJobCurItem->jobRecord ()->saveRecord ();
+				mJobCurItem->setAction ( ACTION_READ );
+			}
+			else
+				ui->txtJobPicturesPath->setText ( strPicturePath );
+		}
+		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Waiting for " ) + CONFIG ()->fileManager () + TR_FUNC ( " to finish" ), 
+									  TR_FUNC ( "Add some pictures to this job info data" ) );
+		fileOps::executeWait ( strPicturePath, QLatin1String ( "/usr/bin/dolphin" ) );
+		btnJobReloadPictures_clicked ();
 	}
 }
 

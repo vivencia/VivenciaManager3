@@ -332,6 +332,7 @@ private:
 	void on_btnJobDel_clicked ();
 	void on_btnJobCancel_clicked ();
 
+	void addJobPictures ();
 	void btnJobReloadPictures_clicked ();
 	void showClientsYearPictures ( QAction* action );
 	void showDayPictures ( const vmNumber& date );
