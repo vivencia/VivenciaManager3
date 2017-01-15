@@ -217,7 +217,7 @@ bool vmListItem::loadData ()
 	return false;
 }
 
-void vmListItem::update ()
+inline void vmListItem::update ()
 {
 	setText ( text () + actionSuffix[action()], false, false, false );
 }
@@ -234,6 +234,8 @@ vmListItem* vmListItem::relatedItem ( const uint rel_idx ) const
 
 void vmListItem::changeAppearance ()
 {
+	if ( listWidget () )
+		listWidget ()->setUpdatesEnabled ( false );
 	setBackground ( QBrush ( COLORS[static_cast<uint>( action () )] ) );
 	QFont fnt ( font () );
 	fnt.setItalic ( action () > ACTION_READ );
@@ -250,6 +252,13 @@ void vmListItem::changeAppearance ()
 	}
 	
 	update ();
+	if ( listWidget () )
+	{
+		listWidget ()->setUpdatesEnabled ( true );
+		listWidget ()->repaint ();
+		listWidget ()->parentWidget ()->repaint ();
+	}
+	qApp->sendPostedEvents();
 }
 
 void vmListItem::deleteRelatedItem ( const uint rel_idx )

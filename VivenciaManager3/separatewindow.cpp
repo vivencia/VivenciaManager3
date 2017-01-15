@@ -25,12 +25,15 @@ separateWindow::separateWindow ( QWidget* child )
 
 void separateWindow::addChild ( QWidget* child )
 {
-	if ( child ) {
-		if ( child != m_child ) {
+	if ( child )
+	{
+		if ( child != m_child )
+		{
 			if ( m_child )
 				mainLayout->removeWidget ( m_child );
 			m_child = child;
-			if ( mb_Active ) {
+			if ( mb_Active )
+			{
 				QDialog::hide ();
 				mb_Active = false;
 				showSeparate ( windowTitle () ); // cannot be in exec mode if this function was called because the program runs single threaded
@@ -41,15 +44,18 @@ void separateWindow::addChild ( QWidget* child )
 
 void separateWindow::addToolBar ( QWidget* toolbar )
 {
-	if ( toolbar ) {
-		if ( toolbar != m_toolbar ) {
+	if ( toolbar )
+	{
+		if ( toolbar != m_toolbar )
+		{
 			QDialog::hide ();
 			if ( m_toolbar )
 				mToolBarLayout->removeWidget ( m_toolbar );
 			m_toolbar = toolbar;
 			mToolBarLayout->removeWidget ( btnReturn ); // a return button must be implemented in the toolbar, otherwise the interface becomes clunky
 			btnReturn->hide ();
-			if ( mb_Active ) {
+			if ( mb_Active )
+			{
 				mb_Active = false;
 				showSeparate ( windowTitle () ); // cannot be in exec mode if this function was called because the program runs single threaded
 			}
@@ -65,8 +71,10 @@ void separateWindow::closeEvent ( QCloseEvent* e )
 // Hides and shows this windows whenever the parent window is minimized/hidden or visible/shown
 bool separateWindow::eventFilter ( QObject* o, QEvent* e )
 {
-	if ( globalMainWindow && ( o == globalMainWindow ) ) {
-		switch ( e->type () ) {
+	if ( globalMainWindow && ( o == globalMainWindow ) )
+	{
+		switch ( e->type () )
+		{
 			default:
 				e->ignore ();
 				return false;
@@ -126,7 +134,8 @@ void separateWindow::done ( int )
 
 void separateWindow::hide ()
 {
-	if ( mb_Visible && !mb_Active && ( result () == QDialog::Accepted ) ) {
+	if ( mb_Visible && !mb_Active && ( result () == QDialog::Accepted ) )
+	{
 		mb_Visible = false;
 		QDialog::hide ();
 	}
@@ -134,18 +143,22 @@ void separateWindow::hide ()
 
 void separateWindow::showSeparate ( const QString& window_title, const bool b_exec, const Qt::WindowStates w_state )
 {
-	if ( mb_Active ) {
+	if ( mb_Active )
+	{
 		if ( w_state & windowState () )
 			return;
 	}
 
-	if ( !mb_Active ) {
+	if ( !mb_Active )
+	{
 		mb_Active = true;
-		if ( m_toolbar ) {
+		if ( m_toolbar )
+		{
 			mToolBarLayout->insertWidget ( 0, m_toolbar );
 			m_toolbar->show ();
 		}
-		if ( m_child )  {
+		if ( m_child )
+		{
 			mainLayout->addWidget ( m_child, 2 );
 			m_child->show ();
 			m_child->setFocus ();
@@ -164,7 +177,8 @@ void separateWindow::showSeparate ( const QString& window_title, const bool b_ex
 
 void separateWindow::childHideRequested ()
 {
-	if ( mb_Visible && mb_Active ) {
+	if ( mb_Visible && mb_Active )
+	{
 		mb_Visible = false;
 		QDialog::hide ();
 	}
@@ -172,7 +186,8 @@ void separateWindow::childHideRequested ()
 
 void separateWindow::childShowRequested ()
 {
-	if ( !mb_Visible && mb_Active ) {
+	if ( !mb_Visible && mb_Active )
+	{
 		mb_Visible = true;
 		QDialog::show ();
 	}
@@ -185,7 +200,8 @@ void separateWindow::childCloseRequested ( const int )
 
 void separateWindow::returnToParent ()
 {
-	if ( mb_Visible && mb_Active )  {
+	if ( mb_Visible && mb_Active )
+	{
 		mb_Active = false;
 		setResult ( QDialog::Accepted );
 		if ( m_toolbar )

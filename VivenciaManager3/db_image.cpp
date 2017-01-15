@@ -4,6 +4,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QScrollArea>
+#include <QImageReader>
 
 #include "global.h"
 #include "db_image.h"
@@ -52,37 +53,43 @@ DB_Image::~DB_Image ()
 void DB_Image::showImage ( const int rec_id, const QString& path )
 {
 	bool b_exists ( false );
-	if ( rec_id != -1 ) {
-		if ( ( b_exists = findImagesByID ( rec_id ) ) ) {
+	if ( rec_id != -1 )
+	{
+		if ( ( b_exists = findImagesByID ( rec_id ) ) )
+		{
 			if ( images_array.current ()->path != path )
 				removeDir (); // in editing, the image path changed
 		}
 	}
 	else if ( !path.isEmpty () )
 		b_exists = findImagesByPath ( path );
-	if ( !b_exists ) {
+	if ( !b_exists )
+	{
 		if ( !hookUpDir ( rec_id, path ) )
 			images_array.setCurrent ( -1 );
 	}
 	showFirstImage ();
 }
 
-void DB_Image::showImageInternal ( const QString& filename )
+void DB_Image::loadImage ( const QString& filename )
 {
-	QPixmap pixmap;
-	if ( filename.isEmpty () ) {
-		pixmap.load ( QStringLiteral ( ":/resources/no_image.jpg" ) );
+	QImageReader reader;
+	reader.setAutoTransform ( true );
+	if ( filename.isEmpty () )
+	{
+		reader.setFileName ( QStringLiteral ( ":/resources/no_image.jpg" ) );
 		mstr_FileName = emptyString;
 	}
-	else {
+	else
+	{
 		mstr_FileName = images_array.current ()->path + filename;
 		mouse_ex = mouse_ey = 0;
-		pixmap.load ( mstr_FileName );
+		reader.setFileName ( mstr_FileName );
 	}
-	showImageInternal ( pixmap );
+	loadImage (	QPixmap::fromImage ( reader.read () ) );
 }
 
-void DB_Image::showImageInternal ( const QPixmap& pixmap )
+void DB_Image::loadImage ( const QPixmap& pixmap )
 {
 	const bool need_resize ( imageViewer->pixmap () != nullptr ?
 							 pixmap.size () != imageViewer->pixmap ()->size () :
@@ -90,7 +97,8 @@ void DB_Image::showImageInternal ( const QPixmap& pixmap )
 						   );
 
 	imageViewer->setPixmap ( pixmap );
-	if ( need_resize ) {
+	if ( need_resize )
+	{
 		if ( mb_fitToWindow )
 			fitToWindow ();
 		else
@@ -100,8 +108,10 @@ void DB_Image::showImageInternal ( const QPixmap& pixmap )
 
 bool DB_Image::findImagesByID ( const int rec_id )
 {
-	for ( uint i ( 0 ); i < images_array.count (); ++i ) {
-		if ( static_cast<RECORD_IMAGES*> ( images_array.at ( i ) )->rec_id == rec_id ) {
+	for ( uint i ( 0 ); i < images_array.count (); ++i )
+	{
+		if ( static_cast<RECORD_IMAGES*> ( images_array.at ( i ) )->rec_id == rec_id )
+		{
 			images_array.setCurrent ( i );
 			mb_fitToWindow = true;
 			return true;
@@ -112,8 +122,10 @@ bool DB_Image::findImagesByID ( const int rec_id )
 
 bool DB_Image::findImagesByPath ( const QString& path )
 {
-	for ( uint i ( 0 ); i < images_array.count (); ++i ) {
-		if ( static_cast<RECORD_IMAGES*> ( images_array.at ( i ) )->path == path ) {
+	for ( uint i ( 0 ); i < images_array.count (); ++i )
+	{
+		if ( static_cast<RECORD_IMAGES*> ( images_array.at ( i ) )->path == path )
+		{
 			images_array.setCurrent ( i );
 			mb_fitToWindow = true;
 			return true;
@@ -124,7 +136,8 @@ bool DB_Image::findImagesByPath ( const QString& path )
 
 void DB_Image::reloadInternal ( RECORD_IMAGES* ri, const QString& path )
 {
-    if ( fileOps::isDir ( path ).isOn () ) {
+    if ( fileOps::isDir ( path ).isOn () )
+	{
 		QDir dir ( path );
 		ri->files = dir.entryList ( name_filters, QDir::Files, QDir::Name );
 	}
@@ -146,7 +159,8 @@ bool DB_Image::hookUpDir ( const int rec_id, const QString& path )
 
 void DB_Image::reload ()
 {
-	if ( images_array.current () ) {
+	if ( images_array.current () )
+	{
 		images_array.current ()->files.clear ();
 		reloadInternal ( static_cast<RECORD_IMAGES*> ( images_array.current () ),
 						 static_cast<RECORD_IMAGES*> ( images_array.current () )->path );
@@ -177,44 +191,51 @@ const QStringList& DB_Image::imagesList () const
 // be displayed correctly.
 void DB_Image::showSpecificImage ( const int index )
 {
-	if ( index >= 0 && index < images_array.current ()->files.count () ) {
-		if ( images_array.currentIndex () >= 0 ) {
+	if ( index >= 0 && index < images_array.current ()->files.count () )
+	{
+		if ( images_array.currentIndex () >= 0 )
+		{
 			images_array.current ()->cur_image = index;
-			if ( images_array.current ()->files.count () > index ) {
-				showImageInternal ( images_array.current ()->files.at ( index ) );
+			if ( images_array.current ()->files.count () > index )
+			{
+				loadImage ( images_array.current ()->files.at ( index ) );
 				return;
 			}
 		}
 	}
-	showImageInternal ( emptyString );
+	loadImage ( emptyString );
 }
 
 bool DB_Image::showFirstImage ()
 {
-	if ( images_array.currentIndex () >= 0 ) {
+	if ( images_array.currentIndex () >= 0 )
+	{
 		images_array.current ()->cur_image = 0;
-		if ( images_array.current ()->files.count () > 0 ) {
-			showImageInternal ( images_array.current ()->files.at ( 0 ) );
+		if ( images_array.current ()->files.count () > 0 )
+		{
+			loadImage ( images_array.current ()->files.at ( 0 ) );
 			funcImageRequested ( 0 ); // do not check if not nullptr. In this app, it will be set
 			return true;
 		}
 	}
-	showImageInternal ( emptyString );
+	loadImage ( emptyString );
 	return false;
 }
 
 bool DB_Image::showLastImage ()
 {
-	if ( images_array.currentIndex () >= 0 ) {
+	if ( images_array.currentIndex () >= 0 )
+	{
 		const int last_idx ( images_array.current ()->files.count () - 1 );
 		images_array.current ()->cur_image = last_idx;
-		if ( last_idx >= 0 ) {
-			showImageInternal ( images_array.current ()->files.at ( last_idx ) );
+		if ( last_idx >= 0 )
+		{
+			loadImage ( images_array.current ()->files.at ( last_idx ) );
 			funcImageRequested ( last_idx );
 			return true;
 		}
 	}
-	showImageInternal ( emptyString );
+	loadImage ( emptyString );
 	return false;
 }
 
@@ -222,46 +243,53 @@ int DB_Image::showPrevImage ()
 {
 	if ( images_array.currentIndex () >= 0 ) {
 		RECORD_IMAGES* ri ( images_array.current () );
-		if ( ri->cur_image >= 1 ) {
+		if ( ri->cur_image >= 1 )
+		{
 			--( ri->cur_image );
-			if ( images_array.current ()->files.count () > ri->cur_image ) {
-				showImageInternal ( ri->files.at ( ri->cur_image ) );
+			if ( images_array.current ()->files.count () > ri->cur_image )
+			{
+				loadImage ( ri->files.at ( ri->cur_image ) );
 				funcImageRequested ( ri->cur_image );
 				return ri->cur_image;
 			}
 		}
 	}
-	showImageInternal ( emptyString );
+	loadImage ( emptyString );
 	return -1;
 }
 
 int DB_Image::showNextImage ()
 {
-	if ( images_array.currentIndex () >= 0 ) {
+	if ( images_array.currentIndex () >= 0 )
+	{
 		RECORD_IMAGES *ri ( images_array.current () );
-		if ( ri->cur_image < ( ri->files.count () - 1 ) ) {
+		if ( ri->cur_image < ( ri->files.count () - 1 ) )
+		{
 			++( ri->cur_image );
-			if ( images_array.current ()->files.count () > ri->cur_image ) {
-				showImageInternal ( ri->files.at ( ri->cur_image ) );
+			if ( images_array.current ()->files.count () > ri->cur_image )
+			{
+				loadImage ( ri->files.at ( ri->cur_image ) );
 				funcImageRequested ( ri->cur_image );
 				return ri->cur_image;
 			}
 		}
 	}
-	showImageInternal ( emptyString );
+	loadImage ( emptyString );
 	return -1;
 }
 
 int DB_Image::rename ( const QString& newName )
 {
 	if ( images_array.currentIndex () >= 0 ) {
-		if ( newName != images_array.current ()->files.at ( images_array.current ()->cur_image ) ) {
+		if ( newName != images_array.current ()->files.at ( images_array.current ()->cur_image ) )
+		{
 			QString new_fileName ( fileOps::dirFromPath ( mstr_FileName ) + newName );
 			const QString ext ( CHR_DOT + fileOps::fileExtension ( mstr_FileName ) );
 			if ( !newName.endsWith ( ext ) )
 				new_fileName.append ( ext );
 
-            if ( fileOps::rename ( mstr_FileName, new_fileName ).isOn () ) {
+            if ( fileOps::rename ( mstr_FileName, new_fileName ).isOn () )
+			{
 				mstr_FileName = new_fileName;
 				images_array.current ()->files.removeAt ( images_array.current ()->cur_image );
 				images_array.current ()->cur_image =
@@ -296,10 +324,6 @@ void DB_Image::scaleImage ( const float factor )
 	if ( ( img_height + 10 ) > scrollArea->height () )
 		img_height = scrollArea->height () - 10;
 	imageViewer->resize ( img_width, img_height );
-
-	//if ( ( img_width > scrollArea->width () ) || ( img_height > scrollArea->height () ) )
-	//adjustScrollBar ( factor );
-
 }
 
 void DB_Image::adjustScrollBar ( const float factor )
@@ -326,7 +350,8 @@ void DB_Image::normalSize ()
 {
 	scaleFactor = 1.0;
 	imageViewer->adjustSize ();
-	if ( imageViewer->pixmap ()->size () > size () ) {
+	if ( imageViewer->pixmap ()->size () > size () )
+	{
 		scrollArea->setGeometry ( 0, 0, width (), height () );
 		adjustScrollBar ( 1.0 );
 	}
@@ -336,9 +361,6 @@ void DB_Image::normalSize ()
 								  qMin ( width (), imageViewer->width () ),
 								  qMin ( height (), imageViewer->height () )
 								);
-	//if ( ( imageViewer->width () > scrollArea->width () ) || ( imageViewer->height () > scrollArea->height () ) )
-	//	adjustScrollBar ( 1.0 );
-
 }
 
 void DB_Image::fitToWindow ()
@@ -353,7 +375,8 @@ void DB_Image::fitToWindow ()
 	if ( imgWidth > f_width )
 		factor = f_width / imgWidth;
 
-	if ( imgHeight > f_height ) {
+	if ( imgHeight > f_height )
+	{
 		const float factor2 ( f_height / imgHeight );
 		if ( factor2 < factor )
 			factor = factor2;
@@ -364,11 +387,13 @@ void DB_Image::fitToWindow ()
 
 bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 {
-	switch ( e->type () ) {
+	switch ( e->type () )
+	{
 		default:
 			return false;
 		case QEvent::Resize:
-			if ( o == this ) {
+			if ( o == this )
+			{
 				scrollArea->setGeometry ( ( width () - imageViewer->width () ) / 2,
 									  ( height () - imageViewer->height () ) / 2, imageViewer->width (),
 									  imageViewer->height ()
@@ -382,7 +407,8 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 		case QEvent::KeyPress:
 		{
 			const QKeyEvent* k ( static_cast<QKeyEvent*> ( e ) );
-			switch  ( k->key () ) {
+			switch  ( k->key () )
+			{
 				default:
 					return false;
 				case Qt::Key_F:
@@ -417,9 +443,11 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 		}
 		break;
 		case  QEvent::MouseButtonPress:
-			if ( images_array.currentIndex () >= 0 ) {
+			if ( images_array.currentIndex () >= 0 )
+			{
 				const QMouseEvent* m ( static_cast<QMouseEvent*> ( e ) );
-				if ( m->button () == Qt::LeftButton )  {
+				if ( m->button () == Qt::LeftButton )
+				{
 					setCursor ( Qt::ClosedHandCursor );
 					mouse_ex = m->x ();
 					mouse_ey = m->y ();
@@ -433,9 +461,11 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 			funcShowMaximized ( mb_maximized = !mb_maximized );
 		break;
 		case QEvent::MouseMove:
-			if ( images_array.currentIndex () >= 0 ) {
+			if ( images_array.currentIndex () >= 0 )
+			{
 				const QMouseEvent* m ( static_cast<QMouseEvent*> ( e ) );
-				if ( m->buttons () & Qt::LeftButton ) {
+				if ( m->buttons () & Qt::LeftButton )
+				{
 					const int mx = m->x ();
 					const int my = m->y ();
 					scrollBy ( mouse_ex - mx,mouse_ey - my );

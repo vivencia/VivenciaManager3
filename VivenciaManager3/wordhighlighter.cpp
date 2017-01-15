@@ -10,13 +10,13 @@
 #include <QStringMatcher>
 #include <QRegExp>
 
-static const QRegExp word_split_syntax ( QStringLiteral ( "([^\\w,^\\\\]|(?=\\\\))+" ) );
+//static const QRegExp word_split_syntax ( QStringLiteral ( "([^\\w,^\\\\]|(?=\\\\))+" ) );
 
 QTextCharFormat* wordHighlighter::m_spellCheckFormat ( nullptr );
 QTextCharFormat* wordHighlighter::m_HighlightFormat ( nullptr );
 
 wordHighlighter::wordHighlighter ( QTextDocument* parent )
-	: QSyntaxHighlighter ( parent ), m_bspellCheckEnabled ( false ), m_bHighlightEnabled ( false )
+	: QSyntaxHighlighter ( parent ), mb_spellCheckEnabled ( false ), mb_HighlightEnabled ( false )
 {}
 
 wordHighlighter::~wordHighlighter ()
@@ -27,35 +27,39 @@ wordHighlighter::~wordHighlighter ()
 
 void wordHighlighter::enableHighlighting ( const bool enable )
 {
-	if ( enable ) {
-		if ( !m_bHighlightEnabled && !m_HighlightFormat ) {
+	if ( enable )
+	{
+		if ( !mb_HighlightEnabled && !m_HighlightFormat )
+		{
 			m_HighlightFormat = new QTextCharFormat;
 			m_HighlightFormat->setBackground ( Qt::yellow );
 			m_HighlightFormat->setUnderlineStyle ( QTextCharFormat::WaveUnderline );
 		}
 	}
-	m_bHighlightEnabled = enable;
+	mb_HighlightEnabled = enable;
 	rehighlight ();
 }
 
 void wordHighlighter::enableSpellChecking ( const bool enable )
 {
-	if ( enable ) {
-		if ( !m_bspellCheckEnabled && !m_spellCheckFormat ) {
+	if ( enable )
+	{
+		if ( !mb_spellCheckEnabled && !m_spellCheckFormat ) {
 			m_spellCheckFormat = new QTextCharFormat;
 			m_spellCheckFormat->setForeground ( Qt::red );
 			m_spellCheckFormat->setUnderlineColor ( QColor ( Qt::red ) );
 			m_spellCheckFormat->setUnderlineStyle ( QTextCharFormat::SpellCheckUnderline );
 		}
 	}
-	m_bspellCheckEnabled = enable;
+	mb_spellCheckEnabled = enable;
 	rehighlight ();
 }
 
 void wordHighlighter::unHighlightWord ( const QString& word )
 {
 	const int i ( highlightedWordsList.indexOf ( word ) );
-	if ( i != -1 ) {
+	if ( i != -1 )
+	{
 		highlightedWordsList.removeAt ( i );
 		rehighlight ();
 	}
@@ -72,7 +76,8 @@ void wordHighlighter::highlightWord ( const QString& word )
 
 void wordHighlighter::highlightWords ( const QStringList &words )
 {
-	if ( !words.isEmpty () ) {
+	if ( !words.isEmpty () )
+	{
 		highlightedWordsList = words;
 		rehighlight ();
 	}
@@ -80,13 +85,15 @@ void wordHighlighter::highlightWords ( const QStringList &words )
 
 void wordHighlighter::highlightBlock ( const QString& text )
 {
-	if ( m_bHighlightEnabled | m_bspellCheckEnabled ) {
-		if ( objectName () == QStringLiteral ( "p" ) ) // In preview mode. Disable any highlight
-			return;
-
+	if ( objectName () == QStringLiteral ( "p" ) ) // In preview mode. Disable any highlight
+		return;
+	
+	if ( spellCheckingEnbled () || highlightingEnabled () )
+	{
 		// split text into words
 		QString str ( text.simplified () );
-		if ( !str.isEmpty () ) {
+		if ( !str.isEmpty () )
+		{
 			QStringMatcher str_match;
 			str_match.setCaseSensitivity ( Qt::CaseInsensitive );
 			//const QStringList wordsInBlock ( str.split ( word_split_syntax, QString::SkipEmptyParts ) );
@@ -97,23 +104,30 @@ void wordHighlighter::highlightBlock ( const QString& text )
 			bool proceed_highlight ( false );
 
 			// check all words
-			for ( ; i < wordsInBlock.size (); ++i ) {
+			for ( ; i < wordsInBlock.size (); ++i )
+			{
 				str = wordsInBlock.at ( i );
-				if ( str.length () > 1 ) {
-					if ( m_bspellCheckEnabled ) {
-						if ( SPELLCHECKER ()->checkWord ( str ).isFalse () ) {
+				if ( str.length () > 1 )
+				{
+					if ( m_spellCheckFormat != nullptr )
+					{
+						if ( SPELLCHECKER ()->checkWord ( str ).isFalse () )
+						{
 							number = text.count ( QRegExp ( QLatin1Literal ("\\b" ) + str + QLatin1Literal ("\\b" ) ) );
 							// underline all incorrect occurences of misspelled word
 							str_match.setPattern ( str );
-							for ( j = 0; j < number; ++j ) {
+							for ( j = 0; j < number; ++j )
+							{
 								l = str_match.indexIn ( text, l + 1 );
 								if ( l >= 0 )
 									setFormat ( l, str.length (), *m_spellCheckFormat );
 							} // for j
 						}
 					}
-					if ( m_bHighlightEnabled ) {
-						for ( x = 0; x < highlightedWordsList.count (); ++x ) {
+					if ( m_HighlightFormat != nullptr )
+					{
+						for ( x = 0; x < highlightedWordsList.count (); ++x )
+						{
 							// The highlighting is not done by a word-by-word basis, instead, it's by
 							// characters. We might want do find only a part of a word, or even a letter
 							number = highlightedWordsList.at ( x ).count ();
@@ -123,8 +137,10 @@ void wordHighlighter::highlightBlock ( const QString& text )
 							else // The word in the text cannot be smaller than the word ( or partial word ) we a looking for
 								proceed_highlight = false;
 
-							if ( proceed_highlight ) {
-								for ( j = 0; j < number; ++j ) {
+							if ( proceed_highlight )
+							{
+								for ( j = 0; j < number; ++j )
+								{
 									l = str_match.indexIn ( text, l + 1 );
 									if ( l >= 0 )
 										setFormat ( l, number, *m_HighlightFormat );

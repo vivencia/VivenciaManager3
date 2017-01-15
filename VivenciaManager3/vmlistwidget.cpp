@@ -83,10 +83,12 @@ void vmListWidget::addItem ( vmListItem* item, const bool b_makecall )
 
 void vmListWidget::clear ( const bool b_ignorechanges, const bool b_del )
 {
+	setUpdatesEnabled ( false );
 	setIgnoreChanges ( b_ignorechanges ); //once called, the callee must set/unset this property
 	removeRow ( 0, rowCount (), b_del );
 	mPrevRow = -2;
 	mCurrentItem = nullptr;
+	setUpdatesEnabled ( true );
 }
 
 void vmListWidget::insertRow ( const uint row, const uint n )

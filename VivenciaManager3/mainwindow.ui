@@ -443,7 +443,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>1</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -499,8 +499,8 @@ p, li { white-space: pre-wrap; }
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>1583</width>
-             <height>798</height>
+             <width>1584</width>
+             <height>799</height>
             </rect>
            </property>
           </widget>
@@ -707,7 +707,7 @@ p, li { white-space: pre-wrap; }
                        <x>0</x>
                        <y>0</y>
                        <width>517</width>
-                       <height>441</height>
+                       <height>450</height>
                       </rect>
                      </property>
                      <attribute name="label">
@@ -755,8 +755,8 @@ p, li { white-space: pre-wrap; }
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>254</width>
-                       <height>142</height>
+                       <width>238</width>
+                       <height>139</height>
                       </rect>
                      </property>
                      <attribute name="label">
@@ -807,8 +807,8 @@ p, li { white-space: pre-wrap; }
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>263</width>
-                       <height>142</height>
+                       <width>517</width>
+                       <height>450</height>
                       </rect>
                      </property>
                      <attribute name="label">
@@ -873,8 +873,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>516</width>
-                    <height>441</height>
+                    <width>517</width>
+                    <height>450</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -917,8 +917,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>211</width>
-                    <height>141</height>
+                    <width>196</width>
+                    <height>138</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -961,8 +961,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>219</width>
-                    <height>141</height>
+                    <width>203</width>
+                    <height>138</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -1020,7 +1020,7 @@ p, li { white-space: pre-wrap; }
                     <x>0</x>
                     <y>0</y>
                     <width>517</width>
-                    <height>441</height>
+                    <height>450</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -1063,8 +1063,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>185</width>
-                    <height>141</height>
+                    <width>172</width>
+                    <height>138</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -1107,8 +1107,8 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>193</width>
-                    <height>141</height>
+                    <width>179</width>
+                    <height>138</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -1764,6 +1764,9 @@ p, li { white-space: pre-wrap; }
                      <height>16777215</height>
                     </size>
                    </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::ClickFocus</enum>
+                   </property>
                    <property name="readOnly">
                     <bool>true</bool>
                    </property>
@@ -2214,7 +2217,7 @@ p, li { white-space: pre-wrap; }
                 </size>
                </property>
                <property name="focusPolicy">
-                <enum>Qt::NoFocus</enum>
+                <enum>Qt::ClickFocus</enum>
                </property>
                <property name="acceptDrops">
                 <bool>false</bool>
@@ -2898,11 +2901,14 @@ p, li { white-space: pre-wrap; }
                    </item>
                    <item>
                     <widget class="QToolButton" name="btnJobEditProjectPath">
+                     <property name="toolTip">
+                      <string>Edit project path</string>
+                     </property>
                      <property name="text">
                       <string>...</string>
                      </property>
                      <property name="icon">
-                      <iconset theme="story-editor">
+                      <iconset theme="fileopen">
                        <normaloff>.</normaloff>.</iconset>
                      </property>
                      <property name="checkable">
@@ -3114,7 +3120,7 @@ p, li { white-space: pre-wrap; }
                     </size>
                    </property>
                    <property name="focusPolicy">
-                    <enum>Qt::NoFocus</enum>
+                    <enum>Qt::ClickFocus</enum>
                    </property>
                    <property name="readOnly">
                     <bool>true</bool>
@@ -3994,7 +4000,11 @@ p, li { white-space: pre-wrap; }
              <number>2</number>
             </property>
             <item row="4" column="3" colspan="2">
-             <widget class="vmLineEdit" name="txtBuyTotalPaidForJob"/>
+             <widget class="vmLineEdit" name="txtBuyTotalPaidForJob">
+              <property name="focusPolicy">
+               <enum>Qt::ClickFocus</enum>
+              </property>
+             </widget>
             </item>
             <item row="1" column="4">
              <widget class="QToolButton" name="btnShowSuppliersDlg">
@@ -4067,7 +4077,11 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="3" column="3" colspan="2">
-             <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob"/>
+             <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob">
+              <property name="focusPolicy">
+               <enum>Qt::ClickFocus</enum>
+              </property>
+             </widget>
             </item>
             <item row="3" column="1" colspan="2">
              <widget class="QLabel" name="lblBuyTotalPurchasePriceForJob">
@@ -4404,7 +4418,7 @@ p, li { white-space: pre-wrap; }
                </size>
               </property>
               <property name="focusPolicy">
-               <enum>Qt::NoFocus</enum>
+               <enum>Qt::ClickFocus</enum>
               </property>
               <property name="readOnly">
                <bool>true</bool>
@@ -4669,6 +4683,101 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>scrollWorkFlow</tabstop>
+  <tabstop>tabMain</tabstop>
+  <tabstop>btnClientAdd</tabstop>
+  <tabstop>btnClientEdit</tabstop>
+  <tabstop>btnClientDel</tabstop>
+  <tabstop>btnClientSave</tabstop>
+  <tabstop>btnClientCancel</tabstop>
+  <tabstop>clientsList</tabstop>
+  <tabstop>txtClientName</tabstop>
+  <tabstop>txtClientStreetAddress</tabstop>
+  <tabstop>txtClientNumberAddress</tabstop>
+  <tabstop>txtClientDistrict</tabstop>
+  <tabstop>txtClientCity</tabstop>
+  <tabstop>txtClientZipCode</tabstop>
+  <tabstop>chkClientActive</tabstop>
+  <tabstop>btnJobAdd</tabstop>
+  <tabstop>btnJobEdit</tabstop>
+  <tabstop>btnJobDel</tabstop>
+  <tabstop>btnJobSave</tabstop>
+  <tabstop>btnJobCancel</tabstop>
+  <tabstop>btnJobSelectJob</tabstop>
+  <tabstop>jobsList</tabstop>
+  <tabstop>cboJobType</tabstop>
+  <tabstop>txtJobAddress</tabstop>
+  <tabstop>txtJobProjectPath</tabstop>
+  <tabstop>btnJobEditProjectPath</tabstop>
+  <tabstop>btnJobOpenFileFolder</tabstop>
+  <tabstop>btnJobOpenDoc</tabstop>
+  <tabstop>btnJobOpenXls</tabstop>
+  <tabstop>btnJobOpenPdf</tabstop>
+  <tabstop>txtJobProjectID</tabstop>
+  <tabstop>btnQuickProject</tabstop>
+  <tabstop>txtJobPrice</tabstop>
+  <tabstop>lstJobDayReport</tabstop>
+  <tabstop>timeJobStart</tabstop>
+  <tabstop>timeJobEnd</tabstop>
+  <tabstop>txtJobTotalDayTime</tabstop>
+  <tabstop>txtJobTotalAllDaysTime</tabstop>
+  <tabstop>txtJobWheather</tabstop>
+  <tabstop>txtJobReport</tabstop>
+  <tabstop>btnJobMachines</tabstop>
+  <tabstop>btnJobSeparateReportWindow</tabstop>
+  <tabstop>btnJobPrevDay</tabstop>
+  <tabstop>btnJobNextDay</tabstop>
+  <tabstop>btnJobAddDay</tabstop>
+  <tabstop>btnJobEditDay</tabstop>
+  <tabstop>btnJobDelDay</tabstop>
+  <tabstop>btnJobCancelDelDay</tabstop>
+  <tabstop>txtJobPicturesPath</tabstop>
+  <tabstop>btnJobAddPictures</tabstop>
+  <tabstop>cboJobPictures</tabstop>
+  <tabstop>btnJobPrevPicture</tabstop>
+  <tabstop>btnJobNextPicture</tabstop>
+  <tabstop>btnJobReloadPictures</tabstop>
+  <tabstop>btnJobRenamePicture</tabstop>
+  <tabstop>btnJobOpenPictureEditor</tabstop>
+  <tabstop>btnJobOpenPictureFolder</tabstop>
+  <tabstop>btnJobOpenPictureViewer</tabstop>
+  <tabstop>btnJobClientsYearPictures</tabstop>
+  <tabstop>btnJobSeparatePicture</tabstop>
+  <tabstop>btnPayInfoEdit</tabstop>
+  <tabstop>btnPayInfoDel</tabstop>
+  <tabstop>btnPayInfoSave</tabstop>
+  <tabstop>btnPayInfoCancel</tabstop>
+  <tabstop>btnPayPayReceipt</tabstop>
+  <tabstop>btnPayPaymentsReportOnlyUnPaid</tabstop>
+  <tabstop>btnPayPaymentsReport</tabstop>
+  <tabstop>tabPaysLists</tabstop>
+  <tabstop>paysList</tabstop>
+  <tabstop>txtClientPayTotals</tabstop>
+  <tabstop>paysOverdueList</tabstop>
+  <tabstop>txtAllOverdueTotals</tabstop>
+  <tabstop>paysOverdueClientList</tabstop>
+  <tabstop>txtClientPayOverdueTotals</tabstop>
+  <tabstop>tablePayments</tabstop>
+  <tabstop>txtPayTotalPrice</tabstop>
+  <tabstop>txtPayTotalPaid</tabstop>
+  <tabstop>chkPayOverdue</tabstop>
+  <tabstop>txtPayObs</tabstop>
+  <tabstop>btnBuyEdit</tabstop>
+  <tabstop>btnBuyAdd</tabstop>
+  <tabstop>btnBuySave</tabstop>
+  <tabstop>btnBuyDel</tabstop>
+  <tabstop>btnBuyCancel</tabstop>
+  <tabstop>cboBuySuppliers</tabstop>
+  <tabstop>btnShowSuppliersDlg</tabstop>
+  <tabstop>buysJobList</tabstop>
+  <tabstop>txtBuyDeliveryMethod</tabstop>
+  <tabstop>txtBuyNotes</tabstop>
+  <tabstop>btnBuyCopyRows</tabstop>
+  <tabstop>tableBuyItems</tabstop>
+  <tabstop>txtBuyTotalPrice</tabstop>
+  <tabstop>tableBuyPayments</tabstop>
+  <tabstop>buysList</tabstop>
+  <tabstop>lstBuySuppliers</tabstop>
   <tabstop>btnReportGenerator</tabstop>
   <tabstop>btnBackupRestore</tabstop>
   <tabstop>btnCalculator</tabstop>
@@ -4680,6 +4789,25 @@ p, li { white-space: pre-wrap; }
   <tabstop>txtSearch</tabstop>
   <tabstop>btnSearchStart</tabstop>
   <tabstop>btnSearchCancel</tabstop>
+  <tabstop>calMain</tabstop>
+  <tabstop>txtCalPriceJobDay</tabstop>
+  <tabstop>lstCalJobsDay</tabstop>
+  <tabstop>txtCalPricePayDay</tabstop>
+  <tabstop>lstCalPaysDay</tabstop>
+  <tabstop>txtCalPriceBuyDay</tabstop>
+  <tabstop>lstCalBuysDay</tabstop>
+  <tabstop>txtCalPriceJobWeek</tabstop>
+  <tabstop>lstCalJobsWeek</tabstop>
+  <tabstop>txtCalPricePayWeek</tabstop>
+  <tabstop>lstCalPaysWeek</tabstop>
+  <tabstop>txtCalPriceBuyWeek</tabstop>
+  <tabstop>lstCalBuysWeek</tabstop>
+  <tabstop>txtCalPriceJobMonth</tabstop>
+  <tabstop>lstCalJobsMonth</tabstop>
+  <tabstop>txtCalPricePayMonth</tabstop>
+  <tabstop>lstCalPaysMonth</tabstop>
+  <tabstop>txtCalPriceBuyMonth</tabstop>
+  <tabstop>lstCalBuysMonth</tabstop>
  </tabstops>
  <resources>
   <include location="resources.qrc"/>

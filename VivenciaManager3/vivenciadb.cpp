@@ -431,15 +431,15 @@ bool VivenciaDB::flushAllTables () const
 	return query.exec ();
 }
 
-bool VivenciaDB::deleteTable ( const TABLE_INFO* t_info )
+bool VivenciaDB::deleteTable ( const QString& table_name )
 {
-	QSqlQuery query ( QLatin1String ( "DROP TABLE " ) + t_info->table_name, m_db );
+	QSqlQuery query ( QLatin1String ( "DROP TABLE " ) + table_name, m_db );
 	return query.exec ();
 }
 
-bool VivenciaDB::clearTable ( const TABLE_INFO* t_info )
+bool VivenciaDB::clearTable ( const QString& table_name )
 {
-	QSqlQuery query ( QLatin1String ( "TRUNCATE TABLE " ) + t_info->table_name, m_db );
+	QSqlQuery query ( QLatin1String ( "TRUNCATE TABLE " ) + table_name, m_db );
 	return query.exec ();
 }
 

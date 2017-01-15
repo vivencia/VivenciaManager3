@@ -80,19 +80,19 @@ public:
 	void continueStartUp ();
 
 //--------------------------------------------CLIENT------------------------------------------------------------
-	void saveClientWidget ( vmWidget* widget, const uint id );
+	void saveClientWidget ( vmWidget* widget, const int id );
 	void showClientSearchResult ( vmListItem* item, const bool bshow );
 	void setupClientPanel ();
 	void clientKeyPressedSelector ( const QKeyEvent* ke );
 	void clientsListWidget_currentItemChanged ( vmListItem* item );
 	void controlClientForms ( const clientListItem* const client_item );
+	bool saveClient ( clientListItem* client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
 	void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const int id ) const;
 	void fillAllLists ( const clientListItem* client_item );
 	void btnClientAdd_clicked ();
 	void btnClientEdit_clicked ();
-	void btnClientSave_clicked ();
 	void btnClientDel_clicked ();
 	void btnClientCancel_clicked ();
 //--------------------------------------------CLIENT------------------------------------------------------------
@@ -107,7 +107,7 @@ public:
 //--------------------------------------------EDITING-FINISHED-CLIENT-----------------------------------------------------------
 
 //--------------------------------------------JOB------------------------------------------------------------
-	void saveJobWidget ( vmWidget* widget, const uint id );
+	void saveJobWidget ( vmWidget* widget, const int id );
 	void showJobSearchResult ( vmListItem* item, const bool bshow );
 	void setupJobPanel ();
 	void setUpJobButtons ( const QString& path );
@@ -119,13 +119,15 @@ public:
 	void controlJobForms ( const jobListItem* const job_item );
 	void controlJobDayForms ( const jobListItem* const job_item );
 	void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
+	bool saveJob ( jobListItem* job_item );
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
 	void loadJobInfo ( const Job* const job );
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
 	void scanJobImages ();
 	void decodeJobReportInfo ( const Job* const job );
+	void fixJobDaysList ( jobListItem* const job_item );
+	void revertDayItem ( vmListItem* day_item );
 	void updateJobInfo ( const QString& text, const uint user_role, vmListItem* const item = nullptr );
-	void updateJobInfoByRemoval ( const uint day , const bool bUndo, const vmListItem* const item = nullptr  );
 	void addJobPayment ( jobListItem* const job_item );
 	void saveJobPayment ( jobListItem* const job_item );
 	void removeJobPayment ( payListItem* pay_item );
@@ -165,7 +167,7 @@ public:
 //--------------------------------------------EDITING-FINISHED-JOB-----------------------------------------------------------
 
 //--------------------------------------------PAY------------------------------------------------------------
-	void savePayWidget ( vmWidget* widget, const uint id );
+	void savePayWidget ( vmWidget* widget, const int id );
 	void showPaySearchResult ( vmListItem* item, const bool bshow );
 	void setupPayPanel ();
 	void displayPayFromCalendar ( vmListItem* cal_item );
@@ -178,6 +180,7 @@ public:
 	void updatePayOverdueTotals ( const vmNumber& nAdd, const vmNumber& nSub );
 	void payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION new_action );
 	void controlPayForms ( const payListItem* const pay_item );
+	bool savePay ( payListItem* pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
 	void loadPayInfo ( const Payment* const pay );
 	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
@@ -197,7 +200,7 @@ public:
 //------------------------------------EDITING-FINISHED-PAY-----------------------------------------------------------
 
 //--------------------------------------------BUY------------------------------------------------------------
-	void saveBuyWidget ( vmWidget* widget, const uint id );
+	void saveBuyWidget ( vmWidget* widget, const int id );
 	void showBuySearchResult ( vmListItem* item, const bool bshow );
 	void setupBuyPanel ();
 	void displayBuyFromCalendar ( vmListItem* cal_item );
@@ -206,6 +209,7 @@ public:
 	void buySuppliersListWidget_currentItemChanged ( vmListItem* item );
 	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
 	void controlBuyForms ( const buyListItem* const buy_item );
+	bool saveBuy ( buyListItem* buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
 	void loadBuyInfo ( const Buy* const buy );
 	buyListItem* getBuyItem ( const clientListItem* const parent_client, const int id ) const;
@@ -231,6 +235,7 @@ public:
 	bool restoreItem ( const stringRecord& restore_info );
 	void restoreLastSession ();
 	void searchCallbackSelector ( const QKeyEvent* ke );
+	void reOrderTabSequence ();
 	void setupWorkFlow ();
 	void setupTabNavigationButtons ();
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
@@ -247,13 +252,15 @@ public:
 
 	void showTab ( const TAB_INDEXES ti );
 	void tabMain_currentTabChanged ( const int tab_idx );
-	void findCalendarsHiddenWidgets ();
 	void saveView ();
 	void selectBuysItems ( const PROCESS_STEPS step );
 	void navigatePrev ();
 	void navigateNext ();
 	void insertNavItem ( vmListItem* item );
 	void displayNav ();
+	void insertEditItem ( vmListItem* item );
+	void removeEditItem ( vmListItem* item );
+	void saveEditItems ();
 //--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
 	void createTrayIcon ( const bool b_setup = true );
 	inline QSystemTrayIcon* appTrayIcon () const { return trayIcon; }
@@ -275,9 +282,6 @@ private:
 	QSystemTrayIcon* trayIcon;
 	QMenu* trayIconMenu;
 
-	QWidget* calMainView;
-	QMenu* menuMainCal, *subMenuMainCal;
-	QPoint mCalPopupMenuPos;
 	QMenu* menuJobDoc, *menuJobXls;
 	QMenu* menuJobPdf, *subMenuJobPdfView, *subMenuJobPdfEMail;
 
@@ -315,6 +319,7 @@ private:
 	PointersList<vmWidget*> payWidgetList;
 	PointersList<vmWidget*> buyWidgetList;
 	PointersList<vmListItem*> navItems;
+	PointersList<vmListItem*> editItems;
 
 	clientListItem* mClientCurItem;
 	jobListItem* mJobCurItem;
@@ -328,7 +333,6 @@ private:
 
 	void on_btnJobAdd_clicked ();
 	void on_btnJobEdit_clicked ();
-	void on_btnJobSave_clicked ();
 	void on_btnJobDel_clicked ();
 	void on_btnJobCancel_clicked ();
 
@@ -343,12 +347,9 @@ private:
 	void btnJobSeparateReportWindow_clicked ( const bool checked );
 //--------------------------------------------JOB-----------------------------------------------------------
 
-	void execSchedOrPayMenu ( const QPoint& pos, const bool b_sched_menu );
-	void execMenuMainCal ();
 //--------------------------------------------PAY-----------------------------------------------------------
 	void on_btnPayInfoDel_clicked ();
 	void on_btnPayInfoEdit_clicked ();
-	void on_btnPayInfoSave_clicked ();
 	void on_btnPayInfoCancel_clicked ();
 //--------------------------------------------PAY-----------------------------------------------------------
 
@@ -361,11 +362,11 @@ private:
 	void on_btnBuyCopyRows_clicked ();
 //--------------------------------------------BUY-----------------------------------------------------------
 
-//-----------------------------------------------DATE-BTNS------------------------------------------------------
+//-----------------------------------------------DATE-BTNS--------------------------------------------------
 	void updateProgramDate ();
-//----------------------------------------------CURRENT-DATE-BTNS------------------------------------------------------
+//----------------------------------------------CURRENT-DATE-BTNS-------------------------------------------
 
-//--------------------------------------------SLOTS-----------------------------------------------------------
+//--------------------------------------------SLOTS---------------------------------------------------------
 	void exitRequested ( const bool user_requested = false );
 	void quickProjectClosed ();
 	void on_btnQuickProject_clicked ();

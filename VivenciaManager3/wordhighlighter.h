@@ -17,10 +17,10 @@ public:
     explicit wordHighlighter ( QTextDocument* parent );
 	virtual ~wordHighlighter ();
 
-	inline bool spellCheckingEnbled () const { return m_bspellCheckEnabled; }
+	inline bool spellCheckingEnbled () const { return mb_spellCheckEnabled; }
     void enableSpellChecking ( const bool state );
 
-	inline bool highlightingEnabled () const { return m_bHighlightEnabled; }
+	inline bool highlightingEnabled () const { return mb_HighlightEnabled; }
     void enableHighlighting ( const bool );
 
     void unHighlightWord ( const QString& );
@@ -32,7 +32,7 @@ protected:
 
 private:
     QStringList highlightedWordsList;
-	bool m_bspellCheckEnabled, m_bHighlightEnabled;
+	bool mb_spellCheckEnabled, mb_HighlightEnabled;
 
     static QTextCharFormat* m_spellCheckFormat, *m_HighlightFormat;
 };

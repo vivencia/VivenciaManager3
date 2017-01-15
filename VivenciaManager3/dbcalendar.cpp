@@ -5,7 +5,7 @@
 
 #include <QCoreApplication>
 
-const double TABLE_VERSION ( 1.7 );
+const double TABLE_VERSION ( 1.6 );
 
 const uint CALENDAR_FIELDS_TYPE[CALENDAR_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_DATE, DBTYPE_NUMBER, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
@@ -26,7 +26,7 @@ inline uint DBMonthToMonth ( const uint dbmonth )
 inline void DBMonthToDate ( const uint dbmonth, vmNumber& date )
 {
     const int year ( dbmonth / 12 );
-    date.setDate ( 1, DBMonthToMonth( dbmonth ), year + 2009 );
+    date.setDate ( 1, DBMonthToMonth ( dbmonth ), year + 2009 );
 }
 
 inline uint weekNumberToDBWeekNumber ( const vmNumber& date )
@@ -50,263 +50,6 @@ inline void DBWeekNumberToDate ( const uint dbweek, vmNumber& date )
     date.setDate ( ( DBWeekNumberToWeekNumber ( dbweek ) * 7 ) - 2, 1, year + 2009 );
 }
 
-#ifdef TRANSITION_PERIOD
-#include "vivenciadb.h"
-#include "calculator.h"
-
-bool jobDate ( const stringTable& days, const uint day, vmNumber& date )
-{
-	if ( day < days.countRecords () ) {
-		stringRecord strRecord ( days.readRecord ( day ) );
-		if ( strRecord.isOK () ) {
-			( void ) date.fromTrustedStrDate ( strRecord.fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-			return true;
-		}
-	}
-	return false;
-}
-
-bool payDate ( const stringTable& pay_info, const uint day, vmNumber& date,
-			   vmNumber& price, const bool use_date )
-{
-	if ( day < pay_info.countRecords () ) {
-		stringRecord strRecord ( pay_info.readRecord ( day ) );
-		if ( strRecord.isOK () ) {
-			const vmNumber test_date ( strRecord.fieldValue (
-										   use_date ? PHR_USE_DATE : PHR_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
-			if ( date != test_date ) {
-				if ( strRecord.fieldValue ( PHR_PAID ) == CHR_ONE )
-					( void ) price.fromStrPrice ( strRecord.fieldValue ( PHR_VALUE ) );
-				else
-					price.clear ( false );
-				date = test_date;
-				return true;
-			}
-			date = test_date;
-		}
-	}
-	return false;
-}
-
-void updateCalendarWithJobInfo ( const Job* const job )
-{
-	uint day ( 0 );
-	vmNumber price ( 0.0 ), priceJobs ( 0.0 ) ;
-	dbCalendar cal_rec;
-	vmNumber date;
-	stringRecord jobids;
-	stringTable ids_table;
-
-	const stringTable jobinfo ( recStrValue ( job, FLD_JOB_REPORT ) );
-	if ( !jobinfo.isOK () ) return;
-
-	( void ) price.fromTrustedStrPrice ( recStrValue ( job, FLD_JOB_PRICE ) );
-	price /= jobinfo.countRecords ();
-
-	while ( jobDate ( jobinfo, day, date ) ) {
-		if ( date.year () >= 2009 ) {
-			if ( cal_rec.readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) ) {
-				cal_rec.setAction ( ACTION_EDIT );
-				ids_table = recStrValue ( &cal_rec, FLD_CALENDAR_JOBS );
-				priceJobs.fromTrustedStrPrice ( recStrValue ( &cal_rec, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED ) );
-			}
-			else {
-				cal_rec.setAction ( ACTION_ADD );
-				cal_rec.clearAll ();
-				ids_table.clear ();
-				priceJobs.clear ( false );
-				setRecValue ( &cal_rec, FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_WEEK_NUMBER, QString::number ( weekNumberToDBWeekNumber ( date ) ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_MONTH, QString::number ( monthToDBMonth ( date ) ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_PAY_RECEIVED, vmNumber::zeroedPrice.toPrice () );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_PAID, vmNumber::zeroedPrice.toPrice () );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_BOUGHT, vmNumber::zeroedPrice.toPrice () );
-			}
-			jobids.clear ();
-			jobids.fastAppendValue ( recStrValue ( job, FLD_JOB_ID ) );
-			jobids.fastAppendValue ( recStrValue ( job, FLD_JOB_CLIENTID ) );
-            jobids.fastAppendValue ( QString::number ( day + 1 ) );
-			ids_table.fastAppendRecord ( jobids );
-			setRecValue ( &cal_rec, FLD_CALENDAR_JOBS, ids_table.toString () );
-			if ( !price.isNull () ) {
-				priceJobs += price;
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED, priceJobs.toPrice () );
-			}
-			cal_rec.saveRecord ();
-		}
-		day++;
-	}
-}
-
-void updateCalendarWithPayInfo ( const Payment* const pay )
-{
-	dbCalendar cal_rec;
-	uint day ( 0 );
-	vmNumber price ( 0.0 ), pricePays ( 0.0 ) ;
-	vmNumber date;
-	stringRecord payids;
-	stringTable ids_table;
-
-	const stringTable pay_info ( recStrValue ( pay, FLD_PAY_INFO ) );
-	if ( !pay_info.isOK () ) return;
-
-	while ( payDate ( pay_info, day, date, price, false ) ) {
-		if ( date.year () >= 2009 ) {
-			if ( cal_rec.readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) ) {
-				cal_rec.setAction ( ACTION_EDIT );
-				ids_table.fromString ( recStrValue ( &cal_rec, FLD_CALENDAR_PAYS ) );
-				pricePays.fromStrPrice ( recStrValue ( &cal_rec, FLD_CALENDAR_TOTAL_PAY_RECEIVED ) );
-			}
-			else {
-				cal_rec.setAction ( ACTION_ADD );
-				cal_rec.clearAll ();
-				ids_table.clear ();
-				pricePays.clear ( false );
-				setRecValue ( &cal_rec, FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_WEEK_NUMBER, QString::number ( weekNumberToDBWeekNumber ( date ) ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_MONTH, QString::number ( date.month () ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED, vmNumber::zeroedPrice.toPrice () );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_PAID, vmNumber::zeroedPrice.toPrice () );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_BOUGHT, vmNumber::zeroedPrice.toPrice () );
-
-			}
-			payids.clear ();
-			payids.fastAppendValue ( recStrValue ( pay, FLD_PAY_ID ) );
-			payids.fastAppendValue ( recStrValue ( pay, FLD_PAY_CLIENTID ) );
-			ids_table.fastAppendRecord ( payids );
-			setRecValue ( &cal_rec, FLD_CALENDAR_PAYS, ids_table.toString () );
-
-			if ( !price.isNull () ) {
-				pricePays += price;
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_PAY_RECEIVED, pricePays.toPrice () );
-			}
-			cal_rec.saveRecord ();
-		}
-		day++;
-	}
-
-	cal_rec.clearAll ();
-	ids_table.clear ();
-	day = 0;
-	date.clear ( false );
-
-	while ( payDate ( pay_info, day, date, price, true ) ) {
-		if ( cal_rec.readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) ) {
-			cal_rec.setAction ( ACTION_EDIT );
-			ids_table.fromString ( recStrValue ( &cal_rec, FLD_CALENDAR_PAYS_USE ) );
-		}
-		else {
-			cal_rec.setAction ( ACTION_ADD );
-			cal_rec.clearAll ();
-			ids_table.clear ();
-			setRecValue ( &cal_rec, FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) );
-			setRecValue ( &cal_rec, FLD_CALENDAR_WEEK_NUMBER, QString::number ( weekNumberToDBWeekNumber ( date ) ) );
-			setRecValue ( &cal_rec, FLD_CALENDAR_MONTH, QString::number ( date.month () ) );
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED, vmNumber::zeroedPrice.toPrice () );
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_PAID, vmNumber::zeroedPrice.toPrice () );
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_BOUGHT, vmNumber::zeroedPrice.toPrice () );
-		}
-
-		payids.clear ();
-		payids.fastAppendValue ( recStrValue ( pay, FLD_PAY_ID ) );
-		payids.fastAppendValue ( recStrValue ( pay, FLD_PAY_CLIENTID ) );
-		ids_table.fastAppendRecord ( payids );
-		setRecValue ( &cal_rec, FLD_CALENDAR_PAYS_USE, ids_table.toString () );
-		cal_rec.saveRecord ();
-		day++;
-	}
-}
-
-void updateCalendarWithBuyInfo ( const Buy* const buy )
-{
-	dbCalendar cal_rec;
-	vmNumber price ( 0.0 ), priceBuys ( 0.0 ), priceBuysPaid ( 0.0 ) ;
-	vmNumber date ( recStrValue ( buy, FLD_BUY_DATE ), VMNT_DATE, vmNumber::VDF_DB_DATE );
-	stringRecord buyids;
-	stringTable ids_table;
-
-	if ( date.year () >= 2009 ) {
-		if ( cal_rec.readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) ) {
-			cal_rec.setAction ( ACTION_EDIT );
-			ids_table.fromString ( recStrValue ( &cal_rec, FLD_CALENDAR_BUYS ) );
-			priceBuys.fromStrPrice ( recStrValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_BOUGHT ) );
-		}
-		else {
-			cal_rec.setAction ( ACTION_ADD );
-			cal_rec.clearAll ();
-			ids_table.clear ();
-			priceBuys.clear ( false );
-			setRecValue ( &cal_rec, FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) );
-			setRecValue ( &cal_rec, FLD_CALENDAR_WEEK_NUMBER, QString::number ( weekNumberToDBWeekNumber ( date ) ) );
-			setRecValue ( &cal_rec, FLD_CALENDAR_MONTH, QString::number ( date.month () ) );
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED, vmNumber::zeroedPrice.toPrice () );
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_PAY_RECEIVED, vmNumber::zeroedPrice.toPrice () );
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_PAID, vmNumber::zeroedPrice.toPrice () );
-		}
-
-		buyids.clear ();
-		buyids.fastAppendValue ( recStrValue ( buy, FLD_BUY_ID ) );
-		buyids.fastAppendValue ( recStrValue ( buy, FLD_BUY_CLIENTID ) );
-		ids_table.fastAppendRecord ( buyids );
-		setRecValue ( &cal_rec, FLD_CALENDAR_BUYS, ids_table.toString () );
-
-		price.fromStrPrice ( recStrValue ( buy, FLD_BUY_PRICE ) );
-		if ( !price.isNull () ) {
-			priceBuys += price;
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_BOUGHT, priceBuys.toPrice () );
-		}
-		cal_rec.saveRecord ();
-	}
-
-	cal_rec.clearAll ();
-	ids_table.clear ();
-	const stringTable pay_info ( recStrValue ( buy, FLD_BUY_PAYINFO ) );
-	bool b_paid ( false );
-	const stringRecord* rec ( nullptr );
-	rec = &( pay_info.first () );
-	while ( rec->isOK () ) {
-		date.fromTrustedStrDate ( rec->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
-		if ( date.year () >= 2009 ) {
-			b_paid = rec->fieldValue ( PHR_PAID ) == CHR_ONE;
-			if ( b_paid )
-				price.fromStrPrice ( rec->fieldValue ( PHR_VALUE ) );
-			else
-				price.clear ( false );
-
-			if ( cal_rec.readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) ) {
-				cal_rec.setAction ( ACTION_EDIT );
-				ids_table.fromString ( recStrValue ( &cal_rec, FLD_CALENDAR_BUYS_PAY ) );
-				priceBuysPaid.fromStrPrice ( recStrValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_PAID ) );
-			}
-			else {
-				cal_rec.setAction ( ACTION_ADD );
-				cal_rec.clearAll ();
-				setRecValue ( &cal_rec, FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_WEEK_NUMBER, QString::number ( weekNumberToDBWeekNumber ( date ) ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_MONTH, QString::number ( date.month () ) );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED, vmNumber::zeroedPrice.toPrice () );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_PAY_RECEIVED, vmNumber::zeroedPrice.toPrice () );
-				setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_BOUGHT, vmNumber::zeroedPrice.toPrice () );
-				ids_table.clear ();
-				priceBuysPaid.clear ( false );
-			}
-
-			buyids.clear ();
-			buyids.fastAppendValue ( recStrValue ( buy, FLD_BUY_ID ) );
-			buyids.fastAppendValue ( recStrValue ( buy, FLD_BUY_CLIENTID ) );
-			ids_table.fastAppendRecord ( buyids );
-			setRecValue ( &cal_rec, FLD_CALENDAR_BUYS_PAY, ids_table.toString () );
-
-			if ( !price.isNull () )
-				priceBuysPaid += price;
-			setRecValue ( &cal_rec, FLD_CALENDAR_TOTAL_BUY_PAID, priceBuysPaid.toPrice () );
-			cal_rec.saveRecord ();
-		}
-		rec = &( pay_info.next () );
-	}
-}
-#endif
-
 #ifdef TABLE_UPDATE_AVAILABLE
 #include "vivenciadb.h"
 #include "calculator.h"
@@ -317,8 +60,8 @@ void updateCalendarWithBuyInfo ( const Buy* const buy )
 bool updateCalendarTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
-	//( void )VDB ()->database ()->exec ( QStringLiteral ( "RENAME TABLE `CALENDAR` TO `OLD_CALENDAR`" ) );
-    //VDB ()->createTable ( &dbCalendar::t_info );
+	( void )VDB ()->database ()->exec ( QStringLiteral ( "RENAME TABLE `CALENDAR` TO `OLD_CALENDAR`" ) );
+	VDB ()->createTable ( &dbCalendar::t_info );
 
 	const uint max_pbar_value ( VDB ()->getHighestID ( TABLE_JOB_ORDER ) + VDB ()->getHighestID ( TABLE_PAY_ORDER ) +
 								VDB ()->getHighestID ( TABLE_BUY_ORDER ) - 10 );
@@ -357,10 +100,12 @@ bool updateCalendarTable ()
         } while ( buy.readNextRecord () );
 	}
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_pbar_value, i++, QString::null, QStringLiteral( "Done. Calendar table updated" ) );
-    VDB ()->optimizeTable( &dbCalendar::t_info );
-	return true;
-#endif
+    VDB ()->optimizeTable ( &dbCalendar::t_info );
+	VDB ()->deleteTable ( "OLD_CALENDAR" );
+	return true;	
+#else
 	return false;
+#endif
 }
 
 const TABLE_INFO dbCalendar::t_info = {

@@ -38,8 +38,8 @@ private:
 	void reloadInternal ( RECORD_IMAGES* ri, const QString& path );
 	bool hookUpDir ( const int rec_id, const QString& path );
 
-	void showImageInternal ( const QPixmap& );
-	void showImageInternal ( const QString& );
+	void loadImage ( const QPixmap& );
+	void loadImage ( const QString& );
 	void scrollBy ( const int x, const int y );
 	void adjustScrollBar ( const float  factor );
 	void scaleImage ( const float factor );

@@ -373,7 +373,7 @@ void DBRecord::sync ( const int src_index, const bool b_force )
 {
 	for ( uint i ( 1 ); i < fld_count; ++i )
 	{
-		if ( isModified ( i ) || b_force )
+		if ( wasModified ( i ) || b_force )
 		{
             if ( m_RECFIELDS[i].str_field[!src_index] != m_RECFIELDS[i].str_field[src_index] )
 			{

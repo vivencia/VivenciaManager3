@@ -208,8 +208,8 @@ void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 
 void pvmDateEdit::setEditable ( const bool editable )
 {
-	//TODO test if this code is working and not triggering unwanted calls
-    if ( editable ) {
+    if ( editable )
+	{
 		connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) { return vmDateChanged ( date ); } );
 		mDateBeforeFocus = date ();
 	}
@@ -230,9 +230,12 @@ void pvmDateEdit::setEditable ( const bool editable )
  */
 void pvmDateEdit::vmDateChanged ( const QDate& date )
 {
-	if ( isEditable () && !mEmitSignal.isOff () ) {
-		if ( !hasFocus () ) {
-			if ( mDateBeforeFocus != date ) {
+	if ( isEditable () && !mEmitSignal.isOff () )
+	{
+		if ( !hasFocus () )
+		{
+			if ( mDateBeforeFocus != date )
+			{
 				vmDateEdit::updateRecentUsedDates ( date );
 				mEmitSignal.setUndefined ();
 		        if ( mOwner->contentsAltered_func != nullptr )
@@ -244,9 +247,10 @@ void pvmDateEdit::vmDateChanged ( const QDate& date )
 
 void pvmDateEdit::keyPressEvent ( QKeyEvent* e )
 {
-	if ( isEditable () ) {
-		if ( e->key () == Qt::Key_Enter || e->key () == Qt::Key_Return ||
-				e->key () == Qt::Key_Escape ) {
+	if ( isEditable () )
+	{
+		if ( e->key () == Qt::Key_Enter || e->key () == Qt::Key_Return || e->key () == Qt::Key_Escape )
+		{
 			if ( keypressed_func )
 				keypressed_func ( e, this );
 		}
@@ -256,7 +260,8 @@ void pvmDateEdit::keyPressEvent ( QKeyEvent* e )
 
 void pvmDateEdit::focusInEvent ( QFocusEvent* e )
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		mbHasFocus = true;
 		mDateBeforeFocus = date ();
 		QDateEdit::focusInEvent ( e );
@@ -265,7 +270,8 @@ void pvmDateEdit::focusInEvent ( QFocusEvent* e )
 
 void pvmDateEdit::focusOutEvent ( QFocusEvent* e )
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		mbHasFocus = false;
 		QDateEdit::focusOutEvent ( e );
         vmDateChanged ( this->date () );
@@ -279,9 +285,7 @@ vmDateEdit::vmDateEdit ( QWidget* parent )
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
 	mButton = new QToolButton;
 	mButton->setIcon ( ICON ( "x-office-calendar" ) );
-	connect ( mButton, &QToolButton::clicked, this, [&] () {
-		return contextMenuRequested ();
-	} );
+	connect ( mButton, &QToolButton::clicked, this, [&] () { return contextMenuRequested (); } );
 
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );
@@ -378,41 +382,38 @@ void vmDateEdit::updateDateButtonsMenu ()
 void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 {
 	uint i ( 0 );
-	uint n_actions ( unsigned ( menuDateButtons->actions ().count () ) );
-	if ( n_actions < N_DATES_MENU_STATIC_ENTRIES ) {
+	uint n_actions ( static_cast<uint>(menuDateButtons->actions ().count ()) );
+	if ( n_actions < N_DATES_MENU_STATIC_ENTRIES )
+	{
 		menuDateButtons->addSeparator ();
 		n_actions = N_DATES_MENU_STATIC_ENTRIES;
 	}
-	DBG_OUT ( date.toString (), true, true );
-	for ( ; i < n_actions; ++i ) {
+	
+	for ( ; i < n_actions; ++i )
+	{
 		if ( i != 3 ) { //separator index
-			if ( date.toQDate () == static_cast<vmAction*> ( menuDateButtons->actions ().at ( i ) )->internalData ().toDate () )
+			if ( date.toQDate () == static_cast<vmAction*>(menuDateButtons->actions ().at ( i ))->internalData ().toDate () )
 				return;
 		}
 	}
-	DBG_OUT ( "After date comparison", true, false );
+	
 	vmAction* action ( nullptr );
-	DBG_OUT ( "After copy number", true, false );
-	if ( n_actions < ( N_DATES_MENU_STATIC_ENTRIES + MAX_RECENT_USE_DATES ) ) {
+	if ( n_actions < ( N_DATES_MENU_STATIC_ENTRIES + MAX_RECENT_USE_DATES ) )
+	{
 		action = new vmAction ( N_DATES_MENU_STATIC_ENTRIES, date.toDate ( vmNumber::VDF_HUMAN_DATE ) );
-		DBG_OUT ( "After new vmAction", true, false );
 		action->setInternalData ( date.toQDate () );
 		menuDateButtons->addAction ( action );
 		n_actions++;
-		DBG_OUT ( "n_actions < max", true, false );
 	}
-	else {
-		DBG_OUT ( "Replacing actions", true, false );
-		static uint ins_pos ( N_DATES_MENU_STATIC_ENTRIES );
+	else
+	{
+		static int ins_pos ( N_DATES_MENU_STATIC_ENTRIES );
 		action = static_cast<vmAction*> ( menuDateButtons->actions ().at ( ins_pos ) );
 		action->setInternalData ( date.toQDate () );
-		DBG_OUT ( "Replaced internal data", true, false );
 		action->QAction::setText ( date.toDate ( vmNumber::VDF_HUMAN_DATE ) );
-		DBG_OUT ( "Changed text", true, false );
 		if ( ++ins_pos == ( N_DATES_MENU_STATIC_ENTRIES + MAX_RECENT_USE_DATES ) )
 			ins_pos = N_DATES_MENU_STATIC_ENTRIES;
 	}
-	DBG_OUT ( "Exiting function", true, false );
 }
 
 void vmDateEdit::setTabOrder ( QWidget* formOwner, QWidget* prevWidget, QWidget* nextWidget )
@@ -437,7 +438,8 @@ QString vmTimeEdit::defaultStyleSheet () const
 	QString colorstr;
 	if ( !parentWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		const QTimeEdit* time ( new QTimeEdit ( parentWidget () ) );
 		colorstr = " ( " + time->palette ().color ( time->backgroundRole () ).name ()
 				   + " ) }";

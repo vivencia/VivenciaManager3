@@ -94,6 +94,7 @@ vmTableColumn* vmTableWidget::createColumns ( const uint nCols )
 
 void vmTableWidget::initTable ( const uint rows )
 {
+	setUpdatesEnabled ( false );
 	uint i_col ( 0 );
 	uint i_row ( 0 );
 
@@ -105,7 +106,8 @@ void vmTableWidget::initTable ( const uint rows )
 	m_nVisibleRows = rows + static_cast<uint>( !mbPlainTable );
 	setRowCount ( static_cast<int>(m_nVisibleRows) );
 
-	if ( !mbTableIsList ) {
+	if ( !mbTableIsList )
+	{
 		QFont titleFont ( font () );
 		titleFont.setBold ( true );
 		vmCheckedTableItem* headerItem ( new vmCheckedTableItem ( Qt::Horizontal, this ) );
@@ -124,7 +126,8 @@ void vmTableWidget::initTable ( const uint rows )
 		if ( !column->editable )
 			setBit ( readOnlyColumnsMask, i_col ); // bit is set? read only cell : cell can be cleared or other actions
 
-		for ( i_row = 0; i_row < m_nVisibleRows; ++i_row ) {
+		for ( i_row = 0; i_row < m_nVisibleRows; ++i_row )
+		{
 			if ( !mbPlainTable && i_row != static_cast<uint>(totalsRow ()) ) // last row, read-only, displays formulas like "sum" for the previous rows
 				sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
 			else if ( !mbTableIsList )
@@ -135,18 +138,22 @@ void vmTableWidget::initTable ( const uint rows )
 			sheet_item->setCompleterType ( column->completer_type );
 			setCellWidget ( sheet_item );
 			sheet_item->setEditable ( false );
-			if ( i_row == static_cast<uint>(totalsRow ()) && !mbPlainTable ) {
+			if ( i_row == static_cast<uint>(totalsRow ()) && !mbPlainTable )
+			{
 				if ( i_col == 0 )
 					sheet_item->setText ( TR_FUNC ( "Total:" ), false, false );
-				else {
-					if ( column->text_type >= vmLineEdit::TT_PRICE ) {
+				else
+				{
+					if ( column->text_type >= vmLineEdit::TT_PRICE )
+					{
 						col_header = QChar ( 'A' + i_col );
 						sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header +
 												 CHR_ZERO + CHR_SPACE + col_header + QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
 					}
 				}
 			}
-			else { //i_row != mTotalsRow)
+			else
+			{ //i_row != mTotalsRow)
 				if ( !column->formula.isEmpty () )
 					sheet_item->setFormula ( column->formula, QString::number ( i_row ) );
 			}
@@ -157,7 +164,8 @@ void vmTableWidget::initTable ( const uint rows )
 			
 		uint colWidth ( column->width );
 		if ( colWidth == 0 ) {
-			switch ( column->wtype ) {
+			switch ( column->wtype )
+			{
 				case WT_DATEEDIT:
 					colWidth = 180;
 				break;
@@ -180,6 +188,8 @@ void vmTableWidget::initTable ( const uint rows )
 	//All the items that could not have their formula calculated at the time of creation will now
 	for ( i_row = 0; i_row < m_itemsToReScan.count (); ++i_row )
 		m_itemsToReScan.at ( i_row )->targetsFromFormula ();
+	
+	setUpdatesEnabled ( true );
 }
 
 bool vmTableWidget::selectFound ( const vmTableItem* item )
@@ -253,7 +263,8 @@ vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidg
 {
 	vmTableColumn* cols ( table->createColumns ( PURCHASES_TABLE_COLS ) );
 	uint i ( 0 );
-	for ( ; i < PURCHASES_TABLE_COLS; ++i ) {
+	for ( ; i < PURCHASES_TABLE_COLS; ++i )
+	{
 		switch ( i ) {
 			case ISR_NAME:
 				cols[ISR_NAME].completer_type = vmCompleters::PRODUCT_OR_SERVICE;
@@ -286,7 +297,7 @@ vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidg
 			case PURCHASES_TABLE_REG_COL:
 				cols[PURCHASES_TABLE_REG_COL].wtype = WT_CHECKBOX;
 				cols[PURCHASES_TABLE_REG_COL].width = 50;
-				cols[PURCHASES_TABLE_REG_COL].default_value = CHR_ZERO;
+				//cols[PURCHASES_TABLE_REG_COL].default_value = CHR_ZERO;
 				cols[PURCHASES_TABLE_REG_COL].label = TR_FUNC ( "Register" );
 			break;
 		}
@@ -416,7 +427,7 @@ vmTableWidget* vmTableWidget::createPayHistoryTable ( vmTableWidget* table, QWid
 				cols[PHR_PAID].label = TR_FUNC ( "Paid?" );
 				cols[PHR_PAID].wtype = WT_CHECKBOX;
 				cols[PHR_PAID].width = 50;
-				cols[PHR_PAID].default_value = CHR_ZERO;
+				//cols[PHR_PAID].default_value = CHR_ZERO;
 			break;
 			case PHR_METHOD:
 				cols[PHR_METHOD].label = TR_FUNC ( "Method" );
@@ -485,12 +496,16 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 			}
 		}
 
-		if ( !mbPlainTable ) {
+		if ( !mbPlainTable )
+		{
 			// update all rows after the inserted ones, so that their formula reflects the row changes
-			for ( i_row = row + n; static_cast<int>(i_row) < mTotalsRow; ++i_row ) {
-				for ( i_col = 0; i_col < colCount (); ++i_col ) {
+			for ( i_row = row + n; static_cast<int>(i_row) < mTotalsRow; ++i_row )
+			{
+				for ( i_col = 0; i_col < colCount (); ++i_col )
+				{
 					sheet_item = sheetItem ( i_row, i_col );
-					if ( sheet_item->hasFormula () ) {
+					if ( sheet_item->hasFormula () )
+					{
 						new_formula = sheet_item->formulaTemplate ();
 						sheet_item->setFormula ( new_formula, QString::number ( i_row ) );
 					}
@@ -499,13 +514,16 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 			fixTotalsRow ();
 		
 			const uint modified_rows ( modifiedRows.count () );
-			if ( modified_rows > 0 ) {
+			if ( modified_rows > 0 )
+			{
 				uint i ( 0 ), list_value ( 0 ), start_modification ( 0 );
-				for ( i = 0; i < modified_rows; ++i ) {
+				for ( i = 0; i < modified_rows; ++i )
+				{
 					if ( row < modifiedRows.at ( i ) ) break;
 					start_modification++; // modified above insertion start point are not affected
 				}
-				for ( i = start_modification; i < modified_rows; ++i ) {
+				for ( i = start_modification; i < modified_rows; ++i )
+				{
 					list_value = modifiedRows.at ( i );
 					modifiedRows.replace ( i, list_value + n ); // push down modified rows
 				}
@@ -615,6 +633,7 @@ void vmTableWidget::clearRow ( const uint row, const uint n )
 // Clear items for fresh view
 void vmTableWidget::clear ( const bool force )
 {
+	setUpdatesEnabled ( false );
 	const int max_row ( force ? mTotalsRow - 1 : m_lastUsedRow );
 	uint i_col ( 0 );
 	vmTableItem* item ( nullptr );
@@ -635,11 +654,13 @@ void vmTableWidget::clear ( const bool force )
 	mTableChanged = false;
 	setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, false );
 	m_lastUsedRow = -1;
+	setUpdatesEnabled ( true );
 }
 
 void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 {
-	if ( rowActivated_func ) {
+	if ( rowActivated_func )
+	{
 		if ( b_activate )
 			connect ( this, &QTableWidget::itemClicked, this, [&] ( QTableWidgetItem* current ) {
 				return rowActivated_func ( current->row () ); } );
@@ -650,7 +671,8 @@ void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 
 void vmTableWidget::setCellValue ( const QString& value, const uint row, const uint col )
 {
-	if ( col < colCount () ) {
+	if ( col < colCount () )
+	{
 		if ( static_cast<int>(row) >= totalsRow () )
 			appendRow ();
 		sheetItem ( row, col )->setText ( value, false, false );
@@ -673,7 +695,8 @@ void vmTableWidget::setRowData ( const spreadRow* s_row, const bool b_notify )
 
 void vmTableWidget::rowData ( const uint row, spreadRow* s_row ) const
 {
-	if ( static_cast<int>(row) < mTotalsRow ) {
+	if ( static_cast<int>(row) < mTotalsRow )
+	{
 		uint i_col ( 0 );
 		s_row->row = static_cast<int>(row);
 		s_row->field_value.clearButKeepMemory ();
@@ -686,7 +709,8 @@ void vmTableWidget::rowData ( const uint row, spreadRow* s_row ) const
 void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 {
 	mTableChanged = true;
-	if ( mbKeepModRec ) {
+	if ( mbKeepModRec )
+	{
 		const uint row ( static_cast<uint>(item->row ()) );
 		uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
 		for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i )
@@ -783,6 +807,7 @@ void vmTableWidget::loadFromStringTable ( const stringTable& data )
 	clear ( true );
 	if ( data.isOK () )
 	{
+		setUpdatesEnabled ( false );
 		spreadRow* s_row ( new spreadRow );
 		uint i_col ( 0 );
 
@@ -810,6 +835,7 @@ void vmTableWidget::loadFromStringTable ( const stringTable& data )
 			} while ( rec->isOK () );
 		}
 		delete s_row;
+		setUpdatesEnabled ( true );
 		scrollToTop ();
 	}
 }
@@ -984,13 +1010,15 @@ void vmTableWidget::setEditable ( const bool editable )
 			} ) );
 		}
 	}
-	else {
-		if ( isPlainTable () )
-			disconnect ( this, &QTableWidget::itemChanged, nullptr, nullptr );
-		if ( cellNavigation_func != nullptr )
-			disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
-		if ( mIsPurchaseTable )
-			disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
+	else
+	{
+		this->disconnect ();
+		//if ( isPlainTable () )
+		//	disconnect ( this, &QTableWidget::itemChanged, nullptr, nullptr );
+		//if ( cellNavigation_func != nullptr )
+		//	disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
+		//if ( mIsPurchaseTable )
+		//	disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
 	}
 	vmWidget::setEditable ( editable );
 }

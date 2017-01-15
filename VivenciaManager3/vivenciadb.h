@@ -69,8 +69,10 @@ public:
 	bool databaseIsEmpty () const;
 	bool createAllTables ();
 	bool createTable ( const TABLE_INFO* t_info );
-	bool deleteTable ( const TABLE_INFO* t_info );
-	bool clearTable ( const TABLE_INFO* t_info );
+	bool deleteTable ( const QString& table_name );
+	inline bool deleteTable ( const TABLE_INFO* t_info ) { return deleteTable ( t_info->table_name ); }
+	bool clearTable ( const QString& table_name );
+	inline bool clearTable ( const TABLE_INFO* t_info ) { return clearTable ( t_info->table_name ); }
 	bool tableExists ( const TABLE_INFO* t_info );
 	bool insertColumn ( const uint column, const TABLE_INFO* t_info );
 	bool removeColumn ( const QString& column_name, const TABLE_INFO* t_info );
