@@ -10,12 +10,8 @@ const uint BUY_FIELD_COUNT ( 13 );
 const uint BUYS_FIELDS_TYPE[BUY_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_ID, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_PRICE,
 	DBTYPE_PRICE, DBTYPE_NUMBER, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_SHORTTEXT,
-	DBTYPE_LONGTEXT, DBTYPE_LONGTEXT
+	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
 };
-
-#ifdef TRANSITION_PERIOD
-bool updateStrReport ( const QString& str_report, QString& new_report );
-#endif
 
 class Buy : public DBRecord
 {
@@ -36,6 +32,7 @@ public:
 	uint isrRecordField ( const ITEMS_AND_SERVICE_RECORD ) const;
 	QString isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_record = -1 ) const;
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
+	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
 
     void setListItem ( buyListItem* buy_item );
     buyListItem* buyItem () const;

@@ -498,7 +498,7 @@ void BackupDialog::btnNoDBProceed_clicked ()
 		ui->toolBox->setCurrentIndex ( 1 );
 		ui->toolBox->setEnabled ( true );
 		ui->toolBox->widget ( 0 )->setEnabled ( false );
-		crashRestore::setNewDBSession ();
+		APP_RESTORER ()->setNewDBSession ();
 
 		if ( VDB ()->createDatabase () )
 		{

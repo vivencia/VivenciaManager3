@@ -29,7 +29,7 @@ public:
     void showSearchResult_internal ( const bool bshow );
 
 private:
-    void saveWidget ( vmWidget* widget, const uint id );
+    void saveWidget ( vmWidget* widget, const int id );
     void setupUI ();
     void fillForms ();
     void controlForms ();

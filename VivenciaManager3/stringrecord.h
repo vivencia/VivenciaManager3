@@ -42,7 +42,7 @@ public:
 	
 	inline uint countFields ( const QString& str ) const
 	{
-		return str.count ( record_sep );
+		return static_cast<uint>(str.count ( record_sep ));
 	}
 
 	bool isOK () const;
@@ -86,6 +86,10 @@ public:
 	bool last () const;
 	bool moveToRec ( const uint rec ) const;
 
+	inline int curIndex () const {
+		return mFastIdx;
+	}
+	
 	inline const QString& curValue () const {
 		return mCurValue;
 	}
@@ -99,7 +103,7 @@ public:
 	// knows that it should not use that returned object, and discard it
 	struct Null {};
 	static constexpr Null null = {};
-	inline stringRecord ( const Null& ) : mFields ( -1 ), mFastIdx ( -1 ), mState ( TRI_UNDEF ) {}
+	inline stringRecord ( const Null& ) : mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_UNDEF ) {}
 	inline void setNull () {
 		mState.setUndefined ();
 	}

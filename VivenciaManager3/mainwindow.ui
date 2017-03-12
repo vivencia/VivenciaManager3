@@ -237,15 +237,37 @@
        </layout>
       </item>
       <item>
-       <widget class="QLabel" name="lblCurInfoClient">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
+       <widget class="vmActionLabel" name="lblCurInfoClient">
+        <property name="styleSheet">
+         <string notr="true">background-color: transparent;
+border: 1px solid transparent;
+color: #0033ff;
+text-align: left;
+ 
+vmActionLabel[class='action']:!enabled
+{
+	color: #999999;
+}
+
+vmActionLabel[class='action']:hover
+{
+        color: #0099ff;
+        text-decoration: underline;
+}
+
+vmActionLabel[class='action']:focus
+{
+        border: 1px dotted black;
+}
+
+vmActionLabel[class='action']:on
+{
+        background-color: #ddeeff;
+        color: #006600;
+}</string>
         </property>
         <property name="text">
          <string>TextLabel</string>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::PlainText</enum>
         </property>
        </widget>
       </item>
@@ -257,9 +279,34 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="lblCurInfoJob">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
+       <widget class="vmActionLabel" name="lblCurInfoJob">
+        <property name="styleSheet">
+         <string notr="true">background-color: transparent;
+border: 1px solid transparent;
+color: #0033ff;
+text-align: left;
+ 
+vmActionLabel[class='action']:!enabled
+{
+	color: #999999;
+}
+
+vmActionLabel[class='action']:hover
+{
+        color: #0099ff;
+        text-decoration: underline;
+}
+
+vmActionLabel[class='action']:focus
+{
+        border: 1px dotted black;
+}
+
+vmActionLabel[class='action']:on
+{
+        background-color: #ddeeff;
+        color: #006600;
+}</string>
         </property>
         <property name="text">
          <string>TextLabel</string>
@@ -274,9 +321,34 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="lblCurInfoPay">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
+       <widget class="vmActionLabel" name="lblCurInfoPay">
+        <property name="styleSheet">
+         <string notr="true">background-color: transparent;
+border: 1px solid transparent;
+color: #0033ff;
+text-align: left;
+ 
+vmActionLabel[class='action']:!enabled
+{
+	color: #999999;
+}
+
+vmActionLabel[class='action']:hover
+{
+        color: #0099ff;
+        text-decoration: underline;
+}
+
+vmActionLabel[class='action']:focus
+{
+        border: 1px dotted black;
+}
+
+vmActionLabel[class='action']:on
+{
+        background-color: #ddeeff;
+        color: #006600;
+}</string>
         </property>
         <property name="text">
          <string>TextLabel</string>
@@ -291,9 +363,35 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="lblCurInfoBuy">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
+       <widget class="vmActionLabel" name="lblCurInfoBuy">
+        <property name="styleSheet">
+         <string notr="true">background-color: transparent;
+border: 1px solid transparent;
+color: #0033ff;
+text-align: left;
+ 
+vmActionLabel[class='action']:!enabled
+{
+	color: #999999;
+}
+
+vmActionLabel[class='action']:hover
+{
+        color: #0099ff;
+        text-decoration: underline;
+}
+
+vmActionLabel[class='action']:focus
+{
+        border: 1px dotted black;
+}
+
+vmActionLabel[class='action']:on
+{
+        background-color: #ddeeff;
+        color: #006600;
+}
+</string>
         </property>
         <property name="text">
          <string>TextLabel</string>
@@ -443,7 +541,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>7</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -807,8 +905,8 @@ p, li { white-space: pre-wrap; }
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>517</width>
-                       <height>450</height>
+                       <width>246</width>
+                       <height>139</height>
                       </rect>
                      </property>
                      <attribute name="label">
@@ -1176,8 +1274,8 @@ p, li { white-space: pre-wrap; }
          <rect>
           <x>9</x>
           <y>9</y>
-          <width>829</width>
-          <height>306</height>
+          <width>946</width>
+          <height>292</height>
          </rect>
         </property>
         <property name="frameShape">
@@ -1239,7 +1337,10 @@ p, li { white-space: pre-wrap; }
                 <attribute name="title">
                  <string>Client pays</string>
                 </attribute>
-                <layout class="QGridLayout" name="gLayoutPayListPanel">
+                <layout class="QVBoxLayout" name="layoutClientPaysUtility">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
                  <property name="leftMargin">
                   <number>2</number>
                  </property>
@@ -1252,7 +1353,7 @@ p, li { white-space: pre-wrap; }
                  <property name="bottomMargin">
                   <number>2</number>
                  </property>
-                 <item row="0" column="0" colspan="2">
+                 <item>
                   <widget class="vmListWidget" name="paysList">
                    <property name="minimumSize">
                     <size>
@@ -1262,24 +1363,31 @@ p, li { white-space: pre-wrap; }
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="lblClientPayTotals">
-                   <property name="toolTip">
-                    <string>Displays the total payment amount for the current selected tab category</string>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_14">
+                   <property name="spacing">
+                    <number>2</number>
                    </property>
-                   <property name="text">
-                    <string>Total pay amount for client:</string>
-                   </property>
-                   <property name="textFormat">
-                    <enum>Qt::PlainText</enum>
-                   </property>
-                   <property name="textInteractionFlags">
-                    <set>Qt::NoTextInteraction</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="vmLineEdit" name="txtClientPayTotals"/>
+                   <item>
+                    <widget class="QLabel" name="lblClientPayTotals">
+                     <property name="toolTip">
+                      <string>Displays the total payment amount for the current selected tab category</string>
+                     </property>
+                     <property name="text">
+                      <string>Total pay amount for client:</string>
+                     </property>
+                     <property name="textFormat">
+                      <enum>Qt::PlainText</enum>
+                     </property>
+                     <property name="textInteractionFlags">
+                      <set>Qt::NoTextInteraction</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="vmLineEdit" name="txtClientPayTotals"/>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -1287,7 +1395,10 @@ p, li { white-space: pre-wrap; }
                 <attribute name="title">
                  <string>Client overdue pays</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_8">
+                <layout class="QVBoxLayout" name="layoutClientOverduePaysUtility">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
                  <property name="leftMargin">
                   <number>2</number>
                  </property>
@@ -1300,24 +1411,28 @@ p, li { white-space: pre-wrap; }
                  <property name="bottomMargin">
                   <number>2</number>
                  </property>
-                 <property name="spacing">
-                  <number>2</number>
-                 </property>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="lblClientPayOverdueTotals">
-                   <property name="text">
-                    <string>Total overdue for client:</string>
-                   </property>
-                   <property name="textFormat">
-                    <enum>Qt::PlainText</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0" colspan="2">
+                 <item>
                   <widget class="vmListWidget" name="paysOverdueClientList"/>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="vmLineEdit" name="txtClientPayOverdueTotals"/>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_15">
+                   <property name="spacing">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="lblClientPayOverdueTotals">
+                     <property name="text">
+                      <string>Total overdue for client:</string>
+                     </property>
+                     <property name="textFormat">
+                      <enum>Qt::PlainText</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="vmLineEdit" name="txtClientPayOverdueTotals"/>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -1325,7 +1440,10 @@ p, li { white-space: pre-wrap; }
                 <attribute name="title">
                  <string>All overdue pays</string>
                 </attribute>
-                <layout class="QGridLayout" name="gridLayout_9">
+                <layout class="QVBoxLayout" name="layoutOverduePaysUtility">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
                  <property name="leftMargin">
                   <number>2</number>
                  </property>
@@ -1338,24 +1456,28 @@ p, li { white-space: pre-wrap; }
                  <property name="bottomMargin">
                   <number>2</number>
                  </property>
-                 <property name="spacing">
-                  <number>2</number>
-                 </property>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="lblPayAllOverdueTotals">
-                   <property name="text">
-                    <string>Total overdue for all clients:</string>
-                   </property>
-                   <property name="textFormat">
-                    <enum>Qt::PlainText</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="vmLineEdit" name="txtAllOverdueTotals"/>
-                 </item>
-                 <item row="0" column="0" colspan="2">
+                 <item>
                   <widget class="vmListWidget" name="paysOverdueList"/>
+                 </item>
+                 <item>
+                  <layout class="QHBoxLayout" name="horizontalLayout_16">
+                   <property name="spacing">
+                    <number>2</number>
+                   </property>
+                   <item>
+                    <widget class="QLabel" name="lblPayAllOverdueTotals">
+                     <property name="text">
+                      <string>Total overdue for all clients:</string>
+                     </property>
+                     <property name="textFormat">
+                      <enum>Qt::PlainText</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="vmLineEdit" name="txtAllOverdueTotals"/>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -1565,7 +1687,7 @@ p, li { white-space: pre-wrap; }
             <property name="frameShadow">
              <enum>QFrame::Plain</enum>
             </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
+            <layout class="QVBoxLayout" name="layoutPayTableUtility">
              <property name="spacing">
               <number>2</number>
              </property>
@@ -1863,25 +1985,6 @@ p, li { white-space: pre-wrap; }
              <property name="spacing">
               <number>0</number>
              </property>
-             <item row="0" column="1">
-              <widget class="vmListWidget" name="clientsList">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="editTriggers">
-                <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
-               </property>
-               <property name="showDropIndicator" stdset="0">
-                <bool>false</bool>
-               </property>
-               <property name="dragDropOverwriteMode">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="0">
               <widget class="QFrame" name="frmClientToolbar">
                <property name="sizePolicy">
@@ -1988,6 +2091,32 @@ p, li { white-space: pre-wrap; }
                 </item>
                </layout>
               </widget>
+             </item>
+             <item row="0" column="1">
+              <layout class="QVBoxLayout" name="layoutClientsList">
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="vmListWidget" name="clientsList">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="editTriggers">
+                  <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+                 </property>
+                 <property name="showDropIndicator" stdset="0">
+                  <bool>false</bool>
+                 </property>
+                 <property name="dragDropOverwriteMode">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </item>
             </layout>
            </widget>
@@ -2652,7 +2781,10 @@ p, li { white-space: pre-wrap; }
               <property name="lineWidth">
                <number>2</number>
               </property>
-              <layout class="QGridLayout" name="gLayoutJobListPanel">
+              <layout class="QHBoxLayout" name="horizontalLayout_17">
+               <property name="spacing">
+                <number>0</number>
+               </property>
                <property name="leftMargin">
                 <number>2</number>
                </property>
@@ -2665,10 +2797,7 @@ p, li { white-space: pre-wrap; }
                <property name="bottomMargin">
                 <number>2</number>
                </property>
-               <property name="spacing">
-                <number>2</number>
-               </property>
-               <item row="0" column="0">
+               <item>
                 <widget class="QFrame" name="frmJobToolbar">
                  <property name="maximumSize">
                   <size>
@@ -2801,15 +2930,22 @@ p, li { white-space: pre-wrap; }
                  </layout>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="vmListWidget" name="jobsList">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
+               <item>
+                <layout class="QVBoxLayout" name="layoutJobsListUtility">
+                 <property name="spacing">
+                  <number>2</number>
                  </property>
-                </widget>
+                 <item>
+                  <widget class="vmListWidget" name="jobsList">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
@@ -2820,380 +2956,260 @@ p, li { white-space: pre-wrap; }
               <property name="frameShadow">
                <enum>QFrame::Raised</enum>
               </property>
-              <layout class="QGridLayout" name="gridLayout_10">
+              <layout class="QGridLayout" name="gridLayout">
+               <property name="leftMargin">
+                <number>2</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>2</number>
+               </property>
+               <property name="bottomMargin">
+                <number>2</number>
+               </property>
+               <property name="spacing">
+                <number>2</number>
+               </property>
+               <item row="2" column="0">
+                <widget class="QLabel" name="lblJobFilepath">
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>Project folder: </string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="vmComboBox" name="cboJobType">
+                 <property name="minimumSize">
+                  <size>
+                   <width>300</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
                <item row="0" column="0">
-                <layout class="QGridLayout" name="gridLayout_15" rowstretch="0,0,0,0,0,0,0" columnstretch="0,0,0,0,0,0,0,0">
+                <widget class="QLabel" name="lblJobType">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>Type:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="lblJobAddress">
+                 <property name="text">
+                  <string>Location:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="6">
+                <widget class="vmLineEdit" name="txtJobProjectPath">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="vmLineEdit" name="txtJobPrice"/>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="lblJobPrice">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>250</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>Price:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="7">
+                <widget class="QLabel" name="lblJobDateStart">
+                 <property name="text">
+                  <string>Begining:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="vmLineEdit" name="txtJobProjectID">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLabel" name="lblJobProjectID">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Project ID:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="2">
+                <widget class="QPushButton" name="btnQuickProject">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string>Quick Estimate</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="7">
+                <widget class="vmDateEdit" name="dteJobStart" native="true"/>
+               </item>
+               <item row="1" column="11">
+                <widget class="vmLineEdit" name="txtJobID">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>60</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="11">
+                <widget class="QLabel" name="lblJobID">
+                 <property name="minimumSize">
+                  <size>
+                   <width>40</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="text">
+                  <string>ID:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="6" colspan="6">
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                 <property name="spacing">
+                  <number>2</number>
+                 </property>
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="spacing">
-                  <number>5</number>
-                 </property>
-                 <item row="5" column="1" colspan="6">
-                  <widget class="vmLineEdit" name="txtJobProjectID">
-                   <property name="maximumSize">
+                 <item>
+                  <spacer name="horizontalSpacer_7">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
                     <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
+                     <width>40</width>
+                     <height>20</height>
                     </size>
                    </property>
-                  </widget>
+                  </spacer>
                  </item>
-                 <item row="6" column="3">
-                  <widget class="QLabel" name="lblJobDateStart">
-                   <property name="text">
-                    <string>Begining:</string>
+                 <item>
+                  <widget class="QToolButton" name="btnJobEditProjectPath">
+                   <property name="toolTip">
+                    <string>Edit project path</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1" colspan="7">
-                  <widget class="vmLineEdit" name="txtJobProjectPath">
-                   <property name="readOnly">
+                   <property name="text">
+                    <string>...</string>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="fileopen">
+                     <normaloff>.</normaloff>.</iconset>
+                   </property>
+                   <property name="checkable">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
-                  <widget class="QLabel" name="lblJobProjectID">
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Project ID:</string>
+                 <item>
+                  <widget class="Line" name="line_7">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="3" colspan="5">
-                  <widget class="vmLineEdit" name="txtJobAddress"/>
-                 </item>
-                 <item row="2" column="6" colspan="2">
-                  <layout class="QHBoxLayout" name="horizontalLayout_11">
-                   <property name="spacing">
-                    <number>2</number>
-                   </property>
-                   <property name="leftMargin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <spacer name="horizontalSpacer_7">
-                     <property name="orientation">
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>40</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="btnJobEditProjectPath">
-                     <property name="toolTip">
-                      <string>Edit project path</string>
-                     </property>
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                     <property name="icon">
-                      <iconset theme="fileopen">
-                       <normaloff>.</normaloff>.</iconset>
-                     </property>
-                     <property name="checkable">
-                      <bool>true</bool>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="Line" name="line_7">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="btnJobOpenFileFolder">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Manager job's folder</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset theme="system-file-manager">
-                       <normaloff>.</normaloff>.</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="btnJobOpenDoc">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Abrir arquivo doc</string>
-                     </property>
-                     <property name="statusTip">
-                      <string>Abrir arquivo do projeto para edição - se existir</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset theme="x-office-document">
-                       <normaloff>.</normaloff>.</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="btnJobOpenXls">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Abrir Planilha para edição - se existir</string>
-                     </property>
-                     <property name="statusTip">
-                      <string>Abrir arquivo de planilha do projeto - se houver</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset theme="x-office-spreadsheet">
-                       <normaloff>.</normaloff>.</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QToolButton" name="btnJobOpenPdf">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>16777215</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="toolTip">
-                      <string>Visualizar PDF ou enviar por e-mail</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="icon">
-                      <iconset theme="okular">
-                       <normaloff>.</normaloff>.</iconset>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QLabel" name="lblJobFilepath">
-                   <property name="maximumSize">
-                    <size>
-                     <width>150</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="frameShape">
-                    <enum>QFrame::NoFrame</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Plain</enum>
-                   </property>
-                   <property name="text">
-                    <string>Project folder: </string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="7">
-                  <widget class="QPushButton" name="btnQuickProject">
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="text">
-                    <string>Quick Estimate</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="6">
-                  <widget class="QLabel" name="lblJobDateEnd">
-                   <property name="text">
-                    <string>End:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="3">
-                  <widget class="QLabel" name="lblJobAddress">
-                   <property name="text">
-                    <string>Location:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="7">
-                  <widget class="vmLineEdit" name="txtJobID">
-                   <property name="minimumSize">
-                    <size>
-                     <width>40</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>120</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="focusPolicy">
-                    <enum>Qt::ClickFocus</enum>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="7">
-                  <widget class="vmDateEdit" name="dteJobEnd" native="true"/>
-                 </item>
-                 <item row="6" column="4">
-                  <widget class="vmDateEdit" name="dteJobStart" native="true"/>
-                 </item>
-                 <item row="0" column="5">
-                  <widget class="QLabel" name="lblJobID">
-                   <property name="minimumSize">
-                    <size>
-                     <width>40</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>40</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="frameShape">
-                    <enum>QFrame::NoFrame</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Plain</enum>
-                   </property>
-                   <property name="text">
-                    <string>ID:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLabel" name="lblJobType">
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>30</height>
-                    </size>
-                   </property>
-                   <property name="frameShape">
-                    <enum>QFrame::NoFrame</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Plain</enum>
-                   </property>
-                   <property name="text">
-                    <string>Type:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1" colspan="2">
-                  <widget class="vmComboBox" name="cboJobType">
-                   <property name="minimumSize">
-                    <size>
-                     <width>300</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="2">
-                  <widget class="vmLineEdit" name="txtJobPrice"/>
-                 </item>
-                 <item row="6" column="1">
-                  <widget class="QLabel" name="lblJobPrice">
+                 <item>
+                  <widget class="QToolButton" name="btnJobOpenFileFolder">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -3201,27 +3217,143 @@ p, li { white-space: pre-wrap; }
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
-                     <height>30</height>
+                     <height>0</height>
                     </size>
                    </property>
                    <property name="maximumSize">
                     <size>
-                     <width>250</width>
+                     <width>16777215</width>
                      <height>16777215</height>
                     </size>
                    </property>
-                   <property name="frameShape">
-                    <enum>QFrame::NoFrame</enum>
-                   </property>
-                   <property name="frameShadow">
-                    <enum>QFrame::Plain</enum>
+                   <property name="toolTip">
+                    <string>Manager job's folder</string>
                    </property>
                    <property name="text">
-                    <string>Price:</string>
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="system-file-manager">
+                     <normaloff>.</normaloff>.</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="btnJobOpenDoc">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Abrir arquivo doc</string>
+                   </property>
+                   <property name="statusTip">
+                    <string>Abrir arquivo do projeto para edição - se existir</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="x-office-document">
+                     <normaloff>.</normaloff>.</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="btnJobOpenXls">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Abrir Planilha para edição - se existir</string>
+                   </property>
+                   <property name="statusTip">
+                    <string>Abrir arquivo de planilha do projeto - se houver</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="x-office-spreadsheet">
+                     <normaloff>.</normaloff>.</iconset>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="btnJobOpenPdf">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="toolTip">
+                    <string>Visualizar PDF ou enviar por e-mail</string>
+                   </property>
+                   <property name="text">
+                    <string/>
+                   </property>
+                   <property name="icon">
+                    <iconset theme="okular">
+                     <normaloff>.</normaloff>.</iconset>
                    </property>
                   </widget>
                  </item>
                 </layout>
+               </item>
+               <item row="5" column="11">
+                <widget class="QLabel" name="lblJobDateEnd">
+                 <property name="text">
+                  <string>End:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="11">
+                <widget class="vmDateEdit" name="dteJobEnd" native="true"/>
+               </item>
+               <item row="1" column="1" colspan="10">
+                <widget class="vmLineEdit" name="txtJobAddress"/>
                </item>
               </layout>
              </widget>
@@ -3928,8 +4060,8 @@ p, li { white-space: pre-wrap; }
          <rect>
           <x>7</x>
           <y>7</y>
-          <width>830</width>
-          <height>708</height>
+          <width>841</width>
+          <height>752</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -3978,10 +4110,7 @@ p, li { white-space: pre-wrap; }
          <property name="frameShadow">
           <enum>QFrame::Plain</enum>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_12">
-          <property name="spacing">
-           <number>2</number>
-          </property>
+         <layout class="QGridLayout" name="gridLayout_3">
           <property name="leftMargin">
            <number>2</number>
           </property>
@@ -3994,39 +4123,141 @@ p, li { white-space: pre-wrap; }
           <property name="bottomMargin">
            <number>2</number>
           </property>
-          <item>
-           <layout class="QGridLayout" name="gLayoutBuyJobListPanel" columnstretch="0,0,0,0,0">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+          <item row="2" column="4" colspan="2">
+           <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob">
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" rowspan="2">
+           <widget class="QFrame" name="frame_8">
+            <property name="maximumSize">
+             <size>
+              <width>30</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_7">
+             <property name="spacing">
+              <number>2</number>
+             </property>
+             <property name="sizeConstraint">
+              <enum>QLayout::SetFixedSize</enum>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QToolButton" name="btnBuyAdd">
+               <property name="toolTip">
+                <string>Insert a new purchase record</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="resources.qrc">
+                 <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="btnBuyEdit">
+               <property name="toolTip">
+                <string>Edit current selected purchase record</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="resources.qrc">
+                 <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="btnBuyDel">
+               <property name="toolTip">
+                <string>Remove current purchase record</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="resources.qrc">
+                 <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="btnBuySave">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save alterations to the current purchase record&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset theme="document-save">
+                 <normaloff>.</normaloff>.</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="btnBuyCancel">
+               <property name="toolTip">
+                <string>Cancel alterations to currentpurchase record</string>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="icon">
+                <iconset resource="resources.qrc">
+                 <normaloff>:/resources/cancel.png</normaloff>:/resources/cancel.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="5">
+           <layout class="QVBoxLayout" name="layoutJobBuysListUtility">
             <property name="spacing">
              <number>2</number>
             </property>
-            <item row="4" column="3" colspan="2">
-             <widget class="vmLineEdit" name="txtBuyTotalPaidForJob">
-              <property name="focusPolicy">
-               <enum>Qt::ClickFocus</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="4">
-             <widget class="QToolButton" name="btnShowSuppliersDlg">
-              <property name="minimumSize">
-               <size>
-                <width>30</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="icon">
-               <iconset resource="resources.qrc">
-                <normaloff>:/resources/arrow-down.png</normaloff>:/resources/arrow-down.png</iconset>
-              </property>
-              <property name="checkable">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1" colspan="4">
+            <item>
              <widget class="vmListWidget" name="buysJobList">
               <property name="minimumSize">
                <size>
@@ -4036,222 +4267,40 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="4" column="1" colspan="2">
-             <widget class="QLabel" name="lblBuyTotalPaidForJob">
-              <property name="text">
-               <string>Total amoun paid:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="2" colspan="2">
-             <widget class="vmComboBox" name="cboBuySuppliers"/>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="lblBuySupplier_2">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Arial</family>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <property name="text">
-               <string>Supplier: </string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="3" colspan="2">
-             <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob">
-              <property name="focusPolicy">
-               <enum>Qt::ClickFocus</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1" colspan="2">
-             <widget class="QLabel" name="lblBuyTotalPurchasePriceForJob">
-              <property name="text">
-               <string>Total purchase price:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" rowspan="4">
-             <widget class="QFrame" name="frame_8">
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_7">
-               <property name="spacing">
-                <number>2</number>
-               </property>
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QToolButton" name="btnBuyEdit">
-                 <property name="toolTip">
-                  <string>Edit current selected purchase record</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnBuyAdd">
-                 <property name="toolTip">
-                  <string>Insert a new purchase record</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnBuySave">
-                 <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save alterations to the current purchase record&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset theme="document-save">
-                   <normaloff>.</normaloff>.</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnBuyDel">
-                 <property name="toolTip">
-                  <string>Remove current purchase record</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QToolButton" name="btnBuyCancel">
-                 <property name="toolTip">
-                  <string>Cancel alterations to currentpurchase record</string>
-                 </property>
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/resources/cancel.png</normaloff>:/resources/cancel.png</iconset>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_5">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </widget>
-            </item>
            </layout>
           </item>
-          <item>
-           <widget class="Line" name="line_6">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+          <item row="0" column="5">
+           <widget class="QToolButton" name="btnShowSuppliersDlg">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/resources/arrow-down.png</normaloff>:/resources/arrow-down.png</iconset>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item>
-           <layout class="QGridLayout" name="gLayoutBuyListPanel">
-            <property name="spacing">
-             <number>2</number>
+          <item row="3" column="4" colspan="2">
+           <widget class="vmLineEdit" name="txtBuyTotalPaidForJob">
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
             </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="lblBuyAllPurchases">
-              <property name="text">
-               <string>All Purchases for client</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" rowspan="5" colspan="2">
-             <widget class="vmListWidget" name="buysList">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="lblBuyAllPurchases_client">
-              <property name="text">
-               <string>TextLabel</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           </widget>
           </item>
-          <item>
-           <layout class="QVBoxLayout" name="vLayoutBuySuppliersPanel">
+          <item row="7" column="0" colspan="6">
+           <layout class="QVBoxLayout" name="layoutSuppliersUtility">
             <property name="spacing">
              <number>2</number>
             </property>
-            <item>
-             <widget class="QLabel" name="lblBuySupplierBuys">
-              <property name="text">
-               <string>TextLabel</string>
-              </property>
-             </widget>
-            </item>
             <item>
              <widget class="vmListWidget" name="lstBuySuppliers">
               <property name="minimumSize">
@@ -4263,6 +4312,95 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="lblBuySupplier_2">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <property name="text">
+             <string>Supplier: </string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::PlainText</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" colspan="3">
+           <widget class="vmComboBox" name="cboBuySuppliers"/>
+          </item>
+          <item row="5" column="0" colspan="6">
+           <layout class="QVBoxLayout" name="layoutBuysListUtility">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <item>
+             <widget class="vmListWidget" name="buysList">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0" colspan="6">
+           <layout class="QHBoxLayout" name="horizontalLayout_19">
+            <item>
+             <widget class="QLabel" name="lblBuyAllPurchases">
+              <property name="text">
+               <string>All Purchases for client</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblBuyAllPurchases_client">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="6" column="0" colspan="6">
+           <widget class="QLabel" name="lblBuySupplierBuys">
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="4">
+           <widget class="QLabel" name="lblBuyTotalPurchasePriceForJob">
+            <property name="text">
+             <string>Total purchase price:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="4">
+           <widget class="QLabel" name="lblBuyTotalPaidForJob">
+            <property name="text">
+             <string>Total amoun paid:</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -4302,7 +4440,7 @@ p, li { white-space: pre-wrap; }
            <number>2</number>
           </property>
           <item>
-           <layout class="QGridLayout" name="gLayoutBuyForms" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="1,0,0,0">
+           <layout class="QGridLayout" name="gLayoutBuyForms" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" columnstretch="1,0,0,0">
             <property name="leftMargin">
              <number>2</number>
             </property>
@@ -4318,61 +4456,54 @@ p, li { white-space: pre-wrap; }
             <property name="spacing">
              <number>2</number>
             </property>
-            <item row="2" column="0">
-             <widget class="QLabel" name="lblBuyDeliverDate">
+            <item row="7" column="0" colspan="4">
+             <layout class="QVBoxLayout" name="layoutTableBuyUtility">
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <item>
+               <widget class="vmTableWidget" name="tableBuyItems">
+                <property name="minimumSize">
+                 <size>
+                  <width>500</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="1" column="0">
+             <widget class="vmDateEdit" name="dteBuyDate" native="true"/>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="lblBuyNotes_2">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>40</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>Delivery date:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="vmDateEdit" name="dteBuyDeliveryDate" native="true"/>
-            </item>
-            <item row="2" column="1" colspan="2">
-             <widget class="QLabel" name="lblBuyDeliverMethod_2">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
                 <height>30</height>
                </size>
               </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>40</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
               <property name="text">
-               <string>Delivery method:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
+               <string>Notes:</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1" colspan="3">
-             <widget class="vmLineEdit" name="txtBuyDeliveryMethod">
+            <item row="14" column="0">
+             <widget class="QLabel" name="lblBuyTotalPaid">
+              <property name="text">
+               <string>Total paid:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="4">
+             <widget class="vmLineEdit" name="txtBuyNotes">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -4402,97 +4533,6 @@ p, li { white-space: pre-wrap; }
                <enum>Qt::PlainText</enum>
               </property>
              </widget>
-            </item>
-            <item row="1" column="3">
-             <widget class="vmLineEdit" name="txtBuyID">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::ClickFocus</enum>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QWidget" name="widget_2" native="true"/>
-            </item>
-            <item row="15" column="0">
-             <widget class="QWidget" name="widget_3" native="true"/>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="lblBuyPayments">
-              <property name="text">
-               <string>Descrimination:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0" colspan="4">
-             <widget class="vmLineEdit" name="txtBuyNotes">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>30</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="lblBuyNotes_2">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Notes:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3">
-             <widget class="QLabel" name="lblBuyID_2">
-              <property name="maximumSize">
-               <size>
-                <width>50</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Arial</family>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <property name="text">
-               <string>ID:</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::PlainText</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="vmDateEdit" name="dteBuyDate" native="true"/>
             </item>
             <item row="6" column="3">
              <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -4537,68 +4577,180 @@ p, li { white-space: pre-wrap; }
               </item>
              </layout>
             </item>
-            <item row="9" column="0">
+            <item row="10" column="0">
              <widget class="QLabel" name="lblBuyTotalPrice">
               <property name="text">
                <string>Total price:</string>
               </property>
              </widget>
             </item>
-            <item row="10" column="0">
+            <item row="3" column="0">
+             <widget class="vmDateEdit" name="dteBuyDeliveryDate" native="true"/>
+            </item>
+            <item row="2" column="1" colspan="2">
+             <widget class="QLabel" name="lblBuyDeliverMethod_2">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>Delivery method:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="17" column="0">
+             <widget class="QWidget" name="widget_3" native="true"/>
+            </item>
+            <item row="3" column="1" colspan="3">
+             <widget class="vmLineEdit" name="txtBuyDeliveryMethod">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QLabel" name="lblBuyID_2">
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Arial</family>
+                <pointsize>10</pointsize>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <property name="text">
+               <string>ID:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="3">
+             <widget class="vmLineEditWithButton" name="txtBuyTotalPaid" native="true">
+              <property name="inputMethodHints">
+               <set>Qt::ImhFormattedNumbersOnly</set>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QWidget" name="widget_2" native="true"/>
+            </item>
+            <item row="1" column="3">
+             <widget class="vmLineEdit" name="txtBuyID">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::ClickFocus</enum>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="3">
+             <widget class="vmLineEdit" name="txtBuyTotalPrice"/>
+            </item>
+            <item row="11" column="0">
              <widget class="QLabel" name="lblBuyItems">
               <property name="text">
                <string>Payments:</string>
               </property>
              </widget>
             </item>
-            <item row="12" column="0">
-             <widget class="QLabel" name="lblBuyTotalPaid">
+            <item row="2" column="0">
+             <widget class="QLabel" name="lblBuyDeliverDate">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
               <property name="text">
-               <string>Total paid:</string>
+               <string>Delivery date:</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::PlainText</enum>
               </property>
              </widget>
             </item>
-            <item row="7" column="0" colspan="4">
-             <widget class="vmTableWidget" name="tableBuyItems">
-              <property name="minimumSize">
-               <size>
-                <width>500</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
+            <item row="6" column="0">
+             <widget class="QLabel" name="lblBuyPayments">
+              <property name="text">
+               <string>Descrimination:</string>
               </property>
              </widget>
             </item>
-            <item row="9" column="3">
-             <widget class="vmLineEdit" name="txtBuyTotalPrice"/>
-            </item>
-            <item row="11" column="0" colspan="4">
-             <widget class="vmTableWidget" name="tableBuyPayments">
-              <property name="minimumSize">
-               <size>
-                <width>500</width>
-                <height>0</height>
-               </size>
+            <item row="12" column="0" colspan="4">
+             <layout class="QVBoxLayout" name="layoutTableBuyPaysUtility">
+              <property name="spacing">
+               <number>2</number>
               </property>
-              <property name="frameShape">
-               <enum>QFrame::StyledPanel</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Raised</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="12" column="3">
-             <widget class="vmLineEditWithButton" name="txtBuyTotalPaid" native="true">
-              <property name="inputMethodHints">
-               <set>Qt::ImhFormattedNumbersOnly</set>
-              </property>
-             </widget>
+              <item>
+               <widget class="vmTableWidget" name="tableBuyPayments">
+                <property name="minimumSize">
+                 <size>
+                  <width>500</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
+                </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -4681,6 +4833,11 @@ p, li { white-space: pre-wrap; }
    <header location="global">contactsmanagerwidget.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>vmActionLabel</class>
+   <extends>QLabel</extends>
+   <header location="global">vmwidgets.h</header>
+  </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>scrollWorkFlow</tabstop>
@@ -4690,7 +4847,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnClientDel</tabstop>
   <tabstop>btnClientSave</tabstop>
   <tabstop>btnClientCancel</tabstop>
-  <tabstop>clientsList</tabstop>
   <tabstop>txtClientName</tabstop>
   <tabstop>txtClientStreetAddress</tabstop>
   <tabstop>txtClientNumberAddress</tabstop>
@@ -4706,16 +4862,12 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnJobSelectJob</tabstop>
   <tabstop>jobsList</tabstop>
   <tabstop>cboJobType</tabstop>
-  <tabstop>txtJobAddress</tabstop>
   <tabstop>txtJobProjectPath</tabstop>
   <tabstop>btnJobEditProjectPath</tabstop>
   <tabstop>btnJobOpenFileFolder</tabstop>
   <tabstop>btnJobOpenDoc</tabstop>
   <tabstop>btnJobOpenXls</tabstop>
   <tabstop>btnJobOpenPdf</tabstop>
-  <tabstop>txtJobProjectID</tabstop>
-  <tabstop>btnQuickProject</tabstop>
-  <tabstop>txtJobPrice</tabstop>
   <tabstop>lstJobDayReport</tabstop>
   <tabstop>timeJobStart</tabstop>
   <tabstop>timeJobEnd</tabstop>
@@ -4763,9 +4915,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>chkPayOverdue</tabstop>
   <tabstop>txtPayObs</tabstop>
   <tabstop>btnBuyEdit</tabstop>
-  <tabstop>btnBuyAdd</tabstop>
   <tabstop>btnBuySave</tabstop>
-  <tabstop>btnBuyDel</tabstop>
   <tabstop>btnBuyCancel</tabstop>
   <tabstop>cboBuySuppliers</tabstop>
   <tabstop>btnShowSuppliersDlg</tabstop>
@@ -4773,9 +4923,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>txtBuyDeliveryMethod</tabstop>
   <tabstop>txtBuyNotes</tabstop>
   <tabstop>btnBuyCopyRows</tabstop>
-  <tabstop>tableBuyItems</tabstop>
   <tabstop>txtBuyTotalPrice</tabstop>
-  <tabstop>tableBuyPayments</tabstop>
   <tabstop>buysList</tabstop>
   <tabstop>lstBuySuppliers</tabstop>
   <tabstop>btnReportGenerator</tabstop>

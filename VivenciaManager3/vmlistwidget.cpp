@@ -5,7 +5,7 @@
 #include <QHeaderView>
 
 vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
-	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mPrevRow ( -2 ), mCurrentItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
+	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mbForceEmit ( false ), mPrevRow ( -2 ), mCurrentItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
 {
 	setIsList ();
 	(void) ( createColumns ( 2 ) );
@@ -23,15 +23,17 @@ void vmListWidget::setIgnoreChanges ( const bool b_ignore )
 {
 	rowActivatedConnection ( !(mbIgnore = b_ignore) );
 	if ( !b_ignore )
-		connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int, const int prev_row, const int )
-				  { return rowSelected ( row, prev_row ); } );
+		static_cast<void>(connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int, const int prev_row, const int )
+				  { return rowSelected ( row, prev_row ); } ));
 	else
-		disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
+		static_cast<void>(disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr ));
+	// When ignoring changes, disconnect from (possibly) connect signals. When not, restore the property to its previous value
+	setAlwaysEmitCurrentItemChanged ( isIgnoringChanges () ? false : alwaysEmitCurrentItemChanged () );
 }
 
 void vmListWidget::setCurrentRow ( int row, const bool b_makecall )
 {
-	if ( row != mPrevRow )
+	if ( row != mPrevRow && !alwaysEmitCurrentItemChanged () )
 	{
 		if ( row == -1 )
 			row = mPrevRow;
@@ -69,7 +71,7 @@ void vmListWidget::addItem ( vmListItem* item, const bool b_makecall )
 		}
 		
 		item->update ();
-		setItem ( row, 0, item );
+		setItem ( static_cast<int>(row), 0, item );
 		if ( !isIgnoringChanges () )
 		{
 			mCurrentItem = item;
@@ -85,7 +87,7 @@ void vmListWidget::clear ( const bool b_ignorechanges, const bool b_del )
 {
 	setUpdatesEnabled ( false );
 	setIgnoreChanges ( b_ignorechanges ); //once called, the callee must set/unset this property
-	removeRow ( 0, rowCount (), b_del );
+	removeRow ( 0, static_cast<uint>(rowCount ()), b_del );
 	mPrevRow = -2;
 	mCurrentItem = nullptr;
 	setUpdatesEnabled ( true );
@@ -97,7 +99,7 @@ void vmListWidget::insertRow ( const uint row, const uint n )
 	{
 		setVisibleRows ( visibleRows () + n );
 		for ( uint i_row ( 0 ); i_row < n; ++i_row )
-			QTableWidget::insertRow ( row + i_row );
+			QTableWidget::insertRow ( static_cast<int>(row + i_row) );
 		setLastUsedRow ( rowCount () - 1 );
 	}
 }
@@ -106,9 +108,9 @@ void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
 {
 	if ( row < static_cast<uint>( rowCount () ) )
 	{
-		int i_row ( row + n - 1 );
+		int i_row ( static_cast<int>(row + n - 1 ));
 		const bool b_ignorechanges ( isIgnoringChanges () );
-		const bool bResetCurrentRow ( !isIgnoringChanges () && ( mCurrentItem ? (mCurrentItem->row () >= (signed) row) : true ) );
+		const bool bResetCurrentRow ( !isIgnoringChanges () && ( mCurrentItem ? ( mCurrentItem->row () >= static_cast<int>(row) ) : true ) );
 		
 		setIgnoreChanges ( true );
 		setVisibleRows ( visibleRows () - n );
@@ -118,11 +120,11 @@ void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
 		vmListItem* item ( nullptr );
 		if ( bDel )
 		{
-			for ( ; i_row >= static_cast<int>( row ); --i_row  )
+			for ( ; i_row >= static_cast<int>(row); --i_row  )
 			{
-				for ( int i_col ( static_cast<int>( colCount () ) - 1 ); i_col >= 0; --i_col )
+				for ( int i_col ( static_cast<int>(colCount ()) - 1 ); i_col >= 0; --i_col )
 				{
-					item = static_cast<vmListItem*>( sheetItem ( i_row, i_col ) );
+					item = static_cast<vmListItem*>( sheetItem ( static_cast<uint>(i_row), static_cast<uint>(i_col) ) );
 					if ( item != nullptr )
 					{
 						item->m_list = nullptr;
@@ -134,15 +136,15 @@ void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
 		}
 		else
 		{
-			for ( ; i_row >= static_cast<int>( row ); --i_row  )
+			for ( ; i_row >= static_cast<int>(row); --i_row  )
 			{
-				for ( int i_col ( static_cast<int>( colCount () ) - 1 ); i_col >= 0; --i_col )
+				for ( int i_col ( static_cast<int>(colCount ()) - 1 ); i_col >= 0; --i_col )
 				{
-					if ( sheetItem ( i_row, i_col ) != nullptr )
-						static_cast<vmListItem*>( sheetItem ( i_row, i_col ) )->m_list = nullptr;
-					(void) QTableWidget::takeItem ( i_row, i_col );
+					if ( sheetItem ( static_cast<uint>(i_row), static_cast<uint>(i_col) ) != nullptr )
+						static_cast<vmListItem*>( sheetItem ( static_cast<uint>(i_row), static_cast<uint>(i_col) ) )->m_list = nullptr;
+					static_cast<void>(QTableWidget::takeItem ( i_row, i_col ));
 				}
-				QTableWidget::removeRow ( i_row );
+				QTableWidget::removeRow ( static_cast<int>(i_row) );
 			}
 		}
 		
@@ -153,11 +155,29 @@ void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
 	}
 }
 
+void vmListWidget::setAlwaysEmitCurrentItemChanged ( const bool b_emit )
+{
+	if ( b_emit )
+	{
+		connect ( this, &QTableWidget::cellActivated, this, [&] ( const int row, const int )
+			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } );
+		connect ( this, &QTableWidget::cellClicked, this, [&] ( const int row, const int )
+			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } );
+	}
+	else
+	{
+		disconnect ( this, &QTableWidget::cellClicked, nullptr, nullptr );
+		disconnect ( this, &QTableWidget::cellActivated, nullptr, nullptr );
+	}
+	if ( !isIgnoringChanges () )
+		mbForceEmit = b_emit ;
+}
+
 void vmListWidget::rowSelected ( const int row, const int prev_row )
 {
 	if ( mCurrentItem )
 	{
-		if ( mCurrentItem->row () == row )
+		if ( mCurrentItem->row () == row && !alwaysEmitCurrentItemChanged () )
 			return;
 		mPrevRow = prev_row;
 	}

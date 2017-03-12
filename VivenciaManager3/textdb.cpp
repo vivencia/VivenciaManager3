@@ -16,17 +16,16 @@ static const QString DATA_TYPE_LINE ( QStringLiteral ( "@CSV,%1\n" ) );
 
 // Must use a different separator character because, when exporting the tables to a csv file, using the same char everywhere
 // would lead to irreparable confusion
-static const QChar csv_sep ( QChar ( char ( 29 ) ) );
+//static const QChar csv_sep ( QChar ( char ( 29 ) ) );
 
 //--------------------------------------------TEXT-FILE--------------------------------
 textFile::textFile ()
-	: m_type ( TF_TEXT ), m_open ( false ), m_needsaving ( false ),
-	  m_buffersize ( 0 ), m_headerSize ( 0 )
+	: m_open ( false ), m_needsaving ( false ), m_headerSize ( 0 ), m_buffersize ( 0 ), m_type ( TF_TEXT )
 {}
 
 textFile::textFile ( const QString& filename )
-	: m_type ( TF_TEXT ), m_open ( false ), m_needsaving ( false ),
-	  m_buffersize ( 0 ), m_headerSize ( 0 ), m_filename ( filename )
+	: m_open ( false ), m_needsaving ( false ), m_headerSize ( 0 ), m_buffersize ( 0 ), m_type ( TF_TEXT ),
+	  m_filename ( filename )
 {}
 
 textFile::~textFile ()
@@ -186,24 +185,25 @@ void textFile::commit ()
 
 void textFile::setText ( const QString& new_file_text )
 {
-	data = new_file_text;
+	m_data = new_file_text;
 	m_needsaving = true;
 }
 
 bool textFile::loadData ()
 {
-	data = m_file.readAll ();
-	return ( !data.isEmpty () );
+	m_data = m_file.readAll ();
+	return ( !m_data.isEmpty () );
 }
 
 bool textFile::writeData ()
 {
-	return ( m_file.write ( data.toUtf8 ().data (), data.toUtf8 ().count () ) > 0 );
+	const QByteArray data ( m_data.toUtf8 () );
+	return ( m_file.write ( data.data (), data.count () ) > 0 );
 }
 
 void textFile::clearData ()
 {
-	data.clear ();
+	m_data.clear ();
 }
 //--------------------------------------------TEXT-FILE--------------------------------
 
@@ -283,7 +283,7 @@ int configFile::fieldIndex ( const QString& field_name ) const
 	int ret ( -1 );
 	if ( cfgData.currentIndex () != -1 )
 	{
-		configFile_st* section_info ( cfgData.current () );
+		configFile_st* __restrict section_info ( cfgData.current () );
 		const int n_fields ( section_info->fields.count () );
 		for ( int i ( 0 ); i < n_fields; ++i )
 		{
@@ -348,7 +348,7 @@ void configFile::deleteField ( const QString& field_name )
 {
 	if ( cfgData.currentIndex () != -1 )
 	{
-		configFile_st* section_info ( cfgData.current () );
+		configFile_st* __restrict section_info ( cfgData.current () );
 		const int n_fields ( section_info->fields.count () );
 		for ( int i ( 0 ); i < n_fields; ++i )
 		{
@@ -367,7 +367,7 @@ bool configFile::setFieldValue ( const QString& field_name, const QString& value
 {
 	if ( cfgData.currentIndex () != -1 )
 	{
-		configFile_st* section_info ( cfgData.current () );
+		configFile_st* __restrict section_info ( cfgData.current () );
 		const int idx ( fieldIndex ( field_name ) );
 		if ( idx != -1 )
 		{
@@ -386,8 +386,8 @@ bool configFile::setFieldValue ( const uint field_index, const QString& value )
 {
 	if ( cfgData.currentIndex () != -1 )
 	{
-		configFile_st* section_info ( cfgData.current () );
-		if ( field_index < unsigned ( section_info->values.count () ) )
+		configFile_st* __restrict section_info ( cfgData.current () );
+		if ( field_index < static_cast<uint>(section_info->values.count ()) )
 		{
 			section_info->values[field_index] = value;
 			const int line_len ( section_info->fields.at ( field_index ).count () + value.count () );
@@ -402,8 +402,8 @@ bool configFile::setFieldValue ( const uint field_index, const QString& value )
 
 bool configFile::loadData ()
 {
-	const int buf_size ( m_buffersize * sizeof ( char ) );
-	char* buf = new char[buf_size];
+	size_t buf_size ( m_buffersize * sizeof ( char ) );
+	char* __restrict buf ( new char[buf_size] );
 	int n_chars ( -1 );
 	int idx ( -1 ), idx2 ( -1 );
 	QString line;
@@ -463,7 +463,7 @@ bool configFile::loadData ()
 bool configFile::writeData ()
 {
 	QString line;
-	configFile_st* section_info ( nullptr );
+	configFile_st* __restrict section_info ( nullptr );
 	int n_fields ( 0 );
 	int written ( 0 );
 	for ( uint i ( 0 ); i < cfgData.count (); ++i )
@@ -508,9 +508,9 @@ void dataFile::insertRecord ( const int pos, const stringRecord& rec )
 {
 	if ( pos >= 0 )
 	{
-		recData.insertRecord ( pos, rec );
-		if ( rec.toString ().count () > static_cast<int>( m_buffersize ) )
-			m_buffersize = rec.toString ().count () + 1;
+		recData.insertRecord ( static_cast<uint>(pos), rec );
+		if ( rec.toString ().count () > static_cast<int>(m_buffersize) )
+			m_buffersize = static_cast<uint>(rec.toString ().count () + 1);
 		m_needsaving = true;
 	}
 }
@@ -528,9 +528,9 @@ void dataFile::changeRecord ( const int pos, const stringRecord& rec )
 
 void dataFile::deleteRecord ( const int pos )
 {
-	if ( pos >= 0 && pos < ( signed ) recData.countRecords () )
+	if ( pos >= 0 && static_cast<uint>(pos) < recData.countRecords () )
 	{
-		recData.removeRecord ( pos );
+		recData.removeRecord ( static_cast<uint>(pos) );
 		m_needsaving = true;
 	}
 }
@@ -538,27 +538,27 @@ void dataFile::deleteRecord ( const int pos )
 void dataFile::appendRecord ( const stringRecord& rec )
 {
 	recData.fastAppendRecord ( rec );
-	if ( rec.toString ().count () > ( signed ) m_buffersize )
-		m_buffersize = rec.toString ().count () + 1;
+	if ( rec.toString ().count () > static_cast<int>(m_buffersize) )
+		m_buffersize = static_cast<uint>(rec.toString ().count () + 1);
 	m_needsaving = true;
 }
 
 bool dataFile::getRecord ( stringRecord& rec, const int pos ) const
 {
-	if ( pos >= 0 && pos < ( signed ) recData.countRecords () )
+	if ( pos >= 0 && static_cast<uint>(pos) < recData.countRecords () )
 	{
-		rec = recData.readRecord ( pos );
+		rec = recData.readRecord ( static_cast<uint>(pos) );
 		return true;
 	}
 	return false;
 }
 
-bool dataFile::getRecord ( stringRecord& rec, const QString& value, const int field ) const
+bool dataFile::getRecord ( stringRecord& rec, const QString& value, const uint field ) const
 {
 	const int row ( recData.findRecordRowByFieldValue ( value, field ) );
 	if ( row >= 0 )
 	{
-		rec = recData.readRecord ( row );
+		rec = recData.readRecord ( static_cast<uint>(row) );
 		return rec.isOK ();
 	}
 	else
@@ -575,7 +575,7 @@ bool dataFile::loadData ()
 	QString buf ( m_file.readAll () );
 	if ( buf.length () > 1 )
 	{
-		buf.remove ( 0, m_headerSize );
+		// buf.remove ( 0, m_headerSize ); 
 		recData.fromString ( buf );
 	}
 	return recData.isOK ();

@@ -25,9 +25,12 @@ void deleteEditorInstance ()
 	heap_del ( documentEditor::s_instance );
 }
 
-const int MAX_RECENT_FILES ( 6 );
-QString CFG_FIELD_RECENT_FILES ( QStringLiteral ( "RECENT" ) );
-QString extSep ( QStringLiteral ( "*." ) );
+static const int MAX_RECENT_FILES ( 6 );
+static const auto CFG_FIELD_RECENT_FILES ( QStringLiteral ( "RECENT" ) );
+static const auto extSep ( QStringLiteral ( "*." ) );
+
+inline static const QString buildFilter () { return	documentEditorWindow::filter () + QLatin1String ( ";;" ) + textEditor::filter () + 
+			QLatin1String ( ";;" ) + reportGenerator::filter (); }
 
 static heapManager<reportGenerator> heap_mngr;
 
@@ -270,10 +273,7 @@ void documentEditor::updateMenus ( const int tab_index )
 				DOCK_QP ()->setCurrentWindow ( static_cast<reportGenerator*> ( dew ) );
 				DOCK_BJ ()->setCurrentWindow ( static_cast<reportGenerator*> ( dew ) );
 			}
-			if ( dew->isUntitled () )
-				saveAct->setEnabled ( false );
-			else
-				saveAct->setEnabled ( dew->isModified () );
+			saveAct->setEnabled ( dew->isModified () );
 		}
 	}
 }
@@ -288,7 +288,7 @@ void documentEditor::updateWindowMenu ()
 	windowMenu->addAction ( previousAct );
 	windowMenu->addAction ( separatorAct );
 
-	const uint open_tabs ( unsigned ( tabDocuments->count () ) );
+	const uint open_tabs ( static_cast<uint>(tabDocuments->count ()) );
 	separatorAct->setVisible ( open_tabs > 0 );
 
 	if ( open_tabs > 0 )
@@ -298,18 +298,15 @@ void documentEditor::updateWindowMenu ()
 
 		for ( uint i = 0; i < open_tabs; ++i )
 		{
-			child = static_cast<documentEditorWindow*> ( tabDocuments->widget ( i ) );
-			if ( child == nullptr ) continue;
-
-			if ( i < 9 )
-				text = TR_FUNC ( "&%1 %2" ).arg ( i + 1 ).arg ( child->title () );
-			else
-				text = TR_FUNC ( "%1 %2" ) .arg ( i + 1 ).arg ( child->title () );
-
-			vmAction* action = new vmAction ( i, text, this );
-			action->setCheckable ( true );
-			action->setChecked ( child == activeDocumentWindow () );
-			windowMenu->addAction ( action );
+			child = static_cast<documentEditorWindow*>(tabDocuments->widget ( static_cast<int>(i) ));
+			if ( child )
+			{
+				text =  (i < 9 ? TR_FUNC ( "&%1 %2" ) : TR_FUNC ( "%1 %2" )).arg ( i + 1 ).arg ( child->title () );
+				vmAction* action ( new vmAction ( static_cast<int>(i), text, this ) );
+				action->setCheckable ( true );
+				action->setChecked ( child == activeDocumentWindow () );
+				windowMenu->addAction ( action );
+			}
 		}
 	}
 }
@@ -325,7 +322,7 @@ void documentEditor::makeWindowActive ( QAction* action )
 void documentEditor::changeTabText ( documentEditorWindow* window )
 {
 	tabDocuments->setTabText ( tabDocuments->currentIndex (), window->title () );
-	saveAct->setEnabled ( !window->isUntitled () );
+	saveAct->setEnabled ( window->isModified () );
 }
 
 void documentEditor::closeTab ( int tab_index )
@@ -406,7 +403,7 @@ textEditor* documentEditor::startNewTextEditor ()
 {
 	textEditor* editor ( new textEditor ( this ) );
 	editor->setCallbackForDocumentModified ( [&] ( documentEditorWindow* dew ) { return changeTabText ( dew ); } );
-	const uint tab_id ( tabDocuments->addTab ( editor, emptyString ) );
+	const int tab_id ( tabDocuments->addTab ( editor, emptyString ) );
 	tabDocuments->setCurrentIndex ( tab_id );
 	editor->newFile ();
 	tabDocuments->setTabText ( tab_id, editor->title () );
@@ -426,7 +423,7 @@ reportGenerator* documentEditor::startNewReport ( const bool b_windowless )
 	{
 		report->setCallbackForDocumentModified ( [&] ( documentEditorWindow* dew ) { return changeTabText ( dew ); } );
 		// In a windowfull editor, closeTab will delete the instance created here.
-		const uint tab_id ( tabDocuments->addTab ( report, emptyString ) );
+		const int tab_id ( tabDocuments->addTab ( report, emptyString ) );
 		tabDocuments->setCurrentIndex ( tab_id );
 		report->newFile ();
 		tabDocuments->setTabText ( tab_id, report->title () );
@@ -451,16 +448,6 @@ void documentEditor::resizeViewPort ( documentEditorWindow* window )
 	if ( tabDocuments->height () < window->height () )
 		newSize.setHeight ( height () + ( window->height () - tabDocuments->height () ) );
 	window->setFocus ();
-}
-
-QString documentEditor::buildFilter () const
-{
-	QString ret ( documentEditorWindow::filter () );
-	ret += QLatin1String ( ";;" );
-	ret += textEditor::filter ();
-	ret += QLatin1String ( ";;" );
-	ret += reportGenerator::filter ();
-	return ret;
 }
 
 uint documentEditor::openByFileType ( const QString& filename )
@@ -514,7 +501,7 @@ void documentEditor::openDocument ( const QString& filename )
 		{
 			default: // 1, unknown file type
 				return;
-			break;
+			
 			case TEXT_EDITOR_SUB_WINDOW:
 			case RICH_TEXT_EDITOR_SUB_WINDOW:
 				window = startNewTextEditor ();

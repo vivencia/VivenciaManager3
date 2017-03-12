@@ -11,12 +11,6 @@ const double TABLE_VERSION ( 2.3 );
 //  " UNIQUE KEY `id` (`ID`), FULLTEXT  (`NAME`,`STREET`, ... ) "
 //
 
-static const uint CLIENTS_FIELDS_TYPE[CLIENT_FIELD_COUNT] = {
-	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_LIST, DBTYPE_LIST,
-	DBTYPE_NUMBER, DBTYPE_PHONE, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE,
-	DBTYPE_YESNO
-};
-
 #ifdef TRANSITION_PERIOD
 #include "stringrecord.h"
 #include "vmlist.h"
@@ -177,14 +171,52 @@ int Client::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 		case SC_ADDRESS_3:	return FLD_CLIENT_DISTRICT;
 		case SC_ADDRESS_4:	return FLD_CLIENT_CITY;
 		case SC_ADDRESS_5:	return FLD_CLIENT_ZIP;
-		/*case SC_PHONE_1: return FLD_CLIENT_PHONE1;
-		case SC_PHONE_2: return FLD_CLIENT_PHONE2;
-		case SC_PHONE_3: return FLD_CLIENT_PHONE3;*/
 		case SC_DATE_1:		return FLD_CLIENT_STARTDATE;
 		case SC_DATE_2:		return FLD_CLIENT_ENDDATE;
 		case SC_TYPE:		return FLD_CLIENT_NAME;
 		case SC_EXTRA_1:	return FLD_CLIENT_EMAIL;
 		default:			return -1;
+	}
+}
+
+void Client::copySubRecord ( const uint subrec_field, const stringRecord& subrec )
+{
+	if ( subrec_field == FLD_CLIENT_PHONES || subrec_field == FLD_CLIENT_EMAIL )
+	{
+		if ( subrec.curIndex () == -1 )
+			subrec.first ();
+		stringRecord contact_info;
+		
+		// These sub record fields can contain any number of entries, so we keep on adding until we find a string that is not of the expected type
+		if ( subrec_field == FLD_CLIENT_PHONES )
+		{
+			vmNumber phone;
+			do
+			{
+				if ( phone.fromTrustedStrPhone ( subrec.curValue (), false ).isPhone () )
+					contact_info.fastAppendValue ( phone.toString () );
+				else
+					break;
+			} while ( subrec.next () );
+		}
+		else
+		{
+			vmNumber date;	// FLD_CLIENT_STARTDATE is the next field after the emails sub records
+			QString email;
+			do
+			{
+				email = subrec.curValue ();
+				if ( !email.isEmpty () )
+				{
+					if ( !date.fromTrustedStrDate ( email, vmNumber::VDF_DB_DATE, false ).isDate () )
+						contact_info.fastAppendValue ( email );
+					else
+						break;
+				}
+			} while ( subrec.next () );
+		}
+		
+		setRecValue ( this, subrec_field, contact_info.toString () );
 	}
 }
 

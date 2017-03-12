@@ -43,16 +43,17 @@ bool documentEditorWindow::load ( const QString& filename, const bool add_to_rec
 {
 	if ( canClose () )
 	{
-		mb_programModification = true;
+		//TEST mb_programModification = true;
+		mb_programModification = false;
 		if ( loadFile ( filename ) )
 		{
-			mb_programModification = false;
+			//mb_programModification = false;
 			setCurrentFile ( filename );
 			if ( add_to_recent )
 				parentEditor ()->addToRecentFiles ( filename );
 			return true;
 		}
-		mb_programModification = false;
+		//mb_programModification = false;
 	}
 	return false;
 }
@@ -170,9 +171,9 @@ bool documentEditorWindow::canClose ()
 
 		switch ( btn )
 		{
-			case 0:		return save ( curFile );	break;
-			case -1:	return false;				break;
-			default:								break;
+			case 0:		return save ( curFile );
+			case -1:	return false;
+			default:	break;
 		}
 	}
 	return true;

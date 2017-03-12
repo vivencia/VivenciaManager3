@@ -65,8 +65,7 @@ private:
 	{
 		return static_cast<documentEditorWindow*>( tabDocuments->currentWidget () );
 	}
-
-	QString buildFilter () const;
+	
 	void resizeViewPort ( documentEditorWindow* window );
 	uint openByFileType ( const QString& filename );
 

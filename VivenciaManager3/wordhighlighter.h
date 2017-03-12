@@ -34,7 +34,7 @@ private:
     QStringList highlightedWordsList;
 	bool mb_spellCheckEnabled, mb_HighlightEnabled;
 
-    static QTextCharFormat* m_spellCheckFormat, *m_HighlightFormat;
+    static QTextCharFormat* __restrict m_spellCheckFormat, * __restrict m_HighlightFormat;
 };
 
 #endif // WORDHIGHLIGHTER_H

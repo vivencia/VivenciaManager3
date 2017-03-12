@@ -32,14 +32,13 @@ I am using the object's property objectName () pointer by doc because I cannot u
 from Qt. That's because doc gets copied from its original source to be used by the printer class, and only Qt's original info is copied,
 not my subclassed variations. It is a hack, but it works.
 */
-QSizeF imageTextObject::intrinsicSize ( QTextDocument* doc, int /*posInDocument*/, const QTextFormat &format )
+QSizeF imageTextObject::intrinsicSize ( QTextDocument*, int /*posInDocument*/, const QTextFormat &format )
 {
 	const QImage bufferedImage ( qvariant_cast<QImage> ( format.property ( 1 ) ) );
 	QSizeF size ( bufferedImage.size () );
 
-	if ( doc->property ( PROPERTY_PRINT_PREVIEW ).toBool () == true )
-		size *= 4.0;
-
+	//if ( doc->property ( PROPERTY_PRINT_PREVIEW ).toBool () == true )
+	//	size *= 10.0;
 	return size;
 }
 
@@ -56,8 +55,8 @@ textEditor::textEditor ( documentEditor* mdiParent )
 {
 	setEditorType ( TEXT_EDITOR_SUB_WINDOW );
 	mDocument = new textEditWithCompleter ( nullptr );
-	mDocument->resize ( 300, 300 );
-	mDocument->document ()->documentLayout ()->registerHandler ( QTextFormat::UserObject + 1, new imageTextObject );
+	//mDocument->resize ( 300, 300 );
+	//mDocument->document ()->documentLayout ()->registerHandler ( QTextFormat::UserObject + 1, new imageTextObject );
 	connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } );
 	mCursor = mDocument->textCursor ();
 	mCursor.movePosition ( QTextCursor::Start );
@@ -101,16 +100,21 @@ void textEditor::createNew ()
 bool textEditor::loadFile ( const QString& filename )
 {
 	int error_num ( -1 );
-	if ( fileOps::exists ( filename ).isOn () ) {
+	if ( fileOps::exists ( filename ).isOn () )
+	{
 		QFile file ( filename );
-		if ( file.open ( QFile::ReadOnly ) ) {
-			QByteArray data = file.readAll ();
-			if ( !data.isEmpty () ) {
-				if ( fileOps::fileExtension ( filename ) == QStringLiteral ( "txt" ) ) {
+		if ( file.open ( QFile::ReadOnly ) )
+		{
+			QByteArray data ( file.readAll () );
+			if ( !data.isEmpty () )
+			{
+				if ( fileOps::fileExtension ( filename ) == QStringLiteral ( "txt" ) )
+				{
 					mb_UseHtml = false;
 					mDocument->setPlainText ( QString::fromUtf8 ( data.constData () ) );
 				}
-				else {
+				else
+				{
 					mb_UseHtml = true;
 					QTextCodec* codec ( Qt::codecForHtml ( data ) );
 					mDocument->setHtml ( codec->toUnicode ( data ) );
@@ -126,7 +130,8 @@ bool textEditor::loadFile ( const QString& filename )
 	else
 		error_num = 2;
 
-	if ( error_num >= 0 ) {
+	if ( error_num >= 0 )
+	{
 		const QString msg_err[3] = {
 			TR_FUNC ( "File %1 could not be read" ),
 			TR_FUNC ( "File %1 does not exist" ),
@@ -137,7 +142,8 @@ bool textEditor::loadFile ( const QString& filename )
 		else
 			return false;
 	}
-	else {
+	else
+	{
 		mCursor = mDocument->textCursor ();
 		mDocument->document ()->setModified ( false );
 		setCurrentFile ( filename );
@@ -191,15 +197,10 @@ bool textEditor::saveFile ( const QString& filename )
 			}
 		}
 
-		/*.remove ( 0, 94 ) : This will remove the following line from the output file
-		  !DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
-		  Instead of putting QString to the "hard" task of trying to find the dumb string, just
-		  ask it to remove the length of it. If it changes, it would not matter whether I put it to
-		  comparison, it would fail any way
-		*/
-		const char* data ( str.remove ( 0, 94 ).toUtf8 ().data () );
-		const int length ( ::strlen ( data ) );
-		written = file.write ( data, length );
+		/*.This will remove the following line from the output file
+		  !DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd"> */
+		str.remove ( 0, 95 );
+		written = file.write ( str.toUtf8 ().constData (), str.length () );
 		file.close ();
 		if ( written )
 			mDocument->document ()->setModified ( false );
@@ -213,20 +214,22 @@ bool textEditor::saveAs ( const QString& filename )
 	QString extension ( fileOps::fileExtension ( filename ) );
 	if ( extension.isEmpty () )
 		// rtf is the safe option. since we don't know whether the user formatted the document or not
-		new_filename = fileOps::replaceFileExtension ( filename, ( extension = QLatin1String ( "rtf" ) ) );
+		new_filename = fileOps::replaceFileExtension ( filename, ( extension = QStringLiteral ( "rtf" ) ) );
 	mb_UseHtml = !( extension == QStringLiteral ( "txt" ) );
 	return saveFile ( new_filename );
 }
 
 void textEditor::buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body )
 {
-	if ( TEXT_EDITOR_TOOLBAR ()->optEmailBody->isChecked () ) {
+	if ( TEXT_EDITOR_TOOLBAR ()->optEmailBody->isChecked () )
+	{
 		if ( mDocument->document ()->isModified () )
 			save ( currentFile () );
 		if ( !currentFile ().isEmpty () )
 			body = currentFile ();
 	}
-	else {
+	else
+	{
 		if ( mDocument->document ()->isModified () || mPDFName.isEmpty () )
 			TEXT_EDITOR_TOOLBAR ()->btnExportToPDF_clicked ();
 		if ( !mPDFName.isEmpty () )
@@ -253,70 +256,35 @@ static QString stringFloatKey ( const uint increment )
 	QChar uns ( QLatin1Char ( '0' ) );
 	QChar tens ( QLatin1Char ( '0' ) );
 
-	switch ( increment - ( multiplier * 10 ) ) {
-		case 0:
-			break;
-		case 1:
-			uns = '2';
-			break;
-		case 2:
-			uns = '3';
-		break;
-		case 3:
-			uns = '4';
-		break;
-		case 4:
-			uns = '5';
-		break;
-		case 5:
-			uns = '6';
-		break;
-		case 6:
-			uns = '7';
-		break;
-		case 7:
-			uns = '8';
-		break;
-		case 8:
-			uns = '9';
-		break;
-		case 9:
-			uns = '0';
-			++multiplier;
-		break;
+	switch ( increment - ( multiplier * 10 ) )
+	{
+		case 0:								break;
+		case 1:	uns = '2';					break;
+		case 2:	uns = '3';					break;
+		case 3:	uns = '4';					break;
+		case 4:	uns = '5';					break;
+		case 5:	uns = '6';					break;
+		case 6:	uns = '7';					break;
+		case 7:	uns = '8';					break;
+		case 8:	uns = '9';					break;
+		case 9:	uns = '0';	++multiplier;	break;
 	}
 
-	switch ( multiplier ) {
-		case 0:
-			break;
-		case 1:
-			tens = '2';
-		break;
-		case 2:
-			tens = '3';
-		break;
-		case 3:
-			tens = '4';
-		break;
-		case 4:
-			tens = '5';
-		break;
-		case 5:
-			tens = '6';
-		break;
-		case 6:
-			tens = '7';
-		break;
-		case 7:
-			tens = '8';
-		break;
-		case 8:
-			tens = '9';
-		break;
+	switch ( multiplier )
+	{
+		case 0:					break;
+		case 1:	tens = '2';		break;
+		case 2:	tens = '3';		break;
+		case 3:	tens = '4';		break;
+		case 4:	tens = '5';		break;
+		case 5:	tens = '6';		break;
+		case 6:	tens = '7';		break;
+		case 7:	tens = '8';		break;
+		case 8:	tens = '9';		break;
 		case 9:
-			tens = '0';
-			magicNumber.replace ( 3, 1, '2' );
-		break;
+				tens = '0';
+				magicNumber.replace ( 3, 1, '2' );
+								break;
 	}
 
 	if ( uns != CHR_ZERO )
@@ -331,7 +299,7 @@ static QString stringFloatKey ( const uint increment )
 	return magicNumber;
 }
 
-static float floatFromStringKey ( const QString str )
+/*static float floatFromStringKey ( const QString str )
 {
 	float magicNumber ( 1.1100 );
 	char digit ( '0' );
@@ -341,36 +309,18 @@ static float floatFromStringKey ( const QString str )
 	if ( str.length () == 6 )
 		digit = str.at ( 5 ).toLatin1 ();
 
-	switch ( digit ) {
-		case '0':
-		break;
-		case '1':
-			magicNumber += 0.0001;
-		break;
-		case '2':
-			magicNumber += 0.0002;
-		break;
-		case '3':
-			magicNumber += 0.0003;
-		break;
-		case '4':
-			magicNumber += 0.0004;
-		break;
-		case '5':
-			magicNumber += 0.0005;
-		break;
-		case '6':
-			magicNumber += 0.0006;
-		break;
-		case '7':
-			magicNumber += 0.0007;
-		break;
-		case '8':
-			magicNumber += 0.0008;
-		break;
-		case '9':
-			magicNumber += 0.0009;
-		break;
+	switch ( digit )
+	{
+		case '0':							break;
+		case '1':	magicNumber += 0.0001;	break;
+		case '2':	magicNumber += 0.0002;	break;
+		case '3':	magicNumber += 0.0003;	break;
+		case '4':	magicNumber += 0.0004;	break;
+		case '5':	magicNumber += 0.0005;	break;
+		case '6':	magicNumber += 0.0006;	break;
+		case '7':	magicNumber += 0.0007;	break;
+		case '8':	magicNumber += 0.0008;	break;
+		case '9':	magicNumber += 0.0009;	break;
 	}
 
 	if ( str.length () == 6 )
@@ -378,40 +328,22 @@ static float floatFromStringKey ( const QString str )
 	else
 		digit = str.at ( 3 ).toLatin1 ();
 
-	switch ( digit ) {
-		case '0':
-		break;
-		case '1':
-			magicNumber += 0.0010;
-		break;
-		case '2':
-			magicNumber += 0.0020;
-		break;
-		case '3':
-			magicNumber += 0.0030;
-		break;
-		case '4':
-			magicNumber += 0.0040;
-		break;
-		case '5':
-			magicNumber += 0.0050;
-		break;
-		case '6':
-			magicNumber += 0.0060;
-		break;
-		case '7':
-			magicNumber += 0.0070;
-		break;
-		case '8':
-			magicNumber += 0.0080;
-		break;
-		case '9':
-			magicNumber += 0.0090;
-		break;
+	switch ( digit )
+	{
+		case '0':							break;
+		case '1':	magicNumber += 0.0010;	break;
+		case '2':	magicNumber += 0.0020;	break;
+		case '3':	magicNumber += 0.0030;	break;
+		case '4':	magicNumber += 0.0040;	break;
+		case '5':	magicNumber += 0.0050;	break;
+		case '6':	magicNumber += 0.0060;	break;
+		case '7':	magicNumber += 0.0070;	break;
+		case '8':	magicNumber += 0.0080;	break;
+		case '9':	magicNumber += 0.0090;	break;
 	}
 
 	return magicNumber;
-}
+}*/
 
 textEditorToolBar *textEditorToolBar::s_instance ( nullptr );
 
@@ -763,7 +695,7 @@ void textEditorToolBar::btnCreateTable_clicked ()
 	textTable->resize ( spinNRows->value (), spinNCols->value () );
 	QTextCursor tableCursor = mEditorWindow->mCursor;
 	for ( int col ( 0 ); col < spinNCols->value (); ++col )
-		{
+	{
 		tableCursor = textTable->cellAt ( 0, col ).firstCursorPosition ();
 		tableCursor.insertText ( QStringLiteral ( "	" ) );
 	}
@@ -974,8 +906,9 @@ void textEditorToolBar::btnPrint_clicked ()
 	mEditorWindow->setPreview ( true );
 	mEditorWindow->mDocument->setPreview ( true );
 	QPrinter printer ( QPrinter::ScreenResolution );
-	printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
-	QPrintDialog* printerDlg = new QPrintDialog ( &printer, this );
+	preparePrinterDevice ( &printer );
+	//printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
+	QPrintDialog* printerDlg ( new QPrintDialog ( &printer, this ) );
 	if ( mEditorWindow->mDocument->textCursor ().hasSelection () )
 		printerDlg->addEnabledOption ( QAbstractPrintDialog::PrintSelection );
 	printerDlg->setWindowTitle ( TR_FUNC ( "Print document" ) );
@@ -993,8 +926,9 @@ void textEditorToolBar::btnPrintPreview_clicked ()
 
 	mEditorWindow->setPreview ( true );
 	mEditorWindow->mDocument->setPreview ( true );
-	QPrinter printer ( QPrinter::HighResolution );
-	printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
+	QPrinter printer ( QPrinter::ScreenResolution );
+	preparePrinterDevice ( &printer );
+	//printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
 	QPrintPreviewDialog preview ( &printer, this );
 	connect ( &preview, &QPrintPreviewDialog::paintRequested, this, [&] ( QPrinter* printer ) { return previewPrint ( printer ); } );
 	preview.exec ();
@@ -1002,12 +936,20 @@ void textEditorToolBar::btnPrintPreview_clicked ()
 	mEditorWindow->mDocument->setPreview ( false );
 }
 
-void textEditorToolBar::previewPrint ( QPrinter* printer )
+void textEditorToolBar::previewPrint ( QPrinter* const printer )
 {
 	if ( mEditorWindow == nullptr ) return;
 	mEditorWindow->setPreview ( true );
 	mEditorWindow->mDocument->setPreview ( true );
 	mEditorWindow->mDocument->print ( printer );
+}
+
+void textEditorToolBar::preparePrinterDevice ( QPrinter* const printer )
+{
+	const QPageSize pageSize ( QPageSize::definitionSize ( QPageSize::A4 ), QPageSize::Millimeter );
+	const QMarginsF margins ( 0.2, 0.2, 0.2, 0.2 );
+	QPageLayout pageLayout ( pageSize, QPageLayout::Portrait, margins, QPageLayout::Millimeter );
+	printer->setPageLayout ( pageLayout );
 }
 
 void textEditorToolBar::btnExportToPDF_clicked ()
@@ -1027,7 +969,8 @@ void textEditorToolBar::btnExportToPDF_clicked ()
 		fileOps::replaceFileExtension ( fileName, QStringLiteral ( "pdf" ) ); // ensure filename ends with .pdf extension
 		mEditorWindow->mPDFName = fileName;
 		QPrinter printer ( QPrinter::HighResolution );
-		printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
+		preparePrinterDevice ( &printer );
+		//printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
 		printer.setOutputFormat ( QPrinter::PdfFormat );
 		printer.setOutputFileName ( fileName );
 		mEditorWindow->mDocument->document ()->print ( &printer );
@@ -1060,25 +1003,28 @@ void textEditorToolBar::insertImage ( const QString& imageFile, QTextFrameFormat
 	const uint key ( ++( mEditorWindow->m_ImageNumber ) );
 	const QString imageKey ( stringFloatKey ( key ) );
 	mEditorWindow->mapImages.insert ( imageKey, imageFile );
-	QImage imagesrc ( imageFile );
+	const QImage imagesrc ( imageFile );
 
 	QTextFrameFormat referenceFrameFormat;
 	referenceFrameFormat.setBorder ( 0 );
 	referenceFrameFormat.setPadding ( 4 );
-	referenceFrameFormat.setBottomMargin ( floatFromStringKey ( imageKey ) );
+	//referenceFrameFormat.setBottomMargin ( floatFromStringKey ( imageKey ) );
 	referenceFrameFormat.setPosition ( pos );
-	referenceFrameFormat.setWidth ( static_cast<qreal> ( imagesrc.size ().rwidth () / 3 ) );
+	referenceFrameFormat.setWidth ( static_cast<qreal> (imagesrc.size ().rwidth ()) );
+	referenceFrameFormat.setHeight( static_cast<qreal> (imagesrc.size ().rheight ()) );
 
 	mEditorWindow->mCursor = mEditorWindow->mDocument->textCursor ();
 	mEditorWindow->mCursor.insertBlock ();
 	mEditorWindow->mCursor.insertBlock ();
 	mEditorWindow->mCursor.movePosition ( QTextCursor::Up, QTextCursor::MoveAnchor, 2 );
 	mEditorWindow->mCursor.insertFrame ( referenceFrameFormat );
-
+	
 	QTextCharFormat imageCharFormat;
 	imageCharFormat.setObjectType ( QTextFormat::UserObject + 1 );
 	imageCharFormat.setProperty ( 1, imagesrc );
+	mEditorWindow->mDocument->document ()->documentLayout ()->registerHandler ( QTextFormat::UserObject + 1, new imageTextObject );
 	mEditorWindow->mCursor.insertText ( QString ( QChar::ObjectReplacementCharacter ), imageCharFormat );
+	
 	mEditorWindow->mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor );
 	mergeFormatOnWordOrSelection ( imageCharFormat );
 	mEditorWindow->mDocument->setFocus ();

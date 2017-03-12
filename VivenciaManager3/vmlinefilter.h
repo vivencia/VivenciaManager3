@@ -15,7 +15,7 @@ public:
 	explicit vmLineFilter ( QWidget* parent = nullptr, QWidget* ownerWindow = nullptr );
 	virtual ~vmLineFilter ();
 
-	inline void setCallbackForValidKeyEntered ( std::function<void ( const triStateType, const uint )> func ) 
+	inline void setCallbackForValidKeyEntered ( std::function<void ( const triStateType, const int )> func ) 
 			{ validkey_func = func; }
 	
 	inline const QString& buffer () const { return mBuffer; }
@@ -23,7 +23,7 @@ public:
 	bool matches ( const QString& haystack ) const;
 
 private:
-	std::function<void ( const triStateType, const uint )> validkey_func;
+	std::function<void ( const triStateType, const int )> validkey_func;
 	QString mBuffer;
 	
 	void keyPressEvent ( QKeyEvent* const ke );

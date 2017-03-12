@@ -50,19 +50,10 @@ public:
 
 	void buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body );
 
-	bool useHtml () const {
-		return mb_UseHtml;
-	}
-	void setUseHtml ( const bool html ) {
-		mb_UseHtml = html;
-	}
-
-	bool ignoreCursorPos () const {
-		return mb_IgnoreCursorPos;
-	}
-	void setIgnoreCursorPos ( const bool ignore ) {
-		mb_IgnoreCursorPos = ignore;
-	}
+	inline bool useHtml () const { return mb_UseHtml; }
+	inline void setUseHtml ( const bool html ) { mb_UseHtml = html; }
+	inline bool ignoreCursorPos () const { return mb_IgnoreCursorPos; }
+	inline void setIgnoreCursorPos ( const bool ignore ) { mb_IgnoreCursorPos = ignore; }
 
 	const QString initialDir () const;
 
@@ -121,7 +112,8 @@ public:
 	void btnPrint_clicked ();
 	void btnPrintPreview_clicked ();
 	void btnExportToPDF_clicked ();
-	void previewPrint ( QPrinter* );
+	void previewPrint ( QPrinter* const printer );
+	void preparePrinterDevice ( QPrinter* const printer );
 
 	void setFontType ( const QString& type );
 	void setFontSize ( const int size );
@@ -161,6 +153,7 @@ private:
 class imageTextObject : public QObject, public QTextObjectInterface
 {
 
+Q_OBJECT
 Q_INTERFACES ( QTextObjectInterface )
 
 public:

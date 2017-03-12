@@ -122,7 +122,7 @@ QMenu* spellCheck::menuAvailableDicts ()
 	return mMenu;
 }
 
-void spellCheck::menuEntrySelected ( const QAction* action )
+void spellCheck::menuEntrySelected ( const QAction* __restrict action )
 {
 	if ( action->text ().startsWith ( QStringLiteral ( "Disab" ) ) )
 		heap_del ( mChecker );

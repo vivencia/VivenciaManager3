@@ -281,6 +281,22 @@ int Job::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 	}
 }
 
+void Job::copySubRecord ( const uint subrec_field, const stringRecord& subrec )
+{
+	if ( subrec_field == FLD_JOB_REPORT )
+	{
+		if ( subrec.curIndex () == -1 )
+			subrec.first ();
+		stringRecord job_report;
+		for ( uint i ( 0 ); i < JOB_REPORT_FIELDS_COUNT; ++i )
+		{
+			job_report.fastAppendValue ( subrec.curValue () );
+			if ( !subrec.next () ) break;
+		}
+		setRecValue ( this, FLD_JOB_REPORT, job_report.toString () );
+	}
+}
+
 const QString Job::jobAddress ( const Job* const job, Client* client )
 {
     if ( job )

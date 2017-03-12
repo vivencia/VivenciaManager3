@@ -2,7 +2,7 @@
 #include "vmlist.h"
 
 typedef PointersList<VMCleanUpFunction> VMVFuncList;
-VMVFuncList funcList ( 25 );
+static VMVFuncList funcList ( 25 );
 
 void addPostRoutine ( VMCleanUpFunction func , const bool bEarlyExec )
 {
@@ -13,7 +13,7 @@ void addPostRoutine ( VMCleanUpFunction func , const bool bEarlyExec )
 
 void cleanUpApp ()
 {
-    for ( int i ( funcList.count () - 1 ); i >= 0 ; --i )
+    for ( int i ( static_cast<int>(funcList.count ()) - 1 ); i >= 0 ; --i )
         ( funcList.at ( i ) ) ();
     funcList.clear ();
 }

@@ -47,6 +47,7 @@ public:
     static triStateType isDir ( const QString& param );
     static triStateType isLink ( const QString& param );
     static triStateType isFile ( const QString& param );
+	static long int fileSize ( const QString& filepath );
 
 	static vmNumber modifiedDate ( const QString& path );
 

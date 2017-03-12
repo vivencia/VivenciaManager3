@@ -37,7 +37,7 @@ constexpr uint PAY_ITEM_OVERDUE_CLIENT (static_cast<uint>(RLI_EXTRAITEMS) + 0 );
 constexpr uint PAY_ITEM_OVERDUE_ALL ( static_cast<uint>(RLI_EXTRAITEMS) + 1 );
 
 enum CRASH_FIELDS {
-	CF_SUBTYPE = 0, CF_CLIENTID, CF_JOBID, CF_ID, CF_ACTION, CF_DBRECORD
+	CF_SUBTYPE = 0, CF_ACTION, CF_DBRECORD
 };
 
 class vmListItem : public vmTableItem

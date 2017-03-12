@@ -17,49 +17,21 @@
 #include <QIntValidator>
 
 //------------------------------------------------VM-ACTION-LABEL-------------------------------------------------
-const char* const ActionLabelStyle (
-    "vmActionLabel[class='action'] {"
-        "background-color: transparent;"
-        "border: 1px solid transparent;"
-        "color: #0033ff;"
-        "text-align: left;"
-        "font: 11px;"
-    "}"
-
-    "vmActionLabel[class='action']:!enabled {"
-        "color: #999999;"
-    "}"
-
-    "vmActionLabel[class='action']:hover {"
-        "color: #0099ff;"
-        "text-decoration: underline;"
-    "}"
-
-    "vmActionLabel[class='action']:focus {"
-        "border: 1px dotted black;"
-    "}"
-
-    "vmActionLabel[class='action']:on {"
-        "background-color: #ddeeff;"
-        "color: #006600;"
-    "}"
-);
-
 vmActionLabel::vmActionLabel ( QWidget *parent )
-	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION )
+	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION ), labelActivated_func ( nullptr )
 {
 	init ();
 }
 
 vmActionLabel::vmActionLabel ( const QString& text, QWidget* parent )
-	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION )
+	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION ), labelActivated_func ( nullptr )
 {
 	QToolButton::setText ( text );
 	init ( false );
 }
 
 vmActionLabel::vmActionLabel ( vmAction* action, QWidget* parent )
-	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION )
+	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION ), labelActivated_func ( nullptr )
 {
 	init ();
 	setDefaultAction ( static_cast<QAction*> ( action ) );
@@ -70,15 +42,21 @@ vmActionLabel::~vmActionLabel ()
 
 void vmActionLabel::init ( const bool b_action )
 {
-	setStyleSheet ( QString ( ActionLabelStyle ) );
 	setProperty ( "class", QStringLiteral( "action" ) );
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
 	setToolButtonStyle ( Qt::ToolButtonTextBesideIcon );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
-	if ( b_action ) {
+	if ( b_action )
+	{
 		setCursor ( Qt::PointingHandCursor );
 		setFocusPolicy ( Qt::StrongFocus );
 	}
+}
+
+void vmActionLabel::setCallbackForLabelActivated ( std::function<void ()> func )
+{
+	labelActivated_func = func;
+	connect ( this, &QToolButton::clicked, this, [&] () { return labelActivated_func (); } );
 }
 
 QSize vmActionLabel::sizeHint () const
@@ -97,11 +75,12 @@ QSize vmActionLabel::sizeHint () const
 	const QSize sz ( fontMetrics ().size ( Qt::TextShowMnemonic, s ) );
 	if ( !empty )
 		w += sz.width ();
-	if( !empty )
+	if ( !empty )
 		h = qMax ( h, sz.height () );
 	opt.rect.setSize ( QSize ( w, h ) ); // PM_MenuButtonIndicator depends on the height
 
-	if ( !icon ().isNull () ) {
+	if ( !icon ().isNull () )
+	{
 		const int ih ( opt.iconSize.height () );
 		const int iw ( opt.iconSize.width () + 4 );
 		w += iw;
@@ -181,7 +160,8 @@ QString pvmDateEdit::defaultStyleSheet () const
 	QString colorstr;
 	if ( !parentWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		const QDateEdit* dte ( new QDateEdit ( parentWidget () ) );
 		colorstr = QLatin1String ( " ( " ) + dte->palette ().color ( dte->backgroundRole () ).name ()
 				   + QLatin1String ( " ) }" );
@@ -192,18 +172,10 @@ QString pvmDateEdit::defaultStyleSheet () const
 
 void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 {
-    //if ( date.isDate () ) {
-		const triStateType mEmitSignalOriginal ( mEmitSignal );
-		mEmitSignal = b_notify && date.isDate ();
-		QDateEdit::setDate ( date.toQDate () );
-		mEmitSignal = mEmitSignalOriginal;
-        /*if ( isEditable () ) {
-            const triStateType mEmitSignalOriginal ( mEmitSignal );
-            mEmitSignal = b_notify;
-            vmDateChanged ( date.toQDate () );
-            mEmitSignal = mEmitSignalOriginal;
-        }*/
-    //}
+	const triStateType mEmitSignalOriginal ( mEmitSignal );
+	mEmitSignal = b_notify && date.isDate ();
+	QDateEdit::setDate ( date.toQDate () );
+	mEmitSignal = mEmitSignalOriginal;
 }
 
 void pvmDateEdit::setEditable ( const bool editable )
@@ -265,6 +237,11 @@ void pvmDateEdit::focusInEvent ( QFocusEvent* e )
 		mbHasFocus = true;
 		mDateBeforeFocus = date ();
 		QDateEdit::focusInEvent ( e );
+		if ( ownerItem () )
+		{	
+			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*> ( ownerItem () )->table ()) );
+			table->setCurrentItem ( const_cast<vmTableItem*>(ownerItem ()) );
+		}
 	}
 }
 
@@ -391,8 +368,9 @@ void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 	
 	for ( ; i < n_actions; ++i )
 	{
-		if ( i != 3 ) { //separator index
-			if ( date.toQDate () == static_cast<vmAction*>(menuDateButtons->actions ().at ( i ))->internalData ().toDate () )
+		if ( i != 3 )
+		{ //separator index
+			if ( date.toQDate () == static_cast<vmAction*>(menuDateButtons->actions ().at ( static_cast<int>(i) ))->internalData ().toDate () )
 				return;
 		}
 	}
@@ -465,9 +443,10 @@ void vmTimeEdit::setCallbackForContextMenu
 
 void vmTimeEdit::keyPressEvent ( QKeyEvent* e )
 {
-	if ( isEditable () ) {
-		if ( e->key () == Qt::Key_Enter || e->key () == Qt::Key_Return ||
-				e->key () == Qt::Key_Escape ) {
+	if ( isEditable () )
+	{
+		if ( e->key () == Qt::Key_Enter || e->key () == Qt::Key_Return || e->key () == Qt::Key_Escape )
+		{
 			if ( keypressed_func )
 				keypressed_func ( e, this );
 		}
@@ -478,16 +457,23 @@ void vmTimeEdit::keyPressEvent ( QKeyEvent* e )
 
 void vmTimeEdit::focusInEvent ( QFocusEvent* e )
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		mTimeBeforeFocus = time ();
 		QTimeEdit::focusInEvent ( e );
+		if ( ownerItem () )
+		{	
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );
+			table->setCurrentItem ( const_cast<vmTableItem*> ( ownerItem () ) );
+		}
 	}
 	e->setAccepted ( true );
 }
 
 void vmTimeEdit::focusOutEvent ( QFocusEvent* e )
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		if ( ( mTimeBeforeFocus != time () ) && contentsAltered_func )
 			contentsAltered_func ( this );
 		QTimeEdit::focusOutEvent ( e );
@@ -503,7 +489,8 @@ vmLineEdit::vmLineEdit ( QWidget* parent, QWidget* ownerWindow )
 	  mouseClicked_func ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
-	if  ( ownerWindow != nullptr ) {
+	if  ( ownerWindow != nullptr )
+	{
 		if ( ( ownerWindow->windowFlags () & Qt::Drawer ) == Qt::Drawer )
 			b_widgetCannotGetFocus = true;
 	}
@@ -516,7 +503,8 @@ QString vmLineEdit::defaultStyleSheet () const
 	QString colorstr;
 	if ( !parentWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		const QLineEdit* line ( new QLineEdit ( parentWidget () ) );
 		colorstr = QLatin1String ( " ( " ) + line->palette ().color ( line->backgroundRole () ).name ()
 				   + QLatin1String ( " ) }" );
@@ -528,8 +516,10 @@ QString vmLineEdit::defaultStyleSheet () const
 void vmLineEdit::highlight ( const VMColors vm_color, const QString& str )
 {
 	vmWidget::highlight ( vm_color );
-	if ( !str.isEmpty () ) {
-		if ( vm_color != vmDefault_Color ) {
+	if ( !str.isEmpty () )
+	{
+		if ( vm_color != vmDefault_Color )
+		{
 			setSelection ( text ().indexOf ( str, 0, Qt::CaseInsensitive ), str.length () );
 			return;
 		}
@@ -539,9 +529,11 @@ void vmLineEdit::highlight ( const VMColors vm_color, const QString& str )
 
 void vmLineEdit::setText ( const QString& text, const bool b_notify )
 {
-	if ( textType () >= TT_PRICE ) {
+	if ( textType () >= TT_PRICE )
+	{
 		vmNumber n;
-		switch ( textType () ) {
+		switch ( textType () )
+		{
 			case TT_PRICE:
 				n.fromStrPrice ( text );
 			break;
@@ -564,7 +556,8 @@ void vmLineEdit::setText ( const QString& text, const bool b_notify )
 
 	setToolTip ( isEditable () ? emptyString : QLineEdit::text () );
     setCursorPosition ( isEditable () ? QLineEdit::text ().count () - 1 : 0 );
-	if ( text != mCurrentText ) {
+	if ( text != mCurrentText )
+	{
 		if ( b_notify && contentsAltered_func )
 			contentsAltered_func ( this ); // call before updating mCurrentText, so that the callee might use the old value
 		mCurrentText = text;
@@ -602,7 +595,8 @@ void vmLineEdit::completerClickReceived ( const QString& value )
 void vmLineEdit::updateText ()
 {
 	vmNumber nbr;
-	switch ( textType () ) {
+	switch ( textType () )
+	{
 		case TT_TEXT:
 		case TT_NUMBER_PLUS_SYMBOL:
 		break;
@@ -632,10 +626,12 @@ void vmLineEdit::updateText ()
 
 void vmLineEdit::keyPressEvent ( QKeyEvent* e )
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		mCtrlKey = ( e->modifiers () == Qt::ControlModifier );
 		mCursorChanged = false;
-		switch ( e->key () ) {
+		switch ( e->key () )
+		{
 			case Qt::Key_Enter:
 			case Qt::Key_Return:
 			case Qt::Key_Escape:
@@ -643,11 +639,13 @@ void vmLineEdit::keyPressEvent ( QKeyEvent* e )
 			case Qt::Key_F3:
 			case Qt::Key_F4:
 			case Qt::Key_Tab:
-                if ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () ) {
+                if ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () )
+				{
 					e->ignore ();
 					return; // let the completer do its default behavior
 				}
-				else {
+				else
+				{
 					if ( e->key () == Qt::Key_Enter )
 						updateText ();
 					if ( keypressed_func )
@@ -667,7 +665,8 @@ void vmLineEdit::keyPressEvent ( QKeyEvent* e )
 
 void vmLineEdit::keyReleaseEvent ( QKeyEvent* e )
 {
-	if ( isEditable () ) {
+	if ( isEditable () )
+	{
 		mCursorChanged = mCtrlKey = false;
 		QLineEdit::keyReleaseEvent ( e );
 	}
@@ -675,20 +674,26 @@ void vmLineEdit::keyReleaseEvent ( QKeyEvent* e )
 
 void vmLineEdit::mouseMoveEvent ( QMouseEvent* e )
 {
-	if ( mbTrack ) {
+	if ( mbTrack )
+	{
 		if ( !hasFocus () )
 			setFocus ( Qt::MouseFocusReason );
 
-		if ( mCtrlKey | b_widgetCannotGetFocus ) {
-			if ( !mCursorChanged ) {
-				if ( !text().isEmpty () ) {
+		if ( mCtrlKey | b_widgetCannotGetFocus )
+		{
+			if ( !mCursorChanged )
+			{
+				if ( !text().isEmpty () )
+				{
 					setCursor ( QCursor ( Qt::PointingHandCursor ) );
 					mCursorChanged = true;
 				}
 			}
 		}
-		else {
-			if ( !mCursorChanged ) {
+		else
+		{
+			if ( !mCursorChanged )
+			{
 				setCursor ( QCursor ( Qt::ArrowCursor ) );
 				mCursorChanged = true;
 			}
@@ -701,8 +706,10 @@ void vmLineEdit::mouseMoveEvent ( QMouseEvent* e )
 
 void vmLineEdit::mousePressEvent ( QMouseEvent *e )
 {
-	if ( e->button () & Qt::RightButton ) {
-		if ( ownerItem () ) {
+	if ( e->button () & Qt::RightButton )
+	{
+		if ( ownerItem () )
+		{
 			vmTableWidget* table ( static_cast<vmTableWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );	
 			table->displayContextMenuForCell ( e->pos (), this );
 			e->ignore ();
@@ -714,9 +721,12 @@ void vmLineEdit::mousePressEvent ( QMouseEvent *e )
 
 void vmLineEdit::mouseReleaseEvent ( QMouseEvent* e )
 {
-	if ( mbTrack ) {
-		if  ( mCtrlKey | b_widgetCannotGetFocus ) {
-			if ( !text ().isEmpty () ) {
+	if ( mbTrack )
+	{
+		if  ( mCtrlKey | b_widgetCannotGetFocus )
+		{
+			if ( !text ().isEmpty () )
+			{
 				if ( mouseClicked_func )
 					mouseClicked_func ( this );
 				mCtrlKey = mCursorChanged = false;
@@ -729,10 +739,12 @@ void vmLineEdit::mouseReleaseEvent ( QMouseEvent* e )
 
 void vmLineEdit::contextMenuEvent ( QContextMenuEvent* e )
 {
-	if ( !ownerItem () ) {
+	if ( !ownerItem () )
+	{
 		mbButtonClicked = false;
 		QMenu* menu ( createStandardContextMenu () );
-		if ( !isEditable () ) {
+		if ( !isEditable () )
+		{
 			menu->addSeparator();
 			menu->addAction ( TR_FUNC ( "Clear" ), this, SLOT ( clear () ) );
 		}
@@ -750,13 +762,17 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 	 * widget I noticed several of the things I do here and those conflict with my code.
 	 * This way, execution is faster and cleaner and I can do whatever I want without external interference
 	 */
-	if ( isEditable () && e->reason () != Qt::ActiveWindowFocusReason ) {
-		if ( completer () != nullptr ) {
-			if ( completer ()->popup () && completer ()->popup ()->isVisible () ) {
+	if ( isEditable () && e->reason () != Qt::ActiveWindowFocusReason )
+	{
+		if ( completer () != nullptr )
+		{
+			if ( completer ()->popup () && completer ()->popup ()->isVisible () )
+			{
 				e->ignore ();
 				return;
 			}
-			if ( completer ()->widget () == nullptr ) {
+			if ( completer ()->widget () == nullptr )
+			{
 				completer ()->setWidget ( this );
 				connect ( completer (), static_cast<void (QCompleter::*)(const QString&)>( &QCompleter::activated ),
 					this, [&] ( const QString& value ) {
@@ -766,14 +782,24 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 		}
 		mbButtonClicked = false;
 		mCurrentText = text ();
+		
+		if ( ownerItem () )
+		{
+			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*>(ownerItem ())->table ()) );
+			table->setCurrentItem ( const_cast<vmTableItem*>(ownerItem ()) );
+		}
+		
 		e->setAccepted ( true );
 		QLineEdit::focusInEvent ( e );
 	}
-	else {
-		if ( ownerItem () ) {
-			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );
-			if ( table->isPlainTable () && ownerItem ()->row () != table->currentRow () ) {
-				table->setCurrentItem ( const_cast<vmTableItem*> ( ownerItem () ) );
+	else
+	{
+		if ( ownerItem () )
+		{	
+			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*>(ownerItem () )->table ()) );
+			if ( table->isPlainTable () && ownerItem ()->row () != table->currentRow () )
+			{
+				table->setCurrentItem ( const_cast<vmTableItem*>(ownerItem ()) );
 				table->callRowActivated_func ( ownerItem ()->row () );
 			}
 		}
@@ -782,7 +808,8 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 
 void vmLineEdit::focusOutEvent ( QFocusEvent* e )
 {
-	if ( isEditable () && ( mCurrentText != text () ) ) {
+	if ( isEditable () && ( mCurrentText != text () ) )
+	{
 		updateText ();
 		if ( mbButtonClicked )
 			e->setAccepted ( true );
@@ -1040,8 +1067,10 @@ void vmComboBox::focusOutEvent ( QFocusEvent* e )
 
 void vmComboBox::wheelEvent ( QWheelEvent *e )
 {
-	if ( !vmWidget::isEditable () ) {
-		if ( mbIgnoreChanges || ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () ) ) {
+	if ( !vmWidget::isEditable () )
+	{
+		if ( mbIgnoreChanges || ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () ) )
+		{
 			e->ignore ();
 			return;
 		}
@@ -1070,7 +1099,8 @@ QString vmCheckBox::defaultStyleSheet () const
 	QString colorstr;
 	if ( !parentWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		const QCheckBox* check ( new QCheckBox ( parentWidget () ) );
 		colorstr = QLatin1String ( " ( " ) + check->palette ().color ( check->backgroundRole () ).name ()
 				   + QLatin1String ( " ) }" );

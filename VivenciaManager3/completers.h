@@ -11,8 +11,7 @@ const uint COMPLETERS_COUNT ( 15 );
 
 class DBRecord;
 class completerRecord;
-
-class QLineEdit;
+class vmLineEdit;
 
 class vmCompleters
 {
@@ -34,7 +33,7 @@ public:
 	};
 
 	/* To use a completer call setComplete */
-	void setCompleter ( QLineEdit* , const COMPLETER_CATEGORIES type ) const;
+	void setCompleter ( vmLineEdit* , const COMPLETER_CATEGORIES type ) const;
 
 	inline QCompleter* getCompleter ( const COMPLETER_CATEGORIES type ) const
 	{

@@ -12,8 +12,8 @@
 
 //static const QRegExp word_split_syntax ( QStringLiteral ( "([^\\w,^\\\\]|(?=\\\\))+" ) );
 
-QTextCharFormat* wordHighlighter::m_spellCheckFormat ( nullptr );
-QTextCharFormat* wordHighlighter::m_HighlightFormat ( nullptr );
+QTextCharFormat* __restrict wordHighlighter::m_spellCheckFormat ( nullptr );
+QTextCharFormat* __restrict wordHighlighter::m_HighlightFormat ( nullptr );
 
 wordHighlighter::wordHighlighter ( QTextDocument* parent )
 	: QSyntaxHighlighter ( parent ), mb_spellCheckEnabled ( false ), mb_HighlightEnabled ( false )
@@ -67,7 +67,8 @@ void wordHighlighter::unHighlightWord ( const QString& word )
 
 void wordHighlighter::highlightWord ( const QString& word )
 {
-	if ( !word.isEmpty () ) {
+	if ( !word.isEmpty () )
+	{
 		highlightedWordsList.clear ();
 		highlightedWordsList.append ( word );
 		rehighlight ();

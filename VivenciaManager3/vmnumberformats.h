@@ -37,7 +37,7 @@ public:
 		fromInt ( n );
 	}
 	inline explicit vmNumber ( const unsigned int n ) {
-		fromInt ( static_cast<unsigned int> ( n ) );
+		fromInt ( static_cast<int>(n) );
 	}
 	inline explicit vmNumber ( const double n ) {
 		fromDoubleNbr ( n );
@@ -71,22 +71,7 @@ public:
 	QString toString () const;
 
 	void makeOpposite ();
-
-	inline bool isNull () const
-	{
-		switch ( m_type ) {
-		case VMNT_INT:
-		case VMNT_DOUBLE:
-		case VMNT_PRICE:
-		case VMNT_TIME:
-			return !( nbr_part[0] | nbr_part[1] );
-		case VMNT_PHONE:
-		case VMNT_DATE:
-			return !( nbr_upart[0] | nbr_upart[1] | nbr_upart[2] );
-		default:
-			return true;
-		}
-	}
+	bool isNull () const;
 
 	static const vmNumber emptyNumber;
 
@@ -191,7 +176,7 @@ public:
 
 	inline int monthsSinceDate ( const unsigned int month, const unsigned int year ) const
 	{
-		return ( ( this->year () - year ) * 12 ) + this->month () - month;
+		return static_cast<int>(( ( this->year () - year ) * 12 ) + this->month () - month);
 	}
 
     bool isDateWithinRange ( const vmNumber& checkDate, const uint years = 0, const uint months = 0, const uint days = 0 ) const;
@@ -247,8 +232,8 @@ public:
 		return nbr_part[VM_IDX_MINUTE];
 	}
 
-	inline void addDaysToTime ( const uint days ) {
-		setTime ( true, days * 24 );
+	inline void addDaysToTime ( const unsigned int days ) {
+		setTime ( true, static_cast<int>(days * 24) );
 	}
 //-------------------------------------TIME------------------------------------------
 

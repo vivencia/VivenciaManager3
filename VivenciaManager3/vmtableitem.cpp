@@ -8,11 +8,13 @@ static const QString SUM ( QStringLiteral ( "sum" ) );
 
 static void decode_pos ( const QString& pos, int* const row, int* const col )
 {
-	if ( pos.isEmpty () ) {
+	if ( pos.isEmpty () )
+	{
 		*col = -1;
 		*row = -1;
 	}
-	else {
+	else
+	{
 		*col = pos.at ( 0 ).toLatin1 () - 'A';
 		*row = pos.right ( pos.size () - 1 ).toInt ();
 	}
@@ -45,20 +47,24 @@ void vmTableItem::setEditable ( const bool editable )
 void vmTableItem::setText ( const QString& text, const bool b_from_cell_itself,
 							const bool force_notify, const bool b_formulaResult )
 {
-	if ( b_formulaResult ) {
+	if ( b_formulaResult )
+	{
 		 if ( formulaOverride () )
 			return;
 	}
-	else {
+	else
+	{
         if ( hasFormula () && b_from_cell_itself )
 			setFormulaOverride ( true );
 	}
 
-	if ( !isEditable () ) {
+	if ( !isEditable () )
+	{
 		mBackupData_cache = text;
 		mprev_datacache = text;
 	}
-	else {
+	else
+	{
 		mb_CellAltered = true;
 		mprev_datacache = mCache;
 	}
@@ -85,7 +91,8 @@ void vmTableItem::setDate ( const vmNumber& date )
 
 vmNumber vmTableItem::date ( const bool bCurText ) const
 {
-	if ( m_widget->type () == WT_DATEEDIT ) {
+	if ( m_widget->type () == WT_DATEEDIT )
+	{
 		return bCurText ? static_cast<vmDateEdit*> ( m_widget )->date () :
 					vmNumber ( originalText (), VMNT_DATE, vmNumber::VDF_HUMAN_DATE );
 	}
@@ -94,7 +101,8 @@ vmNumber vmTableItem::date ( const bool bCurText ) const
 
 static VM_NUMBER_TYPE textTypeToNbrType ( const vmLineEdit::TEXT_TYPE tt )
 {
-	switch ( tt ) {
+	switch ( tt )
+	{
 		case vmWidget::TT_PRICE:	return VMNT_PRICE;
 		case vmWidget::TT_DOUBLE:	return VMNT_DOUBLE;
 		case vmWidget::TT_PHONE:	return VMNT_PHONE;
@@ -117,21 +125,16 @@ void vmTableItem::highlight ( const VMColors color, const QString& )
 
 QVariant vmTableItem::data ( const int role ) const
 {
-	//if ( row () >= 0 )
-	//	return QVariant (); // TEST
-
-	switch ( role ) {
+	switch ( role )
+	{
 		case Qt::DisplayRole:
 		case Qt::StatusTipRole:
 		case Qt::EditRole:
 			return mCache;
-		break;
-		//case Qt::TextAlignmentRole:
-		//	return static_cast<int> ( Qt::AlignCenter );
-		//break;
+		
 		default:
 			return QTableWidgetItem::data ( role );
-		break;
+		
 	}
 }
 
@@ -141,7 +144,8 @@ void vmTableItem::targetsFromFormula ()
 	if ( list.isEmpty () )
 		return;
 
-	if ( list.count () > 1 ) {
+	if ( list.count () > 1 )
+	{
 		vmTableItem* sheet_item ( nullptr );
 		int firstRow ( 0 );
 		int firstCol ( 0 );
@@ -152,17 +156,23 @@ void vmTableItem::targetsFromFormula ()
 
 		mStrOp = list.value ( 0 ).toLower ();
 
-		if ( mStrOp == SUM ) {
-			for ( int r ( firstRow ); r <= secondRow; ++r ) {
-				for ( int c ( firstCol ); c <= secondCol; ++c ) {
-					sheet_item = m_table->sheetItem ( r, c );
-					if ( sheet_item ) {
-						if ( textType () >= vmLineEdit::TT_PRICE ) {
+		if ( mStrOp == SUM )
+		{
+			for ( int r ( firstRow ); r <= secondRow; ++r )
+			{
+				for ( int c ( firstCol ); c <= secondCol; ++c )
+				{
+					sheet_item = m_table->sheetItem ( static_cast<uint>(r), static_cast<uint>(c) );
+					if ( sheet_item )
+					{
+						if ( textType () >= vmLineEdit::TT_PRICE )
+						{
 							if ( sheet_item->m_targets.contains ( this ) == -1 )
 								sheet_item->m_targets.append ( this );
 						}
 					}
-					else {
+					else
+					{
 						/* This cell depends on value of some cell that is not created yet
 						 * We can break the calculation now, because it is pointless, and resume
 						 * at a later point, but never during the actual use of a table. All this
@@ -174,20 +184,25 @@ void vmTableItem::targetsFromFormula ()
 				}
 			}
 		}
-		else {
-			sheet_item = m_table->sheetItem ( firstRow, firstCol );
-			if ( sheet_item ) {
+		else
+		{
+			sheet_item = m_table->sheetItem ( static_cast<uint>(firstRow), static_cast<uint>(firstCol) );
+			if ( sheet_item )
+			{
 				if ( sheet_item->m_targets.contains ( this ) == -1 )
 					sheet_item->m_targets.append ( this );
-				if ( secondRow != -1 ) {
-					sheet_item = m_table->sheetItem ( secondRow, secondCol );
-					if ( sheet_item ) {
+				if ( secondRow != -1 )
+				{
+					sheet_item = m_table->sheetItem ( static_cast<uint>(secondRow), static_cast<uint>(secondCol) );
+					if ( sheet_item )
+					{
 						if ( sheet_item->m_targets.contains ( this ) == -1 )
 							sheet_item->m_targets.append ( this );
 					}
 				}
 			}
-			else {
+			else
+			{
 				m_table->reScanItem ( this );
 				return;
 			}
@@ -235,7 +250,7 @@ void vmTableItem::computeFormula ()
 		{
 			for ( int c ( firstCol ); c <= secondCol; ++c )
 			{
-				tableItem = m_table->sheetItem ( r, c );
+				tableItem = m_table->sheetItem ( static_cast<uint>(r), static_cast<uint>(c) );
 				if ( tableItem )
 				{
 					if ( textType () >= vmLineEdit::TT_PRICE )
@@ -244,11 +259,12 @@ void vmTableItem::computeFormula ()
 			}
 		}
 	}
-	else {
-		vmNumber firstVal ( m_table->sheetItem ( firstRow, firstCol )->number () );
+	else
+	{
+		vmNumber firstVal ( m_table->sheetItem ( static_cast<uint>(firstRow), static_cast<uint>(firstCol) )->number () );
 		vmNumber secondVal;
 		if ( secondRow != -1 )
-			secondVal = m_table->sheetItem ( secondRow, secondCol )->number ();
+			secondVal = m_table->sheetItem ( static_cast<uint>(secondRow), static_cast<uint>(secondCol) )->number ();
 
 		switch ( mStrOp.constData ()->toLatin1 () )
 		{

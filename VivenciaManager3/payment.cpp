@@ -310,21 +310,32 @@ int Payment::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 	{
 		case SC_ID:
 			return FLD_PAY_ID;
-//		case SC_REPORT_1: return FLD_PAY_METHOD_EXTRA;
 		case SC_REPORT_2:
 			return FLD_PAY_OBS;
 		case SC_PRICE_1:
 			return FLD_PAY_PRICE;
-//		case SC_PRICE_2: return FLD_PAY_VALUE;
-//		case SC_DATE_1: return FLD_PAY_DATE;
-//		case SC_DATE_2: return FLD_PAY_USEDATE;
-//		case SC_TYPE: return FLD_PAY_ACCOUNT;
 		case SC_EXTRA_1:
 			return FLD_PAY_CLIENTID;
 		case SC_EXTRA_2:
 			return FLD_PAY_JOBID;
 		default:
 			return -1;
+	}
+}
+
+void Payment::copySubRecord ( const uint subrec_field, const stringRecord& subrec )
+{
+	if ( subrec_field == FLD_PAY_INFO )
+	{
+		if ( subrec.curIndex () == -1 )
+			subrec.first ();
+		stringRecord pay_info;
+		for ( uint i ( 0 ); i < PAY_INFO_FIELD_COUNT; ++i )
+		{
+			pay_info.fastAppendValue ( subrec.curValue () );
+			if ( !subrec.next () ) break;
+		}
+		setRecValue ( this, FLD_PAY_INFO, pay_info.toString () );
 	}
 }
 

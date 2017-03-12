@@ -60,14 +60,17 @@ companyPurchasesUI::~companyPurchasesUI ()
 
 void companyPurchasesUI::showSearchResult ( vmListItem* item, const bool bshow )
 {
-	if ( bshow ) {
-		if ( cp_rec->readRecord ( item->dbRecID () ) ) {
+	if ( bshow )
+	{
+		if ( cp_rec->readRecord ( item->dbRecID () ) )
+		{
 			if ( !isVisible () )
 				showNormal ();
 			fillForms ();
 		}
 	}
-	for ( uint i ( 0 ); i < COMPANY_PURCHASES_FIELD_COUNT; ++i ) {
+	for ( uint i ( 0 ); i < COMPANY_PURCHASES_FIELD_COUNT; ++i )
+	{
 		if ( item->searchFieldStatus ( i ) == SS_SEARCH_FOUND )
 			widgetList.at ( i )->highlight ( bshow ? vmBlue : vmDefault_Color, SEARCH_UI ()->searchTerm () );
 	}
@@ -94,9 +97,10 @@ void companyPurchasesUI::setPayValueAsItChanges ( const vmTableItem* const item 
 
 void companyPurchasesUI::tableItemsCellChanged ( const vmTableItem* const item )
 {
-	if ( item ) {
+	if ( item )
+	{
 		stringTable items ( recStrValue ( cp_rec, FLD_CP_ITEMS_REPORT ) );
-		items.changeRecord ( item->row (), item->column (), item->text () );
+		items.changeRecord ( static_cast<uint>(item->row ()), static_cast<uint>(item->column ()), item->text () );
 		setRecValue ( cp_rec, FLD_CP_ITEMS_REPORT, items.toString () );
 	}
 }
@@ -113,14 +117,15 @@ void companyPurchasesUI::tableRowRemoved ( const uint row )
 
 void companyPurchasesUI::tablePaymentsCellChanged ( const vmTableItem* const item )
 {
-	if ( item ) {
+	if ( item )
+	{
 		stringTable items ( recStrValue ( cp_rec, FLD_CP_PAY_REPORT ) );
-		items.changeRecord ( item->row (), item->column (), item->text () );
+		items.changeRecord ( static_cast<uint>(item->row ()), static_cast<uint>(item->column ()), item->text () );
 		setRecValue ( cp_rec, FLD_CP_PAY_REPORT, items.toString () );
 	}
 }
 
-void companyPurchasesUI::saveWidget ( vmWidget* widget, const uint id )
+void companyPurchasesUI::saveWidget ( vmWidget* widget, const int id )
 {
 	widget->setID ( id );
 	widgetList[id] = widget;
@@ -241,7 +246,8 @@ void companyPurchasesUI::controlForms ()
 	ui->tablePayments->setEditable ( editable );
 	ui->txtCPSearch->setEditable ( !editable );
 
-	if ( editable ) {
+	if ( editable )
+	{
 		bEnableStatus[BTN_FIRST] = ui->btnCPFirst->isEnabled ();
 		bEnableStatus[BTN_PREV] = ui->btnCPPrev->isEnabled ();
 		bEnableStatus[BTN_NEXT] = ui->btnCPNext->isEnabled ();
@@ -254,7 +260,8 @@ void companyPurchasesUI::controlForms ()
 		ui->btnCPEdit->setEnabled ( cp_rec->action () == ACTION_EDIT );
 		ui->btnCPSearch->setEnabled ( false );
 	}
-	else {
+	else
+	{
 		ui->btnCPFirst->setEnabled ( bEnableStatus[BTN_FIRST] );
 		ui->btnCPPrev->setEnabled ( bEnableStatus[BTN_PREV] );
 		ui->btnCPNext->setEnabled ( bEnableStatus[BTN_NEXT] );
@@ -274,7 +281,8 @@ void companyPurchasesUI::controlForms ()
 
 void companyPurchasesUI::saveInfo ()
 {
-	if ( cp_rec->saveRecord () ) {
+	if ( cp_rec->saveRecord () )
+	{
 		vmTableWidget::exchangePurchaseTablesInfo (
 						ui->tableItems, INVENTORY ()->table (), cp_rec, INVENTORY ()->inventory_rec );
 	}
@@ -292,7 +300,8 @@ void companyPurchasesUI::searchCancel ()
 
 bool companyPurchasesUI::searchFirst ()
 {
-	if ( cp_rec->readFirstRecord ( -1, mSearchTerm ) ) {
+	if ( cp_rec->readFirstRecord ( -1, mSearchTerm ) )
+	{
 		showSearchResult_internal ( false ); // unhighlight current widgets
 		cp_rec->contains ( mSearchTerm, mFoundFields );
 		return true;
@@ -302,7 +311,8 @@ bool companyPurchasesUI::searchFirst ()
 
 bool companyPurchasesUI::searchPrev ()
 {
-	if ( cp_rec->readPrevRecord ( true ) ) {
+	if ( cp_rec->readPrevRecord ( true ) )
+	{
 		showSearchResult_internal ( false ); // unhighlight current widgets
 		cp_rec->contains ( mSearchTerm, mFoundFields );
 		return true;
@@ -312,7 +322,8 @@ bool companyPurchasesUI::searchPrev ()
 
 bool companyPurchasesUI::searchNext ()
 {
-	if ( cp_rec->readNextRecord ( true ) ) {
+	if ( cp_rec->readNextRecord ( true ) )
+	{
 		showSearchResult_internal ( false ); // unhighlight current widgets
 		cp_rec->contains ( mSearchTerm, mFoundFields );
 		return true;
@@ -322,7 +333,8 @@ bool companyPurchasesUI::searchNext ()
 
 bool companyPurchasesUI::searchLast ()
 {
-	if ( cp_rec->readLastRecord ( -1, mSearchTerm ) ) {
+	if ( cp_rec->readLastRecord ( -1, mSearchTerm ) )
+	{
 		showSearchResult_internal ( false ); // unhighlight current widgets
 		cp_rec->contains ( mSearchTerm, mFoundFields );
 		return true;
@@ -333,11 +345,13 @@ bool companyPurchasesUI::searchLast ()
 void companyPurchasesUI::btnCPFirst_clicked ()
 {
 	bool ok ( false );
-	if ( mbSearchIsOn ) {
+	if ( mbSearchIsOn )
+	{
 		if ( ( ok = searchFirst () ) )
 			showSearchResult_internal ( true );
 	}
-	else {
+	else
+	{
 		if ( ( ok = cp_rec->readFirstRecord () ) )
 			fillForms ();
 	}
@@ -351,11 +365,13 @@ void companyPurchasesUI::btnCPFirst_clicked ()
 void companyPurchasesUI::btnCPLast_clicked ()
 {
 	bool ok ( false );
-	if ( mbSearchIsOn ) {
+	if ( mbSearchIsOn )
+	{
 		if ( ( ok = searchLast () ) )
 			showSearchResult_internal ( true );
 	}
-	else {
+	else
+	{
 		ok = cp_rec->readLastRecord ();
 		fillForms ();
 	}
@@ -371,13 +387,16 @@ void companyPurchasesUI::btnCPPrev_clicked ()
 	bool b_isfirst ( false );
 	bool ok ( false );
 
-	if ( mbSearchIsOn ) {
-		if ( ( ok = searchPrev () ) ) {
+	if ( mbSearchIsOn )
+	{
+		if ( ( ok = searchPrev () ) )
+		{
 			b_isfirst = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getLowestID ( cp_rec->t_info.table_order ) );
 			showSearchResult_internal ( true );
 		}
 	}
-	else {
+	else
+	{
 		ok = cp_rec->readPrevRecord ();
 		b_isfirst = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getLowestID ( TABLE_CP_ORDER ) );
 		fillForms ();
@@ -393,13 +412,16 @@ void companyPurchasesUI::btnCPNext_clicked ()
 {
 	bool b_islast ( false );
 	bool ok ( false );
-	if ( mbSearchIsOn ) {
-		if ( ( ok = searchPrev () ) ) {
+	if ( mbSearchIsOn )
+	{
+		if ( ( ok = searchPrev () ) )
+		{
 			b_islast = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getHighestID ( cp_rec->t_info.table_order ) );
 			showSearchResult_internal ( true );
 		}
 	}
-	else {
+	else
+	{
 		ok = cp_rec->readNextRecord ();
 		b_islast = ( static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) == VDB ()->getHighestID ( TABLE_CP_ORDER ) );
 		fillForms ();
@@ -413,11 +435,14 @@ void companyPurchasesUI::btnCPNext_clicked ()
 
 void companyPurchasesUI::btnCPSearch_clicked ( const bool checked )
 {
-	if ( checked ) {
-		if ( ui->txtCPSearch->text ().count () >= 2 && ui->txtCPSearch->text () != mSearchTerm ) {
+	if ( checked )
+	{
+		if ( ui->txtCPSearch->text ().count () >= 2 && ui->txtCPSearch->text () != mSearchTerm )
+		{
 			searchCancel ();
 			const QString searchTerm ( ui->txtCPSearch->text () );
-			if ( cp_rec->readFirstRecord ( -1, searchTerm ) ) {
+			if ( cp_rec->readFirstRecord ( -1, searchTerm ) )
+			{
 				cp_rec->contains ( searchTerm, mFoundFields );
 				mbSearchIsOn = !mFoundFields.isEmpty ();
 			}
@@ -436,7 +461,8 @@ void companyPurchasesUI::btnCPSearch_clicked ( const bool checked )
 
 void companyPurchasesUI::btnCPAdd_clicked ( const bool checked )
 {
-	if ( checked ) {
+	if ( checked )
+	{
 		cp_rec->clearAll ();
 		cp_rec->setAction ( ACTION_ADD );
 		fillForms ();
@@ -453,7 +479,8 @@ void companyPurchasesUI::btnCPAdd_clicked ( const bool checked )
 
 void companyPurchasesUI::btnCPEdit_clicked ( const bool checked )
 {
-	if ( checked ) {
+	if ( checked )
+	{
 		cp_rec->setAction ( ACTION_EDIT );
 		controlForms ();
 		ui->btnCPEdit->setText ( tr ( "Save" ) );
@@ -468,27 +495,32 @@ void companyPurchasesUI::btnCPEdit_clicked ( const bool checked )
 
 void companyPurchasesUI::btnCPRemove_clicked ()
 {
-	if ( ui->btnCPAdd->isChecked () || ui->btnCPEdit->isChecked () ) { // cancel
+	if ( ui->btnCPAdd->isChecked () || ui->btnCPEdit->isChecked () ) // cancel
+	{
 		ui->btnCPAdd->setChecked ( false );
 		ui->btnCPEdit->setChecked ( false );
 		cp_rec->setAction( ACTION_REVERT );
 		controlForms ();
 		fillForms ();
 	}
-	else {
-		if ( VM_NOTIFY ()->questionBox ( tr ( "Question" ), tr ( "Remove current displayed record ?" ) ) ) {
-			if ( cp_rec->deleteRecord () ) {
-				if ( !cp_rec->readNextRecord () ) {
+	else
+	{
+		if ( VM_NOTIFY ()->questionBox ( tr ( "Question" ), tr ( "Remove current displayed record ?" ) ) )
+		{
+			if ( cp_rec->deleteRecord () )
+			{
+				if ( !cp_rec->readNextRecord () )
+				{
 					if ( !cp_rec->readPrevRecord () )
 						cp_rec->readRecord ( 1 );
 				}
 				fillForms ();
-				ui->btnCPFirst->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getLowestID ( TABLE_CP_ORDER ) ) );
-				ui->btnCPPrev->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getLowestID ( TABLE_CP_ORDER ) ) );
-				ui->btnCPNext->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) );
-				ui->btnCPLast->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) );
-				ui->btnCPSearch->setEnabled ( signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) > 0 );
-				ui->txtCPSearch->setEditable ( signed ( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) > 0 );
+				ui->btnCPFirst->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getLowestID ( TABLE_CP_ORDER )) );
+				ui->btnCPPrev->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getLowestID ( TABLE_CP_ORDER )) );
+				ui->btnCPNext->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) );
+				ui->btnCPLast->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) );
+				ui->btnCPSearch->setEnabled ( static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) > 0 );
+				ui->txtCPSearch->setEditable ( static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) > 0 );
 			}
 		}
 	}
@@ -496,42 +528,46 @@ void companyPurchasesUI::btnCPRemove_clicked ()
 
 void companyPurchasesUI::relevantKeyPressed ( const QKeyEvent* ke )
 {
-	switch ( ke->key () ) {
-	case Qt::Key_Enter:
-	case Qt::Key_Return:
-		if ( ui->btnCPAdd->isChecked () ) {
-			ui->btnCPAdd->setChecked ( false );
-			btnCPAdd_clicked ( false );
-		}
-		else if ( ui->btnCPEdit->isChecked () ) {
-			ui->btnCPEdit->setChecked ( false );
-			btnCPEdit_clicked ( false );
-		}
+	switch ( ke->key () )
+	{
+		case Qt::Key_Enter:
+		case Qt::Key_Return:
+			if ( ui->btnCPAdd->isChecked () )
+			{
+				ui->btnCPAdd->setChecked ( false );
+				btnCPAdd_clicked ( false );
+			}
+			else if ( ui->btnCPEdit->isChecked () )
+			{
+				ui->btnCPEdit->setChecked ( false );
+				btnCPEdit_clicked ( false );
+			}
 		break;
-	case Qt::Key_Escape:
-		if ( ui->btnCPAdd->isChecked () || ui->btnCPEdit->isChecked () ) // cancel
-			btnCPRemove_clicked ();
+		case Qt::Key_Escape:
+			if ( ui->btnCPAdd->isChecked () || ui->btnCPEdit->isChecked () ) // cancel
+				btnCPRemove_clicked ();
 		break;
-	case Qt::Key_F2:
-		if ( !ui->btnCPAdd->isChecked () && !ui->btnCPEdit->isChecked () )
-			btnCPPrev_clicked ();
-	case Qt::Key_F3:
-		if ( !ui->btnCPAdd->isChecked () && !ui->btnCPEdit->isChecked () )
-			btnCPNext_clicked ();
+		case Qt::Key_F2:
+			if ( !ui->btnCPAdd->isChecked () && !ui->btnCPEdit->isChecked () )
+				btnCPPrev_clicked ();
 		break;
-	default:
+		case Qt::Key_F3:
+			if ( !ui->btnCPAdd->isChecked () && !ui->btnCPEdit->isChecked () )
+				btnCPNext_clicked ();
+		break;
+		default:
 		break;
 	}
 }
 
 void companyPurchasesUI::txtCP_textAltered ( const vmWidget* const sender )
 {
-	setRecValue ( cp_rec, sender->id (), sender->text () );
+	setRecValue ( cp_rec, static_cast<uint>(sender->id ()), sender->text () );
 }
 
 void companyPurchasesUI::dteCP_dateAltered ( const vmWidget* const sender )
 {
-	setRecValue ( cp_rec, sender->id (), static_cast<const vmDateEdit* const> ( sender )->date ().toString ( DATE_FORMAT_DB ) );
+	setRecValue ( cp_rec, static_cast<uint>(sender->id ()), static_cast<const vmDateEdit* const>(sender)->date ().toString ( DATE_FORMAT_DB ) );
 }
 
 void companyPurchasesUI::btnCPShowSupplier_clicked ( const bool checked )
@@ -544,7 +580,8 @@ void companyPurchasesUI::btnCPShowSupplier_clicked ( const bool checked )
 
 void companyPurchasesUI::txtCPSearch_textAltered ( const QString &text )
 {
-	if ( text.length () == 0 ) {
+	if ( text.length () == 0 )
+	{
 		ui->txtCPSearch->setText ( mSearchTerm );
 		ui->btnCPSearch->setEnabled ( !mSearchTerm.isEmpty () );
 	}

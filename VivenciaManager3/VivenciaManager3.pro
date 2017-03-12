@@ -29,7 +29,6 @@ SOURCES += main.cpp \
 	spellcheck.cpp \
 	reportgenerator.cpp \
 	standardprices.cpp \
-	logindialog.cpp \
 	vmcompress.cpp \
 	backupdialog.cpp \
 	todolist.cpp \
@@ -122,7 +121,6 @@ HEADERS += dbrecord.h \
 	reportgenerator.h \
 	standardprices.h \
 	vmwidgets.h \
-	logindialog.h \
 	vmcompress.h \
 	backupdialog.h \
 	todolist.h \
@@ -161,7 +159,6 @@ HEADERS += dbrecord.h \
     vmcheckedtableitem.h \
     fast_library_functions.h \
     newprojectdialog.h \
-    singleapp.h \
     vmlistwidget.h \
     vmtableutils.h \
     vmlistitem.h \
@@ -184,7 +181,7 @@ RESOURCES += \
 LIBS += -L/usr/lib -lhunspell -lbz2
 DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS
 INCLUDEPATH += -I/usr/include
-QMAKE_CXXFLAGS_RELEASE += -march=native -fomit-frame-pointer -funroll-loops -Ofast
+QMAKE_CXXFLAGS_RELEASE += -O3 -march=native -fomit-frame-pointer -funroll-loops -Ofast
 #QMAKE_CXXFLAGS_DEBUG += -g -fvar-tracking-assignments-toggle
 QMAKE_CXXFLAGS_DEBUG += -g
 #QMAKE_CXXFLAGS += -g -fvar-tracking-assignments-toggle

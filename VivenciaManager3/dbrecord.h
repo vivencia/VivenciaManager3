@@ -125,6 +125,11 @@ public:
 	inline virtual uint isrRecordField ( const ITEMS_AND_SERVICE_RECORD ) const { return 0; }
 	virtual int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	inline virtual DB_FIELD_TYPE fieldType ( const uint /*field*/ ) const { return DBTYPE_SHORTTEXT; }
+	
+	// subrec's mFastIdx must be at the right position, i.e. the start of the sub string record for this to work
+	// Therefore, this method must be called in a loop where subrec is being iterated with next ()/prev (), etc.
+	// Or, if mFastIdx(curIndex ()) is -1 it will reset the point by calling first ().
+	inline virtual void copySubRecord ( const uint /*subrec_field*/, const stringRecord& /*subrec*/ ) {}
 
 	inline const QString& recordStr ( const uint field ) const {
 			return ( this->*DBRecord::fptr_recordStr ) ( field ); }

@@ -135,8 +135,8 @@ public:
 		resetMemory ( const T& , uint = 0 );
 
 	int
-		append ( const T&item ),
-		prepend ( const T&item );
+		append ( const T& item ),
+		prepend ( const T& item );
 
 	uint
 		getCapacity () const,
@@ -780,7 +780,7 @@ int VMList<T>::contains ( const T& item, int from_pos ) const
 }
 
 template <typename T>
-int VMList<T>::insert ( const uint pos, const T &item )
+int VMList<T>::insert ( const uint pos, const T& item )
 {
 	int ret ( 1 );
 

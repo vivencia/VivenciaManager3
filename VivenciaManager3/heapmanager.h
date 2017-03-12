@@ -59,7 +59,8 @@ public:
 
 	T* exists ( const T* ptr ) const;
 	T* at ( const uint pos ) const;
-	inline uint count () const {
+	inline uint count () const
+	{
 		return ptr_use.count ();
 	}
 
@@ -102,13 +103,15 @@ heapManager<T>::~heapManager ()
 template <typename T>
 void heapManager<T>::register_use ( const T* ptr, const size_t size )
 {
-	for ( uint i ( 0 ); i < ptr_use.count (); ++i ) {
-		if ( ptr_use.at ( i )->ptr == ptr ) {
+	for ( uint i ( 0 ); i < ptr_use.count (); ++i )
+	{
+		if ( ptr_use.at ( i )->ptr == ptr )
+		{
 			++( ptr_use.at ( i )->use_count );
 			return;
 		}
 	}
-	ptr_info* p_info = new ptr_info;
+	ptr_info* p_info ( new ptr_info );
 	p_info->m_size = size;
 	p_info->ptr = const_cast<T*> ( ptr );
 	p_info->use_count = 1;
@@ -118,11 +121,14 @@ void heapManager<T>::register_use ( const T* ptr, const size_t size )
 template <typename T>
 void heapManager<T>::unregister_use ( T* ptr )
 {
-	for ( uint i ( 0 ); i < ptr_use.count (); ++i ) {
-		if ( ptr_use.at ( i )->ptr == ptr ) {
+	for ( uint i ( 0 ); i < ptr_use.count (); ++i )
+	{
+		if ( ptr_use.at ( i )->ptr == ptr )
+		{
 			ptr_info* p_info = ptr_use.at ( i );
 			--( p_info->use_count );
-			if ( p_info->use_count == 0 ) {
+			if ( p_info->use_count == 0 )
+			{
 				if ( p_info->m_size == 1 )
 					heap_del ( p_info->ptr );
 				else
@@ -136,7 +142,8 @@ void heapManager<T>::unregister_use ( T* ptr )
 template <typename T>
 T* heapManager<T>::exists ( const T* ptr ) const
 {
-	for ( uint i ( 0 ); i < ptr_use.count (); ++i ) {
+	for ( uint i ( 0 ); i < ptr_use.count (); ++i )
+	{
 		if ( ptr_use.at ( i )->ptr == ptr )
 			return ptr;
 	}

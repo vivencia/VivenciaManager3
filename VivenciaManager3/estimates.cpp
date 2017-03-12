@@ -231,27 +231,21 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	setWindowIcon ( *iconsType[FILETYPE_VMR] );
 	
 	btnDoc = new QToolButton;
-	btnDoc->setFixedSize ( 30, 30 );
 	btnDoc->setIcon ( *iconsType[FILETYPE_DOC] );
 	connect ( btnDoc, &QToolButton::pressed, btnDoc, [&] () { return btnDoc->showMenu (); } );
 	btnVmr = new QToolButton;
-	btnVmr->setFixedSize ( 30, 30 );
 	btnVmr->setIcon ( *iconsType[FILETYPE_VMR] );
 	connect ( btnVmr, &QToolButton::pressed, btnVmr, [&] () { return btnVmr->showMenu (); } );
 	btnXls = new QToolButton;
-	btnXls->setFixedSize ( 30, 30 );
 	btnXls->setIcon ( *iconsType[FILETYPE_XLS] );
 	connect ( btnXls, &QToolButton::pressed, btnXls, [&] () { return btnXls->showMenu (); } );
 	btnPdf = new QToolButton;
-	btnPdf->setFixedSize ( 30, 30 );
 	btnPdf->setIcon ( *iconsType[FILETYPE_PDF] );
 	connect ( btnPdf, &QToolButton::pressed, btnPdf, [&] () { return btnPdf->showMenu (); } );
 	btnFileManager = new QToolButton;
-	btnFileManager->setFixedSize ( 30, 30 );
 	btnFileManager->setIcon ( QIcon::fromTheme ( QStringLiteral ( "system-file-manager" ) ) );
 	connect ( btnFileManager, &QToolButton::pressed, btnFileManager, [&] () { return btnFileManager->showMenu (); } );
 	btnReload = new QToolButton;
-	btnReload->setFixedSize ( 30, 30 );
 	btnReload->setIcon ( QIcon::fromTheme ( QStringLiteral ( "view-refresh" ) ) );
 	connect ( btnReload, &QToolButton::pressed, this, [&] () { return scanDir (); } );
 
@@ -762,8 +756,7 @@ void estimateDlg::projectActions ( QAction *action )
 		break;
 		case PA_CONVERT_FROM_ESTIMATE:
 			selectEstimateFromFile ( item );
-			return;
-		break;
+		return;
 		case PA_LINK_TO_JOB:
 			bUseDialog = true;
 			bGetJobOnly = true;

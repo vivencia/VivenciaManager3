@@ -127,11 +127,15 @@ public:
     // Call these when the table is laid out in the Designer
     bool setParentLayout ( QGridLayout* glayout );
     bool setParentLayout ( QVBoxLayout* vblayout );
+	bool toggleSearchPanel ();
+	bool toggleUtilitiesPanel ();
 	inline void setUtilitiesPlaceLayout ( QVBoxLayout* layoutUtilities ) { mLayoutUtilities = layoutUtilities; }
 
 	void setIsList ();
+	inline bool isList () const { return mbTableIsList; }
 	void setIsPlainTable ();
 	inline bool isPlainTable () const { return mbPlainTable; }
+	
 	inline void setKeepModificationRecords ( const bool bkeeprec ) { mbKeepModRec = bkeeprec; }
 
 	void setEditable ( const bool editable );

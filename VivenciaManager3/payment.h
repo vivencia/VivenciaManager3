@@ -29,7 +29,9 @@ public:
 	inline DB_FIELD_TYPE fieldType ( const uint field ) const {
 		return static_cast<DB_FIELD_TYPE> ( PAYS_FIELDS_TYPE[field] );
 	}
+	
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
+	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
 
     void setListItem ( payListItem* pay_item );
     payListItem* payItem () const;

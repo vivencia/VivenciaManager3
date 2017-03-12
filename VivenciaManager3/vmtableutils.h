@@ -55,7 +55,7 @@ protected:
 	void hideEvent ( QHideEvent* he );
 	
 private:
-	void doFilter ( const triStateType level, const uint startlevel = 0 );
+	void doFilter ( const triStateType level, const int startlevel = 0 );
 	
 	vmTableWidget* m_table;
 	vmLineFilter* m_txtFilter;

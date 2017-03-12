@@ -57,8 +57,8 @@ void deleteDataInstance ()
 
 void Data::restartProgram ()
 {
-	char *args[2] = { 0, 0 };
-	args[0] = static_cast<char*> ( ::malloc ( APP_START_CMD.toLocal8Bit ().count () * sizeof ( char ) ) );
+	char* args[2] = { 0, 0 };
+	args[0] = static_cast<char*> ( ::malloc ( static_cast<size_t>(APP_START_CMD.toLocal8Bit ().count ()) * sizeof (char) ) );
 	::strcpy ( args[0], APP_START_CMD.toLocal8Bit ().constData () );
 	::execv ( args[0], args );
 	::free ( args[0] );
@@ -82,7 +82,8 @@ bool Data::isMySQLRunning ()
 
 QString Data::commandMySQLServer ( const QString& command, const QString& message, const bool only_return_cmd_line )
 {
-	if ( !only_return_cmd_line ) {
+	if ( !only_return_cmd_line )
+	{
 		if ( !fileOps::executeWait ( command, MYSQL_INIT_SCRIPT, nullptr, message ) )
 			::exit ( ERR_COMMAND_MYSQL );
 	}
@@ -91,7 +92,8 @@ QString Data::commandMySQLServer ( const QString& command, const QString& messag
 
 bool Data::checkSystem ( const bool bFirstPass )
 {
-	if ( !fileOps::exists ( MYSQL_INIT_SCRIPT).isOn () ) {
+	if ( !fileOps::exists ( MYSQL_INIT_SCRIPT).isOn () )
+	{
 		QMessageBox::critical ( nullptr, APP_TR_FUNC ( "MYSQL is not installed - Exiting" ),
 			QApplication::tr ( "Could not find mysql init script at " ) + MYSQL_INIT_SCRIPT +
 			QApplication::tr ( ". Please check if mysql-client and mysql-server are installed." ), QMessageBox::Ok );
@@ -100,7 +102,8 @@ bool Data::checkSystem ( const bool bFirstPass )
 
 	const QString groups ( fileOps::executeAndCaptureOutput ( fileOps::currentUser (), QStringLiteral ( "groups" ) ) );
 	bool ret ( groups.contains ( QRegExp ( QStringLiteral ( "mysql|root" ) ) ) );
-	if ( !ret && bFirstPass ) {
+	if ( !ret && bFirstPass )
+	{
 		QString passwd;
 		if ( APP_PSWD_MANAGER ()->getPassword_UserInteraction ( passwd, SYSTEM_ROOT_SERVICE, SYSTEM_ROOT_PASSWORD_ID,
 			APP_TR_FUNC ( "To access mysql databases you need to belong the the mysql group. This program will add you to that group, "
@@ -125,12 +128,14 @@ void Data::checkSetup ()
 	(void) checkSystem ();
 	checkDatabase ();
 
-	if ( !fileOps::exists ( CONFIG ()->projectDocumentFile () ).isOn () ) {
+	if ( !fileOps::exists ( CONFIG ()->projectDocumentFile () ).isOn () )
+	{
 		const QString installedDir ( QFileDialog::getExistingDirectory ( nullptr,
 									 APP_TR_FUNC ( "VivenciaManager needs to be setup. Choose the directory into which the download file was extracted." ),
 									 QStringLiteral ( "~" ) )
 								   );
-		if ( installedDir.isEmpty () ) {
+		if ( installedDir.isEmpty () )
+		{
 			if ( QMessageBox::critical ( nullptr,
 										 APP_TR_FUNC ( "Setup files are missing" ),
 										 QApplication::tr ( "Choose, again, the directory where the extracted setup files are" ),
@@ -139,7 +144,8 @@ void Data::checkSetup ()
 			else
 				::exit ( ERR_SETUP_FILES_MISSING );
 		}
-		else {
+		else
+		{
 			const QString dataDir ( CONFIG ()->appDataDir () );
 			fileOps::createDir ( dataDir );
 			fileOps::copyFile ( dataDir, installedDir + CHR_F_SLASH + STR_PROJECT_DOCUMENT_FILE );
@@ -151,15 +157,16 @@ void Data::checkSetup ()
 
 void Data::checkDatabase ()
 {
-	if ( !isMySQLRunning () ) {
-		(void) commandMySQLServer ( QStringLiteral ( "start" ),
+	if ( !isMySQLRunning () )
+	{
+		static_cast<void>(commandMySQLServer ( QStringLiteral ( "start" ),
 							 APP_TR_FUNC (  "The mysql server is not running. "
 									 "It needs to be started in order to run this program. "
-									 "Please, type below the administrator's password." )
-						   );
+									 "Please, type below the administrator's password." ) ));
 	}
 
-	if ( isMySQLRunning () ) {
+	if ( isMySQLRunning () )
+	{
 		if ( !VDB ()->openDataBase () || VDB ()->databaseIsEmpty () ) {
 			BACKUP ()->showNoDatabaseOptionsWindow ();
 			if ( !BACKUP ()->actionSuccess () )
@@ -167,11 +174,11 @@ void Data::checkDatabase ()
 		}
 	}
 	else {
-		( void ) QMessageBox::critical ( nullptr,
+		static_cast<void>(QMessageBox::critical ( nullptr,
 										 APP_TR_FUNC ( "Could not connect to mysql server" ),
 										 APP_TR_FUNC (	"Make sure the packages mysql-client/server are installed. "
 														"The application will now exit. Try to manually start the mysql daemon"
-														" or troubleshoot for the problem if it persists." ), QMessageBox::Ok );
+														" or troubleshoot for the problem if it persists." ), QMessageBox::Ok ));
 		::exit ( ERR_DATABASE_PROBLEM );
 	}
 }
@@ -193,7 +200,6 @@ Data::Data ()
 
 Data::~Data ()
 {
-	//globalMainWindow = nullptr;
 	delete listIndicatorIcons[1];
 	delete listIndicatorIcons[2];
 	delete listIndicatorIcons[3];
@@ -220,24 +226,28 @@ void Data::loadDataIntoMemory ()
 	buyListItem* buy_item ( nullptr ), *buy_item2 ( nullptr );
 	QString jobid;
 
-	int id ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) );
-	const int lastRec ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
+	uint id ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) );
+	const uint lastRec ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
 
 	Client client;
 	Job job;
 	Payment pay;
 	Buy buy;
-	do {
-		if ( client.readRecord ( id, false ) ) {
+	do
+	{
+		if ( client.readRecord ( static_cast<int>(id), false ) )
+		{
 			client_item = new clientListItem;
-			client_item->setDBRecID ( id );
+			client_item->setDBRecID ( static_cast<int>(id) );
 			client_item->setRelation ( RLI_CLIENTITEM );
 			client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 			(void) client_item->loadData ();
 			client_item->addToList ( globalMainWindow->ui->clientsList );
 
-			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) ) {
-				do {
+			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) )
+			{
+				do
+				{
 					job_item = new jobListItem;
 					job_item->setDBRecID ( job.actualRecordInt ( FLD_JOB_ID ) );
 					job_item->setRelation ( RLI_CLIENTITEM );
@@ -285,39 +295,10 @@ void Data::loadDataIntoMemory ()
 	} while ( ++id <= lastRec );
 }
 
-const QString Data::currentClientName () const
-{
-	Client* client ( currentClient () );
-	if ( client )
-		return recStrValue ( client, FLD_CLIENT_NAME );
-	return emptyString;
-}
-
-Client* Data::currentClient () const
-{
-	if ( globalMainWindow->ui->clientsList->currentItem () )
-		return static_cast<clientListItem*> ( globalMainWindow->ui->clientsList->currentItem () )->clientRecord ();
-	return nullptr;
-}
-
 Job* Data::currentJob () const
 {
 	if ( globalMainWindow->ui->jobsList->currentItem () )
 		return static_cast<jobListItem*> ( globalMainWindow->ui->jobsList->currentItem () )->jobRecord ();
-	return nullptr;
-}
-
-Payment* Data::currentPay () const
-{
-	if ( globalMainWindow->ui->paysList->currentItem () )
-		return static_cast<payListItem*> ( globalMainWindow->ui->paysList->currentItem () )->payRecord ();
-	return nullptr;
-}
-
-Buy* Data::currentBuy () const
-{
-	if ( globalMainWindow->ui->buysList->currentItem () )
-		return static_cast<buyListItem*> ( globalMainWindow->ui->buysList->currentItem () )->buyRecord ();
 	return nullptr;
 }
 
@@ -326,7 +307,7 @@ void Data::copyToClipboard ( const QString& str )
 	QApplication::clipboard ()->setText ( str, QClipboard::Clipboard );
 }
 
-int Data::insertComboItem ( vmComboBox* cbo, const QString& text )
+int Data::insertComboItem ( vmComboBox* __restrict cbo, const QString& text )
 {
 	if ( text.isEmpty () )
 		return -1;

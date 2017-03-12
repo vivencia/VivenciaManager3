@@ -55,11 +55,15 @@ public:
 		return QToolButton::text ();
 	}
 
+	void setCallbackForLabelActivated ( std::function<void ()> func );
 	QSize sizeHint () const;
 	QSize minimumSizeHint () const;
 
 protected:
 	void init ( const bool b_action = true );
+
+private:
+	std::function<void ()> labelActivated_func;
 };
 //------------------------------------------------VM-ACTION-LABEL-------------------------------------------------
 

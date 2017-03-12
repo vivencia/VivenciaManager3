@@ -33,8 +33,9 @@ public:
 
 	void setEditable ( const bool editable );
 	void setPreview ( const bool preview );
-	inline bool inPreview () const {
-		return document ()->objectName () == QLatin1String ( "np" );
+	inline bool inPreview () const
+	{
+		return document ()->objectName () == QStringLiteral ( "np" );
 	}
 
 	void showhideUtilityPanel ();
@@ -43,11 +44,13 @@ public:
 
 	QString paragraphText () const;
 	void setText ( const QString& text, const bool b_notify = false );
-	inline const QString currentText () const {
+	inline const QString& currentText () const
+	{
 		return newest_edited_text;
 	}
 
-	inline const QString& searchTerm () const {
+	inline const QString& searchTerm () const
+	{
 		return mSearchTerm;
 	}
 	void replaceWord ( const int cursor_pos, const QString& word );
@@ -77,14 +80,15 @@ protected:
 	void contextMenuEvent ( QContextMenuEvent* e );
 
 private:
-	int mFirstInsertedActionPos;
 	QString spell_dic;
 	QString m_wordUnderCursor;
 	QString mHighlightedWord;
 	QString newest_edited_text;
 	QPoint lastPos;
 	QString mSearchTerm;
+	int mFirstInsertedActionPos;
 	int mCursorPos;
+	bool mbDocmentModified;
 
 	QAction* misspelledWordsActs[WRONG_WORDS_MENUS];
 	separateWindow* sepWin;
@@ -95,6 +99,7 @@ private:
 
 	static QString defaultBGColor;
 
+	void saveContents ( const bool b_force = false );
 	QString textUnderCursor () const;
     void insertCompletion ( const QString& completion, QCompleter* completer );
     void correctWord ( const QAction* action );

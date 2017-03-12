@@ -6,8 +6,8 @@
 #include "cleanup.h"
 #include "completerrecord.h"
 #include "heapmanager.h"
+#include "vmwidgets.h"
 
-#include <QLineEdit>
 #include <QStandardItemModel>
 
 vmCompleters* vmCompleters::s_instance ( nullptr );
@@ -52,10 +52,10 @@ void vmCompleters::loadCompleters ()
 	QStandardItemModel* item_model ( nullptr );
 	QStandardItemModel* model_all ( static_cast<QStandardItemModel*> ( completersList.at ( ALL_CATEGORIES )->model () ) );
 
-	for ( uint i ( 2 ), x ( 0 ), str_count ( 0 ); i < COMPLETERS_COUNT; ++i )
+	for ( int i ( 2 ), x ( 0 ), str_count ( 0 ); i < static_cast<int>(COMPLETERS_COUNT); ++i )
 	{
 		cr_rec->loadCompleterStrings ( completer_strings, static_cast<COMPLETER_CATEGORIES> ( i ) );
-		str_count = static_cast<uint> ( completer_strings.count () );
+		str_count = completer_strings.count ();
 		if ( str_count > 0 )
 		{
 			item_model = static_cast<QStandardItemModel*> ( completersList.at ( i )->model () );
@@ -70,11 +70,11 @@ void vmCompleters::loadCompleters ()
 
 	QStringList completer_strings_2;
 	cr_rec->loadCompleterStringsForProductsAndServices ( completer_strings, completer_strings_2 );
-	const uint str_count ( static_cast<uint> ( qMin ( completer_strings.count (), completer_strings_2.count () ) ) );
+	const int str_count ( static_cast<int> ( qMin ( completer_strings.count (), completer_strings_2.count () ) ) );
 	if ( str_count > 0 )
 	{
 		item_model = static_cast<QStandardItemModel*> ( completersList.at ( PRODUCT_OR_SERVICE )->model () );
-		for ( uint x ( 0 ); x < str_count; ++x )
+		for ( int x ( 0 ); x < str_count; ++x )
 		{
 			item_model->insertRow ( x, QList<QStandardItem *> () <<
 									new QStandardItem ( completer_strings.at ( x ) ) <<
@@ -83,7 +83,7 @@ void vmCompleters::loadCompleters ()
 	}
 }
 
-void vmCompleters::setCompleter ( QLineEdit* line, const COMPLETER_CATEGORIES type ) const
+void vmCompleters::setCompleter ( vmLineEdit* line, const COMPLETER_CATEGORIES type ) const
 {
 	if ( line != nullptr && type != COMPLETER_CATEGORIES::NONE )
 		line->setCompleter ( completersList.at ( static_cast<int> ( type ) ) );
@@ -118,7 +118,7 @@ void vmCompleters::fillList ( const vmCompleters::COMPLETER_CATEGORIES type, QSt
 			const QModelIndex index ( model->index ( 0, 0 ) );
 			list.clear ();
 			for ( uint i_row ( 0 ); i_row < n_items; ++i_row )
-				( void )Data::insertStringListItem ( list, model->data ( index.sibling ( i_row, 0 ) ).toString () );
+				static_cast<void>(Data::insertStringListItem ( list, model->data ( index.sibling ( static_cast<int>(i_row), 0 ) ).toString () ));
 		}
 	}
 }

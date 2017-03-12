@@ -17,7 +17,7 @@ enum CFG_FIELDS
 };
 
 static const QLatin1String STR_VIVENCIA_LOGO ( "vivencia.jpg" );
-static const QLatin1String STR_VIVENCIA_REPORT_LOGO ( "vivencia_report_logo.jpg" );
+static const QLatin1String STR_VIVENCIA_REPORT_LOGO ( "vivencia_report_logo_2.jpg" );
 static const QLatin1String STR_PROJECT_DOCUMENT_FILE ( "project.docx" );
 static const QLatin1String STR_PROJECT_SPREAD_FILE ( "spreadsheet.xlsx" );
 static const QLatin1String STR_PROJECT_PDF_FILE ( "projeto.pdf" );

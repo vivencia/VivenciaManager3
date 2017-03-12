@@ -74,10 +74,11 @@ public:
 		JILUR_DAY_TIME = JILUR_REPORT + 3
 	};
 
-	MainWindow ();
+	explicit MainWindow ();
 	virtual ~MainWindow ();
 
 	void continueStartUp ();
+	void exitRequested ( const bool user_requested = false );
 
 //--------------------------------------------CLIENT------------------------------------------------------------
 	void saveClientWidget ( vmWidget* widget, const int id );
@@ -87,14 +88,14 @@ public:
 	void clientsListWidget_currentItemChanged ( vmListItem* item );
 	void controlClientForms ( const clientListItem* const client_item );
 	bool saveClient ( clientListItem* client_item );
+	clientListItem* addClient ();
+	bool editClient ( clientListItem* client_item, const bool b_dogui = true );
+	bool delClient ( clientListItem* client_item );
+	bool cancelClient ( clientListItem* client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
 	void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const int id ) const;
 	void fillAllLists ( const clientListItem* client_item );
-	void btnClientAdd_clicked ();
-	void btnClientEdit_clicked ();
-	void btnClientDel_clicked ();
-	void btnClientCancel_clicked ();
 //--------------------------------------------CLIENT------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-CLIENT-----------------------------------------------------------
@@ -120,6 +121,10 @@ public:
 	void controlJobDayForms ( const jobListItem* const job_item );
 	void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
 	bool saveJob ( jobListItem* job_item );
+	jobListItem* addJob ( clientListItem* parent_client );
+	bool editJob ( jobListItem* job_item, const bool b_dogui = true );
+	bool delJob ( jobListItem* job_item );
+	bool cancelJob ( jobListItem* job_item );
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
 	void loadJobInfo ( const Job* const job );
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
@@ -181,6 +186,9 @@ public:
 	void payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION new_action );
 	void controlPayForms ( const payListItem* const pay_item );
 	bool savePay ( payListItem* pay_item );
+	bool editPay ( payListItem* pay_item, const bool b_dogui = true );
+	bool delPay ( payListItem* pay_item );
+	bool cancelPay ( payListItem* pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
 	void loadPayInfo ( const Payment* const pay );
 	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
@@ -210,6 +218,10 @@ public:
 	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
 	void controlBuyForms ( const buyListItem* const buy_item );
 	bool saveBuy ( buyListItem* buy_item );
+	buyListItem* addBuy ( clientListItem* client_parent, jobListItem* job_parent );
+	bool editBuy ( buyListItem* buy_item, const bool b_dogui = true );
+	bool delBuy ( buyListItem* buy_item );
+	bool cancelBuy ( buyListItem* buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
 	void loadBuyInfo ( const Buy* const buy );
 	buyListItem* getBuyItem ( const clientListItem* const parent_client, const int id ) const;
@@ -232,7 +244,7 @@ public:
 
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 	void setupCustomControls ();
-	bool restoreItem ( const stringRecord& restore_info );
+	void restoreCrashedItems ( const crashRestore* crash );
 	void restoreLastSession ();
 	void searchCallbackSelector ( const QKeyEvent* ke );
 	void reOrderTabSequence ();
@@ -296,7 +308,7 @@ private:
 	separateWindow* sepWin_JobPictures;
 	separateWindow* sepWin_JobReport;
 
-	crashRestore* crash;
+	crashRestore* m_crash;
 	dbCalendar* mCal;
 
 	QAction* jobsPicturesMenuAction;
@@ -330,12 +342,6 @@ private:
 //---------------------------CUSTOM-WIDGETS-------------------------------------
 
 //--------------------------------------------JOB-----------------------------------------------------------
-
-	void on_btnJobAdd_clicked ();
-	void on_btnJobEdit_clicked ();
-	void on_btnJobDel_clicked ();
-	void on_btnJobCancel_clicked ();
-
 	void addJobPictures ();
 	void btnJobReloadPictures_clicked ();
 	void showClientsYearPictures ( QAction* action );
@@ -347,18 +353,7 @@ private:
 	void btnJobSeparateReportWindow_clicked ( const bool checked );
 //--------------------------------------------JOB-----------------------------------------------------------
 
-//--------------------------------------------PAY-----------------------------------------------------------
-	void on_btnPayInfoDel_clicked ();
-	void on_btnPayInfoEdit_clicked ();
-	void on_btnPayInfoCancel_clicked ();
-//--------------------------------------------PAY-----------------------------------------------------------
-
 //--------------------------------------------BUY-----------------------------------------------------------
-	void on_btnBuyAdd_clicked ();
-	void on_btnBuyEdit_clicked ();
-	void on_btnBuySave_clicked ();
-	void on_btnBuyDel_clicked ();
-	void on_btnBuyCancel_clicked ();
 	void on_btnBuyCopyRows_clicked ();
 //--------------------------------------------BUY-----------------------------------------------------------
 
@@ -367,7 +362,6 @@ private:
 //----------------------------------------------CURRENT-DATE-BTNS-------------------------------------------
 
 //--------------------------------------------SLOTS---------------------------------------------------------
-	void exitRequested ( const bool user_requested = false );
 	void quickProjectClosed ();
 	void on_btnQuickProject_clicked ();
 	void receiveWidgetBack ( QWidget* );

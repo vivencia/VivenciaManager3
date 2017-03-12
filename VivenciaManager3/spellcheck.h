@@ -57,8 +57,8 @@ private:
     QString mDicPath;
     QString mDictionary;
 
-    Hunspell* mChecker;
-    QTextCodec* mCodec;
+    Hunspell* __restrict mChecker;
+    QTextCodec* __restrict mCodec;
     QMenu* mMenu;
 
     std::function<void ( const bool )> menuEntrySelected_func;

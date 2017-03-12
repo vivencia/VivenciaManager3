@@ -31,7 +31,7 @@ vmListItem::vmListItem ( const uint type_id, const uint nbadInputs, bool* const 
 		m_action ( ACTION_NONE ), m_list ( nullptr ), badInputs_ptr ( badinputs_ptr ),
 		n_badInputs ( 0 ), mTotal_badInputs ( nbadInputs ), mbSearchCreated ( false ), mbInit ( true ), mbSorted ( false )
 {
-	setSubType ( type_id );
+	setSubType ( static_cast<int>(type_id) );
 	setAction ( ACTION_READ, true );
 	setFlags ( Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren ); //TEST
 	mbInit = false;
@@ -159,7 +159,7 @@ void vmListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 		if ( !mbInit )
 			changeAppearance ();
 		
-		n_badInputs = action == ACTION_ADD ? mTotal_badInputs : 0;
+		n_badInputs = action == ACTION_ADD ? static_cast<int>(mTotal_badInputs) : 0;
 		for ( uint i ( 0 ); i < mTotal_badInputs; ++i )
 			badInputs_ptr[i] = action == ACTION_ADD ? false : true;
 		
@@ -198,7 +198,7 @@ void vmListItem::createDBRecord ()
 	 * when it creates it, and will (must) not attempt to destroy a pointer created in a
 	 * derived class
 	 */
-	setDBRec ( static_cast<DBRecord*> ( new DBRecord ( (uint) 0 ) ) );
+	setDBRec (static_cast<DBRecord*> ( new DBRecord ( static_cast<uint>(0) ) ));
 }
 
 bool vmListItem::loadData ()
@@ -285,13 +285,9 @@ void vmListItem::saveCrashInfo ( crashRestore* crash )
 {
 	stringRecord state_info;
 	state_info.fastAppendValue ( QString::number ( subType () ) ); // CF_SUBTYPE - client, job, pay or buy
-	state_info.fastAppendValue ( QString::number ( relatedItem ( RLI_CLIENTPARENT )->dbRecID () ) ); //CF_CLIENTID
-	state_info.fastAppendValue ( relatedItem ( RLI_JOBPARENT ) != nullptr ?
-		QString::number ( relatedItem ( RLI_JOBPARENT )->dbRecID () ) : QStringLiteral ( "-1" ) ); //CF_JOBID - a client does not have a JOBPARENT
-	state_info.fastAppendValue ( QString::number ( dbRecID () ) ); //CF_ID
 	state_info.fastAppendValue ( QString::number ( m_action ) ); //CF_ACTION
 	state_info.appendStrRecord ( m_dbrec->toStringRecord () ); //CF_DBRECORD
-	m_crashid = crash->commitState ( m_crashid, state_info.toString () );
+	m_crashid = crash->commitState ( m_crashid, state_info );
 }
 
 void vmListItem::setSearchArray ()
@@ -624,8 +620,8 @@ void buyListItem::updateCalendarItem ()
 	
 	if ( data ( Qt::UserRole + 2 ).toBool () == true )
 	{
-		const int paynumber ( data ( Qt::UserRole ).toInt () );
-		const stringRecord payRecord ( stringTable ( recStrValue ( buyRecord (), FLD_BUY_PAYINFO ) ).readRecord ( paynumber - 1) );
+		const uint paynumber ( data ( Qt::UserRole ).toUInt () );
+		const stringRecord payRecord ( stringTable ( recStrValue ( buyRecord (), FLD_BUY_PAYINFO ) ).readRecord ( paynumber - 1 ) );
 		//QString paynumber_str;
 		
 		//if ( bodyText.contains ( "#" ) )

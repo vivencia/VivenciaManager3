@@ -1,6 +1,7 @@
 #include "dbrecord.h"
 #include "global.h"
 #include "vivenciadb.h"
+#include "vmlistitem.h"
 
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
@@ -141,7 +142,7 @@ bool DBRecord::readRecord ( const uint field, const QString& search, const bool 
 	if ( field != static_cast<uint>( stquery.field ) || search != stquery.search )
 	{
 		stquery.reset = true;
-		stquery.field = field;
+		stquery.field = static_cast<int>(field);
 		stquery.search = search;
 	}
 	else
@@ -160,7 +161,7 @@ void DBRecord::resetQuery ()
 
 bool DBRecord::readFirstRecord ( const bool load_data )
 {
-	return readRecord ( VDB ()->getLowestID ( t_info->table_order ), load_data );
+	return readRecord ( static_cast<int>(VDB ()->getLowestID ( t_info->table_order )), load_data );
 }
 
 bool DBRecord::readFirstRecord ( const int field, const QString& search, const bool load_data )
@@ -174,7 +175,7 @@ bool DBRecord::readFirstRecord ( const int field, const QString& search, const b
 
 bool DBRecord::readLastRecord ( const bool load_data )
 {
-	return readRecord ( VDB ()->getHighestID ( t_info->table_order ), load_data );
+	return readRecord ( static_cast<int>(VDB ()->getHighestID ( t_info->table_order )), load_data );
 }
 
 bool DBRecord::readLastRecord ( const int field, const QString& search, const bool load_data )
@@ -191,7 +192,7 @@ bool DBRecord::readNextRecord ( const bool follow_search, const bool load_data )
 {
 	if ( !follow_search )
 	{
-		const int last_id ( VDB ()->getHighestID ( t_info->table_order ) );
+		const int last_id ( static_cast<int>(VDB ()->getHighestID ( t_info->table_order )) );
 		if ( last_id >= 1 && actualRecordInt ( 0 ) < last_id )
 		{
 			do
@@ -213,7 +214,7 @@ bool DBRecord::readPrevRecord ( const bool follow_search, const bool load_data )
 {
 	if ( !follow_search )
 	{
-		const int first_id ( VDB ()->getLowestID ( t_info->table_order ) );
+		const int first_id ( static_cast<int>(VDB ()->getLowestID ( t_info->table_order )) );
 		if ( first_id >= 0 && actualRecordInt ( 0 ) > 0 )
 		{
 			do
@@ -362,11 +363,13 @@ void DBRecord::createTemporaryRecord ( DBRecord* dbrec )
 {
 	const uint table ( dbrec->t_info->table_order );
 	const uint new_id ( VDB ()->getNextID ( table ) );
-	dbrec->setIntValue ( 0, new_id ); // this is set so that VivenciaDB::insertDBRecord can use the already evaluated value
-	dbrec->setIntBackupValue ( 0, new_id ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
+	dbrec->setIntValue ( 0, static_cast<int>(new_id) ); // this is set so that VivenciaDB::insertDBRecord can use the already evaluated value
+	dbrec->setIntBackupValue ( 0, static_cast<int>(new_id) ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
 	const QString str_id ( QString::number ( new_id ) );
 	dbrec->setValue ( 0, str_id );
 	dbrec->setBackupValue ( 0, str_id );
+	if ( dbrec->mListItem != nullptr )
+		dbrec->mListItem->setDBRecID ( static_cast<int>(new_id) );
 }
 
 void DBRecord::sync ( const int src_index, const bool b_force )
@@ -410,12 +413,18 @@ void DBRecord::fromStringRecord ( const stringRecord& str_rec, const uint fromFi
 	if ( ok )
 	{
 		setRecValue ( this, 0, str_rec.curValue () );
-		setRecIntValue ( this, 0, recStrValue ( this, 0 ).toInt () );
+		setRecIntValue ( this, 0, str_rec.curValue ().toInt () );
 		uint i ( 1 );
 		do
 		{
 			if ( str_rec.next () )
-				setRecValue ( this, i++, str_rec.curValue () );
+			{
+				if ( fieldType ( i ) != DBTYPE_SUBRECORD )
+					setRecValue ( this, i, str_rec.curValue () );
+				else
+					copySubRecord ( i, str_rec ); // this func will advance the pointer inside the string record to after the sub string record
+				++i;
+			}
 			else
 				break;
 		} while ( true );

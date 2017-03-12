@@ -108,36 +108,48 @@ bool vmLineFilter::matches ( const QString& haystack ) const
 	QString::const_iterator n_itr ( mBuffer.constBegin () );
 	const QString::const_iterator n_itr_end ( mBuffer.constEnd () );
 	ushort needle_code ( 0 );
-	bool bCanContinue ( false );
+	uint iMatch ( 0 );
+	bool bResetNeedle ( false );
 	
-	for ( ; n_itr != n_itr_end; ++n_itr ) // iterate through buffer
+	for ( ; n_itr != n_itr_end; !bResetNeedle ? ++n_itr : --n_itr ) // iterate through buffer
 	{
+		if ( bResetNeedle )
+		{
+			n_itr = mBuffer.constBegin ();
+			bResetNeedle = false;
+		}
 		needle_code = getCode ( static_cast<QChar>( *n_itr ).unicode () );
 		for ( ; h_itr != h_itr_end; ++h_itr ) // iterate through searched string
 		{
 			haystack_code = getCode ( static_cast<QChar>( *h_itr ).unicode () );
+			if ( haystack_code == 0 )
+				continue;
 			if ( needle_code == haystack_code ) // character match
 			{
-				bCanContinue = true;
-				++h_itr;
+				++iMatch;
+				if ( ++h_itr == h_itr_end ) // haystack is at end
+				{
+					if ( (n_itr+1) != n_itr_end ) // but needle is not; therefore, haystack does not contain needle
+						iMatch = 0;
+				}
 				break;
 			}
 			else
 			{
-				if ( bCanContinue ) 
-				{	// the next character does not match but the previous does
-					bCanContinue = false;
+				if ( iMatch > 0 )
+				{
+					// This haystack character is incorrect in the sequence but might be the beggining of needle starting with it
+					// Therefore we must not move the haystack iterator further and reset the needle to compare those 
+					bResetNeedle = true; 
+					iMatch = 0;
 					break;
 				}
 			}
 		}
-		if ( h_itr == h_itr_end && n_itr != n_itr_end )
-			bCanContinue = false;
-		
-		if ( !bCanContinue )
+		if ( iMatch == 0 && !bResetNeedle ) // Haystack ended without a match. There is no need to continue searching needle
 			break;
 	}
-	return bCanContinue;
+	return ( iMatch == static_cast<uint>(mBuffer.count()) );
 }
 
 void vmLineFilter::keyPressEvent ( QKeyEvent* const ke )
@@ -150,23 +162,16 @@ void vmLineFilter::keyPressEvent ( QKeyEvent* const ke )
 		mBuffer.clear ();
 		return;
 	}
-	
-	qDebug () << endl << "------------------------------" << endl;
-	qDebug () << "vmLineFilter::keyPressEvent" << endl;
-	
+
 	triStateType t_accept ( TRI_UNDEF );
 	const int key ( ke->key () );
-	uint startlevel ( 0 );
+	int startlevel ( 0 );
 	
-	qDebug () << "mBuffer is  " << mBuffer;
-	qDebug () << "Key is " << key;
 	if ( key == Qt::Key_Backspace || key == Qt::Key_Delete )
 	{
 		if ( hasSelectedText () )
 		{
 			startlevel = selectionStart ();
-			qDebug () << "Text selected; startlevel = " << startlevel;
-			
 			mBuffer.remove ( startlevel, selectedText ().length () );
 			t_accept.setOff ();
 		}
@@ -176,8 +181,6 @@ void vmLineFilter::keyPressEvent ( QKeyEvent* const ke )
 				startlevel = cursorPosition ();
 			//else if ( cursorPosition () >= 0 && cursorPosition () < text ().length () && key == Qt::Key_Delete )
 				//startlevel = cursorPosition ();
-			
-			qDebug () << "Text not selected; startlevel = " << startlevel;
 			mBuffer.remove ( startlevel, 1 );
 			t_accept.setOff ();
 		}
@@ -195,9 +198,7 @@ void vmLineFilter::keyPressEvent ( QKeyEvent* const ke )
 			mBuffer.insert ( startlevel, Qt::Key_C );
 			t_accept.setOn ();
 		}
-		qDebug () << "Adding to mBuffer; startlevel = " << startlevel;
 	}
-	qDebug () << endl << "---------------------------";
 	if ( !t_accept.isNeither () && validkey_func )
 		validkey_func ( t_accept, startlevel );
 }

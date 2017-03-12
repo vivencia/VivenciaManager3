@@ -469,7 +469,7 @@ void dbCalendar::updateCalendarDB ( const DBRecord* dbrec, PointersList<CALENDAR
 
 	CALENDAR_EXCHANGE* ce ( nullptr );
 	
-	uint calendarField[4];
+	uint calendarField[4] = { 0 };
 	switch ( dbrec->typeID () )
 	{
 		case JOB_TABLE:

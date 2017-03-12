@@ -402,6 +402,23 @@ int Buy::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 	}
 }
 
+void Buy::copySubRecord ( const uint subrec_field, const stringRecord& subrec )
+{
+	if ( subrec_field <= FLD_BUY_REPORT )
+	{
+		const uint nFields ( 6 ); // PAY_INFO_FIELD_COUNT == 6 and ITEMS_AND_SERVICE_RECORD used fields by Buy == 6
+		if ( subrec.curIndex () == -1 )
+			subrec.first ();
+		stringRecord rec;
+		for ( uint i ( 0 ); i < nFields; ++i )
+		{
+			rec.fastAppendValue ( subrec.curValue () );
+			if ( !subrec.next () ) break;
+		}
+		setRecValue ( this, subrec_field, rec.toString () );
+	}
+}
+
 void Buy::setListItem ( buyListItem* buy_item )
 {
     DBRecord::mListItem = static_cast<vmListItem*>( buy_item );

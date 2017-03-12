@@ -27,17 +27,18 @@ static const QString eow ( QLatin1String ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\=" )
 
 textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	: QTextEdit ( parent ), vmWidget ( WT_TEXTEDIT ),
-	  mFirstInsertedActionPos ( 0 ), sepWin ( nullptr ), mCompleter ( nullptr ),
-	  m_highlighter ( nullptr ), m_searchPanel ( nullptr ), mContextMenu ( nullptr )
+	  mFirstInsertedActionPos ( 0 ), mbDocmentModified ( false ), sepWin ( nullptr ), 
+	  mCompleter ( nullptr ), m_highlighter ( nullptr ), m_searchPanel ( nullptr ), mContextMenu ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
 	setAcceptRichText ( true );
 
 	mCompleter = APP_COMPLETERS ()->getCompleter ( vmCompleters::ALL_CATEGORIES );
-	if ( mCompleter != nullptr ) {
+	if ( mCompleter != nullptr )
+	{
 		mCompleter->setWidget ( this );
 		connect ( mCompleter, static_cast<void (QCompleter::*)( const QString& )>( &QCompleter::activated ),
-            this, [&, this] ( const QString& text ) { return insertCompletion ( text, this->mCompleter ); } );
+			this, [&, this] ( const QString& text ) { return insertCompletion ( text, this->mCompleter ); } );
 	}
 
 	/* When print previewing, Qt makes a copy of QTextEdit (not textEditWithCompleter) and certain features of this class are, therefore,
@@ -61,17 +62,18 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	misspelledWordsActs[2] = new QAction ( this );
 	connect ( misspelledWordsActs[2], &QAction::triggered, this, [&] () { return ignoreWord (); } );
 	misspelledWordsActs[2]->setVisible ( false );
-    QAction* action ( nullptr );
+	QAction* action ( nullptr );
 	for  ( uint i ( 3 ); i < WRONG_WORDS_MENUS; ++i )
 	{
 		misspelledWordsActs[i] = new QAction ( this );
 		misspelledWordsActs[i]->setVisible ( false );
-        action = misspelledWordsActs[i];
-        connect ( action, &QAction::triggered, [&, action] ( const bool ) { return correctWord ( action ); } );
+		action = misspelledWordsActs[i];
+		connect ( action, &QAction::triggered, [&, action] ( const bool ) { return correctWord ( action ); } );
 	}
 
 	createContextMenu ();
 	newest_edited_text.reserve ( 20000 );
+	connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocmentModified = bChanged); } );
 }
 
 textEditWithCompleter::~textEditWithCompleter ()
@@ -120,13 +122,13 @@ void textEditWithCompleter::createContextMenu ()
 {
 	mContextMenu = createStandardContextMenu ();
 	mContextMenu->addSeparator ();
-    mContextMenu->addMenu ( SPELLCHECKER ()->menuAvailableDicts () );
-    SPELLCHECKER ()->setCallbackForMenuEntrySelected ( [&] ( const bool b_spell_enabled ) {
-        return m_highlighter->enableSpellChecking ( b_spell_enabled ); } );
-    mContextMenu->addSeparator ();
-    QAction* findAction ( new QAction ( TR_FUNC ( "Find... (CTRL+F)" ), nullptr ) );
-    connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showhideUtilityPanel (); } );
-    mContextMenu->addAction ( findAction );
+	mContextMenu->addMenu ( SPELLCHECKER ()->menuAvailableDicts () );
+	SPELLCHECKER ()->setCallbackForMenuEntrySelected ( [&] ( const bool b_spell_enabled ) {
+		return m_highlighter->enableSpellChecking ( b_spell_enabled ); } );
+	mContextMenu->addSeparator ();
+	QAction* findAction ( new QAction ( TR_FUNC ( "Find... (CTRL+F)" ), nullptr ) );
+	connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showhideUtilityPanel (); } );
+	mContextMenu->addAction ( findAction );
 	mContextMenu->addSeparator ();
 }
 
@@ -144,15 +146,15 @@ QString textEditWithCompleter::paragraphText () const
 
 void textEditWithCompleter::setText ( const QString& text, const bool b_notify )
 {
-	newest_edited_text = text;
-    QTextEdit::setPlainText ( text );
+	QTextEdit::setPlainText ( newest_edited_text = text );
+	mbDocmentModified = false;
 	if ( b_notify && contentsAltered_func )
 		contentsAltered_func ( this );
 }
 
 void textEditWithCompleter::replaceWord ( const int cursor_pos, const QString& word )
 {
-    QTextCursor cursor ( textCursor () );
+	QTextCursor cursor ( textCursor () );
 	cursor.setPosition ( cursor_pos, QTextCursor::MoveAnchor );
 	cursor.movePosition ( QTextCursor::NextCharacter, QTextCursor::KeepAnchor, mSearchTerm.count () );
 	cursor.insertText ( word );
@@ -202,7 +204,8 @@ bool textEditWithCompleter::searchFirst ()
 bool textEditWithCompleter::searchNext ()
 {
 	mCursorPos = newest_edited_text.indexOf ( mSearchTerm, mCursorPos + 1, Qt::CaseInsensitive );
-	if ( mCursorPos != -1 ) {
+	if ( mCursorPos != -1 )
+	{
 		selectFound ();
 		return true;
 	}
@@ -212,7 +215,8 @@ bool textEditWithCompleter::searchNext ()
 bool textEditWithCompleter::searchPrev ()
 {
 	mCursorPos = newest_edited_text.lastIndexOf ( mSearchTerm, 0 - ( newest_edited_text.length () - mCursorPos ), Qt::CaseInsensitive );
-	if ( mCursorPos != -1 ) {
+	if ( mCursorPos != -1 )
+	{
 		selectFound ();
 		return true;
 	}
@@ -233,7 +237,8 @@ QString textEditWithCompleter::defaultStyleSheet () const
 	QString colorstr;
 	if ( !parentWidget () )
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else {
+	else
+	{
 		const QTextEdit* edt ( new QTextEdit ( parentWidget () ) );
 		colorstr = QLatin1String ( " ( " ) + edt->palette ().color ( edt->backgroundRole () ).name ()
 				   + QLatin1String ( " ) }" );
@@ -245,12 +250,14 @@ QString textEditWithCompleter::defaultStyleSheet () const
 void textEditWithCompleter::highlight ( const VMColors wm_color, const QString& str )
 {
 	//vmWidget::highlight ( wm_color ); // maybe not needed and/or a stupid idea. Test to see if should be removed
-	if ( !str.isEmpty () && wm_color != vmDefault_Color ) {
+	if ( !str.isEmpty () && wm_color != vmDefault_Color )
+	{
 		mHighlightedWord = str;
 		m_highlighter->enableHighlighting ( true );
 		m_highlighter->highlightWord ( str );
 	}
-	else {
+	else
+	{
 		m_highlighter->unHighlightWord ( mHighlightedWord );
 		mHighlightedWord.clear ();
 		m_highlighter->enableHighlighting ( false );
@@ -259,78 +266,83 @@ void textEditWithCompleter::highlight ( const VMColors wm_color, const QString& 
 
 void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 {
-	if ( isReadOnly () ) {
+	if ( isReadOnly () )
+	{
 		e->accept (); // do not propagate
-		if ( e->modifiers () & Qt::ControlModifier ) {
+		if ( e->modifiers () & Qt::ControlModifier )
+		{
 			if ( e->key () == Qt::Key_F )
 				showhideUtilityPanel ();
 		}
 		return;
 	}
 
-	if ( e->modifiers () & Qt::ControlModifier ) {
-		switch ( e->key () ) {
-            default:
-                e->ignore ();
-                QTextEdit::keyPressEvent ( e );
-                return;
+	if ( e->modifiers () & Qt::ControlModifier )
+	{
+		switch ( e->key () )
+		{
+			default:
+				e->ignore ();
+				QTextEdit::keyPressEvent ( e );
+			return;
+			case Qt::Key_Left:
+				moveCursor ( QTextCursor::StartOfWord );
 			break;
-            case Qt::Key_Left:
-                moveCursor ( QTextCursor::StartOfWord );
+			case Qt::Key_Right:
+				moveCursor ( QTextCursor::EndOfWord );
 			break;
-            case Qt::Key_Right:
-                moveCursor ( QTextCursor::EndOfWord );
+			case Qt::Key_Enter:
+			case Qt::Key_Return:
+				saveContents ( true );
+				if ( keypressed_func )
+					keypressed_func ( e, this );
 			break;
-            case Qt::Key_Enter:
-            case Qt::Key_Return:
-                focusOutEvent ( nullptr );
-                if ( keypressed_func )
-                    keypressed_func ( e, this );
+			case Qt::Key_F:
+				showhideUtilityPanel ();
 			break;
-            case Qt::Key_F:
-                showhideUtilityPanel ();
-			break;
-            case Qt::Key_S:
-                focusOutEvent ( nullptr );
-                if ( keypressed_func )
-                    keypressed_func ( e, this );
+			case Qt::Key_S:
+				saveContents ( true );
+				if ( keypressed_func )
+					keypressed_func ( e, this );
 			break;
 		}
 		e->accept ();
 	}
 	else {
-		if ( mCompleter->popup ()->isVisible () ) {
-			switch ( e->key () ) {
-                default:
-                    if ( e->key () >= Qt::Key_Dead_Grave && e->key () <= Qt::Key_Dead_Horn ) {
-                        mCompleter->popup ()->hide ();
-                        e->accept ();
-                        return;
-                    }
+		if ( mCompleter->popup ()->isVisible () )
+		{
+			switch ( e->key () )
+			{
+				default:
+					if ( e->key () >= Qt::Key_Dead_Grave && e->key () <= Qt::Key_Dead_Horn )
+					{
+						mCompleter->popup ()->hide ();
+						e->accept ();
+						return;
+					}
 				break;
 
 				// The following keys are forwarded by the completer to the widget
-                case Qt::Key_Enter:
-                case Qt::Key_Return:
-                case Qt::Key_Escape:
-                case Qt::Key_Tab:
-                case Qt::Key_Backtab:
-                    e->ignore ();
-                    return; // let the completer do its default behavior
-                break;
+				case Qt::Key_Enter:
+				case Qt::Key_Return:
+				case Qt::Key_Escape:
+				case Qt::Key_Tab:
+				case Qt::Key_Backtab:
+					e->ignore ();
+				return; // let the completer do its default behavior
 
-                case Qt::Key_Shift:
-                case Qt::Key_Control:
-                case Qt::Key_Alt:
-                case Qt::Key_Meta:
-                    mCompleter->popup ()->hide ();
-                    e->accept ();
-                    return;
-				break;
+				case Qt::Key_Shift:
+				case Qt::Key_Control:
+				case Qt::Key_Alt:
+				case Qt::Key_Meta:
+					mCompleter->popup ()->hide ();
+					e->accept ();
+				return;
 			}
 		}
 		else {
-			if ( e->key () == Qt::Key_Escape ) {
+			if ( e->key () == Qt::Key_Escape )
+			{
 				e->accept ();
 				if ( keypressed_func )
 					keypressed_func ( e, this );
@@ -343,13 +355,14 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 
 	const QString completionPrefix = textUnderCursor ();
 	const bool hasModifier = e->modifiers () != Qt::NoModifier;
-	if  ( hasModifier || e->text().isEmpty () || completionPrefix.length () < 3
-			|| eow.contains ( e->text ().right ( 1 ) ) ) {
+	if  ( hasModifier || e->text().isEmpty () || completionPrefix.length () < 3 || eow.contains ( e->text ().right ( 1 ) ) )
+	{
 		mCompleter->popup ()->hide ();
 		return;
 	}
 
-	if  ( completionPrefix != mCompleter->completionPrefix () ) {
+	if  ( completionPrefix != mCompleter->completionPrefix () )
+	{
 		mCompleter->setCompletionPrefix ( completionPrefix );
 		mCompleter->popup ()->setCurrentIndex ( mCompleter->completionModel ()->index ( 0, 0 ) );
 	}
@@ -362,7 +375,8 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 
 void textEditWithCompleter::focusInEvent ( QFocusEvent* e )
 {
-	if ( !isReadOnly () ) {
+	if ( !isReadOnly () )
+	{
 		if  ( mCompleter )
 			mCompleter->setWidget ( this );
 		QTextEdit::focusInEvent ( e );
@@ -372,31 +386,27 @@ void textEditWithCompleter::focusInEvent ( QFocusEvent* e )
 
 void textEditWithCompleter::focusOutEvent ( QFocusEvent* e )
 {
-	if ( !isReadOnly () ) {
-		if ( document ()->isModified () ) {
-			newest_edited_text = document ()->toPlainText ();
-			if ( contentsAltered_func )
-				contentsAltered_func ( this );
-		}
-		if ( e != nullptr ) {
+	if ( e != nullptr )
+	{
+		if ( !isReadOnly () )
+		{
+			saveContents ();
 			QTextEdit::focusOutEvent ( e );
-			e->setAccepted ( true ); // do not propagate
 		}
-	}
-	else {
-		if ( e != nullptr )
-			e->setAccepted ( true ); // do not propagate
+		e->setAccepted ( true ); // do not propagate
 	}
 }
 
 void textEditWithCompleter::mousePressEvent ( QMouseEvent* e )
 {
-	if ( !isReadOnly () ) {
+	if ( !isReadOnly () )
+	{
 		// Allow for right clicks to change this->textCursor to the current word so that when the mouseReleaseEvent
 		// it emits the signal contextMenuEvent with the word under the cursor being the word the user intended to get some information about
 		// ( most likely a misspelled word ). If I don't do this, and right click will not reflect the context under the menu (cursor) but the
 		// context of the document ()'s caret
-		if ( e->button () == Qt::RightButton ) {
+		if ( e->button () == Qt::RightButton )
+		{
 			QMouseEvent* e_press ( new QMouseEvent ( e->type (), e->pos (), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
 			e_press->setAccepted ( true );
 			QTextEdit::mousePressEvent ( e_press );
@@ -415,18 +425,22 @@ void textEditWithCompleter::mousePressEvent ( QMouseEvent* e )
 
 void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 {
-	if ( isReadOnly () ) {
+	if ( isReadOnly () )
+	{
 		QTextEdit::contextMenuEvent ( e );
 		return;
 	}
 
-	if ( mFirstInsertedActionPos != 0 ) {
+	if ( mFirstInsertedActionPos != 0 )
+	{
 		int n ( mContextMenu->actions ().count () - 1 );
 		vmAction* action ( nullptr );
 		bool enableWhenReadonly ( false );
-		do {
+		do
+		{
 			action = static_cast<vmAction*> ( mContextMenu->actions ().at ( n ) );
-			if ( action != nullptr ) {
+			if ( action != nullptr )
+			{
 				enableWhenReadonly = action->data ().toBool ();
 				action->setEnabled ( enableWhenReadonly || !isReadOnly () );
 			}
@@ -440,10 +454,12 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 
 	QStringList list_words;
 	int i ( 0 );
-	if ( SPELLCHECKER ()->suggestionsList ( m_wordUnderCursor, list_words ) ) {
-		misspelledWordsActs[1]->setText ( QString ( tr ( "Add  ( %1 ) " ) ).arg ( m_wordUnderCursor ) );
-		misspelledWordsActs[2]->setText ( QString ( tr ( "Ignore  ( %1 ) " ) ).arg ( m_wordUnderCursor ) );
-		for ( i = 0; i < qMin ( signed ( WRONG_WORDS_MENUS ), list_words.size () + 3 ); ++i ) {
+	if ( SPELLCHECKER ()->suggestionsList ( m_wordUnderCursor, list_words ) )
+	{
+		misspelledWordsActs[1]->setText ( QString ( TR_FUNC ( "Add  ( %1 ) " ) ).arg ( m_wordUnderCursor ) );
+		misspelledWordsActs[2]->setText ( QString ( TR_FUNC ( "Ignore  ( %1 ) " ) ).arg ( m_wordUnderCursor ) );
+		for ( i = 0; i < qMin ( signed ( WRONG_WORDS_MENUS ), list_words.size () + 3 ); ++i )
+		{
 			if ( i >= 3 )
 				misspelledWordsActs[i]->setText ( list_words.at ( i - 3 ).trimmed () );
 			misspelledWordsActs[i]->setVisible ( true );
@@ -459,6 +475,17 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 	e->setAccepted ( true );
 }
 
+void textEditWithCompleter::saveContents ( const bool b_force )
+{
+	if ( mbDocmentModified || b_force )
+	{
+		newest_edited_text = document ()->toPlainText ();
+		mbDocmentModified = false;
+		if ( contentsAltered_func )
+			contentsAltered_func ( this );
+	}
+}
+
 QString textEditWithCompleter::textUnderCursor () const
 {
 	QTextCursor tc ( textCursor () );
@@ -470,55 +497,58 @@ QString textEditWithCompleter::textUnderCursor () const
 // its position in the paragraph
 void textEditWithCompleter::insertCompletion ( const QString& completion, QCompleter* completer )
 {
-    QTextCursor tc ( textCursor () );
+	QTextCursor tc ( textCursor () );
 	tc.movePosition ( QTextCursor::StartOfWord );
 
 	QString completion_copy ( completion );
-    switch ( APP_COMPLETERS ()->completerType ( completer, completion ) ) {
-        default:
+	switch ( APP_COMPLETERS ()->completerType ( completer, completion ) )
+	{
+		default:
 		break;
-        case vmCompleters::DELIVERY_METHOD:
-        case vmCompleters::ACCOUNT:
-        case vmCompleters::JOB_TYPE:
-        case vmCompleters::STOCK_TYPE:
-        case vmCompleters::STOCK_PLACE:
-        case vmCompleters::PAYMENT_METHOD:
-        case vmCompleters::ITEM_NAMES:
-        {
-            bool b_can_change ( true );
-            bool b_is_space ( false );
-            const QString str ( tc.block ().text () );
-            int pos ( tc.positionInBlock () - 1 );
+		case vmCompleters::DELIVERY_METHOD:
+		case vmCompleters::ACCOUNT:
+		case vmCompleters::JOB_TYPE:
+		case vmCompleters::STOCK_TYPE:
+		case vmCompleters::STOCK_PLACE:
+		case vmCompleters::PAYMENT_METHOD:
+		case vmCompleters::ITEM_NAMES:
+		{
+			bool b_can_change ( true );
+			bool b_is_space ( false );
+			const QString str ( tc.block ().text () );
+			int pos ( tc.positionInBlock () - 1 );
 
-            if ( pos >= 0 && pos < str.count () ) {
-                QChar chr;
-                do {
-                    chr = str.at ( pos );
-                    if ( chr == QLatin1Char ( '!' ) ||
-                            chr == CHR_DOT ||
-                            chr == CHR_QUESTION_MARK ) {
-                        b_can_change = false;
-                        break;
-                    }
-                    else if ( chr.isSpace () )
-                        b_is_space = true;
-                    else {
-                        // reached another word; now we know we have not completed the first word in a sentence
-                        if ( b_is_space )
-                            break;
-                    }
-                    --pos;
-                } while ( pos > 0 );
-            }
-            else
-                b_can_change = false;
+			if ( pos >= 0 && pos < str.count () )
+			{
+				QChar chr;
+				const QChar chrExclamationPoint ( QLatin1Char ( '!' ) );
+				do
+				{
+					chr = str.at ( pos );
+					if ( chr == chrExclamationPoint || chr == CHR_DOT || chr == CHR_QUESTION_MARK )
+					{
+						b_can_change = false;
+						break;
+					}
+					else if ( chr.isSpace () )
+						b_is_space = true;
+					else
+					{
+						// reached another word; now we know we have not completed the first word in a sentence
+						if ( b_is_space )
+							break;
+					}
+					--pos;
+				} while ( pos > 0 );
+			}
+			else
+				b_can_change = false;
 
-            if ( b_can_change ) {
-                completion_copy = completion_copy.toLower ();
-                //const QChar firstLetter ( completion.at ( 0 ).toLower () );
-                //completion_copy.replace ( 0, 1, firstLetter );
-            }
-        }
+			if ( b_can_change )
+			{
+				completion_copy = completion_copy.toLower ();
+			}
+		}
 	}
 	tc.movePosition ( QTextCursor::EndOfWord, QTextCursor::KeepAnchor );
 	tc.insertText ( completion_copy );
@@ -527,11 +557,12 @@ void textEditWithCompleter::insertCompletion ( const QString& completion, QCompl
 
 void textEditWithCompleter::correctWord ( const QAction* action )
 {
-	if ( action ) {
-		QTextCursor cursor = cursorForPosition ( lastPos );
+	if ( action )
+	{
+		QTextCursor cursor ( cursorForPosition ( lastPos ) );
 		cursor.select ( QTextCursor::WordUnderCursor );
-        cursor.deleteChar ();
-        cursor.insertText ( action->text () );
+		cursor.deleteChar ();
+		cursor.insertText ( action->text () );
 	}
 }
 
@@ -642,11 +673,10 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	setLayout ( mLayout );
 
-	if ( m_texteditor ) {
-		if ( m_texteditor->layout () != nullptr ) {
-			QVBoxLayout* bLayout ( static_cast<QVBoxLayout*> ( m_texteditor->layout () ) );
-			bLayout->insertWidget ( 0, this );
-		}
+	if ( m_texteditor && m_texteditor->layout () != nullptr )
+	{
+		QVBoxLayout* bLayout ( static_cast<QVBoxLayout*> ( m_texteditor->layout () ) );
+		bLayout->insertWidget ( 0, this );
 	}
 }
 
@@ -659,7 +689,8 @@ void searchWordPanel::showPanel ()
 bool searchWordPanel::searchStart ()
 {
 	const bool b_result ( m_texteditor->searchStart ( searchField->text () ) );
-	if ( b_result ) {
+	if ( b_result )
+	{
 		m_texteditor->searchFirst ();
 		btnSearchStart->setEnabled ( !b_result );
 		btnSearchNext->setEnabled ( b_result );
@@ -720,7 +751,8 @@ void searchWordPanel::rplcAll ()
 
 void searchWordPanel::searchField_textAltered ( const QString& text )
 {
-	if ( text.length () >= 2 ) {
+	if ( text.length () >= 2 )
+	{
 		btnSearchStart->setEnabled ( text != m_texteditor->searchTerm () );
 		btnSearchPrev->setEnabled ( false );
 		btnSearchNext->setEnabled ( false );
@@ -729,26 +761,28 @@ void searchWordPanel::searchField_textAltered ( const QString& text )
 
 void searchWordPanel::searchField_keyPressed ( const QKeyEvent *ke )
 {
-	switch  ( ke->key () ) {
-        case Qt::Key_Return:
-        case Qt::Key_Enter:
-            searchStart ();
+	switch  ( ke->key () )
+	{
+		case Qt::Key_Return:
+		case Qt::Key_Enter:
+			searchStart ();
 		break;
-        case Qt::Key_Escape:
-            if ( searchField->text () != m_texteditor->searchTerm () ) {
-                searchField->setText ( m_texteditor->searchTerm () );
-                btnSearchStart->setEnabled ( !searchField->text ().isEmpty () );
-            }
-            else
-                searchCancel ();
-        break;
-        case Qt::Key_F3:
-            searchNext ();
+		case Qt::Key_Escape:
+			if ( searchField->text () != m_texteditor->searchTerm () )
+			{
+				searchField->setText ( m_texteditor->searchTerm () );
+				btnSearchStart->setEnabled ( !searchField->text ().isEmpty () );
+			}
+			else
+				searchCancel ();
 		break;
-        case Qt::Key_F2:
-            searchPrev ();
+		case Qt::Key_F3:
+			searchNext ();
 		break;
-        default:
+		case Qt::Key_F2:
+			searchPrev ();
+		break;
+		default:
 		break;
 	}
 }
@@ -762,15 +796,16 @@ void searchWordPanel::replaceField_textAltered ( const QString& )
 
 void searchWordPanel::replaceField_keyPressed ( const QKeyEvent *ke )
 {
-	switch  ( ke->key () ) {
-        case Qt::Key_Return:
-        case Qt::Key_Enter:
-            replaceWord ();
+	switch  ( ke->key () )
+	{
+		case Qt::Key_Return:
+		case Qt::Key_Enter:
+			replaceWord ();
 		break;
-        case Qt::Key_F4:
-            rplcAll ();
+		case Qt::Key_F4:
+			rplcAll ();
 		break;
-        default:
+		default:
 		break;
 	}
 }

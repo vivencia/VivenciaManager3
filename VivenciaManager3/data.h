@@ -51,12 +51,7 @@ public:
 	void startUserInteface ();
 	void loadDataIntoMemory ();
 
-	const QString currentClientName () const;
-
-	Client* currentClient () const;
 	Job* currentJob () const;
-	Payment* currentPay () const;
-	Buy* currentBuy () const;
 
 	//--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
     static bool checkSystem ( const bool bFirstPass = true );

@@ -4,7 +4,6 @@
 #include "data.h"
 #include "global_enums.h"
 #include "vivenciadb.h"
-#include "logindialog.h"
 #include "cleanup.h"
 #include "heapmanager.h"
 #include "vmnotify.h"

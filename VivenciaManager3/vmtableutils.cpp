@@ -9,7 +9,7 @@
 
 vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	: QFrame ( nullptr ), m_SearchedWord ( emptyString ), m_table ( const_cast<vmTableWidget*>( table ) ),
-	  btnSearchNext ( nullptr ), btnSearchPrev ( nullptr ), btnSearchCancel ( nullptr )
+	  chkSearchAllTable ( nullptr )
 {
 	txtSearchTerm = new vmLineEdit;
 	txtSearchTerm->setEditable ( true );
@@ -35,11 +35,6 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	btnSearchCancel->setIcon ( ICON ( "cancel" ) );
 	connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return hide (); } );
 
-	chkSearchAllTable = new vmCheckBox ( tr ( "Search all fields" ) );
-	chkSearchAllTable->setChecked ( true );
-	chkSearchAllTable->setEditable ( true );
-	chkSearchAllTable->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return searchFieldsChanged (); } );
-
 	QHBoxLayout* mLayout ( new QHBoxLayout );
 	mLayout->setSpacing( 2 );
 	mLayout->setMargin ( 2 );
@@ -48,10 +43,17 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	mLayout->addWidget ( btnSearchPrev );
 	mLayout->addWidget ( btnSearchNext );
 	mLayout->addWidget ( btnSearchCancel );
-	mLayout->addStretch ( 2 );
-	mLayout->addWidget ( chkSearchAllTable, 0, Qt::AlignRight );
-	setLayout ( mLayout );
 	
+	if ( !m_table->isList () )
+	{
+		chkSearchAllTable = new vmCheckBox ( tr ( "Search all fields" ) );
+		chkSearchAllTable->setChecked ( true );
+		chkSearchAllTable->setEditable ( true );
+		chkSearchAllTable->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return searchFieldsChanged (); } );
+		mLayout->addStretch ( 2 );
+		mLayout->addWidget ( chkSearchAllTable, 0, Qt::AlignRight );
+	}
+	setLayout ( mLayout );
 	setMaximumHeight ( 30 );
 }
 
@@ -75,9 +77,10 @@ void vmTableSearchPanel::hideEvent ( QHideEvent* he )
 
 void vmTableSearchPanel::searchFieldsChanged ( const vmCheckBox* const )
 {
-	if ( chkSearchAllTable->isChecked () )
+	if ( chkSearchAllTable && chkSearchAllTable->isChecked () )
 		static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setCheckable ( false );
-	else {
+	else
+	{
 		static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setCheckable ( true );
 		for ( uint col ( 0 ); col < m_table->colCount (); ++col )
 			static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setChecked ( col, false );
@@ -112,17 +115,20 @@ bool vmTableSearchPanel::searchPrev ()
 
 void vmTableSearchPanel::txtSearchTerm_keyPressed ( const QKeyEvent* ke )
 {
-	switch ( ke->key () ) {
+	switch ( ke->key () )
+	{
 		case Qt::Key_Enter:
 		case Qt::Key_Return:
 			searchStart ();
 		break;
 		case Qt::Key_Escape:
-			if ( txtSearchTerm->text () != m_table->searchTerm () ) {
+			if ( txtSearchTerm->text () != m_table->searchTerm () )
+			{
 				txtSearchTerm->setText ( m_table->searchTerm () );
 				btnSearchStart->setEnabled ( !txtSearchTerm->text ().isEmpty () );
 			}
-			else {
+			else
+			{
 				hide ();
 				m_table->setFocus ();
 			}
@@ -150,7 +156,7 @@ vmTableFilterPanel::vmTableFilterPanel ( const vmTableWidget * const table )
 	QLabel* lblFilter ( new QLabel ( TR_FUNC ( "Filter:" ) ) );
 	m_txtFilter = new vmLineFilter;
 	m_txtFilter->setEditable ( true );
-	m_txtFilter->setCallbackForValidKeyEntered ( [&] ( const triStateType level, const uint startlevel ) { return doFilter ( level, startlevel ); } );
+	m_txtFilter->setCallbackForValidKeyEntered ( [&] ( const triStateType level, const int startlevel ) { return doFilter ( level, startlevel ); } );
 	
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 2 );
@@ -178,48 +184,52 @@ void vmTableFilterPanel::hideEvent ( QHideEvent* he )
 	m_table->setFocus ();
 }
 
-void vmTableFilterPanel::doFilter ( const triStateType level, const uint startlevel )
+void vmTableFilterPanel::doFilter ( const triStateType level, const int startlevel )
 {
-	qDebug () << endl << "------------------------------" << endl;
-	qDebug () << "vmTableFilterPanel::doFilter ( level = " << level.toInt() << ", startlevel = " << startlevel << ")"  << endl;
-	
-	if ( level == CLEAR_LEVEL ) {
-		for ( int i_row ( 0 ); i_row <= m_table->lastUsedRow (); ++i_row )
+	if ( level == CLEAR_LEVEL )
+	{
+		for ( uint i_row ( 0 ); static_cast<int>(i_row) <= m_table->lastUsedRow (); ++i_row )
 			m_table->setRowVisible ( i_row, true );
 		searchLevels.clearButKeepMemory ();
 	}
 	else {
-		if ( startlevel < searchLevels.count () ) {
-			qDebug () << "startlevel < searchLevels.count () " << searchLevels.count();
-			for ( uint i ( startlevel ); i < searchLevels.count (); ++i )
+		if ( startlevel < static_cast<int>(searchLevels.count ()) )
+		{
+			for ( int i ( startlevel ); i < static_cast<int>(searchLevels.count ()); ++i )
 				searchLevels.remove ( i, true );
 			podList<int>* rowLevel ( searchLevels.at ( startlevel - 1 ) );
-			if ( rowLevel ) {
+			if ( rowLevel )
+			{
 				for ( uint i ( 0 ); i < rowLevel->count (); ++i )
-					m_table->setRowVisible ( rowLevel->at ( i ), true );	
+					m_table->setRowVisible ( static_cast<uint>(rowLevel->at ( i )), true );	
 			}
 		}
-		if ( level == ADD_LEVEL ) {
+		if ( level == ADD_LEVEL )
+		{
 			bool b_keeprow ( false );
-			int i_row ( 0 );
+			uint i_row ( 0 );
 			podList<int>* newRowLevel ( new podList<int> );
 			newRowLevel->setPreAllocNumber ( m_table->visibleRows () );
-			qDebug () << "Visible rows: " << m_table->visibleRows ();
-			do {
-				if ( !m_table->isRowHidden ( i_row ) ) {
+			const uint max_cols ( m_table->isList () ? 1 : m_table->colCount () );
+			
+			do
+			{
+				if ( !m_table->isRowHidden ( static_cast<int>(i_row) ) )
+				{
 					b_keeprow = false;
-					for ( uint i_col ( 0 ); i_col < m_table->colCount (); ++i_col ) {
-						if ( m_txtFilter->matches ( m_table->sheetItem ( i_row, i_col )->text () ) ) {
+					for ( uint i_col ( 0 ); i_col < max_cols; ++i_col )
+					{
+						if ( m_txtFilter->matches ( m_table->sheetItem ( i_row, i_col )->text () ) )
+						{
 							b_keeprow = true;
-							qDebug () << m_table->sheetItem ( i_row, i_col )->text () << "  at row  " << i_row << "  matches search string  " << m_txtFilter->buffer ();
 							break;
 						}
 					}
 					m_table->setRowVisible ( i_row, b_keeprow );
 					if ( b_keeprow )
-						newRowLevel->append ( i_row );
+						newRowLevel->append ( static_cast<int>(i_row) );
 				}
-			} while ( ++i_row <= m_table->lastUsedRow () );
+			} while ( static_cast<int>(++i_row) <= m_table->lastUsedRow () );
 			searchLevels.append ( newRowLevel );
 		}
 	}

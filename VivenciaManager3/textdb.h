@@ -20,6 +20,7 @@ public:
 	virtual ~textFile ();
 
 	inline void setName ( const QString& filename ) { m_filename = filename; }
+	inline const QString& filename () { return m_filename; }
 
 	static bool isTextFile ( const QString& filename, const TF_TYPE type );
 	void remove ();
@@ -33,7 +34,7 @@ public:
 	void commit ();
 
 	void setText ( const QString& new_file_text );
-	inline QString text () const { return data; }
+	inline QString text () const { return m_data; }
 
 protected:
 	void readType ();
@@ -44,14 +45,14 @@ protected:
 	virtual bool writeData();
 	virtual void clearData ();
 
-	QFile m_file;
-	TF_TYPE m_type;
 	bool m_open;
 	bool m_needsaving;
-	uint m_buffersize;
 	int m_headerSize;
+	uint m_buffersize;
+	TF_TYPE m_type;
 	QString m_filename;
-	QString data;
+	QString m_data;
+	QFile m_file;
 };
 //--------------------------------------------TEXT-FILE--------------------------------
 
@@ -110,7 +111,7 @@ public:
 	void deleteRecord ( const int pos );
 	void appendRecord ( const stringRecord& rec );
 	bool getRecord ( stringRecord& rec, const int pos ) const;
-	bool getRecord ( stringRecord& rec, const QString& value, const int field = -1 ) const;
+	bool getRecord ( stringRecord& rec, const QString& value, const uint field ) const;
 
 	inline uint recCount () const { return recData.countRecords (); }
 

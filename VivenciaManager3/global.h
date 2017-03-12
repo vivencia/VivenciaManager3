@@ -99,9 +99,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 1
-#define VERSION_REVISION 00
+#define VERSION_REVISION 02
 constexpr const QLatin1String VERSION_APPEND ( "First compilation with gcc 6", 29 );
-constexpr const QLatin1String VERSION_DATE ( "2017-01-08", 10 );
+constexpr const QLatin1String VERSION_DATE ( "2017-02-11", 10 );
 
 static const QString PROGRAM_VERSION (
     QUOTEME(VERSION_MAJOR) + CHR_DOT +
@@ -119,7 +119,6 @@ extern QString APP_START_CMD;
 
 static const QString STR_MYSQL ( QStringLiteral ( "mysql" ) );
 static const QString SYSTEMD ( QStringLiteral ( "systemd" ) );
-static const QString UPSTART ( QStringLiteral ( "upstart" ) );
 static const QString SYSTEM_ROOT_SERVICE ( QStringLiteral ( "SYSTEM_ROOT_SERVICE" ) );
 static const QString SYSTEM_ROOT_PASSWORD_ID ( QStringLiteral ( "SYSTEM_ROOT_PASSWORD_ID" ) );
 

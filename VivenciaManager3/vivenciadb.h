@@ -144,7 +144,6 @@ private:
 
     bool m_ok, mNewDB;
     mutable bool mBackupSynced;
-	//passwordManager* mRootPasswdMngr;
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
 
 	static VivenciaDB* s_instance;
