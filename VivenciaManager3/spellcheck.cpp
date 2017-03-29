@@ -101,8 +101,9 @@ QMenu* spellCheck::menuAvailableDicts ()
 		mMenu = new QMenu ( APP_TR_FUNC ( "Choose spell language" ) );
 		
 		PointersList<fileOps::st_fileInfo*> dics;
-		fileOps::lsDir ( dics, mDicPath, QStringList () << QStringLiteral ( ".dic" ), fileOps::LS_FILES );
-		if ( !dics.isEmpty () ) {
+		fileOps::lsDir ( dics, mDicPath, QStringList () << QStringLiteral ( ".dic" ), QStringList (), fileOps::LS_FILES );
+		if ( !dics.isEmpty () )
+		{
 			QAction* qaction ( nullptr );
 			QString menuText;	
 			mMenu->connect ( mMenu, &QMenu::triggered, this, [&] ( QAction* action ) {

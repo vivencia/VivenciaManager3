@@ -137,8 +137,9 @@ bool updateCompleterRecordTable ()
 	}
 	VDB ()->optimizeTable( &completerRecord::t_info );
 	return true;
-#endif //TRANSITION_PERIOD
+#else
 	return false;
+#endif //TABLE_UPDATE_AVAILABLE
 }
 
 const TABLE_INFO completerRecord::t_info = {
@@ -205,13 +206,12 @@ void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES cat
 	}
 }
 
-//#ifdef TRANSITION_PERIOD
-#ifdef TABLE_UPDATE_AVAILABLE
 void completerRecord::updateCompleterInternal ( const uint field, const QStringList& str_list )
 {
-	if ( str_list.isEmpty () )
+	if ( str_list.isEmpty () || field > vmCompleters::MACHINE_EVENT )
 		return;
 
+#ifdef TABLE_UPDATE_AVAILABLE
 	QStringList::const_iterator itr ( str_list.constBegin () );
 	const QStringList::const_iterator itr_end ( str_list.constEnd () );
 	bool bFromStart ( true );
@@ -236,8 +236,8 @@ void completerRecord::updateCompleterInternal ( const uint field, const QStringL
 		setAction ( ACTION_READ ); // if saveRecord was unsuccessfull action () will be in a - possibly - wrong state
 	}
 	const_cast<QStringList*>( &str_list )->clear ();
-}
 #endif
+}
 
 void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates )
 {

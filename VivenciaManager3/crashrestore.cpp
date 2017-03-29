@@ -54,6 +54,8 @@ crashRestore::crashRestore ( const QString& str_id )
 {
 	m_filename = CONFIG ()->appDataDir () + str_id + QLatin1String ( ".crash" );
 	fileCrash = new dataFile ( m_filename );
+	// by using different separators we make sure there is no conflict with the data saved
+	fileCrash->setRecordSeparationChar ( public_table_sep, public_rec_sep );
 }
 
 crashRestore::~crashRestore ()

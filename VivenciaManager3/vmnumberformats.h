@@ -31,7 +31,7 @@ class vmNumber
 
 public:
     inline vmNumber () : m_type ( VMNT_UNSET ), mb_cached ( false ), mb_valid ( false ) {
-		for ( uint i ( 0 ); i < 5; ++i ) nbr_part[i] = nbr_upart[i] = 0;
+		for ( unsigned int i ( 0 ); i < 5; ++i ) nbr_part[i] = nbr_upart[i] = 0;
 	}
 	inline explicit vmNumber ( const int n ) {
 		fromInt ( n );
@@ -53,7 +53,6 @@ public:
 	}
 
 	vmNumber ( const QString& str_number, const VM_NUMBER_TYPE type, const int format = -1 );
-	//vmNumber ( const QString& str_number, const bool check_number_type = true );
 
 	void clear ( const bool b_unset_type = true );
 	inline VM_NUMBER_TYPE type () const {
@@ -75,7 +74,7 @@ public:
 
 	static const vmNumber emptyNumber;
 
-//------------------------------------INT-UINT---------------------------------------
+//------------------------------------INT-unsigned int---------------------------------------
 	inline bool isInt () const {
         return ( m_type == VMNT_INT ) && isValid ();
 	}
@@ -87,7 +86,7 @@ public:
 	int toInt () const;
 	unsigned int toUInt () const;
 	const QString& toStrInt () const;
-//------------------------------------INT-UINT---------------------------------------
+//------------------------------------INT-unsigned int---------------------------------------
 
 //-------------------------------------DOUBLE----------------------------------------
 	inline bool isDouble () const {
@@ -179,7 +178,7 @@ public:
 		return static_cast<int>(( ( this->year () - year ) * 12 ) + this->month () - month);
 	}
 
-    bool isDateWithinRange ( const vmNumber& checkDate, const uint years = 0, const uint months = 0, const uint days = 0 ) const;
+    bool isDateWithinRange ( const vmNumber& checkDate, const unsigned int years = 0, const unsigned int months = 0, const unsigned int days = 0 ) const;
 	unsigned int julianDay () const;
 	unsigned int dayOfYear () const;
 	unsigned int dayOfWeek () const;
@@ -269,6 +268,7 @@ public:
 	vmNumber operator+ ( const vmNumber& vmnumber ) const;
 	vmNumber operator/ ( const vmNumber& vmnumber ) const;
 	vmNumber operator/ ( const int number ) const;
+	vmNumber operator/ ( const unsigned int number ) const;
 	vmNumber operator* ( const vmNumber& vmnumber ) const;
 //-------------------------------------OPERATORS------------------------------------------
 

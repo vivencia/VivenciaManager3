@@ -5,7 +5,7 @@
 
 #include <QCoreApplication>
 
-const double TABLE_VERSION ( 1.6 );
+const double TABLE_VERSION ( 1.7 );
 
 const uint CALENDAR_FIELDS_TYPE[CALENDAR_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_DATE, DBTYPE_NUMBER, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
@@ -19,14 +19,14 @@ inline uint monthToDBMonth ( const vmNumber& date )
 
 inline uint DBMonthToMonth ( const uint dbmonth )
 {
-    const int year ( dbmonth / 12 );
-    return ( dbmonth - ( year * 12 ) );
+	const uint year ( dbmonth / 12 );
+	return ( dbmonth - ( year * 12 ) );
 }
 
 inline void DBMonthToDate ( const uint dbmonth, vmNumber& date )
 {
-    const int year ( dbmonth / 12 );
-    date.setDate ( 1, DBMonthToMonth ( dbmonth ), year + 2009 );
+	const uint year ( dbmonth / 12 );
+	date.setDate ( 1, static_cast<int>(DBMonthToMonth ( dbmonth )), static_cast<int>(year + 2009) );
 }
 
 inline uint weekNumberToDBWeekNumber ( const vmNumber& date )
@@ -36,18 +36,18 @@ inline uint weekNumberToDBWeekNumber ( const vmNumber& date )
 
 inline uint DBWeekNumberToWeekNumber ( const uint dbweek )
 {
-    const int year ( dbweek / 100 );
-    return ( dbweek - ( year * 100 ) );
+	const uint year ( dbweek / 100 );
+	return ( dbweek - ( year * 100 ) );
 }
 
 inline void DBWeekNumberToDate ( const uint dbweek, vmNumber& date )
 {
-	const int year ( dbweek / 100 );
-	/* This wiil retrieve the week number back, but the day will not be the same (unless by coincidence)
-	 * and the month might not be the same, as a week may have tow months (by comprising the end of one month
+	const uint year ( dbweek / 100 );
+	/* This will retrieve the week number back, but the day will not be the same (unless by coincidence)
+	 * and the month might not be the same, as a week may have two months (by comprising the end of one month
 	 * and the beginning of the other)
 	 */
-    date.setDate ( ( DBWeekNumberToWeekNumber ( dbweek ) * 7 ) - 2, 1, year + 2009 );
+	date.setDate ( ( static_cast<int>(DBWeekNumberToWeekNumber ( dbweek ) * 7) ) - 2, 1, static_cast<int>(year + 2009) );
 }
 
 #ifdef TABLE_UPDATE_AVAILABLE
@@ -72,40 +72,46 @@ bool updateCalendarTable ()
 
 	
 	VDB ()->clearTable ( &dbCalendar::t_info );
-    Calculator::init ();
+	Calculator::init ();
 	dbCalendar calendar;
 
 	Job job;
 	uint i ( 1 );
-	if ( job.readFirstRecord () ) {
-		do {
+	if ( job.readFirstRecord () )
+	{
+		do
+		{
 			pBox = vmNotify::progressBox ( pBox, nullptr, max_pbar_value, i++, QString::null, QStringLiteral( "Scanning the Jobs table" ) );
 			calendar.updateCalendarWithJobInfo ( &job );
 		} while ( job.readNextRecord () );
-    }
+	}
 
-    Payment pay;
-    if ( pay.readFirstRecord () ) {
-        do {
+	Payment pay;
+	if ( pay.readFirstRecord () )
+	{
+		do
+		{
 			pBox = vmNotify::progressBox ( pBox, nullptr, max_pbar_value, i++, QString::null, QStringLiteral( "Scanning the Payments table" ) );
-            calendar.updateCalendarWithPayInfo ( &pay );
-        } while ( pay.readNextRecord () );
-    }
+			calendar.updateCalendarWithPayInfo ( &pay );
+		} while ( pay.readNextRecord () );
+	}
 
-    Buy buy;
-    if ( buy.readFirstRecord () ) {
-        do {
+	Buy buy;
+	if ( buy.readFirstRecord () )
+	{
+		do
+		{
 			pBox = vmNotify::progressBox ( pBox, nullptr, max_pbar_value, i++, QString::null, QStringLiteral( "Scanning the Purchases table" ) );
-            calendar.updateCalendarWithBuyInfo ( &buy );
-        } while ( buy.readNextRecord () );
+			calendar.updateCalendarWithBuyInfo ( &buy );
+		} while ( buy.readNextRecord () );
 	}
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_pbar_value, i++, QString::null, QStringLiteral( "Done. Calendar table updated" ) );
-    VDB ()->optimizeTable ( &dbCalendar::t_info );
+	VDB ()->optimizeTable ( &dbCalendar::t_info );
 	VDB ()->deleteTable ( "OLD_CALENDAR" );
 	return true;	
 #else
 	return false;
-#endif
+#endif //TABLE_UPDATE_AVAILABLE
 }
 
 const TABLE_INFO dbCalendar::t_info = {
@@ -144,7 +150,7 @@ dbCalendar::~dbCalendar () {}
 void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 {
 	const stringTable jobReport ( recStrValue ( job, FLD_JOB_REPORT ) );
-	const int n_days ( static_cast<int>( jobReport.countRecords () ) );
+	const uint n_days ( jobReport.countRecords () );
 	vmNumber date;
 	const vmNumber pricePerDay ( job->price ( FLD_JOB_PRICE ) / n_days );
 	stringRecord* dayRecord ( nullptr );
@@ -152,15 +158,14 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 	
 	switch ( job->action () )
 	{
-		default: return;
 		case ACTION_ADD:
-		case ACTION_READ: // this is when updating the table. All read jobs will contain new info as though there new
+		case ACTION_READ: // this is when updating the table. All read jobs will contain new info as though they were new
 		{					// The prevAction for those DBRecords that have just been created/read is ACTION_NONE
-			for ( int i ( 0 ); i < n_days ; ++i )
+			for ( uint i ( 0 ); i < n_days ; ++i )
 			{
 				dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 				date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-				addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
+				addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 				if ( !pricePerDay.isNull () )
 					addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
 			}
@@ -168,11 +173,11 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		break;
 		case ACTION_DEL:
 		{
-			for ( int i ( 0 ); i < n_days ; ++i )
+			for ( uint i ( 0 ); i < n_days ; ++i )
 			{
 				dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 				date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, i + 1 );
+				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 				if ( !pricePerDay.isNull () )
 					addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, pricePerDay );
 			}
@@ -181,34 +186,34 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		case ACTION_EDIT:
 		{
 			const stringTable& oldJobReport ( recStrValueAlternate ( job, FLD_JOB_REPORT ) );
-			const int old_n_days ( static_cast<int>( oldJobReport.countRecords () ) );
+			const uint old_n_days ( oldJobReport.countRecords () );
 			const vmNumber oldPricePerDay ( vmNumber ( recStrValueAlternate ( job, FLD_JOB_PRICE ), VMNT_PRICE, 1 ) / old_n_days );
 			
 			if ( job->wasModified ( FLD_JOB_REPORT ) )
 			{	
-				for ( int i ( 0 ); i < old_n_days ; ++i )
+				for ( uint i ( 0 ); i < old_n_days ; ++i )
 				{
 					dayRecord = const_cast<stringRecord*>(&oldJobReport.readRecord ( i ));
 					date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-					addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, i + 1 );
+					addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 					if ( !oldPricePerDay.isNull () )
 						addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, pricePerDay );
 				}
 				
-				for ( int i ( 0 ); i < n_days ; ++i )
+				for ( uint i ( 0 ); i < n_days ; ++i )
 				{
 					dayRecord = const_cast<stringRecord*>(&oldJobReport.readRecord ( i ));
 					date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-					addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
+					addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 					if ( !pricePerDay.isNull () )
 						addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
 				}
-			} //if ( job->wasModified ( FLD_JOB_REPORT ) )
-			else
+			} 
+			else // report not modified
 			{
 				if ( job->wasModified ( FLD_JOB_PRICE ) )
 				{
-					for ( int i ( 0 ); i < n_days ; ++i )
+					for ( uint i ( 0 ); i < n_days ; ++i )
 					{
 						dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
 						date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
@@ -219,6 +224,9 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 			}
 		}
 		break;
+		case ACTION_NONE:
+		case ACTION_REVERT:
+			break;
 	}
 	updateCalendarDB ( job, ce_list );
 }
@@ -298,12 +306,12 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 							payRecord = const_cast<stringRecord* >( &payInfo.readRecord ( i ) );
 							price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
-							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
+							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 							addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, price );
 							if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 							{
 								date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );
-								addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, i + 1 );
+								addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 								addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
 							}
 						}
@@ -453,7 +461,8 @@ void dbCalendar::updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersLi
 			}
 		} //case ACTION_EDIT
 		break;
-		default:
+		case ACTION_NONE:
+		case ACTION_REVERT:
 		break;
 	}
 }
@@ -535,13 +544,11 @@ void dbCalendar::updateCalendarDB ( const DBRecord* dbrec, PointersList<CALENDAR
 }
 
 const stringTable& dbCalendar::dateLog ( const vmNumber& date, const uint search_field, const uint requested_field,
-        QString& price, const uint requested_field_price, const bool bIncludeDates )
+		QString& price, const uint requested_field_price, const bool bIncludeDates )
 {
 	mStrTable.clear ();
 	if ( requested_field < FLD_CALENDAR_JOBS || requested_field > FLD_CALENDAR_BUYS_PAY )
 		return mStrTable;
-
-	vmNumber total_price;
 
 	switch ( search_field )
 	{
@@ -554,18 +561,19 @@ const stringTable& dbCalendar::dateLog ( const vmNumber& date, const uint search
 		break;
 		case FLD_CALENDAR_WEEK_NUMBER:
 		case FLD_CALENDAR_MONTH:
-			if ( readFirstRecord ( search_field, QString::number ( search_field == FLD_CALENDAR_MONTH ?
-                                    monthToDBMonth ( date ) : weekNumberToDBWeekNumber ( date ) ) ) )
+			if ( readFirstRecord ( static_cast<int>(search_field), QString::number ( search_field == FLD_CALENDAR_MONTH ?
+									monthToDBMonth ( date ) : weekNumberToDBWeekNumber ( date ) ) ) )
 			{
-                uint i_row ( 0 );
+				uint i_row ( 0 );
+				vmNumber total_price;
 				do
 				{
 					mStrTable.appendTable ( recStrValue ( this, requested_field ) );
-                    if ( bIncludeDates )
+					if ( bIncludeDates )
 					{
-                        for ( ; i_row < mStrTable.countRecords (); ++i_row )
-                            mStrTable.changeRecord ( i_row, 3, recStrValue ( this, FLD_CALENDAR_DAY_DATE ) );
-                    }
+						for ( ; i_row < mStrTable.countRecords (); ++i_row )
+							mStrTable.changeRecord ( i_row, 3, recStrValue ( this, FLD_CALENDAR_DAY_DATE ) );
+					}
 					total_price += vmNumber ( recStrValue ( this, requested_field_price ), VMNT_PRICE, 1 );
 				} while ( readNextRecord ( true ) );
 				price = total_price.toPrice ();
@@ -580,12 +588,14 @@ const stringTable& dbCalendar::dateLog ( const vmNumber& date, const uint search
 void dbCalendar::addDate ( const vmNumber& date, const uint field, const stringRecord& id_trio )
 {
 	stringTable ids;
+	
+	clearAll ();
 	if ( readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) )
 	{
 		ids.fromString ( recStrValue ( this, field ) );
-        if ( ids.toString () == id_trio.toString () )
-            return;
-        setAction ( ACTION_EDIT );
+		if ( ids.matchRecord ( id_trio ) >= 0 )
+			return;
+		setAction ( ACTION_EDIT );
 	}
 	else
 	{
@@ -605,6 +615,7 @@ void dbCalendar::addDate ( const vmNumber& date, const uint field, const stringR
 
 void dbCalendar::delDate ( const vmNumber& date, const uint field, const stringRecord& id_trio )
 {
+	clearAll ();
 	if ( readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) )
 	{		
 		setAction ( ACTION_EDIT );
@@ -621,11 +632,12 @@ void dbCalendar::delDate ( const vmNumber& date, const uint field, const stringR
 void dbCalendar::addPrice ( const vmNumber& date, const vmNumber& price, const uint field )
 {
 	vmNumber new_price ( price );
+	clearAll ();
 	if ( readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) )
 	{
 		const vmNumber old_price ( recStrValue ( this, field ), VMNT_PRICE, 1 );
 		new_price += old_price;
-        setAction ( ACTION_EDIT );
+		setAction ( ACTION_EDIT );
 	}
 	else
 	{
@@ -641,6 +653,7 @@ void dbCalendar::addPrice ( const vmNumber& date, const vmNumber& price, const u
 void dbCalendar::editPrice ( const vmNumber& date, const vmNumber& new_price, const vmNumber& old_price, const uint field )
 {
 	vmNumber price;
+	clearAll ();
 	if ( readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) )
 	{
 		setAction ( ACTION_EDIT );
@@ -664,11 +677,12 @@ void dbCalendar::delPrice ( const vmNumber& date, const vmNumber& price, const u
 {
 	if ( !price.isNull () )
 	{
+		clearAll ();
 		if ( readRecord ( FLD_CALENDAR_DAY_DATE, date.toDate ( vmNumber::VDF_DB_DATE ) ) )
 		{
-            setAction ( ACTION_EDIT );
+			setAction ( ACTION_EDIT );
 			const vmNumber old_price ( recStrValue ( this, field ), VMNT_PRICE, 1 );
-            const vmNumber new_price ( old_price - price );
+			const vmNumber new_price ( old_price - price );
 			setRecValue ( this, field, new_price.toPrice () );
 			saveRecord ();
 		}

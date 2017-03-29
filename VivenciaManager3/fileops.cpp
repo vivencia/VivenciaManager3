@@ -391,7 +391,7 @@ const QString fileOps::replaceFileExtension ( const QString& filepath, const QSt
 }
 
 void fileOps::lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir,
-					  const QStringList& name_filters, const int filter, const int follow_into )
+					  const QStringList& name_filters, const QStringList& exclude_filter, const int filter, const int follow_into )
 {
 	DIR* __restrict dir ( nullptr );
 	if ( ( dir = ::opendir ( baseDir.toUtf8 ().constData () ) ) != nullptr )
@@ -400,6 +400,7 @@ void fileOps::lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir
 		QString filename, pathname;
 		static const QString dot ( CHR_DOT );
 		static const QString doubleDot ( QStringLiteral ( ".." ) );
+		bool ok ( false );
 
 		while ( ( dir_ent = ::readdir ( dir ) ) != nullptr )
 		{
@@ -411,9 +412,21 @@ void fileOps::lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir
 				if ( filename.startsWith ( CHR_DOT ) || filename.startsWith ( CHR_TILDE ) )
 					continue;
 			}
-
+			
+			ok = true;
+			for ( int i ( 0 ); i < exclude_filter.count (); ++i )
+			{
+				if ( filename == exclude_filter.at ( i ) )
+				{
+					ok = false;
+					break;
+				}
+			}
+			if ( !ok )
+				continue;
+			
 			pathname = baseDir + CHR_F_SLASH + filename;
-			bool ok ( false );
+			
 			ok = ( filter & LS_FILES ) && ( dir_ent->d_type == DT_REG );
 			if ( !ok )
 				ok = ( filter & LS_DIRS ) && ( dir_ent->d_type == DT_DIR );
@@ -445,7 +458,7 @@ void fileOps::lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir
 				{
                     fi->is_dir = true;
                     if ( follow_into != 0 )
-                        lsDir ( result, pathname, name_filters, filter,
+                        lsDir ( result, pathname, name_filters, exclude_filter, filter,
 								follow_into == -1 ? -1 : follow_into - 1 );
 				}
 			}
@@ -520,7 +533,10 @@ static QString suProgram ( const QString& message, const QString& command )
 		case fileOps::DesktopEnv_Kde4:
 			cmdLine = configOps::kdesu ( message );
 		break;
-		default:
+		case fileOps::DesktopEnv_Gnome:
+		case fileOps::DesktopEnv_Unity:
+		case fileOps::DesktopEnv_Xfce:
+		case fileOps::DesktopEnv_Other:
 			cmdLine = configOps::gksu ( message, emptyString );
 	}
 	cmdLine += CHR_SPACE + CHR_QUOTES + command + CHR_QUOTES;
@@ -554,7 +570,7 @@ bool fileOps::executeWait ( const QString& arguments, const QString& program,
         prog = suProgram ( as_root_message, prog );
 
 	proc->start ( prog );
-    const bool ret ( proc->waitForFinished () );
+    const bool ret ( proc->waitForFinished ( -1 ) );
     if ( exitCode != nullptr )
 	{
         *exitCode = proc->exitCode ();

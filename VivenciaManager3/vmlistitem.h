@@ -65,8 +65,8 @@ public:
 	inline DBRecord* dbRec () const { return m_dbrec; }
 	void setDBRec ( DBRecord* dbrec, const bool self_only = false );
 
-	inline int dbRecID () const { return id (); }
-	inline void setDBRecID ( const int recid ) { setID ( recid ); }
+	inline uint dbRecID () const { return static_cast<uint>(id ()); }
+	inline void setDBRecID ( const uint recid ) { setID ( static_cast<int>(recid) ); }
 
 	void saveCrashInfo ( crashRestore* crash );
 

@@ -27,7 +27,7 @@ static const QString eow ( QLatin1String ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\=" )
 
 textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	: QTextEdit ( parent ), vmWidget ( WT_TEXTEDIT ),
-	  mFirstInsertedActionPos ( 0 ), mbDocmentModified ( false ), sepWin ( nullptr ), 
+	  mFirstInsertedActionPos ( 0 ), mbDocumentModified ( false ), sepWin ( nullptr ), 
 	  mCompleter ( nullptr ), m_highlighter ( nullptr ), m_searchPanel ( nullptr ), mContextMenu ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
@@ -73,7 +73,7 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 
 	createContextMenu ();
 	newest_edited_text.reserve ( 20000 );
-	connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocmentModified = bChanged); } );
+	connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocumentModified = bChanged); } );
 }
 
 textEditWithCompleter::~textEditWithCompleter ()
@@ -139,6 +139,17 @@ void textEditWithCompleter::insertCustomActionToContextMenu ( QAction* action )
 	mContextMenu->addAction ( action );
 }
 
+void textEditWithCompleter::saveContents ( const bool b_force )
+{
+	if ( mbDocumentModified || b_force )
+	{
+		newest_edited_text = document ()->toPlainText ();
+		mbDocumentModified = false;
+		if ( contentsAltered_func )
+			contentsAltered_func ( this );
+	}
+}
+
 QString textEditWithCompleter::paragraphText () const
 {
 	return textCursor ().block ().text ();
@@ -147,7 +158,7 @@ QString textEditWithCompleter::paragraphText () const
 void textEditWithCompleter::setText ( const QString& text, const bool b_notify )
 {
 	QTextEdit::setPlainText ( newest_edited_text = text );
-	mbDocmentModified = false;
+	mbDocumentModified = false;
 	if ( b_notify && contentsAltered_func )
 		contentsAltered_func ( this );
 }
@@ -293,7 +304,6 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 			break;
 			case Qt::Key_Enter:
 			case Qt::Key_Return:
-				saveContents ( true );
 				if ( keypressed_func )
 					keypressed_func ( e, this );
 			break;
@@ -301,6 +311,8 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 				showhideUtilityPanel ();
 			break;
 			case Qt::Key_S:
+				// Commit the latest text to DBRecord's buffers. MainWindow::saveJob is not called for this quick save method
+				// only Job::saveRecord
 				saveContents ( true );
 				if ( keypressed_func )
 					keypressed_func ( e, this );
@@ -458,7 +470,7 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 	{
 		misspelledWordsActs[1]->setText ( QString ( TR_FUNC ( "Add  ( %1 ) " ) ).arg ( m_wordUnderCursor ) );
 		misspelledWordsActs[2]->setText ( QString ( TR_FUNC ( "Ignore  ( %1 ) " ) ).arg ( m_wordUnderCursor ) );
-		for ( i = 0; i < qMin ( signed ( WRONG_WORDS_MENUS ), list_words.size () + 3 ); ++i )
+		for ( i = 0; i < qMin ( static_cast<int>(WRONG_WORDS_MENUS), list_words.size () + 3 ); ++i )
 		{
 			if ( i >= 3 )
 				misspelledWordsActs[i]->setText ( list_words.at ( i - 3 ).trimmed () );
@@ -473,17 +485,6 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 	for ( i = 0; i < qMin ( signed ( WRONG_WORDS_MENUS ), list_words.size () + 3 ); ++i )
 		mContextMenu->removeAction ( misspelledWordsActs[i] );
 	e->setAccepted ( true );
-}
-
-void textEditWithCompleter::saveContents ( const bool b_force )
-{
-	if ( mbDocmentModified || b_force )
-	{
-		newest_edited_text = document ()->toPlainText ();
-		mbDocmentModified = false;
-		if ( contentsAltered_func )
-			contentsAltered_func ( this );
-	}
 }
 
 QString textEditWithCompleter::textUnderCursor () const

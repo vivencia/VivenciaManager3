@@ -13,8 +13,11 @@
  */
 static const auto CURRENCY = QStringLiteral ( "R$" );
 
-
-constexpr const char* const MONTHS[13] = { "", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro" };
+static const QString MONTHS[13] = { QString::null, 
+			QStringLiteral ( "Janeiro" ), QStringLiteral ( "Fevereiro" ), QStringLiteral ( "Março" ), QStringLiteral ( "Abril" ), 
+			QStringLiteral ( "Maio" ), QStringLiteral ( "Junho" ), QStringLiteral ( "Julho" ), QStringLiteral ( "Agosto" ),
+			QStringLiteral ( "Setembro" ), QStringLiteral ( "Outubro" ), QStringLiteral ( "Novembro" ), QStringLiteral ( "Dezembro" )
+};
 
 // Source: http://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
 constexpr const int months_table[13] = { -1, 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 };
@@ -28,12 +31,12 @@ vmNumber::vmNumber ( const QString& str, const VM_NUMBER_TYPE type, const int fo
 {
 	if ( type < VMNT_PHONE )
 	{
-		for ( uint i ( 0 ); i < 5; ++i )
+		for ( unsigned int i ( 0 ); i < 5; ++i )
 			nbr_part[i] = 0;
 	}
 	else
 	{
-		for ( uint i ( 0 ); i < 5; ++i )
+		for ( unsigned int i ( 0 ); i < 5; ++i )
 			nbr_upart[i] = 0;
 	}
 
@@ -66,7 +69,7 @@ vmNumber::vmNumber ( const QString& str, const VM_NUMBER_TYPE type, const int fo
 	: m_type ( VMNT_UNSET ), mb_cached ( false )
 {
 	if ( check_number_type ) {
-		for ( uint i ( 0 ); i < 5; ++i )
+		for ( unsigned int i ( 0 ); i < 5; ++i )
 			nbr_part[i] = 0;
 
 		if ( str.contains ( CURRENCY ) )
@@ -93,7 +96,7 @@ QString vmNumber::useCalc ( const vmNumber& n1, const vmNumber& res, const QStri
 
 void vmNumber::copy ( vmNumber& dest, const vmNumber& src )
 {
-	for ( uint i ( 0 ); i < 5; ++i )
+	for ( unsigned int i ( 0 ); i < 5; ++i )
 	{
 		dest.nbr_part[i] = src.nbr_part[i];
 		dest.nbr_upart[i] = src.nbr_upart[i];
@@ -112,12 +115,12 @@ void vmNumber::clear ( const bool b_unset_type )
 		case VMNT_DOUBLE:
 		case VMNT_PRICE:
 		case VMNT_TIME:
-			for ( uint i ( 0 ); i < 5; ++i )
+			for ( unsigned int i ( 0 ); i < 5; ++i )
 				nbr_part[i] = 0;
 		break;
 		case VMNT_PHONE:
 		case VMNT_DATE:
-			for ( uint i ( 0 ); i < 5; ++i )
+			for ( unsigned int i ( 0 ); i < 5; ++i )
 				 nbr_upart[i] = 0;
 		break;
 		case VMNT_UNSET:
@@ -270,7 +273,7 @@ void vmNumber::makeOpposite ()
 		case VMNT_DOUBLE:
 		case VMNT_TIME:
 			{
-				for ( uint i ( 0 ); i < 5; ++i )
+				for ( unsigned int i ( 0 ); i < 5; ++i )
 					nbr_part[i] = 0 - nbr_part[i];
 			}
 		break;
@@ -281,7 +284,7 @@ void vmNumber::makeOpposite ()
 	}
 }
 
-inline bool vmNumber::isNull () const
+bool vmNumber::isNull () const
 {
 	switch ( m_type )
 	{
@@ -298,8 +301,8 @@ inline bool vmNumber::isNull () const
 	}
 	return true;
 }
-//------------------------------------INT-UINT---------------------------------------
-//TODO: check for values over the limit. VMNT_INT uses an internal int but accepts uints, so this might cause trouble
+//------------------------------------INT-unsigned int---------------------------------------
+//TODO: check for values over the limit. VMNT_INT uses an internal int but accepts unsigned ints, so this might cause trouble
 
 vmNumber& vmNumber::fromStrInt ( const QString& integer )
 {
@@ -404,7 +407,7 @@ const QString& vmNumber::toStrInt () const
 		return mQString;
 	}
 }
-//------------------------------------INT-UINT---------------------------------------
+//------------------------------------INT-unsigned int---------------------------------------
 
 //-------------------------------------DOUBLE----------------------------------------
 vmNumber& vmNumber::fromStrDouble ( const QString& str_double )
@@ -534,7 +537,7 @@ const QString& vmNumber::toStrDouble () const
 //-------------------------------------DATE------------------------------------------
 void vmNumber::fixDate ()
 {
-	int m ( static_cast<int>(month ()) ), y ( static_cast<int>(nbr_upart[VM_IDX_YEAR]) );
+	int m ( static_cast<int>(month ()) ), y ( static_cast<int>(year ()) );
 	int d ( 0 ), days_in_month ( 0 );
 	if ( nbr_part[VM_IDX_DAY] > 0 )
 	{
@@ -559,7 +562,7 @@ void vmNumber::fixDate ()
 	}
 	else
 	{
-		d = static_cast<int>(nbr_upart[VM_IDX_DAY]) + nbr_part[VM_IDX_DAY];
+		d = static_cast<int>(day ()) + nbr_part[VM_IDX_DAY];
 		if ( d <= 0 )
 		{
 			if ( m != 1 )
@@ -950,7 +953,7 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 					cached_str = strYear + strMonth + strDay;
 				break;
 				case VDF_LONG_DATE:
-					cached_str = strDay + QLatin1String ( " de " ) + QLatin1String ( MONTHS[nbr_upart[VM_IDX_MONTH]] ) +
+					cached_str = strDay + QLatin1String ( " de " ) + MONTHS[nbr_upart[VM_IDX_MONTH]] +
 							 QLatin1String ( " de " ) + strYear;
 				break;
 				case VDF_DROPBOX_DATE:
@@ -990,7 +993,7 @@ const QDate& vmNumber::toQDate () const
 	return mQDate;
 }
 
-bool vmNumber::isDateWithinRange ( const vmNumber& checkDate, const uint years, const uint months, const uint days ) const
+bool vmNumber::isDateWithinRange ( const vmNumber& checkDate, const unsigned int years, const unsigned int months, const unsigned int days ) const
 {
 	vmNumber tempDate ( checkDate );
 	tempDate.setDate ( static_cast<int>(days), static_cast<int>(months), static_cast<int>(years), true );
@@ -1025,7 +1028,7 @@ unsigned int vmNumber::dayOfYear () const
 	if ( isDate () )
 	{
 		n = day ();
-		for ( uint i ( 1 ); i < month (); ++i )
+		for ( unsigned int i ( 1 ); i < month (); ++i )
 			n += daysInMonth ( i, year () );
 	}
 	return n;
@@ -1110,7 +1113,7 @@ vmNumber& vmNumber::fromStrPhone ( const QString& phone )
 			if ( phone.at ( static_cast<int>(chr) ).isDigit () )
 				phone_str += phone.at ( static_cast<int>(chr) );
 		} while ( ++chr < len );
-		const uint new_len ( static_cast<unsigned int>(phone_str.length ()) );
+		const unsigned int new_len ( static_cast<unsigned int>(phone_str.length ()) );
 		if ( new_len >= 2 )
 		{
 			if ( new_len >= 10 )
@@ -1123,7 +1126,7 @@ vmNumber& vmNumber::fromStrPhone ( const QString& phone )
 			{
 				nbr_upart[VM_IDX_PREFIX] = 19; //default prefix
 				chr = 0;
-				uint tens ( 1000 ), idx ( VM_IDX_PHONE1 );
+				unsigned int tens ( 1000 ), idx ( VM_IDX_PHONE1 );
 				do
 				{
 					if ( tens >= 1 )
@@ -1327,8 +1330,8 @@ vmNumber& vmNumber::fromStrPrice ( const QString& price )
 	{
 		QString simple_price ( price );
 		simple_price.remove ( CHR_SPACE );
-		uint chr ( 0 ), idx ( VM_IDX_TENS );
-		const uint len ( static_cast<unsigned int>(simple_price.length ()) );
+		unsigned int chr ( 0 ), idx ( VM_IDX_TENS );
+		const unsigned int len ( static_cast<unsigned int>(simple_price.length ()) );
 		QChar qchr;
 		bool is_negative ( false );
 		nbr_part[VM_IDX_TENS] = nbr_part[VM_IDX_CENTS] = 0;
@@ -1639,7 +1642,7 @@ const QString& vmNumber::formatTime ( const int hour, const unsigned int min, co
 {
 	unsigned int abs_hour ( static_cast<unsigned int>(::fabs ( static_cast<double>(hour) )) );
 	abs_hour += static_cast<unsigned int>(( min / 60 ));
-	const unsigned int abs_min ( min - unsigned ( ( min / 60 ) ) * 60 );
+	const unsigned int abs_min ( min - ( min / 60 ) * 60 );
 	QString str_hour, str_min;
 	str_hour.setNum ( abs_hour );
 	str_min.setNum ( abs_min );
@@ -1701,25 +1704,25 @@ const vmNumber& vmNumber::operator= ( const vmNumber& vmnumber )
 
 vmNumber& vmNumber::operator= ( const QDate& date )
 {
-	( void )fromQDate ( date );
+	static_cast<void>(fromQDate ( date ));
 	return *this;
 }
 
 vmNumber& vmNumber::operator= ( const int n )
 {
-	( void )fromInt ( n );
+	static_cast<void>(fromInt ( n ));
 	return *this;
 }
 
 vmNumber& vmNumber::operator= ( const unsigned int n )
 {
-	( void )fromUInt ( n );
+	static_cast<void>(fromUInt ( n ));
 	return *this;
 }
 
 vmNumber& vmNumber::operator= ( const double n )
 {
-	( void )fromDoubleNbr ( n );
+	static_cast<void>(fromDoubleNbr ( n ));
 	return *this;
 }
 
@@ -2514,7 +2517,7 @@ vmNumber& vmNumber::operator*= ( const int number )
 /*  In the following operator () functions, the type of the returned instance is set accordingly to
 	an implicit rule of type precedence. Basic numeric types have lower precedence than complex types.
 	The precedence order is thus:
-	( int = uint ) < double < the rest
+	( int = unsigned int ) < double < the rest
 */
 
 vmNumber vmNumber::operator- ( const vmNumber& vmnumber ) const
@@ -2828,6 +2831,13 @@ vmNumber vmNumber::operator/ ( const int number ) const
 		break;
 	}
 	return ret;
+}
+
+vmNumber vmNumber::operator/ ( const unsigned int number ) const
+{
+	if ( number > INT_MAX )
+		return emptyNumber;
+	return operator/ ( static_cast<int>(number) );
 }
 
 vmNumber vmNumber::operator* ( const vmNumber& vmnumber ) const

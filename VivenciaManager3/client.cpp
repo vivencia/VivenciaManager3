@@ -228,12 +228,12 @@ QString Client::clientName ( const QString& id )
 	return emptyString;
 }
 
-int Client::clientID ( const QString& name )
+uint Client::clientID ( const QString& name )
 {
 	QSqlQuery query;
 	if ( VDB ()->runQuery ( QLatin1String (	"SELECT ID FROM CLIENTS WHERE NAME='" ) + name + CHR_CHRMARK, query ) )
-		return query.value ( 0 ).toInt ();
-	return -1;
+		return query.value ( 0 ).toUInt ();
+	return 0;
 }
 
 QString Client::concatenateClientInfo ( const Client& client )

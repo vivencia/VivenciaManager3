@@ -116,18 +116,11 @@ void DBRecord::callHelperFunctions ()
 	}
 }
 
-/*const vmNumber& DBRecord::setPrice ( const uint field, const QString& price )
+bool DBRecord::readRecord ( const uint id, const bool load_data )
 {
-	rec_number.fromStrPrice ( price );
-	setRecValue ( this, field, rec_number.toPrice () );
-	return rec_number;
-}*/
-
-bool DBRecord::readRecord ( const int id, const bool load_data )
-{
-	if ( id >= 1 && id != actualRecordInt ( 0 ) )
+	if ( id >= 1 && id != static_cast<uint>(actualRecordInt ( 0 )) )
 	{
-		setIntValue ( 0, id );
+		setIntValue ( 0, static_cast<int>(id) );
 		setBackupValue ( 0, QString::number ( id ) );
 		return VDB ()->getDBRecord ( this, 0, load_data );
 	}
@@ -161,7 +154,7 @@ void DBRecord::resetQuery ()
 
 bool DBRecord::readFirstRecord ( const bool load_data )
 {
-	return readRecord ( static_cast<int>(VDB ()->getLowestID ( t_info->table_order )), load_data );
+	return readRecord ( VDB ()->getLowestID ( t_info->table_order ), load_data );
 }
 
 bool DBRecord::readFirstRecord ( const int field, const QString& search, const bool load_data )
@@ -175,7 +168,7 @@ bool DBRecord::readFirstRecord ( const int field, const QString& search, const b
 
 bool DBRecord::readLastRecord ( const bool load_data )
 {
-	return readRecord ( static_cast<int>(VDB ()->getHighestID ( t_info->table_order )), load_data );
+	return readRecord ( VDB ()->getHighestID ( t_info->table_order ), load_data );
 }
 
 bool DBRecord::readLastRecord ( const int field, const QString& search, const bool load_data )
@@ -192,14 +185,14 @@ bool DBRecord::readNextRecord ( const bool follow_search, const bool load_data )
 {
 	if ( !follow_search )
 	{
-		const int last_id ( static_cast<int>(VDB ()->getHighestID ( t_info->table_order )) );
-		if ( last_id >= 1 && actualRecordInt ( 0 ) < last_id )
+		const uint last_id ( VDB ()->getHighestID ( t_info->table_order ) );
+		if ( last_id >= 1 && static_cast<uint>(actualRecordInt ( 0 )) < last_id )
 		{
 			do
 			{
-				if ( readRecord ( actualRecordInt ( 0 ) + 1, load_data ) )
+				if ( readRecord ( static_cast<uint>(actualRecordInt ( 0 )) + 1, load_data ) )
 					return true;
-			} while ( actualRecordInt ( 0 ) <= last_id );
+			} while ( static_cast<uint>(actualRecordInt ( 0 )) <= last_id );
 		}
 	}
 	else
@@ -214,14 +207,14 @@ bool DBRecord::readPrevRecord ( const bool follow_search, const bool load_data )
 {
 	if ( !follow_search )
 	{
-		const int first_id ( static_cast<int>(VDB ()->getLowestID ( t_info->table_order )) );
-		if ( first_id >= 0 && actualRecordInt ( 0 ) > 0 )
+		const uint first_id ( VDB ()->getLowestID ( t_info->table_order ) );
+		if ( first_id >= 1 && actualRecordInt ( 0 ) > 1 )
 		{
 			do
 			{
-				if ( readRecord ( actualRecordInt ( 0 ) - 1, load_data ) )
+				if ( readRecord ( static_cast<uint>(actualRecordInt ( 0 )) - 1, load_data ) )
 					return true;
-			} while ( actualRecordInt ( 0 ) >= 0 );
+			} while ( actualRecordInt ( 0 ) > 0 );
 		}
 	}
 	else
@@ -351,7 +344,8 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 					fptr_recordInt = &DBRecord::backupRecordInt;
 					fptr_recordStrAlternate = &DBRecord::actualRecordStr;
 				break;
-				default:
+				case ACTION_DEL:
+				case ACTION_NONE:
 				break;
 			}
 		}

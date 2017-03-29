@@ -30,11 +30,11 @@ public:
     int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
 
-    static inline const QString clientName ( const int id ) {
-        return ( id > 0 ) ? clientName ( QString::number ( id ) ) : QString::null;
+    static inline const QString clientName ( const uint id ) {
+        return ( id >= 1 ) ? clientName ( QString::number ( id ) ) : QString::null;
     }
     static QString clientName ( const QString& id );
-    static int clientID ( const QString& name );
+    static uint clientID ( const QString& name );
     static QString concatenateClientInfo ( const Client& client );
 
     void setListItem ( clientListItem* client_item );

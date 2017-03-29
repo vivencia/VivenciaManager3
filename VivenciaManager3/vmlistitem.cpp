@@ -211,7 +211,7 @@ bool vmListItem::loadData ()
 	if ( dbRec () )
 	{
 		if ( action () == ACTION_READ )
-			return ( m_dbrec->readRecord ( id () ) );
+			return ( m_dbrec->readRecord ( static_cast<uint>(id ()) ) );
 		return true; // when adding or editing, do not read from the database, but use current user input
 	}
 	return false;
@@ -331,7 +331,7 @@ bool clientListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( CLIENT_REC->readRecord ( id () ) );
+		return ( CLIENT_REC->readRecord ( static_cast<uint>(id ()) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -400,7 +400,7 @@ bool jobListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( JOB_REC->readRecord ( id () ) );
+		return ( JOB_REC->readRecord ( static_cast<uint>(id ()) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -515,7 +515,7 @@ bool payListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( PAY_REC->readRecord ( id () ) );
+		return ( PAY_REC->readRecord ( static_cast<uint>(id ()) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -649,7 +649,7 @@ bool buyListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( BUY_REC->readRecord ( id () ) );
+		return ( BUY_REC->readRecord ( static_cast<uint>(id ()) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 

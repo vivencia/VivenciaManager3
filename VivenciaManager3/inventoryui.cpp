@@ -41,29 +41,23 @@ bool InventoryUI::setupUI ()
 	btnInventoryEditTable = new QPushButton ( tr ( "&Edit" ) );
 	btnInventoryEditTable->setCheckable ( true );
 	btnInventoryEditTable->connect ( btnInventoryEditTable, &QPushButton::clicked,
-	this, [&] ( const bool checked ) {
-		return btnInventoryEditTable_clicked ( checked );
-	} );
+	this, [&] ( const bool checked ) { return btnInventoryEditTable_clicked ( checked ); } );
 
 	btnInventoryCancelEdit = new QPushButton ( tr ( "Cancel changes" ) );;
 	btnInventoryCancelEdit->connect ( btnInventoryCancelEdit, &QPushButton::clicked,
-	this, [&] ( const bool ) {
-		return btnInventoryCancelEdit_clicked (); } );
+					this, [&] ( const bool ) { return btnInventoryCancelEdit_clicked (); } );
 
 	btnInventoryInsertRowAbove = new QPushButton ( tr ( "Add new item above" ) );
 	btnInventoryInsertRowAbove->connect ( btnInventoryInsertRowAbove, &QPushButton::clicked,
-	this, [&] ( const bool ) {
-		return btnInventoryInsertRowAbove_clicked (); } );
+					this, [&] ( const bool ) { return btnInventoryInsertRowAbove_clicked (); } );
 
 	btnInventoryInsertRowBelow = new QPushButton ( tr ( "Add new item below" ) );
 	btnInventoryInsertRowBelow->connect ( btnInventoryInsertRowBelow, &QPushButton::clicked,
-	this, [&] ( const bool ) {
-		return btnInventoryInsertRowBelow_clicked (); } );
+					this, [&] ( const bool ) { return btnInventoryInsertRowBelow_clicked (); } );
 
 	btnInventoryRemoveRow = new QPushButton ( tr ( "Remove item" ) );
 	btnInventoryRemoveRow->connect ( btnInventoryRemoveRow, &QPushButton::clicked,
-	this, [&] ( const bool ) {
-		return btnInventoryRemoveRow_clicked (); } );
+					this, [&] ( const bool ) { return btnInventoryRemoveRow_clicked (); } );
 
 	QGridLayout* gLayoutInventoryButtons ( new QGridLayout );
 	gLayoutInventoryButtons->addWidget ( btnInventoryEditTable, 0, 0 );
@@ -101,9 +95,11 @@ bool InventoryUI::setupUI ()
 
 void InventoryUI::readRowData ( const uint row, const uint, const uint prev_row, const uint )
 {
-	if ( prev_row != row ) {
+	if ( prev_row != row )
+	{
 		inventory_rec->clearAll ();
-		if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () ) {
+		if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () )
+		{
 			inventory_rec->setAction ( ACTION_READ );
 			for ( uint i_col ( 0 ) ; i_col < unsigned ( m_table->columnCount () ); ++i_col )
 				setRecValue ( inventory_rec, i_col, m_table->sheetItem ( row, i_col )->text () );
@@ -111,20 +107,21 @@ void InventoryUI::readRowData ( const uint row, const uint, const uint prev_row,
 		}
 		else
 			inventory_rec->setAction ( ACTION_ADD );
-		inventory_rec->setIntBackupValue ( FLD_INVENTORY_ITEM, row );
+		inventory_rec->setIntBackupValue ( FLD_INVENTORY_ITEM, static_cast<int>(row) );
 	}
 }
 
 void InventoryUI::tableChanged ( const vmTableItem* const item )
 {
-	setRecValue ( inventory_rec, item->column (), item->text () );
+	setRecValue ( inventory_rec, static_cast<uint>(item->column ()), item->text () );
 	inventory_rec->saveRecord ();
 	m_table->setTableUpdated ();
 }
 
 void InventoryUI::rowRemoved ( const uint row )
 {
-	if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () ) {
+	if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () )
+	{
 		inventory_rec->setAction ( ACTION_DEL );
 		inventory_rec->deleteRecord (); // deletes from database before removing the row
 	}
@@ -134,7 +131,7 @@ void InventoryUI::rowRemoved ( const uint row )
 void InventoryUI::insertRow ( const uint i_row )
 {
 	m_table->insertRow ( i_row );
-	m_table->setCurrentCell ( i_row, m_table->currentColumn () );
+	m_table->setCurrentCell ( static_cast<int>(i_row), m_table->currentColumn () );
 }
 
 void InventoryUI::createTable ()
@@ -144,10 +141,12 @@ void InventoryUI::createTable ()
 	vmTableColumn *fields ( m_table->createColumns ( INVENTORY_FIELD_COUNT ) );
 	m_table->setKeepModificationRecords ( false );
 
-	for ( uint i ( 0 ); i < INVENTORY_FIELD_COUNT; ++i ) {
+	for ( uint i ( 0 ); i < INVENTORY_FIELD_COUNT; ++i )
+	{
 		fields[i].label = VivenciaDB::getTableColumnLabel ( &inventory_rec->t_info, i );
 
-		switch ( i ) {
+		switch ( i )
+		{
 			case FLD_INVENTORY_ID:
 				fields[FLD_INVENTORY_ID].editable = false;
 				fields[FLD_INVENTORY_ID].width = 40;
@@ -195,7 +194,8 @@ void InventoryUI::createTable ()
 void InventoryUI::btnInventoryEditTable_clicked ( const bool checked )
 {
 	m_table->setEditable ( checked );
-	if ( checked ) {
+	if ( checked )
+	{
 		btnInventoryEditTable->setText ( tr ( "Save" ) );
 		m_table->setFocus ();
 	}
@@ -209,7 +209,8 @@ void InventoryUI::btnInventoryEditTable_clicked ( const bool checked )
 
 void InventoryUI::btnInventoryCancelEdit_clicked ()
 {
-	if ( m_table->isEditable () ) {
+	if ( m_table->isEditable () )
+	{
 		btnInventoryEditTable->setChecked ( false );
 		btnInventoryEditTable_clicked ( false );
 	}
@@ -218,15 +219,17 @@ void InventoryUI::btnInventoryCancelEdit_clicked ()
 void InventoryUI::btnInventoryRemoveRow_clicked ()
 {
 	if ( m_table->currentRow () >= 1 )
-		rowRemoved ( m_table->currentRow () );
+		rowRemoved ( static_cast<uint>(m_table->currentRow ()) );
 }
 
 void InventoryUI::btnInventoryInsertRowBelow_clicked ()
 {
-	insertRow ( m_table->currentRow () + 1 );
+	if ( m_table->currentRow () >= 0 )
+		insertRow ( static_cast<uint>(m_table->currentRow () + 1) );
 }
 
 void InventoryUI::btnInventoryInsertRowAbove_clicked ()
 {
-	insertRow ( m_table->currentRow () );
+	if ( m_table->currentRow () >= 0 )
+		insertRow ( static_cast<uint>(m_table->currentRow ()) );
 }

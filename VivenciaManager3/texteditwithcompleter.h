@@ -42,6 +42,7 @@ public:
 	void createContextMenu ();
 	void insertCustomActionToContextMenu ( QAction* action );
 
+	void saveContents ( const bool b_force = false );
 	QString paragraphText () const;
 	void setText ( const QString& text, const bool b_notify = false );
 	inline const QString& currentText () const
@@ -88,7 +89,7 @@ private:
 	QString mSearchTerm;
 	int mFirstInsertedActionPos;
 	int mCursorPos;
-	bool mbDocmentModified;
+	bool mbDocumentModified;
 
 	QAction* misspelledWordsActs[WRONG_WORDS_MENUS];
 	separateWindow* sepWin;
@@ -99,7 +100,6 @@ private:
 
 	static QString defaultBGColor;
 
-	void saveContents ( const bool b_force = false );
 	QString textUnderCursor () const;
     void insertCompletion ( const QString& completion, QCompleter* completer );
     void correctWord ( const QAction* action );

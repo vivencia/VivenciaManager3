@@ -573,6 +573,34 @@ int stringTable::findRecordRowThatContainsWord ( const QString& word, podList<ui
     return (dayAndFieldList != nullptr ? (dayAndFieldList->isEmpty () ? -1 : mCurIdx = row) : -1);
 }
 
+int stringTable::matchRecord ( const stringRecord& record )
+{
+	const int fast_idx_backup ( mFastIdx );
+	bool b_match ( true );
+	if ( first ().isOK () )
+	{
+		do
+		{
+			if ( record.first () )
+			{
+				static_cast<void>(mRecord.first ());
+				do
+				{
+					if ( mRecord.curValue () == record.curValue () )
+						continue;
+					else
+					{
+						b_match = false;
+						break;
+					}
+				} while ( record.next () );
+			}
+		} while ( next ().isOK () );
+	}
+	mFastIdx = fast_idx_backup;
+	return b_match ? currentIndex () : -1;
+}
+
 void stringTable::fastAppendRecord ( const QString& record )
 {
 	mRecords += record + table_sep;

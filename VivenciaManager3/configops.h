@@ -39,7 +39,7 @@ public:
     void writeConfigFile ( const int category, const QString& fieldValue, QString category_name = QString::null );
 
 	const QString& lastViewedRecords ( const bool use_default = false ) const;
-	int lastViewedRecord ( const uint table ) const;
+	uint lastViewedRecord ( const uint table ) const;
 	void geometryFromConfigFile ( int *coords );
 	void saveGeometry ( const int* coords );
 

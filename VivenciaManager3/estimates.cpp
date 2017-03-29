@@ -420,17 +420,22 @@ void estimateDlg::scanDir ()
 								   configOps::projectPDFExtension () <<
 								   configOps::projectReportExtension () );
 
+	const QStringList exclude_dirs ( QStringList () <<
+									 QStringLiteral ( "Pictures" ) <<
+									 QStringLiteral ( "Serviços simples" ) );
+	
 	treeView->clear ();
 	QString clientName;
 	QString dirName;
 	const uint lastClientID ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
+	
 	for ( uint c_id ( 1 ); c_id <= lastClientID; ++c_id )
 	{
-		clientName = Client::clientName ( static_cast<int>(c_id) );
+		clientName = Client::clientName ( c_id );
 		if ( !clientName.isEmpty () )
 		{
 			dirName = CONFIG ()->getProjectBasePath ( clientName );
-			fileOps::lsDir ( filesFound, dirName, nameFilter, fileOps::LS_ALL, 2 );
+			fileOps::lsDir ( filesFound, dirName, nameFilter, exclude_dirs, fileOps::LS_ALL, 2 );
 			addToTree ( filesFound, clientName );
 		}
 	}
@@ -439,7 +444,7 @@ void estimateDlg::scanDir ()
 	dirName = CONFIG ()->projectsBaseDir () + nonClientStr + CHR_F_SLASH;
 	if ( fileOps::exists ( dirName ).isOn () )
 	{
-		fileOps::lsDir ( filesFound, dirName, nameFilter, fileOps::LS_ALL, 1 );
+		fileOps::lsDir ( filesFound, dirName, nameFilter, exclude_dirs, fileOps::LS_ALL, 1 );
 		addToTree ( filesFound, clientName, TYPE_ESTIMATE_ITEM );
 	}
 	if ( treeView->topLevelItemCount () > 0 )
@@ -479,7 +484,8 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 			filename = files.at ( i )->filename;
 			if ( files.at ( i )->is_dir )
 			{
-				if ( !files.at ( i )->fullpath.contains ( QStringLiteral ( "Pictures" ) ) )
+				//if ( filename != QStringLiteral ( "Pictures" ) && filename != QStringLiteral ( "Serviços simples" ) )
+				//if ( !files.at ( i )->fullpath.contains ( QStringLiteral ( "Pictures" ) ) )
 				{
 					child_dir = new QTreeWidgetItem ( topLevelItem );
 					child_dir->setText ( 0, filename );
@@ -725,7 +731,7 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 	if ( DATA ()->currentJob () == jobItem->jobRecord () ) //update view on main window if necessary
 		globalMainWindow->displayJob ( jobItem );
 
-	addToTree ( files, Client::clientName ( recIntValue ( jobItem->jobRecord (), FLD_JOB_CLIENTID ) ) );
+	addToTree ( files, Client::clientName ( static_cast<uint>(recIntValue ( jobItem->jobRecord (), FLD_JOB_CLIENTID )) ) );
 	VM_NOTIFY ()->messageBox ( TR_FUNC ( "Success!" ), project_name + TR_FUNC ( " was converted!" ) );
 	if ( b_inItemSelectionMode )
 	{
@@ -901,7 +907,8 @@ void estimateDlg::estimateActions ( QAction* action )
 							 CONFIG ()->estimatesDir ( clientName ) :
 							 CONFIG ()->projectsBaseDir () + configOps::estimatesDirSuffix () + CHR_F_SLASH );
 
-	switch ( static_cast<vmAction*> ( action )->id () ) {
+	switch ( static_cast<vmAction*> ( action )->id () )
+	{
 		case EA_CONVERT:
 			convertToProject ( item );
 		break;
@@ -932,8 +939,8 @@ void estimateDlg::estimateActions ( QAction* action )
 			}
 			
 			estimateName.prepend ( vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
-			//if ( clientName == nonClientStr )
-			//	estimateName.prepend ( nonClientEstimatesPrefix );
+			if ( clientName == nonClientStr )
+				estimateName.prepend ( nonClientEstimatesPrefix );
 
 			f_info = new fileOps::st_fileInfo;
 			if ( static_cast<vmAction*> ( action )->id () == EA_NEW_VMR )

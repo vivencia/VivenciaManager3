@@ -12,6 +12,7 @@
 #include "documenteditor.h"
 #include "heapmanager.h"
 #include "cleanup.h"
+#include "dbcalendar.h"
 
 #include <QLabel>
 #include <QApplication>
@@ -54,37 +55,22 @@ static const QStringList STR_HEADERJOBTYPE_LABEL
   << QStringLiteral ( "PINTURA" ) << QStringLiteral ( "JARDINAGEM" ) << QStringLiteral ( "SERVIÇOS GERAIS" )
 );
 
-/*static int tryToDeterminateClientFromOpenDoc ( const QString& str )
+static uint tryToDeterminateJobFromOpenDoc ( const QString& str )
 {
-	int clientWordPos ( -1 );
-	clientWordPos = str.indexOf ( "Cliente:", 100 );
+	const QString prjTag ( QStringLiteral ( "Projeto #:" ) );
+	const int idx ( str.indexOf ( prjTag, 600 ) );
 
-	if ( clientWordPos != -1 ) {
-		const QString searchedLines ( str.mid ( clientWordPos + 40, 200 ) );
-
-		for ( uint i ( 0 ); i < DATA ()->mainClient.allClients.count (); ++i ) {
-			if ( searchedLines.indexOf ( Data::clientName ( DATA ()->mainClient.allClients.at ( i )->id ) ) != -1 )
-				return DATA ()->mainClient.allClients.at ( i )->id;
-		}
-	}
-	return -1;
-}*/
-
-static int tryToDeterminateJobFromOpenDoc ( const QString& str )
-{
-	int jobProjectID ( -1 );
-	const QString prjTag ( "Projeto #:" );
-	jobProjectID = str.indexOf ( prjTag, 600 );
-
-	if ( jobProjectID != -1 ) {
-		const int projectID_n ( str.indexOf ( '<', jobProjectID + prjTag.count () + 1 ) - ( jobProjectID + prjTag.count () ) );
-		QString projectID ( str.mid ( jobProjectID + prjTag.count (), projectID_n ) );
-		projectID = projectID.remove ( ' ' );
+	if ( idx != -1 )
+	{
+		const int prjTagCount ( prjTag.count () );
+		const int projectID_n ( str.indexOf ( '<', idx + prjTagCount + 1 ) - ( idx + prjTagCount ) );
+		QString projectID ( str.mid ( idx + prjTagCount, projectID_n ) );
+		static_cast<void>(projectID.remove ( ' ' ));
 		Job job;
-		if ( job.readRecord ( FLD_JOB_PROJECT_ID, projectID ) )
-			return recIntValue ( &job, FLD_JOB_ID );
+		if ( job.readRecord ( FLD_JOB_PROJECT_ID, projectID, false ) )
+			return static_cast<uint>(recIntValue ( &job, FLD_JOB_ID ));
 	}
-	return -1;
+	return 0;
 }
 
 reportGenerator::reportGenerator ( documentEditor* mdiParent )
@@ -290,30 +276,30 @@ bool reportGenerator::saveAs ( const QString& filename )
 	return saveFile ( new_filename );
 }
 
-void reportGenerator::show ( const int jobid, const int payid )
+void reportGenerator::show ( const uint jobid, const uint payid )
 {
-	if ( jobid == -1 )
+	if ( jobid == 0 )
 	{
-		if ( payid == -1 )
+		if ( payid == 0 )
 		{
-			rgJob->readRecord ( recIntValue ( DATA ()->currentJob (), FLD_JOB_ID ) );
-			rgClient->readRecord ( recStrValue ( rgJob, FLD_JOB_CLIENTID ).toInt () );
+			if ( rgJob->readRecord ( static_cast<uint>(recIntValue ( DATA ()->currentJob (), FLD_JOB_ID )) ) )
+				static_cast<void>(rgClient->readRecord ( static_cast<uint>(recIntValue ( rgJob, FLD_JOB_CLIENTID )) ));
 		}
 		else
 		{
 			if ( rgPay->readRecord ( payid ) )
 			{
-				rgJob->readRecord ( recStrValue ( rgPay, FLD_PAY_JOBID ).toInt () );
-				rgClient->readRecord ( recStrValue ( rgPay, FLD_PAY_CLIENTID ).toInt () );
+				static_cast<void>(rgJob->readRecord ( static_cast<uint>(recIntValue ( rgPay, FLD_PAY_JOBID )) ));
+				static_cast<void>(rgClient->readRecord ( static_cast<uint>(recIntValue ( rgPay, FLD_PAY_CLIENTID )) ));
 			}
 			else
-				show ( -1, -1 );
+				show ( 0, 0 );
 		}
 	}
 	else
 	{
-		rgJob->readRecord ( jobid );
-		rgClient->readRecord ( recStrValue ( rgJob, FLD_JOB_CLIENTID ).toInt () );
+		if ( rgJob->readRecord ( jobid ) )
+			static_cast<void>(rgClient->readRecord ( static_cast<uint>(recIntValue ( rgJob, FLD_JOB_CLIENTID )) ));
 	}
 
 	txtClientsIDs->setText ( recStrValue ( rgClient, FLD_CLIENT_NAME ) );
@@ -321,7 +307,7 @@ void reportGenerator::show ( const int jobid, const int payid )
 	QWidget::show ();
 }
 
-void reportGenerator::createJobReport ( const int c_id, const bool include_all_paid, const QString& filename, const bool show )
+void reportGenerator::createJobReport ( const uint c_id, const bool include_all_paid, const QString& filename, const bool show )
 {
 	cboHeaderType->setCurrentIndex ( REPORT );
 	btnGenerateReport_clicked ( c_id, include_all_paid );
@@ -335,12 +321,12 @@ void reportGenerator::createJobReport ( const int c_id, const bool include_all_p
 		this->show ();
 }
 
-void reportGenerator::createPaymentStub ( const int payID )
+void reportGenerator::createPaymentStub ( const uint payID )
 {
-	if ( payID > 0 )
+	if ( payID >= 1 )
 	{
 		setIgnoreCursorPos ( true );
-		show ( -1, payID );
+		show ( 0, payID );
 		cboHeaderType->setCurrentIndex ( cboHeaderType->findText ( STR_HEADERTYPE_LABEL.at ( PAYMENT_STUB ) ) );
 		btnGenerateReport_clicked ();
 		setIgnoreCursorPos ( false );
@@ -394,8 +380,8 @@ void reportGenerator::changeJobBriefInfo ( const int index )
 
 	if ( index >= 0 )
 	{
-		const int cboJobID ( cboJobIDs->itemText ( index ).toInt () );
-		if ( cboJobID != recIntValue ( rgJob, FLD_JOB_ID ) )
+		const uint cboJobID ( cboJobIDs->itemText ( index ).toUInt () );
+		if ( cboJobID != static_cast<uint>(recIntValue ( rgJob, FLD_JOB_ID )) )
 		{
 			if ( !rgJob->readRecord ( cboJobID ) )
 				return;
@@ -406,7 +392,7 @@ void reportGenerator::changeJobBriefInfo ( const int index )
 		DOCK_BJ ()->fillControls ( nullptr );
 }
 
-void reportGenerator::btnInsertHeader_clicked ( const int c_id )
+void reportGenerator::btnInsertHeader_clicked ( const uint c_id )
 {
 	setIgnoreCursorPos ( true );
 
@@ -422,7 +408,7 @@ void reportGenerator::btnInsertHeader_clicked ( const int c_id )
 
 	mCursor.insertText ( strHeaderType[cboHeaderType->currentIndex ()] );
 
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 	{
 		mCursor.insertText ( QStringLiteral ( "na área de" ) );
 		mCursor.insertBlock ();
@@ -434,12 +420,12 @@ void reportGenerator::btnInsertHeader_clicked ( const int c_id )
 	TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( false );
 	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
 	TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 		setIgnoreCursorPos ( false );
 	mDocument->setFocus ();
 }
 
-void reportGenerator::btnInsertFooter_clicked ( const int c_id )
+void reportGenerator::btnInsertFooter_clicked ( const uint c_id )
 {
 	setIgnoreCursorPos ( true );
 	TEXT_EDITOR_TOOLBAR ()->btnAlignCenter_clicked ();
@@ -460,7 +446,7 @@ void reportGenerator::btnInsertFooter_clicked ( const int c_id )
 	TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
 	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
 
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 		setIgnoreCursorPos ( false );
 	mDocument->setFocus ();
 }
@@ -480,7 +466,7 @@ void reportGenerator::btnInsertProjectNumber_clicked ()
 	setIgnoreCursorPos ( false );
 }
 
-void reportGenerator::btnInsertFootNotes_clicked ( const int c_id )
+void reportGenerator::btnInsertFootNotes_clicked ( const uint c_id )
 {
 	setIgnoreCursorPos ( true );
 	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
@@ -515,15 +501,15 @@ void reportGenerator::btnInsertFootNotes_clicked ( const int c_id )
 	mCursor.insertText ( QStringLiteral ( "Orçamento válido por 30 dias" ) );
 	mCursor.insertBlock ( newBlock );
 	TEXT_EDITOR_TOOLBAR ()->setFontSize ( static_cast<int>(fontsize) );
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 		setIgnoreCursorPos ( false );
 }
 
-void reportGenerator::btnInsertLogo_clicked ( const int c_id )
+void reportGenerator::btnInsertLogo_clicked ( const uint c_id )
 {
 	setIgnoreCursorPos ( true );
 	TEXT_EDITOR_TOOLBAR ()->insertImage ( CONFIG ()->vivienciaReportLogo (), QTextFrameFormat::FloatRight );
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 		setIgnoreCursorPos ( false );
 }
 
@@ -715,12 +701,12 @@ void reportGenerator::btnCopyEntireTable_clicked ()
 	QUICK_PROJECT ()->table ()->selectRow ( 1 );
 }
 
-void reportGenerator::btnInsertClientAddress_clicked ( const int c_id )
+void reportGenerator::btnInsertClientAddress_clicked ( const uint c_id )
 {
 	setIgnoreCursorPos ( true );
 
 	QTextTable* textTable ( nullptr );
-	QTextCursor t_cursor = mCursor;
+	QTextCursor t_cursor ( mCursor );
 
 	TEXT_EDITOR_TOOLBAR ()->spinNRows->setValue ( 3 );
 	TEXT_EDITOR_TOOLBAR ()->spinNCols->setValue ( 2 );
@@ -738,7 +724,7 @@ void reportGenerator::btnInsertClientAddress_clicked ( const int c_id )
 		t_cursor.insertText ( QStringLiteral ( "Contato (s): " ), mCursor.charFormat () );
 		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
 
-		if ( recIntValue ( rgClient, FLD_CLIENT_ID ) > 0 )
+		if ( recIntValue ( rgClient, FLD_CLIENT_ID ) >= 1 )
 		{
 			TEXT_EDITOR_TOOLBAR ()->setFontColor ( QColor ( Qt::blue ) );
 			t_cursor = textTable->cellAt ( 0, 1 ).firstCursorPosition ();
@@ -763,7 +749,7 @@ void reportGenerator::btnInsertClientAddress_clicked ( const int c_id )
 		mCursor.insertText ( CHR_NEWLINE + CHR_NEWLINE );
 	}
 
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 		setIgnoreCursorPos ( false );
 }
 
@@ -786,11 +772,11 @@ void reportGenerator::buildMailMessage ( QString& address, QString& subject, QSt
 	subject = strHeaderType[cboHeaderType->currentIndex ()] + QStringLiteral ( "na área de" ) + strJobType[cboHeaderJobType->currentIndex ()];
 }
 
-void reportGenerator::btnGenerateReport_clicked ( const int c_id, const bool include_all_paid )
+void reportGenerator::btnGenerateReport_clicked ( const uint c_id, const bool include_all_paid )
 {
 	setIgnoreCursorPos ( true );
 
-	if ( c_id <= 0 )
+	if ( c_id == 0 )
 	{
 		if (
 			( recStrValue ( rgJob, FLD_JOB_TYPE ).indexOf ( QStringLiteral ( "Manutenção" ) ) != -1 ) ||
@@ -842,7 +828,7 @@ void reportGenerator::btnGenerateReport_clicked ( const int c_id, const bool inc
 		break;
 		case PAYMENT_STUB:
 			insertPaymentStubText ();
-			mCursor.insertText ( "\n" );
+			mCursor.insertText ( QStringLiteral ( "\n" ) );
 			mDocument->setTextCursor ( mCursor );
 			btnInsertFooter_clicked ( c_id );
 		break;
@@ -851,7 +837,7 @@ void reportGenerator::btnGenerateReport_clicked ( const int c_id, const bool inc
 			insertReadCarefullyBlock ();
 			TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
 			mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 2 );
-			mCursor.insertText ( "\n" );
+			mCursor.insertText ( QStringLiteral ( "\n" ) );
 			mDocument->setTextCursor ( mCursor );
 			btnInsertFooter_clicked ( c_id );
 			mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 5 );
@@ -879,19 +865,17 @@ void reportGenerator::insertReadCarefullyBlock ()
 	mCursor.insertText ( CHR_NEWLINE + CHR_NEWLINE );
 }
 
-void reportGenerator::insertReportsText ( const bool include_all_paid )
+void reportGenerator::getUnpaidPayments ( Payment * const pay )
 {
-	if ( recIntValue ( rgClient, FLD_CLIENT_ID ) > 0 )
+	if ( pay != nullptr )
 	{
-		TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
-		mCursor.insertBlock ();
-		mCursor.insertBlock ();
-		mCursor.movePosition ( QTextCursor::Up, QTextCursor::MoveAnchor, 2 );
-
-		vmNumber jobs_total ( 0.0 ), paid_total ( 0.0 );
-
-		if ( rgPay->readFirstRecord ( FLD_PAY_CLIENTID, recStrValue ( rgClient, FLD_CLIENT_ID ) ) )
+		if ( pay->readFirstRecord ( FLD_PAY_CLIENTID, recStrValue ( rgClient, FLD_CLIENT_ID ) ) )
 		{
+			TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
+			mCursor.insertBlock ();
+			mCursor.insertBlock ();
+			mCursor.movePosition ( QTextCursor::Up, QTextCursor::MoveAnchor, 2 );
+			
 			TEXT_EDITOR_TOOLBAR ()->btnStrikethrough_clicked ( false );
 			TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( false );
 			TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
@@ -901,14 +885,15 @@ void reportGenerator::insertReportsText ( const bool include_all_paid )
 			TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
 			mCursor.insertBlock ();
 			TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
+			vmNumber total_overdue ( 0.0 );
 
 			do
 			{
-				if ( recStrValue ( rgPay, FLD_PAY_OVERDUE ) == CHR_ONE )
+				if ( recStrValue ( pay, FLD_PAY_OVERDUE ) == CHR_ONE )
 				{
-					if ( rgJob->readRecord ( recStrValue ( rgPay, FLD_PAY_JOBID ).toInt () ) )
+					if ( rgJob->readRecord ( static_cast<uint>(recIntValue ( pay, FLD_PAY_JOBID )) ) )
 					{
-						if ( !jobs_total.isNull () )
+						if ( !total_overdue.isNull () )
 							mCursor.insertBlock ();
 						mCursor.insertText ( recStrValue ( rgJob, FLD_JOB_TYPE ) );
 						mCursor.insertText (
@@ -917,169 +902,199 @@ void reportGenerator::insertReportsText ( const bool include_all_paid )
 						mCursor.insertText ( rgJob->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_HUMAN_DATE ) );
 						mCursor.insertText ( QStringLiteral ( " - " ) );
 						TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-						mCursor.insertText ( recStrValue ( rgPay, FLD_PAY_OVERDUE_VALUE ) );
+						mCursor.insertText ( recStrValue ( pay, FLD_PAY_OVERDUE_VALUE ) );
 						TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-						jobs_total += rgPay->price ( FLD_PAY_PRICE );
+						total_overdue += pay->price ( FLD_PAY_OVERDUE_VALUE );
 					}
 				}
-			} while ( rgPay->readNextRecord ( true ) );
+			} while ( pay->readNextRecord ( true ) );
 
 			mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 2 );
-			if ( !jobs_total.isNull () )
-			{
-				mCursor.insertBlock ();
-				TEXT_EDITOR_TOOLBAR ()->btnAlignCenter_clicked ();
-				TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-				TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( true );
-				mCursor.insertText ( QStringLiteral ( "Total dos serviços: " ) + jobs_total.toPrice () );
-				mCursor.insertBlock ();
-				mCursor.insertBlock ();
-				mCursor.insertText ( QStringLiteral ( "____________________________________________________________________________" ) );
-				TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( false );
-				TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-				TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
-				mCursor.insertBlock ();
-				mCursor.insertBlock ();
-			}
-		}
-
-		if ( include_all_paid )
-		{
-			if ( rgPay->readFirstRecord ( FLD_PAY_CLIENTID, recStrValue ( rgClient, FLD_CLIENT_ID ) ) )
-			{
-				vmNumber twelveMonthsAgo ( vmNumber::currentDate );
-				twelveMonthsAgo.setDate ( 0, -12, 0, true );
-				TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-				TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-				mCursor.insertText ( QStringLiteral ( "Pagamentos realizados nos últimos 12 meses:" ) );
-				TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-				TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-				mCursor.insertBlock ();
-				TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
-				/*do {
-					if ( rgPay->opt ( FLD_PAY_PAID ) ) {
-						if ( rgPay->date ( FLD_PAY_DATE ) >= twelveMonthsAgo ) {
-							if ( paid_total != 0.0 )
-								mCursor.insertBlock ();
-							TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-							mCursor.insertText ( rgPay->actualRecordStr ( FLD_PAY_PRICE ) );
-							TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-							mCursor.insertText ( " em " );
-							mCursor.insertText ( rgPay->date ( FLD_PAY_DATE ).toHumanDate () );
-							if ( rgJob->readRecord ( rgPay->actualRecordStr ( FLD_PAY_JOBID ).toInt () ) ) {
-								mCursor.insertText ( QString::fromUtf8 ( ", referente ao serviço " ) );
-								mCursor.insertText ( recStrValue ( rgJob, FLD_JOB_TYPE ) );
-								mCursor.insertText ( ", finalizado em " );
-								mCursor.insertText ( rgJob->date ( FLD_JOB_ENDDATE ).toHumanDate () );
-							}
-							mCursor.insertText ( ";" );
-							paid_total += rgPay->price ( FLD_PAY_VALUE );
-						}
-					}
-				} while ( rgPay->readNextRecord ( true ) );*/
-			}
-			mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 2 );
-			if ( !paid_total.isNull () )
-			{
-				mCursor.insertBlock ();
-				TEXT_EDITOR_TOOLBAR ()->btnAlignCenter_clicked ();
-				TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-				TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( true );
-				mCursor.insertText ( QStringLiteral ( "Total dos pagamentos: " ) + paid_total.toPrice () );
-				mCursor.insertBlock ();
-				mCursor.insertBlock ();
-				mCursor.insertText ( QStringLiteral ( "____________________________________________________________________________" ) );
-				TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( false );
-				TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-				TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
-				mCursor.insertBlock ();
-				mCursor.insertBlock ();
-			}
-		}
-		if ( !jobs_total.isNull () ) //there are pending payments
-		{
+			mCursor.insertBlock ();
+			TEXT_EDITOR_TOOLBAR ()->btnAlignCenter_clicked ();
 			TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-			TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-			mCursor.insertText ( QString ( QStringLiteral ( "Total devido até %1: %2" ) )
-								 .arg ( vmNumber::currentDate.toString (), jobs_total.toPrice () ) );
-			TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+			TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( true );
+			mCursor.insertText ( QStringLiteral ( "Valor total devido: " ) + total_overdue.toPrice () );
+			mCursor.insertBlock ();
+			mCursor.insertBlock ();
+			mCursor.insertText ( QStringLiteral ( "____________________________________________________________________________" ) );
+			TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( false );
 			TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+			TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
 			mCursor.insertBlock ();
 			mCursor.insertBlock ();
 		}
 	}
 }
 
+void reportGenerator::getPaidPayments ( const uint n_months_past, const uint match_payid, vmNumber* const total_paid_value )
+{
+	mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 1 );
+	TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
+	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
+	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
+	mCursor.insertText ( QString ( QStringLiteral ( "Pagamentos realizados nos últimos %1 meses:" ) ).arg ( QString::number ( n_months_past ) ) );
+	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+	mCursor.insertBlock ();
+	mCursor.insertBlock ();
+	mCursor.movePosition ( QTextCursor::Up, QTextCursor::MoveAnchor, 1 );
+	TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
+	
+	vmNumber twelveMonthsAgo ( vmNumber::currentDate );
+	twelveMonthsAgo.setDate ( 0, static_cast<int>(0 - n_months_past), 0, true );
+	dbCalendar* cal ( new dbCalendar );
+	const stringTable* paysList ( nullptr );
+	const stringRecord* str_rec ( nullptr );
+	uint payid ( 0 ), clientid ( static_cast<uint>( recIntValue ( rgClient, FLD_CLIENT_ID )) );
+	uint month ( 0 );
+	QString month_paid;
+	vmNumber paid_total ( 0.0 );
+	
+	do
+	{
+		twelveMonthsAgo.setDate ( 0, 1, 0, true );
+		paysList = &cal->dateLog ( twelveMonthsAgo, FLD_CALENDAR_MONTH,
+				FLD_CALENDAR_PAYS, month_paid, FLD_CALENDAR_TOTAL_PAY_RECEIVED );
+		
+		if ( paysList->countRecords () > 0 )
+		{
+			str_rec = &paysList->first ();
+			if ( str_rec->isOK () )
+			{
+				do
+				{
+					// we only want the payments for the period that belong to the current client
+					if ( str_rec->fieldValue ( 1 ).toUInt () == clientid )
+					{
+						payid =  str_rec->fieldValue ( 0 ).toUInt () ;
+						if ( match_payid != 0 && payid != match_payid )
+							break;
+						if ( rgPay->readRecord ( payid ) )
+						{
+							if ( !paid_total.isNull () )
+								mCursor.insertBlock ();
+							printPayInfo ( rgPay, str_rec->fieldValue ( 2 ).toUInt () - 1, paid_total );
+							if ( rgJob->readRecord ( static_cast<uint>( recIntValue ( rgPay, FLD_PAY_JOBID )) ) )
+							{
+								mCursor.insertText ( QStringLiteral( " , em referência ao serviço " ) );
+								mCursor.insertText ( recStrValue ( rgJob, FLD_JOB_TYPE ) );
+								mCursor.insertText ( QStringLiteral ( ", finalizado em " ) );
+								mCursor.insertText ( rgJob->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_HUMAN_DATE ) );
+								mCursor.insertText ( QStringLiteral ( ";" ) );
+							}
+						}
+					}
+					str_rec = &paysList->next ();
+				} while ( str_rec->isOK () );
+			}
+		}
+	} while ( ++month <= (n_months_past - 1) );
+	
+	mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 2 );
+	mCursor.insertBlock ();
+	TEXT_EDITOR_TOOLBAR ()->btnAlignCenter_clicked ();
+	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
+	TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( true );
+	mCursor.insertText ( QStringLiteral ( "Valor total dos pagamentos no período: " ) + paid_total.toPrice () );
+	mCursor.insertBlock ();
+	mCursor.insertBlock ();
+	mCursor.insertText ( QStringLiteral ( "____________________________________________________________________________" ) );
+	TEXT_EDITOR_TOOLBAR ()->btnItalic_clicked ( false );
+	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+	TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
+	mCursor.insertBlock ();
+	mCursor.insertBlock ();
+	
+	if ( total_paid_value != nullptr )
+		*total_paid_value = paid_total;
+}
+
+void reportGenerator::insertReportsText ( const bool include_all_paid )
+{
+	if ( recIntValue ( rgClient, FLD_CLIENT_ID ) > 0 )
+		getUnpaidPayments ( rgPay );
+
+	if ( include_all_paid )
+		getPaidPayments ();
+}
+
+void reportGenerator::printPayInfo ( const Payment* pay, const uint pay_number, vmNumber& paid_total )
+{
+	const stringTable pay_info ( recStrValue ( pay, FLD_PAY_INFO ) );
+	const stringRecord* payment ( &pay_info.readRecord ( pay_number ) );
+	if ( payment->isOK () )
+	{
+		mCursor.insertText ( payment->fieldValue ( PHR_VALUE ) );
+		mCursor.insertText ( QStringLiteral ( ", através de " ) );
+		mCursor.insertText ( payment->fieldValue ( PHR_METHOD ) );
+		mCursor.insertText ( QStringLiteral ( ", na data " ) );
+		mCursor.insertText ( payment->fieldValue ( PHR_DATE ) );
+		paid_total += vmNumber ( payment->fieldValue ( PHR_VALUE ), VMNT_PRICE, 1 );
+	}
+}
+
 void reportGenerator::insertPaymentStubText ()
 {
-	TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
+	Job job;
+	vmNumber total_paid ( 0.0 );
+	if ( job.readRecord ( static_cast<uint>(recIntValue ( rgPay, FLD_PAY_JOBID ) )) )
+	{
+		const int n_months ( vmNumber::currentDate.monthsSinceDate ( job.date ( FLD_JOB_ENDDATE ) ) );
+		if ( n_months < 0 )
+			return; // maybe issue an error message. But will only happen if job end date is in the future, and that is not supported yet
+		getPaidPayments ( static_cast<uint>(n_months), static_cast<uint>(recIntValue ( rgPay, FLD_PAY_ID )), &total_paid );
+	
+		TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
+	
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+		mCursor.insertText ( QStringLiteral ( "Eu, " ) );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
+		mCursor.insertText ( QStringLiteral ( "Guilherme Fortunato, " ) );
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( QStringLiteral ( "Eu, " ) );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	mCursor.insertText ( QStringLiteral ( "Guilherme Fortunato, " ) );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+		mCursor.insertText ( QStringLiteral ( "declaro que recebi de " ) );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
+		mCursor.insertText ( txtClientsIDs->text () );
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( QStringLiteral ( "declaro que recebi de " ) );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-	mCursor.insertText ( txtClientsIDs->text () );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+		mCursor.insertText ( QStringLiteral ( ", nas datas acima mencionadas, os correspondentes valores descritos, totalizando " ) );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
+		mCursor.insertText ( total_paid.toPrice () );
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( QStringLiteral ( ", em " ) );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-//	mCursor.insertText ( rgPay->date ( FLD_PAY_DATE ).toLongDate () );
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( QStringLiteral ( ", a quantia de " ) );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-	mCursor.insertText ( rgPay->actualRecordStr ( FLD_PAY_TOTALPAID ) );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+		mCursor.insertText ( QStringLiteral ( "." ) );
+		mCursor.insertBlock ();
+		mCursor.insertBlock ();
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( QStringLiteral ( " , referente ao serviço de " ) );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-	mCursor.insertText ( recStrValue ( rgJob, FLD_JOB_TYPE ) );
+		mCursor.insertText ( QStringLiteral ( "Para clareza, firmo o presente" ) );
+		mCursor.insertBlock ();
+		mCursor.insertText ( Job::jobAddress ( &job ) );
+		mCursor.insertBlock ();
+		
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
+		mCursor.insertText ( vmNumber::currentDate.toDate ( vmNumber::VDF_LONG_DATE ) );
+		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
+		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( QStringLiteral ( " finalizado em " ) );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-	mCursor.insertText ( rgJob->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_LONG_DATE ) );
+		mCursor.insertBlock ();
+		mCursor.insertBlock ();
+		mCursor.insertText ( QStringLiteral ( "Assinatura:__________________________________________" ) );
+		mCursor.insertBlock ();
+		mCursor.insertText ( QStringLiteral ( "CPF: 294.655.068-00 / RG: 30.258.261-7" ) );
+		mCursor.insertBlock ();
 
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-	mCursor.insertText ( "." );
-	mCursor.insertBlock ();
-	mCursor.insertBlock ();
-
-	mCursor.insertText ( QStringLiteral ( "Para clareza, firmo o presente" ) );
-	mCursor.insertBlock ();
-	mCursor.insertText ( QStringLiteral ( "São Pedro, " ) );
-
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
-	mCursor.insertText ( vmNumber::currentDate.toDate ( vmNumber::VDF_LONG_DATE ) );
-	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
-
-	mCursor.insertBlock ();
-	mCursor.insertBlock ();
-	mCursor.insertText ( QStringLiteral ( "Assinatura:__________________________________________" ) );
-	mCursor.insertBlock ();
-	mCursor.insertText ( QStringLiteral ( "CPF: 294.655.068-00 / RG: 30.258.261-7" ) );
-	mCursor.insertBlock ();
-
-	mDocument->setFocus ();
+		mDocument->setFocus ();
+	}
 }
 
 dockQP* dockQP::s_instance ( nullptr );

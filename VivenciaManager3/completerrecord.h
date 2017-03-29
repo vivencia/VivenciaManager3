@@ -1,8 +1,6 @@
 #ifndef COMPLETERRECORD_H
 #define COMPLETERRECORD_H
 
-//#include "global.h" // after TRANSITION_PERIOD is over, remove this line
-
 #include "dbrecord.h"
 #include "completers.h"
 
@@ -36,12 +34,7 @@ protected:
 private:
 	QSqlQuery query;
 	void runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates = false );
-
-//#ifdef TRANSITION_PERIOD
-#ifdef TABLE_UPDATE_AVAILABLE
-	// These are not needed after creation of table
 	void updateCompleterInternal ( const uint field, const QStringList& str_list );
-#endif
 };
 
 #endif // COMPLETERRECORD_H

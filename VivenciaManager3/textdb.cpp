@@ -391,7 +391,7 @@ bool configFile::setFieldValue ( const uint field_index, const QString& value )
 		{
 			section_info->values[field_index] = value;
 			const int line_len ( section_info->fields.at ( field_index ).count () + value.count () );
-			if ( ( signed ) m_buffersize < line_len )
+			if ( static_cast<int>(m_buffersize) < line_len )
 				m_buffersize = line_len + 5;
 			m_needsaving = true;
 			return true;

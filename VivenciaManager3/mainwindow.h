@@ -94,7 +94,7 @@ public:
 	bool cancelClient ( clientListItem* client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
 	void loadClientInfo ( const Client* const client );
-	clientListItem* getClientItem ( const int id ) const;
+	clientListItem* getClientItem ( const uint id ) const;
 	void fillAllLists ( const clientListItem* client_item );
 //--------------------------------------------CLIENT------------------------------------------------------------
 
@@ -127,7 +127,7 @@ public:
 	bool cancelJob ( jobListItem* job_item );
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
 	void loadJobInfo ( const Job* const job );
-	jobListItem* getJobItem ( const clientListItem* const parent_client, const int id ) const;
+	jobListItem* getJobItem ( const clientListItem* const parent_client, const uint id ) const;
 	void scanJobImages ();
 	void decodeJobReportInfo ( const Job* const job );
 	void fixJobDaysList ( jobListItem* const job_item );
@@ -155,7 +155,7 @@ public:
 	void jobOpenProjectFile ( QAction* action );
 	void jobEMailProjectFile ( QAction* action );
 
-	inline void setTempCallbackForJobSelect ( std::function<void ( const int )> func ) {
+	inline void setTempCallbackForJobSelect ( std::function<void ( const uint )> func ) {
 		selJob_callback = func;
 	}
 //--------------------------------------------JOB------------------------------------------------------------
@@ -191,7 +191,7 @@ public:
 	bool cancelPay ( payListItem* pay_item );
 	void displayPay ( payListItem* pay_item, const bool b_select = false );
 	void loadPayInfo ( const Payment* const pay );
-	payListItem* getPayItem ( const clientListItem* const parent_client, const int id ) const;
+	payListItem* getPayItem ( const clientListItem* const parent_client, const uint id ) const;
 	void fillCalendarPaysList ( const stringTable& payids, vmListWidget* list, const bool use_date = false );
 	void loadClientOverduesList ();
 	void loadAllOverduesList ();
@@ -224,7 +224,7 @@ public:
 	bool cancelBuy ( buyListItem* buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
 	void loadBuyInfo ( const Buy* const buy );
-	buyListItem* getBuyItem ( const clientListItem* const parent_client, const int id ) const;
+	buyListItem* getBuyItem ( const clientListItem* const parent_client, const uint id ) const;
 	void fillJobBuyList ( const jobListItem* parent_job );
 	void fillCalendarBuysList ( const stringTable& buyids, vmListWidget* list, const bool pay_date = false );
 	void interceptBuyItemsCellChange ( const vmTableItem* const item );
@@ -321,7 +321,7 @@ private:
 	vmActionGroup* grpPays;
 	vmActionGroup* grpBuys;
 	
-	std::function<void ( const int )> selJob_callback;
+	std::function<void ( const uint )> selJob_callback;
 	bool mb_jobPosActions;
 
 	vmNumber mCalendarDate;

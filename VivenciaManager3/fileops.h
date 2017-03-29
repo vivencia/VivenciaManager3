@@ -68,7 +68,8 @@ public:
 	static const QString filePathWithoutExtension ( const QString& filepath );
 	static const QString replaceFileExtension ( const QString& filepath, const QString& new_ext );
 
-	static void lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir, const QStringList& name_filters,
+	static void lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir, 
+						const QStringList& name_filters = QStringList (), const QStringList& exclude_filter = QStringList (),
 						const int filter = LS_FILES, const int follow_into = 0 );
 
     static bool rmDir ( const QString& baseDir, const QStringList& name_filters,

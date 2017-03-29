@@ -99,9 +99,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 1
-#define VERSION_REVISION 02
-constexpr const QLatin1String VERSION_APPEND ( "First compilation with gcc 6", 29 );
-constexpr const QLatin1String VERSION_DATE ( "2017-02-11", 10 );
+#define VERSION_REVISION 10
+constexpr const QLatin1String VERSION_APPEND ( "Broken back", 11 );
+constexpr const QLatin1String VERSION_DATE ( "2017-03-28", 10 );
 
 static const QString PROGRAM_VERSION (
     QUOTEME(VERSION_MAJOR) + CHR_DOT +

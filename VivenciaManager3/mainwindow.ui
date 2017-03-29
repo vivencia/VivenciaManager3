@@ -541,7 +541,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>7</number>
+       <number>5</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -3227,7 +3227,7 @@ p, li { white-space: pre-wrap; }
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>Manager job's folder</string>
+                    <string>Open Job's folder with File Manager</string>
                    </property>
                    <property name="text">
                     <string/>
@@ -3259,7 +3259,7 @@ p, li { white-space: pre-wrap; }
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>Abrir arquivo doc</string>
+                    <string>Open document for editing or viewing</string>
                    </property>
                    <property name="statusTip">
                     <string>Abrir arquivo do projeto para edição - se existir</string>
@@ -3294,7 +3294,7 @@ p, li { white-space: pre-wrap; }
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>Abrir Planilha para edição - se existir</string>
+                    <string>Open Spreadsheet for editing or viewing</string>
                    </property>
                    <property name="statusTip">
                     <string>Abrir arquivo de planilha do projeto - se houver</string>
@@ -3329,7 +3329,7 @@ p, li { white-space: pre-wrap; }
                     </size>
                    </property>
                    <property name="toolTip">
-                    <string>Visualizar PDF ou enviar por e-mail</string>
+                    <string>View PDF</string>
                    </property>
                    <property name="text">
                     <string/>

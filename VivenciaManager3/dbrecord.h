@@ -32,7 +32,8 @@ class DBRecord
 
 public:
 
-	struct st_Query {
+	struct st_Query
+	{
 		QString search;
 		QString str_query;
 		int field;
@@ -99,7 +100,7 @@ public:
 		setRecValue ( this, field, ( arg ? QStringLiteral ( "1" ) : QStringLiteral ( "2" ) ) ); }
 
 	void setHelperFunction ( const uint field, void ( *helperFunc ) ( const DBRecord* ) );
-	bool readRecord ( const int id, const bool load_data = true );
+	bool readRecord ( const uint id, const bool load_data = true );
 	bool readRecord ( const uint field, const QString& search, const bool load_data = true );
 
 	inline bool searchQueryIsOn () const { return !stquery.reset; }
@@ -202,33 +203,35 @@ protected:
 		m_RECFIELDS[field].modified = mb_modified = true;
 	}
 
+	/* Add value into new record = ACTION_ADD */
 	inline void addIntValue ( const uint field, const int value )
 	{
 		m_RECFIELDS[field].i_field[RECORD_FIELD::IDX_ACTUAL] = value;
 		m_RECFIELDS[field].modified = mb_modified = true;
 	}
-	/* Add value into new record = ACTION_ADD */
 
 	/* Alter value if different = ACTION_EDIT */
 	inline void editValue ( const uint field, const QString& value )
 	{
-		if ( value != actualRecordStr ( field ) ) {
+		if ( value != actualRecordStr ( field ) )
+		{
 			m_RECFIELDS[field].str_field[RECORD_FIELD::IDX_TEMP] = value;
 			m_RECFIELDS[field].modified = mb_modified = true;
 			mb_synced = false;
 		}
 	}
 
+	/* Alter value if different = ACTION_EDIT */
 	inline void editIntValue ( const uint field, const int value )
 	{
-		if ( value != actualRecordInt ( field ) ) {
+		if ( value != actualRecordInt ( field ) )
+		{
 			m_RECFIELDS[field].i_field[RECORD_FIELD::IDX_TEMP] = value;
 			m_RECFIELDS[field].modified = mb_modified = true;
 			mb_synced = false;
 		}
 	}
-	/* Alter value if different = ACTION_EDIT */
-
+	
 	const TABLE_INFO* t_info;
 	RECORD_FIELD* m_RECFIELDS;
     vmListItem* mListItem;

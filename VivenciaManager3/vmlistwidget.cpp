@@ -33,7 +33,7 @@ void vmListWidget::setIgnoreChanges ( const bool b_ignore )
 
 void vmListWidget::setCurrentRow ( int row, const bool b_makecall )
 {
-	if ( row != mPrevRow && !alwaysEmitCurrentItemChanged () )
+	if ( row != mPrevRow || (!alwaysEmitCurrentItemChanged () == false) )
 	{
 		if ( row == -1 )
 			row = mPrevRow;

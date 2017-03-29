@@ -212,22 +212,22 @@ const QString& configOps::lastViewedRecords ( const bool use_default ) const
 
 // Returns index of last viewed item within tables. This index is the QListWidget index
 // and the index within each category List of pointers
-int configOps::lastViewedRecord ( const uint table ) const
+uint configOps::lastViewedRecord ( const uint table ) const
 {
 	stringRecord lvr ( lastViewedRecords () );
 
 	if ( lvr.isOK () )
 	{
-		int field ( -1 );
+		uint field ( 0 );
 		switch ( table )
 		{
 			case CLIENT_TABLE:		field = 0;		break;
 			case JOB_TABLE:			field = 1;		break;
 			case PURCHASE_TABLE:	field = 2;		break;
 		}
-		return lvr.fieldValue ( field ).toInt ();
+		return lvr.fieldValue ( field ).toUInt ();
 	}
-	return -1;
+	return 0;
 }
 
 const QString& configOps::defaultConfigDir () const
@@ -369,7 +369,7 @@ bool configOps::writeConfig ( const QString& filename, const QString& field, con
 			if ( idx == -1 )
 				cfgFile->insertField ( field, value );
 			else
-				cfgFile->setFieldValue ( idx, value );
+				cfgFile->setFieldValue ( static_cast<uint>(idx), value );
 			cfgFile->commit ();
 		}
 	}

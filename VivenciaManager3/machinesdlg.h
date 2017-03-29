@@ -50,7 +50,7 @@ private:
 	int loadJobMachineEventsTable ( const QString& jobid );
 	QString decodeStringRecord ( const uint field );
 	bool loadData ( const int id );
-    void getSelectedJobID ( const int jobid );
+    void getSelectedJobID ( const uint jobid );
 
     void cboMachines_IndexChanged ( const int idx );
     void dataAltered ( const vmWidget* const sender );

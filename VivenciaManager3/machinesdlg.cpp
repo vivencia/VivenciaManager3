@@ -404,11 +404,11 @@ bool machinesDlg::loadData ( const int id )
 	return ok;
 }
 
-void machinesDlg::getSelectedJobID ( const int jobid )
+void machinesDlg::getSelectedJobID ( const uint jobid )
 {
 	qApp->setActiveWindow ( this );
 	setFocus ();
-	if ( jobid != -1 ) {
+	if ( jobid >= 1 ) {
 		const QString strJobID ( QString::number ( jobid ) );
 		txtJob->setText ( Job::jobSummary ( strJobID ) );
 		txtJob->setInternalData ( strJobID );
@@ -515,7 +515,7 @@ void machinesDlg::btnDelEvent_clicked ()
 
 void machinesDlg::btnSelectJob_clicked ()
 {
-	globalMainWindow->setTempCallbackForJobSelect ( [&] ( const int jobid ) {
+	globalMainWindow->setTempCallbackForJobSelect ( [&] ( const uint jobid ) {
 			return getSelectedJobID ( jobid ); } );
 	globalMainWindow->selectJob ();
 }

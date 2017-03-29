@@ -21,6 +21,7 @@
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintPreviewDialog>
 
+#include <QTextList>
 #include <QTextTable>
 #include <QPainter>
 #include <QLabel>
@@ -882,19 +883,21 @@ void textEditorToolBar::setHighlight( const QColor &color )
 	mergeFormatOnWordOrSelection ( charFormat );
 }
 
-#include <QTextList>
 void textEditorToolBar::createList ( const QTextListFormat::Style style )
 {
 	if ( mEditorWindow == nullptr ) return;
 
-	mEditorWindow->mCursor = mEditorWindow->mDocument->textCursor ();
+	//mEditorWindow->mCursor = mEditorWindow->mDocument->textCursor ();
 
 	QTextListFormat listformat;
 	QTextList* list ( mEditorWindow->mCursor.currentList () );
 
-	listformat.setStyle ( list ? list->format ().style () : style );
+	listformat.setStyle ( style );
 	listformat.setIndent ( list ? list->format ().indent () + 1 : 1 );
-	mEditorWindow->mCursor.createList ( listformat );
+	if ( list )
+		list->setFormat ( listformat );
+	else
+		mEditorWindow->mCursor.insertList ( listformat );
 	mEditorWindow->mDocument->setTextCursor ( mEditorWindow->mCursor );
 	mEditorWindow->mDocument->setFocus ();
 }

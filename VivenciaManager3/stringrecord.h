@@ -8,10 +8,10 @@
 #include <QChar>
 #include <QStringMatcher>
 
-static const QLatin1Char public_sep ( 31 );
 static const QChar record_separator ( 30 );
 static const QChar table_separator ( 29 );
-
+static const QLatin1Char public_rec_sep ( 31 );
+static const QLatin1Char public_table_sep ( 28 );
 //------------------------------------------------------RECORD-----------------------------------------------
 class stringRecord
 {
@@ -182,6 +182,7 @@ public:
 	const stringRecord& readRecord ( uint row ) const;
 	int findRecordRowByFieldValue ( const QString& value, const uint field, const uint nth_occurrence = 0 ) const;
 	int findRecordRowThatContainsWord ( const QString& word, podList<uint>* dayAndFieldList = nullptr, const int field = -1, const uint nth_occurrence = 0 ) const;
+	int matchRecord ( const stringRecord& record );
 	void fastAppendRecord ( const QString& record );
 	inline void fastAppendRecord ( const stringRecord& record ) {
 		fastAppendRecord ( record.toString () );

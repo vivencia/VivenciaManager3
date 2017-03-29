@@ -3,6 +3,8 @@
 
 #include "texteditor.h"
 #include "vmlist.h"
+#include "stringrecord.h"
+#include "vmnumberformats.h"
 
 #include <QDockWidget>
 
@@ -29,7 +31,7 @@ public:
 	explicit reportGenerator ( documentEditor* mdiParent );
 	~reportGenerator ();
 
-	void show ( const int jobid = -1, const int payid = -1 );
+	void show ( const uint jobid = 0, const uint payid = 0 );
 	
 	static inline QString filter () {
 		return tr ( "VivenciaManager Report (*.vmr)" );
@@ -38,20 +40,23 @@ public:
 	bool loadFile ( const QString& filename );
 	bool saveAs ( const QString& filename );
 
-	void createJobReport ( const int c_id, const bool include_all_paid = false,
+	void createJobReport ( const uint c_id, const bool include_all_paid = false,
 						   const QString& filename = QString::null, const bool show = true );
-	void createPaymentStub ( const int payID = -1 );
+	void createPaymentStub ( const uint payID = 0 );
 	void buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body );
 	const QString initialDir () const;
 
 private:
 	void insertReadCarefullyBlock ();
 	void insertPaymentStubText ();
+	void getUnpaidPayments ( Payment * const pay );
+	void getPaidPayments ( const uint n_months_past = 12, const uint match_payid = 0, vmNumber* const total_paid_value = nullptr );
 	void insertReportsText ( const bool include_all_pays );
-	void btnInsertHeader_clicked ( const int c_id = -1 );
-	void btnInsertFooter_clicked ( const int c_id = -1 );
-	void btnInsertLogo_clicked ( const int c_id = -1 );
-	void btnInsertFootNotes_clicked ( const int c_id = -1 );
+	void printPayInfo ( const Payment* pay, const uint pay_number, vmNumber& paid_total );
+	void btnInsertHeader_clicked ( const uint c_id = 0 );
+	void btnInsertFooter_clicked ( const uint c_id = 0 );
+	void btnInsertLogo_clicked ( const uint c_id = 0 );
+	void btnInsertFootNotes_clicked ( const uint c_id = 0 );
 	void btnInsertProjectNumber_clicked ();
 
 	void updateJobIDsAndQPs ( const QString& text );
@@ -61,9 +66,9 @@ private:
 
 	void btnCopyTableRow_clicked ();
 	void btnCopyEntireTable_clicked ();
-	void btnInsertClientAddress_clicked ( const int c_id = -1 );
+	void btnInsertClientAddress_clicked ( const uint c_id = 0 );
 	void btnInsertJobReport_clicked ();
-	void btnGenerateReport_clicked ( const int c_id = -1, const bool include_all_paid = false );
+	void btnGenerateReport_clicked ( const uint c_id = 0, const bool include_all_paid = false );
 
 	QString mPDFName;
 
