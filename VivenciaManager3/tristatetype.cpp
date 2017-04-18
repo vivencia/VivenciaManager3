@@ -12,7 +12,8 @@ void triStateType::fromInt ( const int state )
 
 TRI_STATE triStateType::toggleNext ()
 {
-	switch ( m_state ) {
+	switch ( m_state )
+	{
 		case TRI_UNDEF:	m_state = TRI_OFF;		break;
 		case TRI_OFF:	m_state = TRI_ON;		break;
 		case TRI_ON:	m_state = TRI_UNDEF;	break;
@@ -22,7 +23,8 @@ TRI_STATE triStateType::toggleNext ()
 
 TRI_STATE triStateType::togglePrev ()
 {
-	switch ( m_state ) {
+	switch ( m_state )
+	{
 		case TRI_ON:	m_state = TRI_OFF;		break;
 		case TRI_OFF:	m_state = TRI_UNDEF;	break;
 		case TRI_UNDEF:	m_state = TRI_ON;		break;
@@ -32,7 +34,8 @@ TRI_STATE triStateType::togglePrev ()
 
 TRI_STATE triStateType::toggleOnOff ()
 {
-	switch ( m_state ) {
+	switch ( m_state )
+	{
 		case TRI_UNDEF:
 		case TRI_OFF:
 			m_state = TRI_ON;	break;

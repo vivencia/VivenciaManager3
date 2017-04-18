@@ -42,25 +42,26 @@ public:
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
 
-    inline const QString projectIDTemplate () const {
+	inline const QString projectIDTemplate () const
+	{
 		return date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE ) +
-            CHR_HYPHEN + recStrValue ( this, FLD_JOB_ID );
+			CHR_HYPHEN + recStrValue ( this, FLD_JOB_ID );
 	}
 
 	inline const QString jobSummary () const { return jobSummary ( recStrValue ( this, FLD_JOB_ID ) ); }
-    static const QString jobAddress ( const Job* const job = nullptr, Client* client = nullptr );
+	static const QString jobAddress ( const Job* const job = nullptr, Client* client = nullptr );
 	static QString jobSummary ( const QString& jobid );
 	static QString concatenateJobInfo ( const Job& job );
-    static inline const QString jobTypeWithDate ( const int id ) {
-        return ( id > 0 ) ? jobTypeWithDate ( QString::number ( id ) ) : emptyString;
-    }
-    static QString jobTypeWithDate ( const QString& id );
-    const QString jobTypeWithDate () const;
+	static inline const QString jobTypeWithDate ( const int id ) {
+		return ( id > 0 ) ? jobTypeWithDate ( QString::number ( id ) ) : emptyString;
+	}
+	static QString jobTypeWithDate ( const QString& id );
+	const QString jobTypeWithDate () const;
 
-    void setListItem ( jobListItem* job_item );
-    jobListItem* jobItem () const;
+	void setListItem ( jobListItem* job_item );
+	jobListItem* jobItem () const;
 
-    static const TABLE_INFO t_info;
+	static const TABLE_INFO t_info;
 
 protected:
 	friend bool updateJobTable ();

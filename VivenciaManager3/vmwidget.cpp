@@ -5,17 +5,14 @@
 #include "vmtableitem.h"
 #include "data.h"
 
+#include <QVBoxLayout>
+
 vmWidget::vmWidget ( const int type, const int subtype, const int id )
 	: keypressed_func ( nullptr ), contextmenu_func ( nullptr ), contentsAltered_func ( nullptr ),
 	  m_type ( type ), m_subtype ( subtype ), m_id ( id ), mb_editable ( false ),
-	  mWidgetPtr ( nullptr ), mParent ( nullptr ), m_sheetItem ( nullptr ), mTextType ( TT_TEXT )
+	  mWidgetPtr ( nullptr ), mParent ( nullptr ), m_sheetItem ( nullptr ), m_LayoutUtilities ( nullptr ), 
+	  m_UtilityWidgetsList ( 2 ), mTextType ( TT_TEXT )
 {}
-
-/*vmWidget::vmWidget ( QWidget* widget )
-	: keypressed_func ( nullptr ), contextmenu_func ( nullptr ), contentsAltered_func ( nullptr ),
-	  m_type ( WT_QWIDGET ), m_subtype ( -1 ), m_id ( -1 ), mb_editable ( false ),
-	  mWidgetPtr ( widget ), mParent ( nullptr ), m_sheetItem ( nullptr ), mTextType ( TT_TEXT )
-{}*/
 
 vmWidget::~vmWidget () {}
 
@@ -124,8 +121,7 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 	}
 }
 
-void vmWidget::setCallbackForContextMenu
-( std::function<void ( const QPoint& pos, const vmWidget* const )> func )
+void vmWidget::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const )>& func )
 {
 	toQWidget ()->setContextMenuPolicy ( Qt::CustomContextMenu );
 	contextmenu_func = func;
@@ -146,4 +142,27 @@ void vmWidget::setOwnerItem ( vmTableItem* const item )
 	 m_sheetItem = item;
 	 if ( m_type == WT_LINEEDIT_WITH_BUTTON )
 		 static_cast<vmLineEditWithButton*> ( toQWidget () )->lineControl ()->setOwnerItem ( item );
+}
+
+bool vmWidget::toggleUtilityPanel ( const int widget_idx )
+{
+	if ( utilitiesLayout () != nullptr )
+	{
+		QWidget* panel ( m_UtilityWidgetsList.at ( widget_idx ) );
+		if ( panel != nullptr )
+		{
+			if ( panel->isVisible () )
+			{
+				utilitiesLayout ()->removeWidget ( panel );
+				panel->setVisible ( false );
+			}
+			else
+			{
+				utilitiesLayout ()->insertWidget ( 0, panel, 1 );
+				panel->setVisible ( true );
+			}
+			return true;
+		}
+	}
+	return false;
 }

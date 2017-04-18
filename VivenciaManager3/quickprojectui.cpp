@@ -15,8 +15,6 @@
 #include <QHBoxLayout>
 
 const uint N_QP_GUI_FIELDS ( 8 );
-//const uint N_USED_COLS ( 5 );
-//const uint used_cols[N_USED_COLS] = { 0, 1, 2, 4, 5 };
 
 quickProjectUI* quickProjectUI::s_instance ( nullptr );
 
@@ -30,11 +28,6 @@ constexpr inline uint dbColumnToGuiColumn ( const uint db_col )
 	return db_col - 2;
 }
 
-/*constexpr inline uint dbColumnToGuiColumn ( const uint db_col )
-{
-	return db_col - 3;
-}*/
-
 void deleteQPInstance ()
 {
 	heap_del ( quickProjectUI::s_instance );
@@ -43,7 +36,7 @@ void deleteQPInstance ()
 static const QString MODIFIED ( APP_TR_FUNC ( "Modified - " ) );
 
 quickProjectUI::quickProjectUI ()
-	: QDialog ( globalMainWindow ), m_table ( nullptr ), qp_rec ( new quickProject ),
+	: QDialog ( MAINWINDOW () ), m_table ( nullptr ), qp_rec ( new quickProject ),
 	  mbQPChanged ( false ), funcClosed ( nullptr )
 {
 	setWindowFlags ( Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint ); // remove close button
@@ -60,26 +53,24 @@ quickProjectUI::~quickProjectUI ()
 void quickProjectUI::setupUI ()
 {
 	//--------------------------------CONTROL-BUTTONS--------------------------------------
-    btnEditTable = new QPushButton ( TR_FUNC ( "&Edit" ) );
+	btnEditTable = new QPushButton ( TR_FUNC ( "&Edit" ) );
 	btnEditTable->setCheckable ( true );
 	btnEditTable->setFixedSize ( 150, 30 );
-	connect ( btnEditTable, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ), this, [&] ( const bool checked ) {
-				return editTable ( checked ); } );
+	static_cast<void>(connect ( btnEditTable, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ), this, [&] ( const bool checked ) {
+				return editTable ( checked ); }) );
 
-    btnCancel = new QPushButton ( TR_FUNC ( "&Cancel" ) );
+	btnCancel = new QPushButton ( TR_FUNC ( "&Cancel" ) );
 	btnCancel->setFixedSize ( 150, 30 );
-	connect ( btnCancel, &QPushButton::clicked, this, [&] () {
-				return cancelEdit (); } );
+	static_cast<void>(connect ( btnCancel, &QPushButton::clicked, this, [&] () { return cancelEdit (); } ));
 	//--------------------------------CONTROL-BUTTONS--------------------------------------
 
-    btnCopyPurchasesLists = new QPushButton ( TR_FUNC ( "Copy &purchases lists" ) );
+	btnCopyPurchasesLists = new QPushButton ( TR_FUNC ( "Copy &purchases lists" ) );
 	btnCopyPurchasesLists->setFixedSize ( 150, 30 );
-	connect ( btnCopyPurchasesLists, &QPushButton::clicked, this, [&] () {
-					return btnCopyPurchasesLists_clicked (); } );
+	static_cast<void>(connect ( btnCopyPurchasesLists, &QPushButton::clicked, this, [&] () { return btnCopyPurchasesLists_clicked (); } ));
 
-    btnClose = new QPushButton ( TR_FUNC ( "&Close" ) );
+	btnClose = new QPushButton ( TR_FUNC ( "&Close" ) );
 	btnClose->setFixedSize ( 100, 30 );
-	connect ( btnClose, &QPushButton::clicked, this, [&] () { return closeClicked (); } );
+	static_cast<void>(connect ( btnClose, &QPushButton::clicked, this, [&] () { return closeClicked (); } ));
 
 	QHBoxLayout* hLayout1 ( new QHBoxLayout );
 	hLayout1->setMargin ( 2 );
@@ -92,9 +83,11 @@ void quickProjectUI::setupUI ()
 	m_table = new vmTableWidget;
 	vmTableColumn* fields ( m_table->createColumns( N_QP_GUI_FIELDS ) );
 
-	for ( uint i ( 0 ); i < N_QP_GUI_FIELDS; ++i ) {
+	for ( uint i ( 0 ); i < N_QP_GUI_FIELDS; ++i )
+	{
 		fields[i].label = VivenciaDB::getTableColumnLabel ( &quickProject::t_info, guiColumnToDBColumn ( i ) );
-		switch ( i ) {
+		switch ( i )
+		{
 			case QP_GUI_ITEM: //FLD_QP_ITEM = 3 - Column A
 				fields[QP_GUI_ITEM].completer_type = vmCompleters::PRODUCT_OR_SERVICE;
 				fields[QP_GUI_ITEM].width = 250;
@@ -138,50 +131,56 @@ void quickProjectUI::setupUI ()
 
 	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 				return cellModified ( item ); } );
-	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) {
-				return rowRemoved ( row ); } );
+	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) { return rowRemoved ( row ); } );
 
-    mLayoutMain = new QVBoxLayout;
-    mLayoutMain->setMargin ( 2 );
-    mLayoutMain->setSpacing ( 2 );
-    m_table->addToLayout ( mLayoutMain );
-    mLayoutMain->addLayout ( hLayout1, 0 );
-    setLayout ( mLayoutMain );
-    setMinimumSize ( 870, 450 );
+	mLayoutMain = new QVBoxLayout;
+	mLayoutMain->setMargin ( 2 );
+	mLayoutMain->setSpacing ( 2 );
+	m_table->addToLayout ( mLayoutMain );
+	mLayoutMain->addLayout ( hLayout1, 0 );
+	setLayout ( mLayoutMain );
+	setMinimumSize ( 870, 450 );
 }
 
 void quickProjectUI::prepareToShow ( const Job* const job )
 {
-    mJob = const_cast<Job*>( job );
+	mJob = const_cast<Job*>( job );
 	loadData ( recStrValue ( job, FLD_JOB_ID ) );
 	m_qpString = QLatin1String ( "QP-" ) + job->projectIDTemplate ();
-    m_table->addToLayout ( mLayoutMain );
+	m_table->addToLayout ( mLayoutMain );
 	m_table->scrollToTop ();
 }
 
 bool quickProjectUI::loadData ( const QString& jobid , const bool force )
 {
-	if ( force || jobid != recStrValue ( qp_rec, FLD_QP_JOB_ID ) ) {
+	if ( force || jobid != recStrValue ( qp_rec, FLD_QP_JOB_ID ) )
+	{
 		qp_rec->setAction ( ACTION_READ );
-		if ( qp_rec->readRecord ( FLD_QP_JOB_ID, jobid ) ) {
+		if ( qp_rec->readRecord ( FLD_QP_JOB_ID, jobid ) )
+		{
 			mbQPChanged = false;
 			m_table->clear ();
 			stringRecord fieldRecs;
 			uint i_row ( 0 );
 
-			for ( uint i_col ( FLD_QP_ITEM ); i_col < FLD_QP_RESULT; ++i_col ) {
-				if ( i_col != FLD_QP_SELL_TOTALPRICE && i_col != FLD_QP_PURCHASE_TOTAL_PRICE ) {
+			for ( uint i_col ( FLD_QP_ITEM ); i_col < FLD_QP_RESULT; ++i_col )
+			{
+				if ( i_col != FLD_QP_SELL_TOTALPRICE && i_col != FLD_QP_PURCHASE_TOTAL_PRICE )
+				{
 					fieldRecs.fromString ( recStrValue ( qp_rec, i_col ) );
-					if ( fieldRecs.first () ) {
+					if ( fieldRecs.first () )
+					{
 						i_row = 0;
-						do {
+						do
+						{
 							m_table->setCellValue ( fieldRecs.curValue (), i_row++, dbColumnToGuiColumn ( i_col ) );
 						} while ( fieldRecs.next () );
 					}
 				}
 			}
 		}
-		else {
+		else
+		{
 			qp_rec->clearAll ();
 			m_table->clear ();
 		}
@@ -192,11 +191,12 @@ bool quickProjectUI::loadData ( const QString& jobid , const bool force )
 
 QString quickProjectUI::getJobIDFromQPString ( const QString& qpIDstr ) const
 {
-	if ( !qpIDstr.isEmpty () ) {
+	//if ( !qpIDstr.isEmpty () )
+	//{
 		const int idx ( qpIDstr.indexOf ( CHR_HYPHEN ) );
 		if ( idx != -1 )
 			return qpIDstr.right ( qpIDstr.count () - idx - 1 );
-	}
+	//}
 	return QStringLiteral ( "-1" );
 }
 
@@ -206,42 +206,52 @@ void quickProjectUI::completeItem ( const QModelIndex& index )
 									vmCompleters::PRODUCT_OR_SERVICE )->completionModel ()->data (
 									index.sibling ( index.row (), 1 ) ).toString () );
 
-	if ( record.isOK () ) {
+	if ( record.isOK () )
+	{
 		if ( m_table->currentRow () == -1 )
-			m_table->setCurrentCell ( 1, QP_GUI_ITEM, QItemSelectionModel::Select );
-		const int current_row ( m_table->currentRow () );
-
-		m_table->sheetItem ( current_row, QP_GUI_ITEM )->setText ( record.fieldValue ( ISR_NAME ), false, true );
-		m_table->sheetItem ( current_row, QP_GUI_PURCHASE_UNIT_PRICE )->setText ( record.fieldValue ( ISR_UNIT_PRICE ), false, true );
-		m_table->sheetItem ( current_row, QP_GUI_PURCHASE_QUANTITY )->setText ( CHR_ONE, false, true );
-		m_table->setCurrentCell ( current_row, QP_GUI_SELL_QUANTITY, QItemSelectionModel::ClearAndSelect );
+			m_table->setCurrentCell ( 0, QP_GUI_ITEM, QItemSelectionModel::Select );
+		if ( m_table->currentRow () != -1 )
+		{
+			const uint current_row ( static_cast<uint>(m_table->currentRow ()) );
+			m_table->sheetItem ( current_row, QP_GUI_ITEM )->setText ( record.fieldValue ( ISR_NAME ), false, true );
+			m_table->sheetItem ( current_row, QP_GUI_PURCHASE_UNIT_PRICE )->setText ( record.fieldValue ( ISR_UNIT_PRICE ), false, true );
+			m_table->sheetItem ( current_row, QP_GUI_PURCHASE_QUANTITY )->setText ( CHR_ONE, false, true );
+			m_table->setCurrentCell ( static_cast<int>(current_row), QP_GUI_SELL_QUANTITY, QItemSelectionModel::ClearAndSelect );
+		}
 	}
 }
 
 void quickProjectUI::cellModified ( const vmTableItem* const item )
 {
-	if ( item->column () == FLD_QP_SELL_TOTALPRICE || item->column () == FLD_QP_PURCHASE_TOTAL_PRICE  ||
-		 item->column () == FLD_QP_RESULT ) {
-		qDebug () << "auto column modified";
-		return;
-	}
-	if ( item->row () < m_table->totalsRow () ) {
-		stringRecord rowRec ( recStrValue ( qp_rec, guiColumnToDBColumn ( item->column () ) ) );
-		rowRec.changeValue ( item->row (), item->text () );
-		setRecValue ( qp_rec, guiColumnToDBColumn ( item->column () ), rowRec.toString () );
-        setWindowTitle ( MODIFIED + windowTitle () );
+	if ( item != nullptr )
+	{
+		if ( item->column () == FLD_QP_SELL_TOTALPRICE || item->column () == FLD_QP_PURCHASE_TOTAL_PRICE  ||
+			 item->column () == FLD_QP_RESULT )
+		{
+			qDebug () << "auto column modified";
+			return;
+		}
+		if ( item->row () < m_table->totalsRow () )
+		{
+			stringRecord rowRec ( recStrValue ( qp_rec, guiColumnToDBColumn ( static_cast<uint>(item->column ()) ) ) );
+			rowRec.changeValue ( static_cast<uint>(item->row ()), item->text () );
+			setRecValue ( qp_rec, guiColumnToDBColumn ( static_cast<uint>(item->column ()) ), rowRec.toString () );
+			setWindowTitle ( MODIFIED + windowTitle () );
+		}
 	}
 }
 
 void quickProjectUI::rowRemoved ( const uint row )
 {
 	stringRecord rowRec;
-	for ( uint i ( 0 ); i < m_table->colCount (); ++i ) {
+	for ( uint i ( 0 ); i < m_table->colCount (); ++i )
+	{
 		rowRec.fromString ( recStrValue ( qp_rec, i ) );
 		rowRec.removeField ( row );
 		setRecValue ( qp_rec, i, rowRec.toString () );
 	}
-	mbQPChanged |= qp_rec->saveRecord ();
+	//mbQPChanged |= qp_rec->saveRecord ();
+	mbQPChanged = true;
 }
 
 void quickProjectUI::enableControls ( const bool enable )
@@ -250,32 +260,34 @@ void quickProjectUI::enableControls ( const bool enable )
 	btnCancel->setEnabled ( enable );
 	btnClose->setEnabled ( !enable );
 	btnCopyPurchasesLists->setEnabled ( !enable );
-    btnEditTable->setText ( enable ? TR_FUNC ( "&Save" ) : TR_FUNC ( "&Edit" ) );
+	btnEditTable->setText ( enable ? TR_FUNC ( "&Save" ) : TR_FUNC ( "&Edit" ) );
 }
 
 void quickProjectUI::editTable ( const bool checked )
 {
 	enableControls ( checked );
 	m_table->setFocus ();
-    if ( checked ) {
-        qp_rec->setAction ( recIntValue ( qp_rec, FLD_QP_ID ) > 0 ? ACTION_EDIT : ACTION_ADD );
-        setRecValue ( qp_rec, FLD_QP_JOB_ID, recStrValue ( mJob, FLD_JOB_ID ) );
-        connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
-                  static_cast<void (QCompleter::*)( const QModelIndex& )>(&QCompleter::activated), this,
-                  [&] ( const QModelIndex& idx ) { return completeItem ( idx ); } );
-    }
-    else {
+	if ( checked )
+	{
+		qp_rec->setAction ( recIntValue ( qp_rec, FLD_QP_ID ) > 0 ? ACTION_EDIT : ACTION_ADD );
+		setRecValue ( qp_rec, FLD_QP_JOB_ID, recStrValue ( mJob, FLD_JOB_ID ) );
+		static_cast<void>(connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
+				  static_cast<void (QCompleter::*)( const QModelIndex& )>(&QCompleter::activated), this,
+				  [&] ( const QModelIndex& idx ) { return completeItem ( idx ); } ) );
+	}
+	else
+	{
 		mbQPChanged |= qp_rec->saveRecord ();
-        disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
-    }
+		disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
+	}
 }
 
 void quickProjectUI::cancelEdit ()
 {
-    disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
+	static_cast<void>(disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr ));
 	btnEditTable->setChecked ( false );
 	enableControls ( false );
-    qp_rec->setAction ( ACTION_REVERT );
+	qp_rec->setAction ( ACTION_REVERT );
 	const QString jobid ( recStrValue ( qp_rec, FLD_QP_JOB_ID ) );
 	loadData ( jobid, true );
 }
@@ -288,11 +300,14 @@ void quickProjectUI::getHeadersText ( spreadRow* row ) const
 
 uint quickProjectUI::copyItemsFromTable ( const vmTableWidget* const table )
 {
-	if ( table->selectedRowsCount () > 0 ) {
-		int i_row ( 0 );
-		uint m_table_lastrow ( m_table->lastUsedRow () + 1 );
-		for ( ; i_row <= table->lastUsedRow (); ++i_row, ++m_table_lastrow ) {
-			if ( table->isRowSelectedAndNotEmpty ( i_row ) ) {
+	if ( table->selectedRowsCount () > 0 )
+	{
+		uint i_row ( 0 );
+		uint m_table_lastrow ( static_cast<uint>(m_table->lastUsedRow ()) + 1 );
+		for ( ; i_row <= static_cast<uint>(table->lastUsedRow ()); ++i_row, ++m_table_lastrow )
+		{
+			if ( table->isRowSelectedAndNotEmpty ( i_row ) )
+			{
 				m_table->sheetItem ( m_table_lastrow, QP_GUI_ITEM )->setText ( table->sheetItem ( i_row, ISR_NAME )->text (), false, true );
 				m_table->sheetItem ( m_table_lastrow, QP_GUI_PURCHASE_QUANTITY )->setText ( CHR_ONE, false, true );
 				m_table->sheetItem ( m_table_lastrow, QP_GUI_PURCHASE_UNIT_PRICE )->setText ( table->sheetItem ( i_row, ISR_UNIT_PRICE )->text (), false, true );
@@ -306,7 +321,7 @@ uint quickProjectUI::copyItemsFromTable ( const vmTableWidget* const table )
 void quickProjectUI::btnCopyPurchasesLists_clicked ()
 {
 	//emit temporarilyHide ();
-	globalMainWindow->selectBuysItems ( PS_PREPARE );
+	MAINWINDOW ()->selectBuysItems ( PS_PREPARE );
 }
 
 void quickProjectUI::selectDone ()

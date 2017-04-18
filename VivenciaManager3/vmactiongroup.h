@@ -32,7 +32,7 @@ public:
 	}
 
 	void addQEntry ( QWidget* widget, QLayout* l, const bool addStretch );
-    void addLayout ( QLayout* layout );
+	void addLayout ( QLayout* layout );
 
 	QPixmap transparentRender ();
 
@@ -61,14 +61,11 @@ public:
 	void setTitle ( const QString& new_title );
 	void setIcon ( const QIcon& icon );
 
-	inline void setCallbackForFoldButtonClicked ( std::function<void ()> func ) { funcFoldButtonClicked = func; }
-	inline void setCallbackForCloseButtonClicked ( std::function<void ()> func ) { funcCloseButtonClicked = func; }
+	inline void setCallbackForFoldButtonClicked ( const std::function<void ()>& func ) { funcFoldButtonClicked = func; }
+	inline void setCallbackForCloseButtonClicked ( const std::function<void ()>& func ) { funcCloseButtonClicked = func; }
 
 protected:
 	void paintEvent ( QPaintEvent* event );
-	//void enterEvent ( QEvent* event );
-	//void leaveEvent ( QEvent* event );
-	//void mouseReleaseEvent ( QMouseEvent* event );
 	void keyPressEvent ( QKeyEvent* event );
 	void keyReleaseEvent ( QKeyEvent* event );
 	bool eventFilter ( QObject* obj, QEvent* event );
@@ -119,14 +116,9 @@ public:
 
 	virtual ~vmActionGroup ();
 
-	inline void setCallbackForClosed ( std::function<void ()> func ) {
-		mHeader->setCallbackForCloseButtonClicked ( func ); }
-
-	inline void setTitle ( const QString& new_title ) {
-		mHeader->setTitle ( new_title ); }
-
-	inline void setIcon ( const QIcon& icon ) {
-		mHeader->setIcon ( icon ); }
+	inline void setCallbackForClosed ( const std::function<void ()>& func ) { mHeader->setCallbackForCloseButtonClicked ( func ); }
+	inline void setTitle ( const QString& new_title ) { mHeader->setTitle ( new_title ); }
+	inline void setIcon ( const QIcon& icon ) { mHeader->setIcon ( icon ); }
 
 	/** Creates action item from the \a action and returns it.
 
@@ -144,7 +136,7 @@ public:
 	  */
 	bool addEntry ( vmWidget* entry, QLayout* l = nullptr, const bool addStretch = false );
 	void addQEntry ( QWidget* widget, QLayout* l = nullptr, const bool addStretch = false );
-    void addLayout ( QLayout* layout );
+	void addLayout ( QLayout* layout );
 
 	/** Returns group's layout  ( QVBoxLayout by default ) .
 	  */

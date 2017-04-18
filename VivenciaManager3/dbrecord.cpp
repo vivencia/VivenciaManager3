@@ -24,20 +24,20 @@ static inline int recordFieldsCompare_pod ( const RECORD_FIELD& rec1, const RECO
 }
 
 DBRecord::DBRecord ( const uint field_count )
-    : t_info ( nullptr ), m_RECFIELDS ( nullptr ) , mListItem ( nullptr ), helperFunction ( nullptr ),
+	: t_info ( nullptr ), m_RECFIELDS ( nullptr ) , mListItem ( nullptr ), helperFunction ( nullptr ),
 	  fld_count ( field_count ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
 {
 	setAction ( ACTION_READ );
 }
 
-DBRecord::DBRecord ( const DBRecord* other )
-    : t_info ( nullptr ), m_RECFIELDS ( nullptr ), mListItem ( nullptr ),helperFunction ( nullptr ),
+DBRecord::DBRecord ( const DBRecord& other )
+	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), mListItem ( nullptr ),helperFunction ( nullptr ),
 	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
 {
 	setAction ( ACTION_READ );
-	if ( other != nullptr )
+	//if ( other != nullptr )
 		copy ( other );
 }
 
@@ -65,7 +65,7 @@ bool DBRecord::operator== ( const DBRecord& other ) const
 
 const DBRecord& DBRecord::operator= ( const DBRecord& other )
 {
-	if ( *this != &other )
+	if ( const_cast<DBRecord*>(this) != const_cast<DBRecord*>(&other) )
 	{
 		if ( t_info != other.t_info)
 			helperFunction = nullptr;
@@ -320,8 +320,8 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 					if ( !inSync () )
 						sync ( RECORD_FIELD::IDX_TEMP, false );
 				case ACTION_REVERT:
-                    *const_cast<RECORD_ACTION*>( &m_action ) = ACTION_READ;
-                    mb_synced = true;
+					*const_cast<RECORD_ACTION*>( &m_action ) = ACTION_READ;
+					mb_synced = true;
 					fptr_change = &DBRecord::setValue;
 					fptr_changeInt = &DBRecord::setIntValue;
 					fptr_recordStr = &DBRecord::actualRecordStr;
@@ -372,11 +372,11 @@ void DBRecord::sync ( const int src_index, const bool b_force )
 	{
 		if ( wasModified ( i ) || b_force )
 		{
-            if ( m_RECFIELDS[i].str_field[!src_index] != m_RECFIELDS[i].str_field[src_index] )
+			if ( m_RECFIELDS[i].str_field[!src_index] != m_RECFIELDS[i].str_field[src_index] )
 			{
 				m_RECFIELDS[i].str_field[!src_index] = m_RECFIELDS[i].str_field[src_index];
-                m_RECFIELDS[i].i_field[!src_index] = m_RECFIELDS[i].i_field[src_index];
-            }
+				m_RECFIELDS[i].i_field[!src_index] = m_RECFIELDS[i].i_field[src_index];
+			}
 		}
 	}
 	mb_synced = true;

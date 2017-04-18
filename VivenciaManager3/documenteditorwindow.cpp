@@ -5,6 +5,7 @@
 
 #include <QDockWidget>
 #include <QCloseEvent>
+#include <QVBoxLayout>
 
 documentEditorWindow::documentEditorWindow ( documentEditor *parent )
 	: QWidget (), mainLayout ( nullptr ), m_type ( 0 ), mb_untitled ( true ),
@@ -13,7 +14,7 @@ documentEditorWindow::documentEditorWindow ( documentEditor *parent )
 {
 	setAttribute ( Qt::WA_DeleteOnClose );
 
-	mainLayout = new QGridLayout;
+	mainLayout = new QVBoxLayout;
 	mainLayout->setMargin ( 1 );
 	mainLayout->setSpacing ( 1 );
 	setLayout ( mainLayout );
@@ -91,7 +92,7 @@ void documentEditorWindow::documentWasModified ()
 		/* When printing and previewing, we want to ignore the modified status. But a QTextEdit emits
 		the documentModified signal more than once when previewing (don't know how many when printing only)
 		and more than once it does it again when the preview dialog is closed. We need to count those calls
-		and ignore them selectively. In my opinion Qt should drop those annoying habits (set the modified flag to
+		and ignore them selectively. In my opinion Qt should quit with those annoying habits (set the modified flag to
 		true when printing and calling it so many times).
 		 */
 		static int wasInPreview ( 0 );
@@ -153,16 +154,9 @@ void documentEditorWindow::setCurrentFile ( const QString& fileName )
 		documentModified_func ( this );
 }
 
-/*void documentEditorWindow::closeEvent ( QCloseEvent* e )
-{
-	if ( maybeSave () )
-		e->accept ();
-	else
-		e->ignore ();
-}*/
-
 bool documentEditorWindow::canClose ()
 {
+	bool b_can_close ( true );
 	if ( mb_modified )
 	{
 		const int btn (
@@ -171,10 +165,18 @@ bool documentEditorWindow::canClose ()
 
 		switch ( btn )
 		{
-			case 0:		return save ( curFile );
-			case -1:	return false;
-			default:	break;
+			case MESSAGE_BTN_OK:
+				b_can_close = save ( curFile );
+			break;
+			case MESSAGE_BTN_CANCEL:
+				b_can_close = false;
+			break;
+			case MESSAGE_BTN_CUSTOM: // don't save
+				b_can_close = true;
+			break;
 		}
 	}
-	return true;
+	if ( b_can_close )
+		this->disconnect ();
+	return b_can_close;
 }

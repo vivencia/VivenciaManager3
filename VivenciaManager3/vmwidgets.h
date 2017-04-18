@@ -48,14 +48,10 @@ public:
 
 	virtual ~vmActionLabel ();
 
-	inline void setText ( const QString& text, const bool = false ) {
-		QToolButton::setText ( text );
-	}
-	inline QString text () const {
-		return QToolButton::text ();
-	}
+	inline void setText ( const QString& text, const bool = false ) { QToolButton::setText ( text ); }
+	inline QString text () const { return QToolButton::text (); }
 
-	void setCallbackForLabelActivated ( std::function<void ()> func );
+	void setCallbackForLabelActivated ( const std::function<void ()>& func );
 	QSize sizeHint () const;
 	QSize minimumSizeHint () const;
 
@@ -83,7 +79,7 @@ public:
 	}
 	QString defaultStyleSheet () const;
 
-    void setDate ( const vmNumber& date, const bool b_notify = false );
+	void setDate ( const vmNumber& date, const bool b_notify = false );
 	const QDate date () const;
 	inline void setText ( const QString& text, const bool b_notify = false ) {
 		setDate ( vmNumber ( text, VMNT_DATE ), b_notify );
@@ -96,7 +92,7 @@ public:
 	void contextMenuRequested ();
 
 	void setCallbackForContextMenu
-	( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
+	( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
 
 	static void execDateButtonsMenu ( const vmAction* const action, pvmDateEdit* dte );
 	static void createDateButtonsMenu ( QWidget* parent = nullptr );
@@ -129,7 +125,7 @@ public:
 
 	void setTime ( const vmNumber& time, const bool b_notify = false );
 	inline void setText ( const QString& text, const bool b_notify = false ) {
-		setTime ( vmNumber ( text, VMNT_TIME ).toQTime (), b_notify );
+		setTime ( vmNumber ( text, VMNT_TIME ), b_notify );
 	}
 	inline QString text () const {
 		return vmNumber ( time () ).toTime ();
@@ -173,11 +169,9 @@ public:
 	void setTrackingEnabled ( const bool b_tracking );
 
 	void setEditable ( const bool editable );
-	inline void setCallbackForMouseClicked ( std::function<void ( const vmLineEdit* const )> func ) {
-		mouseClicked_func = func; }
+	inline void setCallbackForMouseClicked ( const std::function<void ( const vmLineEdit* const )>& func ) { mouseClicked_func = func; }
 
-	void setCallbackForContextMenu
-	( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
+	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
 
 	void completerClickReceived ( const QString& value );
 	void updateText ();
@@ -276,28 +270,19 @@ public:
 	void insertItem ( const QString& text, const int idx = -1, const bool b_check = true );
 
 	// The receiver should retrieve the line edit's parent to find the vmComboBox owning the sender of the signal
-	inline void setCallbackForContentsAltered ( std::function<void ( const vmWidget* const )> func )
+	inline void setCallbackForContentsAltered ( const std::function<void ( const vmWidget* const )>& func )
 	{
 		vmWidget::setCallbackForContentsAltered ( func );
 		mLineEdit->setCallbackForContentsAltered ( func );
 	}
 
-	inline void setCallbackForIndexChanged ( std::function<void ( const int )> func ) {
-		indexChanged_func = func;
-	}
-	inline void setCallbackForEnterKeyPressed ( std::function<void ()> func ) {
-		keyEnter_func = func;
-	}
-	inline void setCallbackForEscKeyPressed ( std::function<void ()> func ) {
-		keyEsc_func = func;
-	}
+	inline void setCallbackForIndexChanged ( const std::function<void ( const int )>& func ) { indexChanged_func = func; }
+	inline void setCallbackForEnterKeyPressed ( const std::function<void ()>& func ) { keyEnter_func = func; }
+	inline void setCallbackForEscKeyPressed ( const std::function<void ()>& func ) { keyEsc_func = func; }
 
-	void setCallbackForContextMenu
-	( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
+	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
 
-	inline vmLineEdit* editor () const {
-		return mLineEdit;
-	}
+	inline vmLineEdit* editor () const { return mLineEdit; }
 
 protected:
 	void focusOutEvent ( QFocusEvent* );
@@ -330,29 +315,25 @@ public:
 	vmCheckBox ( const QString& text, QWidget* parent = nullptr );
 	virtual ~vmCheckBox ();
 
-    inline QLatin1String qtClassName () const { return QLatin1String ( "QCheckBox" ); }
+	inline QLatin1String qtClassName () const { return QLatin1String ( "QCheckBox" ); }
 	QString defaultStyleSheet () const;
 
-    void setChecked ( const bool checked, const bool b_notify = false );
-    inline void setText ( const QString& text, const bool b_notify = false ) {
-        if ( text.length () <= 1 )
-            setChecked ( text == CHR_ONE, b_notify );
-        else
-            QCheckBox::setText ( text );
-    }
+	void setChecked ( const bool checked, const bool b_notify = false );
+	inline void setText ( const QString& text, const bool b_notify = false ) {
+		if ( text.length () <= 1 )
+			setChecked ( text == CHR_ONE, b_notify );
+		else
+			QCheckBox::setText ( text );
+	}
 
-    inline QString text () const { return isChecked () ? CHR_ONE : emptyString; }
-
+	inline QString text () const { return isChecked () ? CHR_ONE : emptyString; }
 	void setEditable ( const bool editable );
 
 	// Qt's uic calls setText, which render the controle labelless because we use the same function name, which trumps the base's name.
 	// Every controler used in the source must call setLabel if created by Qt's UI tools. Otherwise, set the label in the constructor
-	inline void setLabel ( const QString& label ) {
-		QCheckBox::setText ( label );
-	}
+	inline void setLabel ( const QString& label ) { QCheckBox::setText ( label ); }
 
-	void setCallbackForContextMenu
-		( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
+	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
 };
 //------------------------------------------------VM-CHECK-BOX------------------------------------------------
 

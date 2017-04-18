@@ -9,7 +9,6 @@ class supplierRecord : public DBRecord
 {
 
 friend class VivenciaDB;
-friend class Data;
 friend class suppliersDlg;
 
 public:

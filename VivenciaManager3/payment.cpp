@@ -6,8 +6,6 @@
 
 const double TABLE_VERSION ( 2.3 );
 
-void updateOverdueInfo ( const DBRecord* db_rec );
-
 bool updatePaymentTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
@@ -54,42 +52,12 @@ const TABLE_INFO Payment::t_info = {
 	#endif
 };
 
-void updateOverdueInfo ( const DBRecord* db_rec )
-{
-	Payment* pay ( static_cast<Payment*> ( const_cast<DBRecord*> ( db_rec ) ) );
-
-	if ( recStrValue ( pay, FLD_PAY_OVERDUE ) != CHR_TWO )
-	{
-		// CHR_TWO == ignore price differences.
-		const vmNumber price ( recStrValue ( pay, FLD_PAY_PRICE ), VMNT_PRICE, 1 );
-		const vmNumber total_paid ( recStrValue ( pay, FLD_PAY_TOTALPAID ), VMNT_PRICE, 1 );
-
-		if ( total_paid < price)
-		{
-			setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ONE );
-			setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, vmNumber ( price - total_paid ).toPrice () );
-		}
-		else
-		{
-			setRecValue ( pay, FLD_PAY_OVERDUE, CHR_ZERO );
-			if ( pay->action () == ACTION_EDIT ) // clear field (if it contains a previous value) for neatness
-				setRecValue ( pay, FLD_PAY_OVERDUE_VALUE, vmNumber::zeroedPrice.toPrice () );
-		}
-	}
-}
-
 Payment::Payment ( const bool )
 	: DBRecord ( PAY_FIELD_COUNT )
 {
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
-
-/*	if ( connect_helper_funcs ) {
-		DBRecord::helperFunction = this->helperFunction;
-		setHelperFunction ( FLD_PAY_OVERDUE, &updateOverdueInfo );
-	}*/
-
 }
 
 Payment::~Payment () {}
@@ -131,10 +99,10 @@ void Payment::copySubRecord ( const uint subrec_field, const stringRecord& subre
 
 void Payment::setListItem ( payListItem* pay_item )
 {
-    DBRecord::mListItem = static_cast<vmListItem*>( pay_item );
+	DBRecord::mListItem = static_cast<vmListItem*>( pay_item );
 }
 
 payListItem* Payment::payItem () const
 {
-    return static_cast<payListItem*>( DBRecord::mListItem );
+	return static_cast<payListItem*>( DBRecord::mListItem );
 }

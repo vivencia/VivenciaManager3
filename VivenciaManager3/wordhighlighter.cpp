@@ -44,7 +44,8 @@ void wordHighlighter::enableSpellChecking ( const bool enable )
 {
 	if ( enable )
 	{
-		if ( !mb_spellCheckEnabled && !m_spellCheckFormat ) {
+		if ( !mb_spellCheckEnabled && m_spellCheckFormat == nullptr )
+		{
 			m_spellCheckFormat = new QTextCharFormat;
 			m_spellCheckFormat->setForeground ( Qt::red );
 			m_spellCheckFormat->setUnderlineColor ( QColor ( Qt::red ) );

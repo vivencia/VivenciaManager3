@@ -1,5 +1,4 @@
 #include "reportgenerator.h"
-#include "data.h"
 #include "quickprojectui.h"
 #include "vivenciadb.h"
 #include "configops.h"
@@ -12,6 +11,7 @@
 #include "documenteditor.h"
 #include "heapmanager.h"
 #include "cleanup.h"
+#include "mainwindow.h"
 #include "dbcalendar.h"
 
 #include <QLabel>
@@ -244,11 +244,13 @@ reportGenerator::reportGenerator ( documentEditor* mdiParent )
 
 	//------------------------------------------------------------------------------------------------------------
 
-	mainLayout->addLayout ( layoutBottomBar, 2, 0, 2, 1 );
+	//mainLayout->addLayout ( layoutBottomBar, 2, 0, 2, 1 );
+	mainLayout->addLayout ( layoutBottomBar );
 }
 
 reportGenerator::~reportGenerator ()
 {
+	static_cast<void>(disconnect ());
 	DOCK_QP ()->detach ( this );
 	DOCK_BJ ()->detach ( this );
 	heap_del ( rgClient );
@@ -282,7 +284,7 @@ void reportGenerator::show ( const uint jobid, const uint payid )
 	{
 		if ( payid == 0 )
 		{
-			if ( rgJob->readRecord ( static_cast<uint>(recIntValue ( DATA ()->currentJob (), FLD_JOB_ID )) ) )
+			if ( rgJob->readRecord ( MAINWINDOW ()->currentJob ()->dbRecID() ) )
 				static_cast<void>(rgClient->readRecord ( static_cast<uint>(recIntValue ( rgJob, FLD_JOB_CLIENTID )) ));
 		}
 		else

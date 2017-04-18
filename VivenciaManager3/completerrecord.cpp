@@ -183,7 +183,7 @@ void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES cat
 		case vmCompleters::SUPPLIER:
 		case vmCompleters::ITEM_NAMES:
 			return;
-		break;
+
 		default:
 		{
 			bool b_needadd ( true );

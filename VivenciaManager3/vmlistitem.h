@@ -131,7 +131,7 @@ class clientListItem : public vmListItem
 
 public:
 	explicit inline clientListItem ()
-		: vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs ) {}
+		: vmListItem ( CLIENT_TABLE, client_nBadInputs, badInputs ), jobs ( nullptr ), pays ( nullptr ), buys ( nullptr ) {}
 	virtual ~clientListItem ();
 
 	// Prevent Qt from deleting these objects
@@ -157,7 +157,8 @@ class jobListItem : public vmListItem
 public:
 	explicit inline jobListItem ()
 		: vmListItem ( JOB_TABLE, job_nBadInputs, badInputs ),
-		  mSearchSubFields ( nullptr ), m_payitem ( nullptr ), m_newproject_opt ( INT_MIN ) {}
+			buys ( nullptr ), daysList ( nullptr ), mSearchSubFields ( nullptr ), 
+			m_payitem ( nullptr ), m_newproject_opt ( INT_MIN ) {}
 
 	virtual ~jobListItem ();
 

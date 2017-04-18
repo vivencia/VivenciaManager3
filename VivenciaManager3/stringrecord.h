@@ -22,7 +22,7 @@ public:
 		setFieldSeparationChar ( sep );	
 	}
 	
-	inline stringRecord ( const stringRecord &other )
+	inline stringRecord ( const stringRecord& other )
 		: mData ( other.mData ), mFields ( other.mFields ), mFastIdx ( other.mFastIdx ), mState ( other.mState )
 	{
 		setFieldSeparationChar ( other.record_sep );
@@ -103,7 +103,7 @@ public:
 	// knows that it should not use that returned object, and discard it
 	struct Null {};
 	static constexpr Null null = {};
-	inline stringRecord ( const Null& ) : mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_UNDEF ) {}
+	inline explicit stringRecord ( const Null& ) : mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_UNDEF ) {}
 	inline void setNull () {
 		mState.setUndefined ();
 	}

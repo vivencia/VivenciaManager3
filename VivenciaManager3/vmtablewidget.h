@@ -82,7 +82,7 @@ public:
 	static vmTableWidget* createPurchasesTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr );
 	static void exchangePurchaseTablesInfo (
 		const vmTableWidget* const src_table, vmTableWidget* const dst_table,
-        const DBRecord* const src_dbrec, DBRecord* const dst_dbrec );
+		const DBRecord* const src_dbrec, DBRecord* const dst_dbrec );
 
 	static vmTableWidget* createPayHistoryTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr,
 			const PAY_HISTORY_RECORD last_column = PHR_USE_DATE );
@@ -93,20 +93,23 @@ public:
 	inline uint visibleRows () const { return m_nVisibleRows; }
 
 	/* m_clearRowNotify is by default true because clearRow is to be called when the table is editable (in fact, if it's
-     * called when not editable, the function will return and do nothing. Since it is editable, it should permit to
+	 * called when not editable, the function will return and do nothing. Since it is editable, it should permit to
 	 * send modification signals. However, when captured by outside functions that monitor changes and those functions
 	 * should check for an empty row, before concluding that those changes came from a full row clearing, isRowEmpty will return
 	 * false untill the last column, which is an undesired effect. In such cases, call clearRow with b_notify set to false and afterwards
 	 * iterate through all items in the row, calling the monitor function for each item.
 	 * The separate function to set the flag m_clearRowNotify is there because clearRow can be called dicrectly or via clearRow_slot
 	 */
-    //inline void setClearRowOrdersNotify ( const bool order_notify ) {
-    //	m_clearRowNotify = order_notify;
-    //}
+	//inline void setClearRowOrdersNotify ( const bool order_notify ) {
+	//	m_clearRowNotify = order_notify;
+	//}
 	void clearRow ( const uint row, const uint n = 1 );
 	void clear ( const bool force = false );
-	inline void appendRow () {
-		insertRow ( mbPlainTable ? rowCount () : mTotalsRow ); }
+	inline void appendRow ()
+	{
+		// totalsRow cannot be < 0. If it is, initTable was not called, and therefore something wrong is abount to happen anyway
+		insertRow ( mbPlainTable ? static_cast<uint>(rowCount ()) : static_cast<uint>(totalsRow ()) );
+	}
 
 	void rowActivatedConnection ( const bool b_activate );
 	void setCellValue ( const QString& value, const uint row, const uint col );
@@ -122,14 +125,11 @@ public:
 	void loadFromStringTable ( const stringTable& data );
 	void makeStringTable ( stringTable& data );
 	void setCellWidget ( vmTableItem* const sheet_item );
-    void addToLayout ( QGridLayout* glayout, const uint row, const uint column );
-    void addToLayout ( QVBoxLayout* vblayout, const uint strecth = 0 );
-    // Call these when the table is laid out in the Designer
-    bool setParentLayout ( QGridLayout* glayout );
-    bool setParentLayout ( QVBoxLayout* vblayout );
-	bool toggleSearchPanel ();
-	bool toggleUtilitiesPanel ();
-	inline void setUtilitiesPlaceLayout ( QVBoxLayout* layoutUtilities ) { mLayoutUtilities = layoutUtilities; }
+	void addToLayout ( QGridLayout* glayout, const uint row, const uint column );
+	void addToLayout ( QVBoxLayout* vblayout, const uint strecth = 0 );
+	// Call these when the table is laid out in the Designer
+	bool setParentLayout ( QGridLayout* glayout );
+	bool setParentLayout ( QVBoxLayout* vblayout );
 
 	void setIsList ();
 	inline bool isList () const { return mbTableIsList; }
@@ -170,10 +170,7 @@ public:
 	void insertMonitoredCell ( const uint row, const uint col );
 	void removeMonitoredCell ( const uint row, const uint col );
 	void setCellColor ( const uint row, const uint col, const Qt::GlobalColor color );
-
 	void highlight ( const VMColors color, const QString& text );
-	void highlightCell ( const int row, const int col, const VMColors color );
-	void unHighlightCell ( const int row, const int col );
 
 	bool isColumnSelectedForSearch ( const uint column ) const;
 	void setColumnSearchStatus ( const uint column, const bool bsearch );
@@ -184,15 +181,15 @@ public:
 
 	// This first callback is mandatory. Because it is called in a loop, and quite frequently,
 	// In order to avoid checking if cellChanged_func is not null in every iteration, we will assume it is not null
-	inline void setCallbackForCellChanged ( std::function<void ( const vmTableItem* const item )> func ) {
+	inline void setCallbackForCellChanged ( const std::function<void ( const vmTableItem* const item )>& func ) {
 		cellChanged_func = func; }
-	inline void setCallbackForCellNavigation ( std::function<void ( const uint row, const uint col, const uint prev_row, const uint prev_col )> func ) {
+	inline void setCallbackForCellNavigation ( const std::function<void ( const uint row, const uint col, const uint prev_row, const uint prev_col )>& func ) {
 		cellNavigation_func = func; }
-	inline void setCallbackForMonitoredCellChanged ( std::function<void ( const vmTableItem* const item )> func ) {
+	inline void setCallbackForMonitoredCellChanged ( const std::function<void ( const vmTableItem* const item )>& func ) {
 		monitoredCellChanged_func = func; }
-	inline void setCallbackForRowRemoved ( std::function<void ( const uint row )> func ) {
+	inline void setCallbackForRowRemoved ( const std::function<void ( const uint row )>& func ) {
 		rowRemoved_func = func; }
-	inline void setCallbackForRowActivated ( std::function<void ( const int row )> func ) {
+	inline void setCallbackForRowActivated ( const std::function<void ( const int row )>& func ) {
 		rowActivated_func = func; }
 
 	inline void callRowActivated_func ( const int row ) const { if ( rowActivated_func ) rowActivated_func ( row ); }
@@ -206,7 +203,7 @@ private:
 	void sharedContructorsCode ();
 	void fixTotalsRow ();
 	void reScanItem ( vmTableItem* const sheet_item );
-    void interceptCompleterActivated ( const QModelIndex& index, const vmTableWidget* const table = nullptr );
+	void interceptCompleterActivated ( const QModelIndex& index, const vmTableWidget* const table = nullptr );
 	void undoChange ();
 	void copyCellContents ();
 	void copyRowContents ();
@@ -233,17 +230,17 @@ private:
 	uint m_ncols;
 	uint mAddedItems;
 	bool mTableChanged;
-    //bool m_clearRowNotify;
+	//bool m_clearRowNotify;
 
-    /* TRUE: changes a recorded in a list so that at a later point this list can iterated
-     * through and with the changes update some database table or something else.
-     * FALSE: the changes are not kept and when one is signaled, the receiver must use that
-     * value immediately otherwise it will no be possible to know, later, what was and was not changed
-     */
-    bool mbKeepModRec;
+	/* TRUE: changes a recorded in a list so that at a later point this list can iterated
+	 * through and with the changes update some database table or something else.
+	 * FALSE: the changes are not kept and when one is signaled, the receiver must use that
+	 * value immediately otherwise it will no be possible to know, later, what was and was not changed
+	 */
+	bool mbKeepModRec;
 	bool mbPlainTable;
 	bool mbTableIsList;
-    bool mIsPurchaseTable;
+	bool mIsPurchaseTable;
 	bool mbDoNotUpdateCompleters;
 
 	// Because of the mask, the maximum number of columns is limited to 32
@@ -261,11 +258,10 @@ private:
 			  *mUndoAction, *mOverrideFormulaAction, *mSetFormulaAction, *mFormulaTitleAction;
 
 	QString mSearchTerm;
-    QLayout* mParentLayout;
+	QLayout* mParentLayout;
 	QAction* mSeparator, *mDatesSeparator;
 	vmTableSearchPanel* m_searchPanel;
 	vmTableFilterPanel* m_filterPanel;
-	QVBoxLayout* mLayoutUtilities;
 	vmTableItem* mContextMenuCell;
 
 	static QString defaultBGColor;

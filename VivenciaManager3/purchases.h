@@ -34,8 +34,8 @@ public:
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
 
-    void setListItem ( buyListItem* buy_item );
-    buyListItem* buyItem () const;
+	void setListItem ( buyListItem* buy_item );
+	buyListItem* buyItem () const;
 
 	static const TABLE_INFO t_info;
 

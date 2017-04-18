@@ -23,8 +23,8 @@ public:
 	void initInterface ();
 	void setEditable ( const bool editable );
 
-    void decodePhones ( const stringRecord& phones, const bool bClear = true );
-    void decodeEmails ( const stringRecord& emails, const bool bClear = true );
+	void decodePhones ( const stringRecord& phones, const bool bClear = true );
+	void decodeEmails ( const stringRecord& emails, const bool bClear = true );
 	void insertItem ();
 	bool removeCurrent ( int& removed_idx );
 

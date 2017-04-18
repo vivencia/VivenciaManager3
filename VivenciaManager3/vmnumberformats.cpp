@@ -984,7 +984,7 @@ const QDate& vmNumber::toQDate () const
 {
 	if ( isDate () )
 	{
-		mQDate.setDate ( static_cast<int> ( year () ), static_cast<int> ( month () ), static_cast<int> ( day () ) );
+		mQDate.setDate ( static_cast<int>(year ()), static_cast<int>(month ()), static_cast<int>(day ()) );
 	}
 	else
 	{
@@ -1946,7 +1946,7 @@ bool vmNumber::operator< ( const vmNumber& vmnumber ) const
 					ret = nbr_part[0] < vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					ret = nbr_part[0] < static_cast<int> ( vmnumber.nbr_upart[0] );
+					ret = nbr_part[0] < static_cast<int>(vmnumber.nbr_upart[0]);
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -1963,10 +1963,10 @@ bool vmNumber::operator< ( const vmNumber& vmnumber ) const
 				break;
 				case VMNT_PHONE:
 				case VMNT_DATE:
-					if ( nbr_part[0] == static_cast<int> ( vmnumber.nbr_upart[0] ) )
-						ret = nbr_part[1] < static_cast<int> ( vmnumber.nbr_upart[1] );
+					if ( nbr_part[0] == static_cast<int>(vmnumber.nbr_upart[0]) )
+						ret = nbr_part[1] < static_cast<int>(vmnumber.nbr_upart[1]);
 					else
-						ret = nbr_part[0] < static_cast<int> ( vmnumber.nbr_upart[0] );
+						ret = nbr_part[0] < static_cast<int>(vmnumber.nbr_upart[0]);
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
@@ -1984,9 +1984,12 @@ bool vmNumber::operator< ( const vmNumber& vmnumber ) const
 		case VMNT_PHONE:
 			if ( ( vmnumber.m_type == VMNT_DATE ) || ( vmnumber.m_type == VMNT_DATE ) )
 			{
-				if ( nbr_upart[2] <= vmnumber.nbr_upart[2] ) {
-					if ( nbr_upart[2] == vmnumber.nbr_upart[2] ) {
-						if ( nbr_upart[1] <= vmnumber.nbr_upart[1] ) {
+				if ( nbr_upart[2] <= vmnumber.nbr_upart[2] )
+				{
+					if ( nbr_upart[2] == vmnumber.nbr_upart[2] )
+					{
+						if ( nbr_upart[1] <= vmnumber.nbr_upart[1] )
+						{
 							if ( nbr_upart[1] == vmnumber.nbr_upart[1] )
 								ret = nbr_upart[0] < vmnumber.nbr_upart[0];
 							else // month is less than
@@ -2026,18 +2029,98 @@ bool vmNumber::operator< ( const int number ) const
 
 bool vmNumber::operator> ( const int number ) const
 {
-	if ( type () == VMNT_UNSET )
-		return false;
-	else
-		return !operator<( number );
+	switch ( type () )
+	{
+		case VMNT_PRICE:
+		case VMNT_DOUBLE:
+		case VMNT_INT:
+		case VMNT_TIME:
+			return nbr_part[0] > number;
+	
+		case VMNT_PHONE:
+		case VMNT_DATE:
+			return static_cast<int>(nbr_upart[0]) > number;
+			
+		case VMNT_UNSET:
+			return false;
+	}
+	return false;
 }
 
 bool vmNumber::operator> ( const vmNumber& vmnumber ) const
 {
-	if ( type () == VMNT_UNSET )
-		return false;
-	else
-		return !operator< ( vmnumber );
+	bool ret ( false );
+	switch ( type () )
+	{
+		case VMNT_INT:
+			switch ( vmnumber.m_type )
+			{
+				case VMNT_INT:
+				case VMNT_DOUBLE:
+				case VMNT_PRICE:
+				case VMNT_TIME:
+					ret = nbr_part[0] > vmnumber.nbr_part[0];
+				break;
+				case VMNT_DATE:
+					ret = nbr_part[0] > static_cast<int>(vmnumber.nbr_upart[0]);
+				break;
+				case VMNT_UNSET:
+				case VMNT_PHONE:
+				break;
+			}
+		break;
+		case VMNT_DOUBLE:
+		case VMNT_PRICE:
+		case VMNT_TIME:
+			switch ( vmnumber.m_type )
+			{
+				case VMNT_INT:
+					ret = nbr_part[0] < vmnumber.nbr_part[0];
+				break;
+				case VMNT_PHONE:
+				case VMNT_DATE:
+					if ( nbr_part[0] == static_cast<int>(vmnumber.nbr_upart[0]) )
+						ret = nbr_part[1] > static_cast<int>(vmnumber.nbr_upart[1]);
+					else
+						ret = nbr_part[0] > static_cast<int>(vmnumber.nbr_upart[0]);
+				break;
+				case VMNT_DOUBLE:
+				case VMNT_PRICE:
+				case VMNT_TIME:
+					if ( nbr_part[0] == vmnumber.nbr_part[0] )
+						ret = nbr_part[1] > vmnumber.nbr_part[1];
+					else
+						ret = nbr_part[0] > vmnumber.nbr_part[0];
+				break;
+				case VMNT_UNSET:
+				break;
+			}
+		break;
+		case VMNT_DATE:
+		case VMNT_PHONE:
+			if ( ( vmnumber.m_type == VMNT_DATE ) || ( vmnumber.m_type == VMNT_DATE ) )
+			{
+				if ( nbr_upart[2] >= vmnumber.nbr_upart[2] )
+				{
+					if ( nbr_upart[2] == vmnumber.nbr_upart[2] )
+					{
+						if ( nbr_upart[1] >= vmnumber.nbr_upart[1] )
+						{
+							if ( nbr_upart[1] == vmnumber.nbr_upart[1] )
+								ret = nbr_upart[0] > vmnumber.nbr_upart[0];
+							else // month is less than
+								ret = true;
+						}
+					}
+					else // year is less than
+						ret = true;
+				}
+			}
+		break;
+		case VMNT_UNSET:
+		break;
+	}
+	return ret;
 }
 
 vmNumber& vmNumber::operator-= ( const vmNumber& vmnumber )

@@ -26,10 +26,8 @@ private:
 	void setCheckable ( const bool checkable );
 	bool isChecked ( const uint column ) const;
 	void setChecked ( const uint column, const bool checked, const bool b_notify = false );
-	inline void setCallbackForCheckStateChange (
-		std::function<void ( const uint col, const bool checked )> func ) {
-		checkChange_func = func;
-	}
+	inline void setCallbackForCheckStateChange ( const std::function<void ( const uint col, const bool checked )>& func ) {
+				checkChange_func = func; }
 	QRect checkBoxRect ( const QRect& sourceRect ) const;
 
 	std::function<void ( const uint col, const bool checked )> checkChange_func;

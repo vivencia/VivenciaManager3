@@ -31,8 +31,7 @@ struct CALENDAR_EXCHANGE
 class dbCalendar : public DBRecord
 {
 
-	friend class VivenciaDB;
-	friend class Data;
+friend class VivenciaDB;
 
 public:
 	dbCalendar ();
@@ -44,7 +43,7 @@ public:
 	void updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersList<CALENDAR_EXCHANGE*>& ce_list );
 	
 	const stringTable& dateLog ( const vmNumber& date, const uint search_field, const uint requested_field,
-                                 QString& price, const uint requested_field_price, const bool bIncludeDates = false );
+								 QString& price, const uint requested_field_price, const bool bIncludeDates = false );
 
 	void addDate ( const vmNumber& date, const uint field, const stringRecord& id_trio );
 	void delDate ( const vmNumber& date, const uint field, const stringRecord& id_trio );

@@ -11,12 +11,9 @@
 #include "fileops.h"
 #include "data.h"
 
-static QStringList emptyQStringList;
-static const QDir::Filters filter ( QDir::AllDirs | QDir::Files | QDir::Readable | QDir::NoSymLinks | QDir::NoDotAndDotDot );
-
 inline static bool operator> ( const QSize& size1, const QSize& size2 )
 {
-    return ( size1.width () > size2.width () ) | ( size2.height () > size1.height () );
+	return ( size1.width () > size2.width () ) | ( size2.height () > size1.height () );
 }
 
 DB_Image::DB_Image ( QWidget* parent )
@@ -25,7 +22,7 @@ DB_Image::DB_Image ( QWidget* parent )
 	  funcImageRequested ( nullptr ), funcShowMaximized ( nullptr )
 {
 	imageViewer = new QLabel;
-	imageViewer->setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding ); //( QSizePolicy::Ignored, QSizePolicy::Ignored );
+	//imageViewer->setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding ); //( QSizePolicy::Ignored, QSizePolicy::Ignored );
 	imageViewer->setScaledContents ( true );
 	imageViewer->setFocusPolicy ( Qt::WheelFocus );
 	imageViewer->setToolTip ( "Zoom in (+)\nZoom out (-)\nToggle on/off Fit to Window (F)" );
@@ -110,9 +107,9 @@ bool DB_Image::findImagesByID ( const int rec_id )
 {
 	for ( uint i ( 0 ); i < images_array.count (); ++i )
 	{
-		if ( static_cast<RECORD_IMAGES*> ( images_array.at ( i ) )->rec_id == rec_id )
+		if ( images_array.at ( i )->rec_id == rec_id )
 		{
-			images_array.setCurrent ( i );
+			images_array.setCurrent ( static_cast<int>(i) );
 			mb_fitToWindow = true;
 			return true;
 		}
@@ -124,9 +121,9 @@ bool DB_Image::findImagesByPath ( const QString& path )
 {
 	for ( uint i ( 0 ); i < images_array.count (); ++i )
 	{
-		if ( static_cast<RECORD_IMAGES*> ( images_array.at ( i ) )->path == path )
+		if ( images_array.at ( i )->path == path )
 		{
-			images_array.setCurrent ( i );
+			images_array.setCurrent ( static_cast<int>(i) );
 			mb_fitToWindow = true;
 			return true;
 		}
@@ -136,7 +133,7 @@ bool DB_Image::findImagesByPath ( const QString& path )
 
 void DB_Image::reloadInternal ( RECORD_IMAGES* ri, const QString& path )
 {
-    if ( fileOps::isDir ( path ).isOn () )
+	if ( fileOps::isDir ( path ).isOn () )
 	{
 		QDir dir ( path );
 		ri->files = dir.entryList ( name_filters, QDir::Files, QDir::Name );
@@ -145,14 +142,14 @@ void DB_Image::reloadInternal ( RECORD_IMAGES* ri, const QString& path )
 
 bool DB_Image::hookUpDir ( const int rec_id, const QString& path )
 {
-    if ( !fileOps::exists ( path ).isOn () )
+	if ( !fileOps::exists ( path ).isOn () )
 		return false;
 
 	RECORD_IMAGES* ri ( new RECORD_IMAGES );
 	ri->rec_id = ( rec_id != -1 ) ? rec_id : -2;
 	ri->path = path;
 	reloadInternal ( ri, path );
-	images_array.setCurrent ( images_array.count () );
+	images_array.setCurrent ( static_cast<int>(images_array.count ()) );
 	images_array.append ( ri );
 	return true;
 }
@@ -178,11 +175,12 @@ void DB_Image::removeDir ( const bool b_deleteview )
 	}
 }
 
+static const QStringList emptyStringList;
 const QStringList& DB_Image::imagesList () const
 {
 	if ( images_array.currentIndex () >= 0 )
 		return images_array.current ()->files;
-	return emptyQStringList;
+	return emptyStringList;
 }
 
 // Only one caller for this function and it uses the same QStringList we use. No need to check for the validity of index
@@ -288,7 +286,7 @@ int DB_Image::rename ( const QString& newName )
 			if ( !newName.endsWith ( ext ) )
 				new_fileName.append ( ext );
 
-            if ( fileOps::rename ( mstr_FileName, new_fileName ).isOn () )
+			if ( fileOps::rename ( mstr_FileName, new_fileName ).isOn () )
 			{
 				mstr_FileName = new_fileName;
 				images_array.current ()->files.removeAt ( images_array.current ()->cur_image );
@@ -309,27 +307,26 @@ void DB_Image::scrollBy ( const int x, const int y )
 	v->setValue ( v->value() + y );
 }
 
-void DB_Image::scaleImage ( const float factor )
+void DB_Image::scaleImage ( const double factor )
 {
 	scaleFactor *= factor;
-	int img_width ( scaleFactor * imageViewer->pixmap ()->size ().width () );
-	int img_height ( scaleFactor * imageViewer->pixmap ()->size ().height () );
-	imageViewer->resize ( img_width, img_height );
-	scrollArea->setGeometry ( ( ( width () - img_width ) / 2 ),
-							  ( ( height () - img_height ) / 2 ), qMin ( width () , img_width ), qMax ( height (), img_height )
-							);
+	QSizeF imgSize ( scaleFactor * imageViewer->pixmap ()->size () );
+	imageViewer->resize ( imgSize.toSize () );
+	scrollArea->setGeometry ( QRectF ( (static_cast<double>(width ()) - imgSize.width ()) / 2.0, (static_cast<double>(height ()) - imgSize.height ()) / 2.0,
+							  qMin ( static_cast<double>(width ()) , imgSize.width () ), qMax ( static_cast<double>(height ()), imgSize.height () ) ).toRect () );
+	
 	// Try to avoid scrollbars
-	if ( ( img_width + 10 ) > scrollArea->width () )
-		img_width = scrollArea->width () - 10;
-	if ( ( img_height + 10 ) > scrollArea->height () )
-		img_height = scrollArea->height () - 10;
-	imageViewer->resize ( img_width, img_height );
+	if ( ( imgSize.width () + 10.0 ) > scrollArea->width () )
+		imgSize.setWidth ( scrollArea->width () - 10.0 );
+	if ( ( imgSize.height () + 10.0 ) > scrollArea->height () )
+		imgSize.setHeight ( scrollArea->height () - 10.0 );
+	imageViewer->resize ( imgSize.toSize () );
 }
 
-void DB_Image::adjustScrollBar ( const float factor )
+void DB_Image::adjustScrollBar ( const double factor )
 {
-	QScrollBar* h = scrollArea->horizontalScrollBar ();
-	QScrollBar* v = scrollArea->verticalScrollBar ();
+	QScrollBar* h ( scrollArea->horizontalScrollBar () );
+	QScrollBar* v ( scrollArea->verticalScrollBar () );
 	h->setValue ( static_cast<int> ( factor * h->value () + ( ( factor - 1 ) * h->pageStep () / 2 ) ) );
 	v->setValue ( static_cast<int> ( factor * v->value () + ( ( factor - 1 ) * v->pageStep () / 2 ) ) );
 }
@@ -366,22 +363,19 @@ void DB_Image::normalSize ()
 void DB_Image::fitToWindow ()
 {
 	scaleFactor = 1.0;
-	float factor ( 1.0 );
-	const float imgWidth ( static_cast<float> ( imageViewer->pixmap ()->size ().width () ) );
-	const float imgHeight ( static_cast<float> ( imageViewer->pixmap ()->size ().height () ) );
-	const float f_width ( static_cast<float> ( this->width () ) );
-	const float f_height ( static_cast<float> ( this->height () ) );
+	double factor ( 1.0 );
+	const QSizeF imgSize ( imageViewer->pixmap ()->size () );
+	const QSizeF thisSize ( size () );
+	
+	if ( imgSize.width () > thisSize.width () )
+		factor = thisSize.width () / imgSize.width ();
 
-	if ( imgWidth > f_width )
-		factor = f_width / imgWidth;
-
-	if ( imgHeight > f_height )
+	if ( imgSize.height () > thisSize.height () )
 	{
-		const float factor2 ( f_height / imgHeight );
+		const double factor2 ( thisSize.height () / imgSize.height () );
 		if ( factor2 < factor )
 			factor = factor2;
 	}
-
 	scaleImage ( factor );
 }
 
@@ -463,14 +457,12 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 		case QEvent::MouseMove:
 			if ( images_array.currentIndex () >= 0 )
 			{
-				const QMouseEvent* m ( static_cast<QMouseEvent*> ( e ) );
+				const QMouseEvent* m ( static_cast<QMouseEvent*>(e) );
 				if ( m->buttons () & Qt::LeftButton )
 				{
-					const int mx = m->x ();
-					const int my = m->y ();
-					scrollBy ( mouse_ex - mx,mouse_ey - my );
-					mouse_ex = mx;
-					mouse_ey = my;
+					scrollBy ( mouse_ex - m->x (), mouse_ey - m->y () );
+					mouse_ex = m->x ();
+					mouse_ey = m->y ();
 				}
 			}
 		break;

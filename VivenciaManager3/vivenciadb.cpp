@@ -251,7 +251,8 @@ void VivenciaDB::doPreliminaryWork ()
 				gen_rec.insertOrUpdate ( table_info[i] );
 		}
 	}
-	else { // either GENERAL table is empty or inexistent
+	else // either GENERAL table is empty or inexistent
+	{
 		if ( !mNewDB )
 		{
 			//SPLASH ()->displayMessage ( APP_TR_FUNC ( "Converting database to the new format. This may take a while..." ) );
@@ -1113,7 +1114,7 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, Backup
 			t_info = &completerRecord::t_info;
 		break;
 	}
-	(void) fileOps::removeFile ( filename );
+	static_cast<void>(fileOps::removeFile ( filename ));
 	dataFile* __restrict tdb ( new dataFile ( filename ) );
 	if ( !tdb->open () )
 		return false;

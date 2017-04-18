@@ -26,7 +26,6 @@ class DBRecord
 	typedef int ( DBRecord::*recordValueInt ) ( const uint ) const;
 
 	friend class VivenciaDB;
-	friend class Data;
 	friend class searchUI;
 	friend class vmListItem;
 
@@ -50,9 +49,8 @@ public:
 	};
 
 
-	DBRecord ( const uint field_count );
-	DBRecord ( const DBRecord* other );
-
+	explicit DBRecord ( const uint field_count );
+	explicit DBRecord ( const DBRecord& other );
 	virtual ~DBRecord (); // if a class has virtual functions, if should have a virtual destructor
 
 	const DBRecord& operator= ( const DBRecord& other );
@@ -176,7 +174,7 @@ public:
 	inline int backupRecordInt ( const uint field ) const {
 		return m_RECFIELDS[field].i_field[RECORD_FIELD::IDX_TEMP]; }
 
-    inline void setListItem ( vmListItem* listitem ) { mListItem = listitem; }
+	inline void setListItem ( vmListItem* listitem ) { mListItem = listitem; }
 
 protected:
 	friend void updateSuppliesItemCompleter ( const DBRecord* db_rec );
@@ -234,7 +232,7 @@ protected:
 	
 	const TABLE_INFO* t_info;
 	RECORD_FIELD* m_RECFIELDS;
-    vmListItem* mListItem;
+	vmListItem* mListItem;
 
 	typedef void ( **HelperFunction ) ( const DBRecord* );
 	HelperFunction helperFunction;

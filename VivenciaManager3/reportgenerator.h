@@ -29,7 +29,7 @@ friend class dockBJ;
 
 public:
 	explicit reportGenerator ( documentEditor* mdiParent );
-	~reportGenerator ();
+	virtual ~reportGenerator ();
 
 	void show ( const uint jobid = 0, const uint payid = 0 );
 	

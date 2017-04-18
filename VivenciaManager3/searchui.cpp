@@ -110,12 +110,13 @@ void searchUI::parseSearchTerm ( const QString& searchTerm )
 
 	if ( searchTerm.at ( 0 ) == CHR_PERCENT )
 	{
-		while ( searchTerm.at ( ++char_pos ) != CHR_SPACE )
+		while ( searchTerm.at ( static_cast<int>(++char_pos) ) != CHR_SPACE )
 		{
-			if ( char_pos == unsigned ( searchTerm.count () - 1 ) )
+			if ( char_pos >= static_cast<uint>(searchTerm.count () - 1) )
 				break;
 
-			switch ( searchTerm.at ( char_pos ).unicode () ) {
+			switch ( searchTerm.at ( static_cast<int>(char_pos) ).toLatin1 () )
+			{
 				case 'r': // job and sched reports
 				case 'R':
 					setBit ( mSearchFields, SC_REPORT_1 );
@@ -166,6 +167,7 @@ void searchUI::parseSearchTerm ( const QString& searchTerm )
 				case 't': // job type, sched type
 				case 'T':
 					setBit ( mSearchFields, SC_TYPE );
+				break;
 				default:
 				break;
 			}
@@ -175,7 +177,7 @@ void searchUI::parseSearchTerm ( const QString& searchTerm )
 		setAllBits ( mSearchFields );
 
 	if ( char_pos > 0 )
-		mSearchTerm = searchTerm.right ( searchTerm.count () - ( char_pos + 1 ) );
+		mSearchTerm = searchTerm.right ( searchTerm.count () - static_cast<int>(char_pos + 1) );
 	else
 		mSearchTerm = searchTerm;
 }
@@ -202,7 +204,8 @@ void searchUI::search ( const uint search_start, const uint search_end )
 
 	do {
 		bhas_clientid = false;
-		switch ( search_step ) {
+		switch ( search_step )
+		{
 			case SS_CLIENT:
 				dbrec = &client_rec;
 			break;
@@ -228,17 +231,17 @@ void searchUI::search ( const uint search_start, const uint search_end )
 				dbrec = &supplier_rec;
 			break;
 			default:
-			break;
+			continue;
 		}
 
 		QString colsList;
 		for ( i = SC_REPORT_1; i <= SC_EXTRA_2; ++i )
 		{
 			recordcategory = dbrec->searchCategoryTranslate ( static_cast<SEARCH_CATEGORIES> ( i ) );
-			if ( recordcategory != -1 )
+			if ( recordcategory >= 0 )
 			{
-				if ( isBitSet ( mSearchFields, recordcategory ) && dbrec->fieldType ( recordcategory ) != DBTYPE_ID )
-					colsList += VDB ()->getTableColumnName ( dbrec->t_info, recordcategory ) + CHR_COMMA;
+				if ( isBitSet ( mSearchFields, static_cast<uchar>(recordcategory) ) && dbrec->fieldType ( static_cast<uint>(recordcategory) ) != DBTYPE_ID )
+					colsList += VDB ()->getTableColumnName ( dbrec->t_info, static_cast<uint>(recordcategory) ) + CHR_COMMA;
 			}
 		}
 		if ( !colsList.isEmpty () )
@@ -258,13 +261,13 @@ void searchUI::search ( const uint search_start, const uint search_end )
 					switch ( search_step )
 					{
 						case SS_CLIENT:
-							item = globalMainWindow->getClientItem ( id ); break;
+							item = MAINWINDOW ()->getClientItem ( id ); break;
 						case SS_JOB:
-							item = globalMainWindow->getJobItem ( globalMainWindow->getClientItem ( c_id ), id ); break;
+							item = MAINWINDOW ()->getJobItem ( MAINWINDOW ()->getClientItem ( c_id ), id ); break;
 						case SS_PAY:
-							item = globalMainWindow->getPayItem ( globalMainWindow->getClientItem ( c_id ), id ); break;
+							item = MAINWINDOW ()->getPayItem ( MAINWINDOW ()->getClientItem ( c_id ), id ); break;
 						case SS_BUY:
-							item = globalMainWindow->getBuyItem ( globalMainWindow->getClientItem ( c_id ), id ); break;
+							item = MAINWINDOW ()->getBuyItem ( MAINWINDOW ()->getClientItem ( c_id ), id ); break;
 						case SS_INVENTORY:
 						case SS_SUPPLIES:
 						case SS_SUPPLIERS:
@@ -509,19 +512,19 @@ void searchUI::listRowSelected ( const int row )
 		{
 			case CLIENT_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
-						return globalMainWindow->showClientSearchResult ( item, bshow ); };
+						return MAINWINDOW ()->showClientSearchResult ( item, bshow ); };
 			break;
 			case JOB_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
-						return globalMainWindow->showJobSearchResult ( item, bshow ); };
+						return MAINWINDOW ()->showJobSearchResult ( item, bshow ); };
 			break;
 			case PAYMENT_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
-						return globalMainWindow->showPaySearchResult ( item, bshow ); };
+						return MAINWINDOW ()->showPaySearchResult ( item, bshow ); };
 			break;
 			case PURCHASE_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
-						return globalMainWindow->showBuySearchResult ( item, bshow ); };
+						return MAINWINDOW ()->showBuySearchResult ( item, bshow ); };
 			break;
 			case INVENTORY_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
@@ -600,8 +603,8 @@ bool searchUI::getJobInfo ( jobListItem* job_item, VMList<QString>& cellData )
 					if ( i == FLD_JOB_REPORT )
 					{
 						day = str_report.findRecordRowThatContainsWord ( mSearchTerm, job_item->searchSubFields () );
-						if ( day != -1 )
-							cellData[COL_DATE - 1] = str_report.readRecord ( day ).fieldValue ( Job::JRF_DATE ); // only list one day, the last, for simplicity
+						if ( day >= 0 )
+							cellData[COL_DATE - 1] = str_report.readRecord ( static_cast<uint>(day) ).fieldValue ( Job::JRF_DATE ); // only list one day, the last, for simplicity
 					}
 				}
 			}
@@ -637,7 +640,7 @@ bool searchUI::getPayInfo ( payListItem* pay_item, VMList<QString>& cellData )
 						if ( i == FLD_PAY_INFO )
 						{
 							day = str_payinfo.findRecordRowThatContainsWord ( mSearchTerm ); // only first date, for simplicity
-							cellData[COL_DATE-1] = str_payinfo.readRecord ( day == -1 ? 0 : day ).fieldValue ( PHR_DATE );
+							cellData[COL_DATE-1] = str_payinfo.readRecord ( day == -1 ? 0 : static_cast<uint>(day) ).fieldValue ( PHR_DATE );
 						}
 					}
 				}
@@ -670,7 +673,7 @@ bool searchUI::getBuyInfo ( buyListItem* buy_item, VMList<QString>& cellData )
 					if ( i == FLD_BUY_PAYINFO )
 					{
 						day = str_buypayinfo.findRecordRowThatContainsWord ( mSearchTerm ); // only first date, for simplicity
-						cellData[COL_DATE-1] = str_buypayinfo.readRecord ( day == -1 ? 0 : day ).fieldValue ( PHR_DATE );
+						cellData[COL_DATE-1] = str_buypayinfo.readRecord ( day == -1 ? 0 : static_cast<uint>(day) ).fieldValue ( PHR_DATE );
 					}
 				}
 				return true;

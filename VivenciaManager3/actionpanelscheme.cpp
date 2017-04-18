@@ -362,6 +362,6 @@ ActionPanelScheme::ActionPanelScheme ( const PanelStyle style )
 
 ActionPanelScheme* ActionPanelScheme::defaultScheme ()
 {
-	static ActionPanelScheme scheme ( PANEL_DEFAULT );
+	static ActionPanelScheme scheme ( PANEL_NONE );
 	return &scheme;
 }

@@ -34,7 +34,7 @@ const QString fileOps::appPath ( const QString& appname )
 		{
 			path = strPATH.mid ( idx1, idx2 - idx1 );
 			path += CHR_F_SLASH + appname;
-            if ( exists ( path ).isOn () )
+			if ( exists ( path ).isOn () )
 				return path;
 			else
 			{
@@ -44,7 +44,7 @@ const QString fileOps::appPath ( const QString& appname )
 		}
 		path = strPATH.mid ( idx1, strPATH.length () - 1 );
 		path += CHR_F_SLASH + appname;
-        if ( exists ( path ).isOn () )
+		if ( exists ( path ).isOn () )
 			return path;
 	}
 	return emptyString;
@@ -55,9 +55,9 @@ triStateType fileOps::exists ( const QString& file )
 	if ( !file.isEmpty () )
 	{
 		struct stat stFileInfo;
-        return ( ::stat ( file.toUtf8 ().constData (), &stFileInfo ) == 0 ) ? TRI_ON : TRI_OFF;
+		return ( ::stat ( file.toUtf8 ().constData (), &stFileInfo ) == 0 ) ? TRI_ON : TRI_OFF;
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 const QString fileOps::currentUser ()
@@ -71,9 +71,9 @@ triStateType fileOps::isDir ( const QString& param )
 	{
 		struct stat stFileInfo;
 		if ( ::stat ( param.toUtf8 (), &stFileInfo ) == 0 )
-            return ( static_cast<bool> ( S_ISDIR ( stFileInfo.st_mode ) ) ) ? TRI_ON : TRI_OFF;
+			return ( static_cast<bool> ( S_ISDIR ( stFileInfo.st_mode ) ) ) ? TRI_ON : TRI_OFF;
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 triStateType fileOps::isLink ( const QString& param )
@@ -82,9 +82,9 @@ triStateType fileOps::isLink ( const QString& param )
 	{
 		struct stat stFileInfo;
 		if ( ::stat ( param.toUtf8 (), &stFileInfo ) == 0 )
-            return ( static_cast<bool> ( S_ISLNK ( stFileInfo.st_mode ) ) ) ? TRI_ON : TRI_OFF;
+			return ( static_cast<bool> ( S_ISLNK ( stFileInfo.st_mode ) ) ) ? TRI_ON : TRI_OFF;
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 triStateType fileOps::isFile ( const QString& param )
@@ -93,9 +93,9 @@ triStateType fileOps::isFile ( const QString& param )
 	{
 		struct stat stFileInfo;
 		if ( ::stat ( param.toUtf8 (), &stFileInfo ) == 0 )
-            return ( static_cast<bool> ( S_ISREG ( stFileInfo.st_mode ) ) ) ? TRI_ON : TRI_OFF;
+			return ( static_cast<bool> ( S_ISREG ( stFileInfo.st_mode ) ) ) ? TRI_ON : TRI_OFF;
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 long int fileOps::fileSize ( const QString& filepath )
@@ -104,7 +104,7 @@ long int fileOps::fileSize ( const QString& filepath )
 	{
 		struct stat stFileInfo;
 		if ( ::stat ( filepath.toUtf8 (), &stFileInfo ) == 0 )
-            return stFileInfo.st_size;
+			return stFileInfo.st_size;
 	}
 	return -1;
 }
@@ -133,9 +133,9 @@ triStateType fileOps::canRead ( const QString& path )
 	struct stat stFileInfo;
 	if ( ::stat ( path.toUtf8 (), &stFileInfo ) == 0 )
 	{
-        bool r_ok ( false );
+		bool r_ok ( false );
 		const QString username ( QLatin1String ( ::getenv ( "USER" ) ) );
-        struct passwd* pwd ( new struct passwd );
+		struct passwd* pwd ( new struct passwd );
 		const size_t buffer_len ( static_cast<size_t>(::sysconf ( _SC_GETPW_R_SIZE_MAX )) * sizeof ( char ) );
 		char* __restrict buffer ( new char[buffer_len] );
 		::getpwnam_r ( username.toUtf8 (), pwd, buffer, buffer_len, &pwd );
@@ -157,9 +157,9 @@ triStateType fileOps::canRead ( const QString& path )
 		}
 		delete pwd;
 		delete [] buffer;
-        return triStateType ( r_ok );
+		return triStateType ( r_ok );
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 triStateType fileOps::canWrite ( const QString& path )
@@ -167,7 +167,7 @@ triStateType fileOps::canWrite ( const QString& path )
 	struct stat stFileInfo;
 	if ( ::stat ( path.toUtf8 (), &stFileInfo ) == 0 )
 	{
-        bool w_ok ( false );
+		bool w_ok ( false );
 		const QString username ( QLatin1String ( ::getenv ( "USER" ) ) );
 		struct passwd* pwd ( new struct passwd );
 		const size_t buffer_len ( static_cast<size_t>(::sysconf ( _SC_GETPW_R_SIZE_MAX )) * sizeof ( char ) );
@@ -191,17 +191,17 @@ triStateType fileOps::canWrite ( const QString& path )
 		}
 		delete pwd;
 		delete [] buffer;
-        return triStateType ( w_ok );
+		return triStateType ( w_ok );
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 triStateType fileOps::canExecute ( const QString& path )
 {
-    struct stat stFileInfo;
+	struct stat stFileInfo;
 	if ( ::stat ( path.toUtf8 (), &stFileInfo ) == 0 )
 	{
-        bool x_ok ( false );
+		bool x_ok ( false );
 		const QString username ( QLatin1String ( ::getenv ( "USER" ) ) );
 		struct passwd* pwd ( new struct passwd );
 		const size_t buffer_len ( static_cast<size_t>(::sysconf ( _SC_GETPW_R_SIZE_MAX )) * sizeof (char) );
@@ -226,35 +226,35 @@ triStateType fileOps::canExecute ( const QString& path )
 		}
 		delete pwd;
 		delete [] buffer;
-        return triStateType ( x_ok );
+		return triStateType ( x_ok );
 	}
-    return TRI_UNDEF;
+	return TRI_UNDEF;
 }
 
 triStateType fileOps::createDir ( const QString& path )
 {
-    triStateType ret ( isDir ( path ) );
-    if ( ret == TRI_UNDEF )
+	triStateType ret ( isDir ( path ) );
+	if ( ret == TRI_UNDEF )
 	{
-        // Either path is an empty string, and so the next function will yield -1 and we will not
-        // proceed, returning TRI_UNDEF as the default result for empty parameters, or path does not
-        // exists because the ::stat func inside isDir could not find it
-        const int idx ( path.lastIndexOf ( CHR_F_SLASH, ( path.at ( path.length () - 1 ) == CHR_F_SLASH ) ? -2 : -1 ) );
-        if ( idx != -1 )
+		// Either path is an empty string, and so the next function will yield -1 and we will not
+		// proceed, returning TRI_UNDEF as the default result for empty parameters, or path does not
+		// exists because the ::stat func inside isDir could not find it
+		const int idx ( path.lastIndexOf ( CHR_F_SLASH, ( path.at ( path.length () - 1 ) == CHR_F_SLASH ) ? -2 : -1 ) );
+		if ( idx != -1 )
 		{
-            ret = createDir ( path.left ( idx ) );
-            if ( ret == TRI_ON )
+			ret = createDir ( path.left ( idx ) );
+			if ( ret == TRI_ON )
 			{
-                QString new_path ( path );
-                if ( new_path.at ( new_path.length () - 1 ) != CHR_F_SLASH )
-                    new_path.append ( CHR_F_SLASH );
-                struct stat stFileInfo;
-                ::stat ( new_path.left ( idx ).toUtf8 (), &stFileInfo );
-                return ( ::mkdir ( new_path.toUtf8 (), stFileInfo.st_mode ) == 0 ) ? TRI_ON : TRI_OFF;
-            }
+				QString new_path ( path );
+				if ( new_path.at ( new_path.length () - 1 ) != CHR_F_SLASH )
+					new_path.append ( CHR_F_SLASH );
+				struct stat stFileInfo;
+				::stat ( new_path.left ( idx ).toUtf8 (), &stFileInfo );
+				return ( ::mkdir ( new_path.toUtf8 (), stFileInfo.st_mode ) == 0 ) ? TRI_ON : TRI_OFF;
+			}
 		}
 	}
-    return ret;
+	return ret;
 }
 
 bool fileOps::copyFile ( const QString& dst, const QString& src )
@@ -262,29 +262,29 @@ bool fileOps::copyFile ( const QString& dst, const QString& src )
 	QString mutable_dst ( dst );
 
 	bool ret ( false );
-    if ( exists ( src ).isOn () )
+	if ( exists ( src ).isOn () )
 	{
-        if ( isFile ( dst ).isOn () )
+		if ( isFile ( dst ).isOn () )
 		{
-            if ( canWrite ( dst ).isOn () )
+			if ( canWrite ( dst ).isOn () )
 			{
 				if ( VM_NOTIFY ()->questionBox ( APP_TR_FUNC ( "Same filename" ), QString ( APP_TR_FUNC (
 													 "Destination file %1 already exists. Overwrite it?" ) ).arg ( dst ) ) )
 					ret = ::remove ( dst.toLocal8Bit () ); // if remove succeeds there is not need to check if dst's path is writable
 			}
 		}
-        else if ( isDir ( dst ).isOn () )
+		else if ( isDir ( dst ).isOn () )
 		{
-            if ( canWrite ( dst ).isOn () )
+			if ( canWrite ( dst ).isOn () )
 			{
 				ret = true;
-                if ( mutable_dst.at ( mutable_dst.length () - 1 ) != CHR_F_SLASH )
-                    mutable_dst.append ( CHR_F_SLASH );
+				if ( mutable_dst.at ( mutable_dst.length () - 1 ) != CHR_F_SLASH )
+					mutable_dst.append ( CHR_F_SLASH );
 				mutable_dst.append ( fileNameWithoutPath ( src ) );
 			}
 		}
 		else //dst does not exist
-            ret = !createDir ( mutable_dst.left ( mutable_dst.lastIndexOf ( CHR_F_SLASH ) ) ).isOff ();
+			ret = !createDir ( mutable_dst.left ( mutable_dst.lastIndexOf ( CHR_F_SLASH ) ) ).isOff ();
 
 		if ( ret )
 			ret = QFile::copy ( src, mutable_dst );
@@ -294,14 +294,14 @@ bool fileOps::copyFile ( const QString& dst, const QString& src )
 
 triStateType fileOps::rename ( const QString& old_name, const QString& new_name )
 {
-    return ( ::rename ( old_name.toLocal8Bit (), new_name.toLocal8Bit () ) == 0 ) ? TRI_ON : TRI_OFF;
+	return ( ::rename ( old_name.toLocal8Bit (), new_name.toLocal8Bit () ) == 0 ) ? TRI_ON : TRI_OFF;
 }
 
 triStateType fileOps::removeFile ( const QString& filename )
 {
-    if ( isFile ( filename ) == TRI_ON )
-        return ( ::remove ( filename.toUtf8 () ) == 0 ) ? TRI_ON : TRI_OFF;
-    return TRI_UNDEF;
+	if ( isFile ( filename ) == TRI_ON )
+		return ( ::remove ( filename.toUtf8 () ) == 0 ) ? TRI_ON : TRI_OFF;
+	return TRI_UNDEF;
 }
 
 const QString fileOps::nthDirFromPath ( const QString& c_path, const int n )
@@ -310,7 +310,7 @@ const QString fileOps::nthDirFromPath ( const QString& c_path, const int n )
 	if ( !c_path.isEmpty () )
 	{
 		QString path ( c_path );
-        if ( isDir ( path ).isOn () )
+		if ( isDir ( path ).isOn () )
 		{
 			if ( path.at ( path.length () -1 ) != CHR_F_SLASH )
 				path.append ( CHR_F_SLASH );
@@ -322,7 +322,7 @@ const QString fileOps::nthDirFromPath ( const QString& c_path, const int n )
 			if ( idx != -1 )
 			{
 				dir = path.mid ( idx + 1, path.length () - idx - 1 );
-                if ( !isDir ( c_path.left ( idx + 1 ) + dir ).isOn () )
+				if ( !isDir ( c_path.left ( idx + 1 ) + dir ).isOn () )
 				{
 					idx2 = path.lastIndexOf ( CHR_F_SLASH, 0 - ( path.length () - idx ) - 1 );
 					dir = path.mid ( idx2 + 1, idx - idx2 );
@@ -352,12 +352,12 @@ const QString fileOps::nthDirFromPath ( const QString& c_path, const int n )
 // Returns dir name from path. The filename does not need to exists. If path is null/empty or a dir, returns itself
 const QString fileOps::dirFromPath ( const QString& path )
 {
-    if ( !isDir ( path ).isOn () )
+	if ( !isDir ( path ).isOn () )
 	{
-        const int idx ( path.lastIndexOf ( CHR_F_SLASH ) );
-        if ( idx != -1 )
-            return path.left ( idx + 1 );
-    }
+		const int idx ( path.lastIndexOf ( CHR_F_SLASH ) );
+		if ( idx != -1 )
+			return path.left ( idx + 1 );
+	}
 	return path;
 }
 
@@ -430,35 +430,35 @@ void fileOps::lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir
 			ok = ( filter & LS_FILES ) && ( dir_ent->d_type == DT_REG );
 			if ( !ok )
 				ok = ( filter & LS_DIRS ) && ( dir_ent->d_type == DT_DIR );
-            else
+			else
 			{
-                const int filter_n ( name_filters.count () );
-                if ( filter_n > 0 )
+				const int filter_n ( name_filters.count () );
+				if ( filter_n > 0 )
 				{
-                    int i ( 0 );
-                    for ( ; i < filter_n; ++i )
+					int i ( 0 );
+					for ( ; i < filter_n; ++i )
 					{
-                        if ( filename.contains ( name_filters.at ( i ), Qt::CaseInsensitive ) )
-                            break;
-                    }
-                    if ( i >= filter_n )
-                        ok = false;
-                }
-            }
+						if ( filename.contains ( name_filters.at ( i ), Qt::CaseInsensitive ) )
+							break;
+					}
+					if ( i >= filter_n )
+						ok = false;
+				}
+			}
 
-            if ( ok )
+			if ( ok )
 			{
 				st_fileInfo* fi ( new st_fileInfo );
 				result.append ( fi );
-                fi->filename = filename;
-                fi->fullpath = pathname;
-                if ( dir_ent->d_type == DT_REG )
-                    fi->is_file = true;
+				fi->filename = filename;
+				fi->fullpath = pathname;
+				if ( dir_ent->d_type == DT_REG )
+					fi->is_file = true;
 				else
 				{
-                    fi->is_dir = true;
-                    if ( follow_into != 0 )
-                        lsDir ( result, pathname, name_filters, exclude_filter, filter,
+					fi->is_dir = true;
+					if ( follow_into != 0 )
+						lsDir ( result, pathname, name_filters, exclude_filter, filter,
 								follow_into == -1 ? -1 : follow_into - 1 );
 				}
 			}
@@ -468,9 +468,9 @@ void fileOps::lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir
 }
 
 bool fileOps::rmDir ( const QString& baseDir,
-                      const QStringList& name_filters, const int filter, const int follow_into )
+					  const QStringList& name_filters, const int filter, const int follow_into )
 {
-    bool ok ( false );
+	bool ok ( false );
 	static int level ( 0 );
 	++level;
 	DIR* __restrict dir ( nullptr );
@@ -512,16 +512,16 @@ bool fileOps::rmDir ( const QString& baseDir,
 				else
 				{
 					if ( follow_into != 0 )
-                        (void) rmDir ( pathname, name_filters, filter, follow_into == -1 ? -1 : follow_into - 1 );
-                    ok = ( ::rmdir ( pathname.toUtf8 () ) == 0 );
+						(void) rmDir ( pathname, name_filters, filter, follow_into == -1 ? -1 : follow_into - 1 );
+					ok = ( ::rmdir ( pathname.toUtf8 () ) == 0 );
 				}
 			}
 		}
 		if ( --level == 0 )
-            ok = ( ::rmdir ( baseDir.toUtf8 () ) == 0 );
+			ok = ( ::rmdir ( baseDir.toUtf8 () ) == 0 );
 		::closedir ( dir );
 	}
-    return ok;
+	return ok;
 }
 
 static QString suProgram ( const QString& message, const QString& command )
@@ -557,7 +557,7 @@ int fileOps::sysExec ( const QString& command_line, const QString& as_root_messa
 }
 
 bool fileOps::executeWait ( const QString& arguments, const QString& program,
-                            int* __restrict exitCode, const QString& as_root_message )
+							int* __restrict exitCode, const QString& as_root_message )
 {
 	QProcess* __restrict proc ( new QProcess () );
 	QString prog ( program );
@@ -567,20 +567,20 @@ bool fileOps::executeWait ( const QString& arguments, const QString& program,
 		prog += CHR_QUOTES + arguments + CHR_QUOTES;
 	}
 	if ( !as_root_message.isEmpty () )
-        prog = suProgram ( as_root_message, prog );
+		prog = suProgram ( as_root_message, prog );
 
 	proc->start ( prog );
-    const bool ret ( proc->waitForFinished ( -1 ) );
-    if ( exitCode != nullptr )
+	const bool ret ( proc->waitForFinished ( -1 ) );
+	if ( exitCode != nullptr )
 	{
-        *exitCode = proc->exitCode ();
+		*exitCode = proc->exitCode ();
 	}
 	delete proc;
 	return ret;
 }
 
 const QString fileOps::executeAndCaptureOutput ( const QString& arguments, const QString& program,
-                                                 int* __restrict exitCode, const QString& as_root_message )
+												 int* __restrict exitCode, const QString& as_root_message )
 {
 	QProcess* __restrict proc ( new QProcess () );
 	QString prog ( program );
@@ -596,15 +596,15 @@ const QString fileOps::executeAndCaptureOutput ( const QString& arguments, const
 	proc->waitForFinished ();
 	const QString output ( QString::fromUtf8 ( proc->readAllStandardOutput ().data () ) );
 	if ( exitCode != nullptr ) {
-        *exitCode = proc->exitCode ();
+		*exitCode = proc->exitCode ();
 	}
 	delete proc;
 	return output;
 }
 
 bool fileOps::executeWithFeedFile ( const QString& arguments, const QString& program,
-                                    const QString& filename, int* __restrict exitCode,
-                                    const QString& as_root_message )
+									const QString& filename, int* __restrict exitCode,
+									const QString& as_root_message )
 {
 	QProcess* __restrict proc ( new QProcess () );
 	QString prog ( program );
@@ -619,9 +619,9 @@ bool fileOps::executeWithFeedFile ( const QString& arguments, const QString& pro
 	proc->setStandardInputFile ( filename );
 	proc->start ( prog );
 	const bool ret ( proc->waitForFinished () );
-    if ( exitCode != nullptr )
+	if ( exitCode != nullptr )
 	{
-        *exitCode = proc->exitCode ();
+		*exitCode = proc->exitCode ();
 	}
 	delete proc;
 	return ret;
@@ -657,17 +657,17 @@ void fileOps::openAddress ( const QString& address )
 
 QString fileOps::getExistingDir ( const QString& dir )
 {
-    return QFileDialog::getExistingDirectory ( nullptr, APP_TR_FUNC ( "Choose dir " ), dir );
+	return QFileDialog::getExistingDirectory ( nullptr, APP_TR_FUNC ( "Choose dir " ), dir );
 }
 
 QString fileOps::getOpenFileName ( const QString& dir, const QString& filter )
 {
-    return QFileDialog::getOpenFileName ( nullptr, APP_TR_FUNC ( "Choose file" ), dir, filter );
+	return QFileDialog::getOpenFileName ( nullptr, APP_TR_FUNC ( "Choose file" ), dir, filter );
 }
 
 QString fileOps::getSaveFileName ( const QString& default_name, const QString& filter )
 {
-    return QFileDialog::getSaveFileName ( nullptr, APP_TR_FUNC ( "Save as ..." ), default_name, filter );
+	return QFileDialog::getSaveFileName ( nullptr, APP_TR_FUNC ( "Save as ..." ), default_name, filter );
 }
 
 fileOps::DesktopEnvironment fileOps::detectDesktopEnvironment ()

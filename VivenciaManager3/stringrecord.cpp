@@ -6,22 +6,25 @@ static const stringTable emptyStringTable;
 
 static void s_appendEmptyFields ( QString& data, const uint field, uint& nfields, const QChar* __restrict separator )
 {
-    if ( field >= nfields ) {
-        uint i_field ( field - nfields + 1 );
-        nfields += i_field;
-        while ( i_field-- > 0 )
-            data += *separator;
-    }
+	if ( field >= nfields )
+	{
+		uint i_field ( field - nfields + 1 );
+		nfields += i_field;
+		while ( i_field-- > 0 )
+			data += *separator;
+	}
 }
 
 static void s_insertFieldValue ( QString& data, const uint field, const QString& value, uint& __restrict nfields, 
 								 const QChar* __restrict const separator, const QStringMatcher* __restrict const sep_matcher )
 {
-    s_appendEmptyFields ( data, field, nfields, separator );
-	if ( field == 0 ) {
+	s_appendEmptyFields ( data, field, nfields, separator );
+	if ( field == 0 )
+	{
 		if ( data.at ( 0 ) == *separator )
 			data.insert ( 0, value );
-		else {
+		else
+		{
 			data.insert ( 0, value + *separator );
 			++nfields;
 		}
@@ -32,10 +35,13 @@ static void s_insertFieldValue ( QString& data, const uint field, const QString&
 	int idx2 ( 0 );
 	int i_field ( static_cast<int>(field) );
 
-	do {
+	do
+	{
 		idx2 = sep_matcher->indexIn ( data, idx + 1 );
-		if ( idx2 >= 0 ) {
-			if ( i_field == 0 ) {
+		if ( idx2 >= 0 )
+		{
+			if ( i_field == 0 )
+			{
 				if ( data.at ( idx2 - 1 ) != *separator )
 					break;
 			}
@@ -43,11 +49,14 @@ static void s_insertFieldValue ( QString& data, const uint field, const QString&
 		}
 		--i_field;
 	} while ( i_field >= 0 );
-	if ( !value.isEmpty () ) {
-		if ( idx >= 0 ) {
+	if ( !value.isEmpty () )
+	{
+		if ( idx >= 0 )
+		{
 			if ( data.at ( idx - 1 ) == *separator ) // empty field
 				data.insert ( idx, value );
-			else {
+			else
+			{
 				data.insert ( idx, *separator + value );
 				++nfields;
 			}
@@ -63,9 +72,11 @@ static void s_changeFieldValue ( QString& data, const uint field, const QString&
 	int idx2 ( 0 );
 	int i_field ( static_cast<int>(field) );
 
-	do {
+	do
+	{
 		idx2 = sep_matcher->indexIn ( data, idx );
-		if ( idx2 >= 0 ) {
+		if ( idx2 >= 0 )
+		{
 			if ( i_field > 0 )
 				idx = idx2 + 1;
 		}
@@ -570,7 +581,7 @@ int stringTable::findRecordRowThatContainsWord ( const QString& word, podList<ui
 		} while ( next ().isOK () );
 	}
 	const_cast<stringTable*>(this)->mFastIdx = fast_idx_backup;
-    return (dayAndFieldList != nullptr ? (dayAndFieldList->isEmpty () ? -1 : mCurIdx = row) : -1);
+	return (dayAndFieldList != nullptr ? (dayAndFieldList->isEmpty () ? -1 : mCurIdx = row) : -1);
 }
 
 int stringTable::matchRecord ( const stringRecord& record )

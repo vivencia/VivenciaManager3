@@ -37,8 +37,8 @@ public:
 		( *this ) [static_cast<int>(topIndex++)] = token;
 	}
 	
-	inline const Token & top () const { return top ( 0 ); }
-	inline const Token & top ( uint index ) const
+	inline const Token& top () const { return top ( 0 ); }
+	inline const Token& top ( uint index ) const
 	{
 		return ( topIndex > index ) ? at ( static_cast<int>(topIndex - index - 1) ) : Token::null;
 	}
@@ -106,14 +106,14 @@ static int opPrecedence ( Token::Op op )
 
 struct Opcode
 {
-	enum { Nop = 0, Load, Add, Sub, Mul, Div, Neg };
+	enum Operation { Nop = 0, Load, Add, Sub, Mul, Div, Neg };
 
-	unsigned type;
-	unsigned index;
+	unsigned int type;
+	unsigned int index;
 
-	Opcode (): type ( Nop ) , index ( 0 ) {}
-	Opcode ( unsigned t ): type ( t ) , index ( 0 ) {}
-	Opcode ( unsigned t, unsigned i ): type ( t ) , index ( i ) {}
+	Opcode (): type ( Operation::Nop ) , index ( 0 ) {}
+	explicit Opcode ( const Operation t ): type ( t ) , index ( 0 ) {}
+	Opcode ( const Operation t, unsigned int i ): type ( t ) , index ( i ) {}
 };
 
 Token::Token ( const TokenType type, const QString& text, const int pos )
@@ -257,7 +257,7 @@ void Calculator::setExpression ( const QString& expr )
 	return stc_private->valid;
 }*/
 
-Tokens Calculator::scan ( const QString& expr ) const
+Tokens Calculator::scan ( const QString& expr )
 {
 	// result
 	Tokens tokens;
@@ -331,21 +331,22 @@ Tokens Calculator::scan ( const QString& expr ) const
 			}
 			break;
 
-		case InDecimal:
-			if ( ch.isDigit () ) // consume as long as it's digit
-				tokenText.append ( ex.at ( i++ ) );
-			else { // we're done with floating-point number
-				tokens.append ( Token ( Token::stxNumber, tokenText, tokenStart ) );
-				tokenText = "";
-				state = Start;
-			};
+			case InDecimal:
+				if ( ch.isDigit () ) // consume as long as it's digit
+					tokenText.append ( ex.at ( i++ ) );
+				else
+				{ // we're done with floating-point number
+					tokens.append ( Token ( Token::stxNumber, tokenText, tokenStart ) );
+					tokenText = "";
+					state = Start;
+				};
 			break;
 
-		case Bad: // bad bad bad
-			tokens.setValid ( false );
+			case Bad: // bad bad bad
+				tokens.setValid ( false );
 			break;
 
-		default:
+			case Finish:
 			break;
 		};
 	};
@@ -367,7 +368,7 @@ void Calculator::compile ( const Tokens &tokens ) const
 
 	TokenStack syntaxStack;
 	QStack<int> argStack;
-	unsigned argCount = 1;
+	uint argCount ( 1 );
 
 	for ( int i = 0; i <= tokens.count (); ++i ) {
 		// helper token: InvalidOp is end-of-expression
@@ -392,7 +393,7 @@ void Calculator::compile ( const Tokens &tokens ) const
 				  token.asOperator () == Token::Percent &&
 				  syntaxStack.itemCount () >= 1 &&
 				  !syntaxStack.top ().isOperator () ) {
-			stc_private->constants.append ( QString ( "0.01" ) );
+			stc_private->constants.append ( QStringLiteral ( "0.01" ) );
 			stc_private->codes.append ( Opcode ( Opcode::Load, stc_private->constants.count () - 1 ) );
 			stc_private->codes.append ( Opcode ( Opcode::Mul ) );
 		}
@@ -402,12 +403,14 @@ void Calculator::compile ( const Tokens &tokens ) const
 				// repeat until no more rule applies
 				bool argHandled ( false );
 				bool ruleFound ( false );
-				while ( true ) {
+				while ( true )
+				{
 					ruleFound = false;
 					// are we entering a function ? If token is operator, and stack already has: id ( arg
-					if ( !ruleFound && ! argHandled && tokenTokenType == Token::stxOperator && syntaxStack.itemCount () >= 3 ) {
-						const Token arg = syntaxStack.top ();
-						const Token par = syntaxStack.top ( 1 );
+					//if ( !ruleFound && ! argHandled && tokenTokenType == Token::stxOperator && syntaxStack.itemCount () >= 3 ) {
+					if ( !argHandled && tokenTokenType == Token::stxOperator && syntaxStack.itemCount () >= 3 ) {
+						const Token& arg ( syntaxStack.top () );
+						const Token& par ( syntaxStack.top ( 1 ) );
 						//Token id = syntaxStack.top ( 2 );
 						if ( !arg.isOperator () && par.asOperator () == Token::LeftPar ) {
 							//ruleFound = true;
@@ -417,13 +420,15 @@ void Calculator::compile ( const Tokens &tokens ) const
 						}
 					}
 					// rule for parenthesis:( Y ) -> Y
-					if ( !ruleFound && syntaxStack.itemCount () >= 3 ) {
-						Token right = syntaxStack.top ();
-						Token y = syntaxStack.top ( 1 );
-						Token left = syntaxStack.top ( 2 );
+					//if ( !ruleFound && syntaxStack.itemCount () >= 3 ) {
+					if ( syntaxStack.itemCount () >= 3 )
+					{
+						const Token& right ( syntaxStack.top () );
+						const Token& y ( syntaxStack.top ( 1 ) );
+						const Token& left ( syntaxStack.top ( 2 ) );
 						if ( right.isOperator () && ! y.isOperator () && left.isOperator () &&
-								right.asOperator () == Token::RightPar &&
-								left.asOperator () == Token::LeftPar ) {
+								right.asOperator () == Token::RightPar && left.asOperator () == Token::LeftPar )
+						{
 							ruleFound = true;
 							syntaxStack.pop ();
 							syntaxStack.pop ();
@@ -433,13 +438,15 @@ void Calculator::compile ( const Tokens &tokens ) const
 					}
 					// rule for function arguments, if token is , or ) id ( arg1 ; arg2 -> id ( arg
 					if ( !ruleFound && syntaxStack.itemCount () >= 5 && ( token.asOperator () == Token::RightPar
-							|| token.asOperator () == Token::Semicolon ) ) {
-						const Token arg2 = syntaxStack.top ();
-						const Token sep = syntaxStack.top ( 1 );
-						const Token arg1 = syntaxStack.top ( 2 );
-						const Token par = syntaxStack.top ( 3 );
+							|| token.asOperator () == Token::Semicolon ) )
+					{
+						const Token& arg2 ( syntaxStack.top () );
+						const Token& sep ( syntaxStack.top ( 1 ) );
+						const Token& arg1 ( syntaxStack.top ( 2 ) );
+						const Token& par ( syntaxStack.top ( 3 ) );
 						if ( !arg2.isOperator () && sep.asOperator () == Token::Semicolon
-								&& ! arg1.isOperator () && par.asOperator () == Token::LeftPar ) {
+								&& ! arg1.isOperator () && par.asOperator () == Token::LeftPar )
+						{
 							ruleFound = true;
 							argHandled = true;
 							syntaxStack.pop ();
@@ -454,9 +461,9 @@ void Calculator::compile ( const Tokens &tokens ) const
 					// exception: for caret ( power operator ) , if op is another caret
 					// then the rule doesn't apply, e.g. "2^3^2" is evaluated as "2^ ( 3^2 ) "
 					if ( !ruleFound && syntaxStack.itemCount () >= 3 ) {
-						const Token b = syntaxStack.top ();
-						const Token op = syntaxStack.top ( 1 );
-						const Token a = syntaxStack.top ( 2 );
+						const Token& b ( syntaxStack.top () );
+						const Token& op ( syntaxStack.top ( 1 ) );
+						const Token& a ( syntaxStack.top ( 2 ) );
 						if ( ! a.isOperator () && ! b.isOperator () && op.isOperator () &&
 								token.asOperator () != Token::LeftPar &&
 								token.asOperator () != Token::Caret &&
@@ -466,21 +473,22 @@ void Calculator::compile ( const Tokens &tokens ) const
 							syntaxStack.pop ();
 							syntaxStack.pop ();
 							syntaxStack.push ( b );
-							switch ( op.asOperator () ) {
+							switch ( op.asOperator () )
+							{
 								// simple binary operations
-							case Token::Plus:
-								stc_private->codes.append ( Opcode::Add );
+								case Token::Plus:
+									stc_private->codes.append ( Opcode ( Opcode::Add ) );
 								break;
-							case Token::Minus:
-								stc_private->codes.append ( Opcode::Sub );
+								case Token::Minus:
+									stc_private->codes.append ( Opcode ( Opcode::Sub ) );
 								break;
-							case Token::Asterisk:
-								stc_private->codes.append ( Opcode::Mul );
+								case Token::Asterisk:
+									stc_private->codes.append ( Opcode ( Opcode::Mul ) );
 								break;
-							case Token::Slash:
-								stc_private->codes.append ( Opcode::Div );
+								case Token::Slash:
+									stc_private->codes.append ( Opcode ( Opcode::Div ) );
 								break;
-							default:
+								default:
 								break;
 							};
 						}
@@ -490,9 +498,9 @@ void Calculator::compile ( const Tokens &tokens ) const
 					// action: push ( op2 ) to result
 					// e.g."* - 2" becomes "*"
 					if ( !ruleFound && token.asOperator () != Token::LeftPar && syntaxStack.itemCount () >= 3 ) {
-						const Token x = syntaxStack.top ();
-						const Token op2 = syntaxStack.top ( 1 );
-						const Token op1 = syntaxStack.top ( 2 );
+						const Token& x ( syntaxStack.top () );
+						const Token& op2 ( syntaxStack.top ( 1 ) );
+						const Token& op1 ( syntaxStack.top ( 2 ) );
 						if ( ! x.isOperator () && op1.isOperator () && op2.isOperator () &&
 								( op2.asOperator () == Token::Plus || op2.asOperator () == Token::Minus ) ) {
 							ruleFound = true;
@@ -511,8 +519,8 @@ void Calculator::compile ( const Tokens &tokens ) const
 					// action: push ( op ) to result
 					if ( !ruleFound && token.asOperator () != Token::LeftPar &&
 							token.asOperator () != Token::Exclamation && syntaxStack.itemCount () == 2 ) {
-						const Token x = syntaxStack.top ();
-						const Token op = syntaxStack.top ( 1 );
+						const Token& x ( syntaxStack.top () );
+						const Token& op ( syntaxStack.top ( 1 ) );
 						if ( ! x.isOperator () && op.isOperator () &&
 								( op.asOperator () == Token::Plus || op.asOperator () == Token::Minus ) ) {
 							ruleFound = true;
@@ -550,7 +558,7 @@ void Calculator::compile ( const Tokens &tokens ) const
 	}
 }
 
-QString Calculator::autoFix ( const QString& expr )
+QString Calculator::autoFix ( const QString& expr ) const
 {
 	QString result;
 
@@ -611,86 +619,92 @@ void Calculator::eval ( QString& result )
 	}
 
 	QStack<float> stack;
-	int index ( 0 );
 	float val1 ( 0.0 ), val2 ( 0.0 );
 
-	for ( int pc = 0; pc < stc_private->codes.count (); ++pc ) {
-		const Opcode &opcode = stc_private->codes.at ( pc );
-		index = opcode.index;
-		switch ( opcode.type ) {
+	for ( int pc = 0; pc < stc_private->codes.count (); ++pc )
+	{
+		const Opcode &opcode (stc_private->codes.at ( pc ));
+		const uint index ( opcode.index );
+		switch ( opcode.type )
+		{
 			// no operation
-		case Opcode::Nop:
+			case Opcode::Nop:
 			break;
 
 			// load a constant, push to stack
-		case Opcode::Load:
-			val1 = stc_private->constants.at ( index ).toFloat ();
-			stack.push ( val1 );
+			case Opcode::Load:
+				val1 = stc_private->constants.at ( index ).toFloat ();
+				stack.push ( val1 );
 			break;
 
 			// unary operation
-		case Opcode::Neg:
-			if ( stack.count () < 1 ) {
-				result = QCoreApplication::tr ( "Invalid Expression" );
-				stc_private->error = result;
-				return;
-			}
-			val1 = stack.pop ();
-			val1 = -val1;
-			stack.push ( val1 );
+			case Opcode::Neg:
+				if ( stack.count () < 1 )
+				{
+					result = QCoreApplication::tr ( "Invalid Expression" );
+					stc_private->error = result;
+					return;
+				}
+				val1 = stack.pop ();
+				val1 = -val1;
+				stack.push ( val1 );
 			break;
 
 			// binary operation: take two values from stack, do the operation,
 			// push the result to stack
-		case Opcode::Add:
-			if ( stack.count () < 2 ) {
-				result = QCoreApplication::tr ( "Invalid Expression" );
-				stc_private->error = result;
-				return;
-			}
-			val1 = stack.pop ();
-			val2 = stack.pop ();
-			val2 += val1;
-			stack.push ( val2 );
+			case Opcode::Add:
+				if ( stack.count () < 2 )
+				{
+					result = QCoreApplication::tr ( "Invalid Expression" );
+					stc_private->error = result;
+					return;
+				}
+				val1 = stack.pop ();
+				val2 = stack.pop ();
+				val2 += val1;
+				stack.push ( val2 );
 			break;
 
-		case Opcode::Sub:
-			if ( stack.count () < 2 ) {
-				result = QCoreApplication::tr ( "Invalid Expression" );
-				stc_private->error = result;
-				return;
-			}
-			val1 = stack.pop ();
-			val2 = stack.pop ();
-			val2 -= val1;
-			stack.push ( val2 );
+			case Opcode::Sub:
+				if ( stack.count () < 2 )
+				{
+					result = QCoreApplication::tr ( "Invalid Expression" );
+					stc_private->error = result;
+					return;
+				}
+				val1 = stack.pop ();
+				val2 = stack.pop ();
+				val2 -= val1;
+				stack.push ( val2 );
 			break;
 
-		case Opcode::Mul:
-			if ( stack.count () < 2 ) {
-				result = QCoreApplication::tr ( "Invalid Expression" );
-				stc_private->error = result;
-				return;
-			}
-			val1 = stack.pop ();
-			val2 = stack.pop ();
-			val2 *= val1;
-			stack.push ( val2 );
+			case Opcode::Mul:
+				if ( stack.count () < 2 )
+				{
+					result = QCoreApplication::tr ( "Invalid Expression" );
+					stc_private->error = result;
+					return;
+				}
+				val1 = stack.pop ();
+				val2 = stack.pop ();
+				val2 *= val1;
+				stack.push ( val2 );
 			break;
 
-		case Opcode::Div:
-			if ( stack.count () < 2 ) {
-				result = QCoreApplication::tr ( "Invalid Expression" );
-				stc_private->error = result;
-				return;
-			}
-			val1 = stack.pop ();
-			val2 = stack.pop ();
-			val2 /= val1;
-			stack.push ( val2 );
+			case Opcode::Div:
+				if ( stack.count () < 2 ) 
+				{
+					result = QCoreApplication::tr ( "Invalid Expression" );
+					stc_private->error = result;
+					return;
+				}
+				val1 = stack.pop ();
+				val2 = stack.pop ();
+				val2 /= val1;
+				stack.push ( val2 );
 			break;
 
-		default:
+			default:
 			break;
 		}
 	}

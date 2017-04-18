@@ -28,7 +28,7 @@ public:
 		PANEL_XP_1, PANEL_XP_2
 	};
 
-	ActionPanelScheme ( const PanelStyle style = PANEL_DEFAULT );
+	explicit ActionPanelScheme ( const PanelStyle style = PANEL_DEFAULT );
 
 	/** Returns a pointer to the default scheme object.
 	Must be reimplemented in the own schemes.

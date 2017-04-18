@@ -47,7 +47,7 @@ protected:
 
 	bool m_open;
 	bool m_needsaving;
-	int m_headerSize;
+	int64_t m_headerSize;
 	uint m_buffersize;
 	TF_TYPE m_type;
 	QString m_filename;
@@ -79,7 +79,7 @@ public:
 	bool setFieldValue ( const QString& field_name, const QString& value );
 	bool setFieldValue ( const uint field_index, const QString& value );
 
-	inline int sectionCount () const { return cfgData.count (); }
+	inline uint sectionCount () const { return cfgData.count (); }
 
 protected:
 	bool loadData();

@@ -32,7 +32,6 @@ vmCompleters::vmCompleters ()
 		// information; the second, an index for faster searches
 		item_model = new QStandardItemModel ( 0, i != PRODUCT_OR_SERVICE ? 1 : 2, completer );
 		completer->setModel ( item_model );
-		//item_model->appendRow ( new QStandardItem ( QStringLiteral ( "N/A" ) ) );
 		completersList.insert ( i, completer );
 	}
 	loadCompleters ();
@@ -95,11 +94,11 @@ void vmCompleters::updateCompleter ( const QString& str, const COMPLETER_CATEGOR
 	if ( str.isEmpty () || str == QStringLiteral ( "N/A" ) || type == COMPLETER_CATEGORIES::NONE )
 		return;
 
-	const QCompleter* completer ( completersList.at ( static_cast<int> ( type ) ) );
-	QStandardItemModel* item_model ( static_cast<QStandardItemModel*> ( completer->model () ) );
-
 	if ( inList ( str, type ) == -1 )
 	{
+		const QCompleter* completer ( completersList.at ( static_cast<int> ( type ) ) );
+		QStandardItemModel* item_model ( static_cast<QStandardItemModel*> (completer->model ()) );
+		
 		item_model->appendRow ( new QStandardItem ( str ) );
 		QStandardItemModel* model_all ( static_cast<QStandardItemModel*> ( completersList.at ( ALL_CATEGORIES )->model () ) );
 		model_all->appendRow ( new QStandardItem ( str ) );
@@ -109,7 +108,7 @@ void vmCompleters::updateCompleter ( const QString& str, const COMPLETER_CATEGOR
 
 void vmCompleters::fillList ( const vmCompleters::COMPLETER_CATEGORIES type, QStringList& list ) const
 {
-	const QStandardItemModel* model ( static_cast<QStandardItemModel*> ( completersList.at ( static_cast<int> ( type ) )->model () ) );
+	const QStandardItemModel* __restrict model ( static_cast<QStandardItemModel*> ( completersList.at ( static_cast<int> ( type ) )->model () ) );
 	if ( model )
 	{
 		const uint n_items ( static_cast<uint> ( model->rowCount () ) );
@@ -125,7 +124,7 @@ void vmCompleters::fillList ( const vmCompleters::COMPLETER_CATEGORIES type, QSt
 
 int vmCompleters::inList ( const QString& str, const vmCompleters::COMPLETER_CATEGORIES type ) const
 {
-	const QStandardItemModel* model ( static_cast<QStandardItemModel*> ( completersList.at ( static_cast<int> ( type ) )->model () ) );
+	const QStandardItemModel* __restrict model ( static_cast<QStandardItemModel*> ( completersList.at ( static_cast<int> ( type ) )->model () ) );
 	const QModelIndex index ( model->index ( 0, 0 ) );
 	const int n_items ( model->rowCount () );
 	for ( int i_row ( 0 ); i_row < n_items; ++i_row )

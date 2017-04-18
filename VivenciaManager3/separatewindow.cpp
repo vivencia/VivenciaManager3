@@ -20,7 +20,7 @@ separateWindow::separateWindow ( QWidget* child )
 
 	setLayout ( mainLayout );
 	resize ( m_child->sizeHint () );
-	globalMainWindow->installEventFilter ( this );
+	MAINWINDOW ()->installEventFilter ( this );
 }
 
 void separateWindow::addChild ( QWidget* child )
@@ -71,16 +71,16 @@ void separateWindow::closeEvent ( QCloseEvent* e )
 // Hides and shows this windows whenever the parent window is minimized/hidden or visible/shown
 bool separateWindow::eventFilter ( QObject* o, QEvent* e )
 {
-	if ( globalMainWindow && ( o == globalMainWindow ) )
+	if ( MAINWINDOW () && ( o == MAINWINDOW () ) )
 	{
 		switch ( e->type () )
 		{
 			default:
 				e->ignore ();
-				return false;
-			break;
+			return false;
+			
 			case QEvent::WindowStateChange:
-				if ( globalMainWindow->isMinimized () || globalMainWindow->isHidden () )
+				if ( MAINWINDOW ()->isMinimized () || MAINWINDOW ()->isHidden () )
 					childHideRequested ();
 				else
 					childShowRequested ();

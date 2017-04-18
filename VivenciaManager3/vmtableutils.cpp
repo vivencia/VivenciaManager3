@@ -11,6 +11,7 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	: QFrame ( nullptr ), m_SearchedWord ( emptyString ), m_table ( const_cast<vmTableWidget*>( table ) ),
 	  chkSearchAllTable ( nullptr )
 {
+	QLabel* lblSearch ( new QLabel ( TR_FUNC ( "Search:" ) ) );
 	txtSearchTerm = new vmLineEdit;
 	txtSearchTerm->setEditable ( true );
 	txtSearchTerm->setCallbackForRelevantKeyPressed ( ( [&]( const QKeyEvent* ke, const vmWidget* const ) {
@@ -38,6 +39,7 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	QHBoxLayout* mLayout ( new QHBoxLayout );
 	mLayout->setSpacing( 2 );
 	mLayout->setMargin ( 2 );
+	mLayout->addWidget ( lblSearch );
 	mLayout->addWidget ( txtSearchTerm, 3 );
 	mLayout->addWidget ( btnSearchStart );
 	mLayout->addWidget ( btnSearchPrev );
@@ -192,7 +194,8 @@ void vmTableFilterPanel::doFilter ( const triStateType level, const int startlev
 			m_table->setRowVisible ( i_row, true );
 		searchLevels.clearButKeepMemory ();
 	}
-	else {
+	else
+	{
 		if ( startlevel < static_cast<int>(searchLevels.count ()) )
 		{
 			for ( int i ( startlevel ); i < static_cast<int>(searchLevels.count ()); ++i )

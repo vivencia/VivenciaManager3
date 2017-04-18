@@ -17,7 +17,7 @@ class QPushButton;
 class suppliersDlg : public QDialog
 {
 
-    friend class VivenciaDB;
+friend class VivenciaDB;
 
 public:
 	virtual ~suppliersDlg ();
@@ -36,7 +36,7 @@ private:
 	static suppliersDlg* s_instance;
 	supplierRecord* supRec;
 
-	void saveWidget ( vmWidget* widget, const uint id );
+	void saveWidget ( vmWidget* widget, const int id );
 	void setupUI ();
 	void retrieveInfo ();
 	void controlForms ();

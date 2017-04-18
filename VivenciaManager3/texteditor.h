@@ -33,6 +33,7 @@ friend class dockBJ;
 
 public:
 	explicit textEditor ( documentEditor* mdiParent );
+	virtual ~textEditor ();
 
 	static inline QString filter () {
 		return tr ( "Text files (*.txt);;Richtext files (*.rtf)" );
@@ -121,6 +122,8 @@ public:
 	void insertImage ( const QString& imageFile, QTextFrameFormat::Position pos = QTextFrameFormat::InFlow );
 
 private:
+	friend void initToolbarInstace ();
+	static void initToolbarInstace ();
 	void setFontColor ( const QColor& color );
 	void setHighlight  ( const QColor& color );
 	void createList ( const QTextListFormat::Style = QTextListFormat::ListDisc );
@@ -163,8 +166,6 @@ public:
 
 inline textEditorToolBar *TEXT_EDITOR_TOOLBAR ()
 {
-	if ( textEditorToolBar::s_instance == nullptr )
-		textEditorToolBar::s_instance = new textEditorToolBar ();
 	return textEditorToolBar::s_instance;
 }
 

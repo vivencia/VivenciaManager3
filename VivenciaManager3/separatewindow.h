@@ -19,12 +19,8 @@ public:
 	void addChild ( QWidget* child );
 	void addToolBar ( QWidget* toolbar );
 
-	void setCallbackForReturningToParent ( std::function<void ( QWidget*)> func ) {
-		funcReturnToParent = func;
-	}
-
-	void showSeparate ( const QString& window_title,
-			const bool b_exec = false, const Qt::WindowStates w_state = Qt::WindowActive );
+	void setCallbackForReturningToParent ( const std::function<void ( QWidget*)>& func ) { funcReturnToParent = func; }
+	void showSeparate ( const QString& window_title, const bool b_exec = false, const Qt::WindowStates w_state = Qt::WindowActive );
 	void returnToParent ();
 
 protected:

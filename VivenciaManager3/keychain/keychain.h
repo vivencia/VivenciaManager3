@@ -65,9 +65,9 @@ public:
 	QString key () const;
 	void setKey ( const QString& key );
 	
-	inline void setCallbackForFinished ( std::function<void ( vmPasswordManager::passwdManager* )> func )
+	inline void setCallbackForFinished ( const std::function<void ( vmPasswordManager::passwdManager* )>& func )
 		{ finishedFunc = func; }
-	inline void setCallbackForDestroyed ( std::function<void ( vmPasswordManager::passwdManager* )> func )
+	inline void setCallbackForDestroyed ( const std::function<void ( vmPasswordManager::passwdManager* )>& func )
 		{ destroyedFunc = func; }
 
 protected:

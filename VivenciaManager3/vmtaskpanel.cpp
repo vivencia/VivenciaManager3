@@ -47,9 +47,9 @@ void vmTaskPanel::setScheme ( ActionPanelScheme* scheme )
 		QObjectList list ( children () );
 		foreach ( QObject *obj, list )
 		{
-			if ( dynamic_cast<vmActionGroup*> ( obj ) )
+			if ( obj != nullptr )
 			{
-				( static_cast<vmActionGroup*>( obj ) )->setScheme ( scheme );
+				dynamic_cast<vmActionGroup*>(obj)->setScheme ( scheme );
 				continue;
 			}
 		}

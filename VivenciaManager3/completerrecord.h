@@ -13,7 +13,6 @@ class completerRecord : public DBRecord
 {
 
 friend class VivenciaDB;
-friend class Data;
 friend class vmCompleters;
 
 public:

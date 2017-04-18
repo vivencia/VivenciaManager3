@@ -63,8 +63,8 @@ public:
 	}
 
 	void setExpression ( const QString& );
-	Tokens scan ( const QString& ) const;
-	QString autoFix ( const QString& );
+	static Tokens scan ( const QString& );
+	QString autoFix ( const QString& ) const;
 	void compile ( const Tokens & ) const;
 	void eval ( QString& result );
 

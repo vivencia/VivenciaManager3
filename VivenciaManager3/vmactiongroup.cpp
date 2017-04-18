@@ -13,21 +13,20 @@ TaskGroup::TaskGroup ( QWidget *parent, const bool stretchContents )
 {
 	setProperty ( "class", QStringLiteral ( "content" ) );
 	setProperty ( "header", QStringLiteral ( "true" ) );
-    setScheme ( ActionPanelScheme::defaultScheme () );
+	setScheme ( ActionPanelScheme::defaultScheme () );
 	QVBoxLayout* vbl ( new QVBoxLayout () );
 	vbl->setMargin ( 2 );
 	vbl->setSpacing ( 4 );
 	setLayout ( vbl );
-    setSizePolicy ( QSizePolicy::Minimum, QSizePolicy::Minimum );
-//	if ( !mbStretchContents )
-//		setMinimumHeight ( mScheme->headerSize );
+	setSizePolicy ( QSizePolicy::Minimum, QSizePolicy::Minimum );
 }
 
 TaskGroup::~TaskGroup () {}
 
 void TaskGroup::setScheme ( ActionPanelScheme* scheme )
 {
-	if ( scheme ) {
+	if ( scheme )
+	{
 		mScheme = scheme;
 		setStyleSheet ( mScheme->actionStyle );
 		update ();
@@ -42,15 +41,19 @@ void TaskGroup::addQEntry ( QWidget* widget, QLayout* l, const bool addStretch )
 	if ( !mbStretchContents )
 		setMinimumHeight ( minimumHeight () + widget->minimumHeight () );
 
-	if ( l ) {
-		if ( l->objectName () != QStringLiteral ( "tg_added" ) ) {
-			l->setObjectName ( QStringLiteral ( "tg_added" ) );
+	if ( l )
+	{
+		if ( l->property ( "tg_added" ).toBool () == false )
+		{
+			l->setProperty ( "tg_added", true  );
 			groupLayout ()->addLayout ( l );
 		}
 		l->addWidget ( widget );
 	}
-	else {
-		if ( addStretch ) {
+	else
+	{
+		if ( addStretch )
+		{
 			QHBoxLayout* hbl ( new QHBoxLayout () );
 			hbl->setMargin ( 0 );
 			hbl->setSpacing ( 0 );
@@ -64,12 +67,12 @@ void TaskGroup::addQEntry ( QWidget* widget, QLayout* l, const bool addStretch )
 
 void TaskGroup::addLayout ( QLayout* layout )
 {
-    if ( !layout )
-        return;
+	if ( !layout )
+		return;
 
-    if ( !mbStretchContents )
-        setMinimumHeight ( minimumHeight () + layout->minimumSize ().height () );
-    groupLayout ()->addLayout ( layout, 1 );
+	if ( !mbStretchContents )
+		setMinimumHeight ( minimumHeight () + layout->minimumSize ().height () );
+	groupLayout ()->addLayout ( layout, 1 );
 }
 
 QPixmap TaskGroup::transparentRender ()
@@ -105,7 +108,7 @@ TaskHeader::TaskHeader ( const QIcon& icon, const QString& title,
 	hbl->addWidget ( mTitle );
 
 	setSizePolicy ( QSizePolicy::Preferred, QSizePolicy::Maximum );
-    setScheme ( ActionPanelScheme::defaultScheme () );
+	setScheme ( ActionPanelScheme::defaultScheme () );
 	setExpandable ( mb_expandable );
 	setClosable ( mb_closable );
 
@@ -161,7 +164,8 @@ void TaskHeader::setClosable ( const bool closable )
 
 		changeIcons ();
 	}
-	else {
+	else
+	{
 		mb_closable = false;
 		if ( !mClosableButton )
 			return;
@@ -175,18 +179,17 @@ void TaskHeader::setClosable ( const bool closable )
 
 bool TaskHeader::eventFilter ( QObject* obj, QEvent* event )
 {
-	switch ( event->type () ) {
+	switch ( event->type () )
+	{
 		case QEvent::Enter:
 			mb_buttonOver = true;
 			changeIcons ();
-			return true;
-		break;
+		return true;
 
 		case QEvent::Leave:
 			mb_buttonOver = false;
 			changeIcons ();
-			return true;
-		break;
+		return true;
 
 		default:
 		break;
@@ -196,15 +199,16 @@ bool TaskHeader::eventFilter ( QObject* obj, QEvent* event )
 
 void TaskHeader::setScheme ( ActionPanelScheme* scheme )
 {
-	if ( scheme ) {
+	if ( scheme )
+	{
 		mScheme = scheme;
 		setStyleSheet ( mScheme->actionStyle );
 
 		if ( mb_expandable )
 			changeIcons ();
+		setFixedHeight ( scheme->headerSize );
+		update ();
 	}
-	setFixedHeight ( scheme->headerSize );
-	update ();
 }
 
 void TaskHeader::setTitle ( const QString& new_title )
@@ -251,21 +255,26 @@ void TaskHeader::animate ()
 	if ( !mScheme->headerAnimation )
 		return;
 
-	if ( !isEnabled () ) {
+	if ( !isEnabled () )
+	{
 		md_opacity = 0.1;
 		update ();
 		return;
 	}
 
-	if ( mb_over ) {
-		if ( md_opacity >= 0.3 ) {
+	if ( mb_over )
+	{
+		if ( md_opacity >= 0.3 )
+		{
 			md_opacity = 0.3;
 			return;
 		}
 		md_opacity += 0.05;
 	}
-	else {
-		if ( md_opacity <= 0.1 ) {
+	else
+	{
+		if ( md_opacity <= 0.1 )
+		{
 			md_opacity = 0.1;
 			return;
 		}
@@ -278,7 +287,8 @@ void TaskHeader::animate ()
 
 void TaskHeader::fold ()
 {
-	if ( mb_expandable ) {
+	if ( mb_expandable )
+	{
 		if ( funcFoldButtonClicked )
 			funcFoldButtonClicked ();
 		mb_fold = !mb_fold;
@@ -294,7 +304,8 @@ void TaskHeader::close ()
 
 void TaskHeader::changeIcons ()
 {
-	if ( mExpandableButton ) {
+	if ( mExpandableButton )
+	{
 		if ( mb_buttonOver )
 			mExpandableButton->setIcon ( mb_fold ? mScheme->headerButtonFoldOver : mScheme->headerButtonUnfoldOver );
 		else
@@ -306,22 +317,21 @@ void TaskHeader::changeIcons ()
 
 void TaskHeader::keyPressEvent ( QKeyEvent *event )
 {
-	switch ( event->key () ) {
+	switch ( event->key () )
+	{
 		case Qt::Key_Down:
 		{
 			QKeyEvent ke ( QEvent::KeyPress, Qt::Key_Tab, 0 );
 			QApplication::sendEvent ( this, &ke );
 			return;
 		}
-		break;
-
+		
 		case Qt::Key_Up:
 		{
 			QKeyEvent ke ( QEvent::KeyPress, Qt::Key_Tab, Qt::ShiftModifier );
 			QApplication::sendEvent ( this, &ke );
 			return;
 		}
-		break;
 
 		default:
 		break;
@@ -331,14 +341,14 @@ void TaskHeader::keyPressEvent ( QKeyEvent *event )
 
 void TaskHeader::keyReleaseEvent ( QKeyEvent* event )
 {
-	switch ( event->key () ) {
+	switch ( event->key () )
+	{
 		case Qt::Key_Down:
 		{
 			QKeyEvent ke ( QEvent::KeyRelease, Qt::Key_Tab, 0 );
 			QApplication::sendEvent ( this, &ke );
 			return;
 		}
-		break;
 
 		case Qt::Key_Up:
 		{
@@ -346,7 +356,6 @@ void TaskHeader::keyReleaseEvent ( QKeyEvent* event )
 			QApplication::sendEvent ( this, &ke );
 			return;
 		}
-		break;
 
 		default:
 		break;
@@ -404,7 +413,7 @@ void vmActionGroup::init ()
 	mGroup = new TaskGroup ( this, mbStretchContents );
 	mDummy = new QWidget ( this );
 	mDummy->hide ();
-    setScheme ( ActionPanelScheme::defaultScheme () );
+	setScheme ( ActionPanelScheme::defaultScheme () );
 
 	vbl->addWidget ( mHeader, 1 );
 	vbl->addWidget ( mGroup, 1 );
@@ -428,8 +437,10 @@ QBoxLayout* vmActionGroup::groupLayout () const
 
 bool vmActionGroup::addEntry ( vmWidget* entry, QLayout* l, const bool addStretch )
 {
-	if ( entry ) {
-		if ( entry->type () == WT_ACTION ) {
+	if ( entry )
+	{
+		if ( entry->type () == WT_ACTION )
+		{
 			vmActionLabel* label ( new vmActionLabel ( static_cast<vmAction*> ( entry ), this ) );
 			mGroup->addQEntry ( label->toQWidget (), l, addStretch );
 		}
@@ -447,18 +458,19 @@ void vmActionGroup::addQEntry ( QWidget* widget, QLayout* l, const bool addStret
 
 void vmActionGroup::addLayout ( QLayout* layout )
 {
-    mGroup->addLayout ( layout );
+	mGroup->addLayout ( layout );
 }
 
 void vmActionGroup::showHide ()
 {
-	if ( m_foldStep )
+	if ( m_foldStep != 0.0 )
 		return;
 
 	if ( !mHeader->expandable () )
 		return;
 
-	if ( mGroup->isVisible () ) {
+	if ( mGroup->isVisible () )
+	{
 		m_foldPixmap = mGroup->transparentRender ();
 		m_tempHeight = m_fullHeight = mGroup->height ();
 		m_foldDelta = m_fullHeight / mScheme->groupFoldSteps;
@@ -469,10 +481,11 @@ void vmActionGroup::showHide ()
 		mDummy->show ();
 		timerHide->start ( mScheme->groupFoldDelay );
 	}
-	else {
+	else
+	{
 		m_foldStep = mScheme->groupFoldSteps;
 		m_foldDirection = 1;
-		m_tempHeight = 0;
+		m_tempHeight = 0.0;
 		timerShow->start ( mScheme->groupFoldDelay );
 	}
 	mDummy->show ();
@@ -480,7 +493,9 @@ void vmActionGroup::showHide ()
 
 void vmActionGroup::processHide ()
 {
-	if ( --m_foldStep == 0 ) {
+	if ( --m_foldStep <= 0.0 )
+	{
+		m_foldStep = 0.0;
 		mDummy->setFixedHeight ( 0 );
 		mDummy->hide ();
 		setFixedHeight ( mHeader->height () );
@@ -489,7 +504,7 @@ void vmActionGroup::processHide ()
 	}
 	setUpdatesEnabled ( false );
 	m_tempHeight -= m_foldDelta;
-	mDummy->setFixedHeight ( m_tempHeight );
+	mDummy->setFixedHeight ( static_cast<int>(m_tempHeight) );
 	setFixedHeight ( mDummy->height () + mHeader->height () );
 	timerHide->start ( mScheme->groupFoldDelay );
 	setUpdatesEnabled ( true );
@@ -497,11 +512,13 @@ void vmActionGroup::processHide ()
 
 void vmActionGroup::processShow ()
 {
-	if ( --m_foldStep == 0 ) {
+	if ( --m_foldStep <= 0.0 )
+	{
+		m_foldStep = 0.0;
 		mDummy->hide ();
 		m_foldPixmap = QPixmap ();
 		mGroup->show ();
-		setFixedHeight ( m_fullHeight + mHeader->height () );
+		setFixedHeight ( static_cast<int>(m_fullHeight) + mHeader->height () );
 		setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
 		setMaximumHeight ( 9999 );
 		setMinimumHeight ( 0 );
@@ -509,7 +526,7 @@ void vmActionGroup::processShow ()
 	}
 	setUpdatesEnabled ( false );
 	m_tempHeight += m_foldDelta;
-	mDummy->setFixedHeight ( m_tempHeight );
+	mDummy->setFixedHeight ( static_cast<int>(m_tempHeight) );
 	setFixedHeight ( mDummy->height () + mHeader->height () );
 	timerShow->start ( mScheme->groupFoldDelay );
 	setUpdatesEnabled ( true );
@@ -519,27 +536,30 @@ void vmActionGroup::paintEvent ( QPaintEvent * )
 {
 	QPainter p ( this );
 
-	if ( mDummy->isVisible () ) {
-		if ( mScheme->groupFoldThaw ) {
+	if ( mDummy->isVisible () )
+	{
+		if ( mScheme->groupFoldThaw )
+		{
 			if ( m_foldDirection < 0 )
-				p.setOpacity ( ( double ) m_foldStep / mScheme->groupFoldSteps );
+				p.setOpacity ( m_foldStep / static_cast<double>(mScheme->groupFoldSteps) );
 			else
-				p.setOpacity ( ( double ) ( mScheme->groupFoldSteps-m_foldStep ) / mScheme->groupFoldSteps );
+				p.setOpacity ( (static_cast<double>(mScheme->groupFoldSteps) - m_foldStep) / static_cast<double>(mScheme->groupFoldSteps) );
 		}
 
-		switch ( mScheme->groupFoldEffect ) {
-            case ActionPanelScheme::ShrunkFolding:
-                p.drawPixmap ( mDummy->pos (), m_foldPixmap.scaled ( mDummy->size () ) );
+		switch ( mScheme->groupFoldEffect )
+		{
+			case ActionPanelScheme::ShrunkFolding:
+				p.drawPixmap ( mDummy->pos (), m_foldPixmap.scaled ( mDummy->size () ) );
 			break;
 
-            case ActionPanelScheme::SlideFolding:
-                p.drawPixmap ( mDummy->pos (), m_foldPixmap,
-                           QRect ( 0, m_foldPixmap.height () - mDummy->height (),
-                                   m_foldPixmap.width (), mDummy->width () ) );
+			case ActionPanelScheme::SlideFolding:
+				p.drawPixmap ( mDummy->pos (), m_foldPixmap,
+						   QRect ( 0, m_foldPixmap.height () - mDummy->height (),
+								   m_foldPixmap.width (), mDummy->width () ) );
 			break;
 
-            default:
-                p.drawPixmap ( mDummy->pos () , m_foldPixmap );
+			case ActionPanelScheme::NoFolding:
+				p.drawPixmap ( mDummy->pos () , m_foldPixmap );
 		}
 	}
 }

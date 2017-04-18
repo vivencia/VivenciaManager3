@@ -36,7 +36,7 @@ public:
 
 	bool setConfigFile ( const QString& filename );
 	const QString& readConfigFile ( const int category = -1, QString category_name = QString::null ) const;
-    void writeConfigFile ( const int category, const QString& fieldValue, QString category_name = QString::null );
+	void writeConfigFile ( const int category, const QString& fieldValue, QString category_name = QString::null );
 
 	const QString& lastViewedRecords ( const bool use_default = false ) const;
 	uint lastViewedRecord ( const uint table ) const;
@@ -49,9 +49,9 @@ public:
 	static const QString kdesu ( const QString& message );
 	static const QString gksu ( const QString& message, const QString& appname );
 	static bool isSystem ( const QString& os_name );
-    static bool initSystem ( const QString& initName );
+	static bool initSystem ( const QString& initName );
 
-	const QString& defaultConfigDir () const;
+	static const QString& defaultConfigDir ();
 
 	const QString& appConfigFile ( const bool use_default = false ) const;
 	const QString setAppConfigFile ( const QString& );
@@ -188,10 +188,10 @@ public:
 	const QString& setEstimatesDir ( const QString&, const bool full_path = false );
 
 	inline static const QString reportsDirSuffix () { return QStringLiteral ( "Relatórios" ); }
-	const QString& reportsDir ( const QString& username, const bool use_default = false );
-	const QString& setReportsDir ( const QString&, const bool full_path = false );
+	const QString& reportsDir ( const QString& client_name, const bool use_default = false );
+	const QString& setReportsDir ( const QString& str, const bool full_path = false );
 
-	const QString& defaultEmailAddress () const;
+	static const QString& defaultEmailAddress ();
 
 	inline const QString vivienciaLogo () const {
 		return appDataDir () + STR_VIVENCIA_LOGO;
@@ -244,7 +244,7 @@ private:
 
 	const QString& getConfigValue ( const CFG_FIELDS field, const bool use_default ) const;
 	const QString& setApp ( const CFG_FIELDS field, const QString& app );
-	const QString& setDir ( const CFG_FIELDS field, const QString& app );
+	const QString& setDir ( const CFG_FIELDS field, const QString& dir );
 
 	QString m_filename, mRetString;
 	configFile* m_cfgFile;

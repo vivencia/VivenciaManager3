@@ -16,7 +16,6 @@ class BackupDialog;
 class VivenciaDB
 {
 
-friend class Data;
 friend class DBRecord;
 friend class UserManagement;
 friend class tableView;
@@ -50,11 +49,13 @@ public:
 		return &m_db;
 	}
 
+	bool openDataBase ();
+	void doPreliminaryWork ();
 	bool deleteDB ( const QString& dbname = QString::null );
 	bool optimizeTable ( const TABLE_INFO* t_info ) const;
 
-    inline bool db_oK ()  const { return m_ok; }
-    inline bool backUpSynced () const { return mBackupSynced; }
+	inline bool db_oK ()  const { return m_ok; }
+	inline bool backUpSynced () const { return mBackupSynced; }
 
 	static inline QString backupApp () {
 		return QStringLiteral ( "mysqldump" );
@@ -119,12 +120,6 @@ public:
 private:
 
 	explicit VivenciaDB ();
-	//-----------------------------------------READ-OPEN-LOAD-------------------------------------------
-	bool openDataBase ();
-	void doPreliminaryWork ();
-	//-----------------------------------------READ-OPEN-LOAD-------------------------------------------
-
-	//-----------------------------------------CREATE-DESTROY-MODIFY------------------------------------
 	bool createDatabase ();
 	bool createUser ();
 
@@ -142,8 +137,8 @@ private:
 
 	static const TABLE_INFO* table_info[TABLES_IN_DB];
 
-    bool m_ok, mNewDB;
-    mutable bool mBackupSynced;
+	bool m_ok, mNewDB;
+	mutable bool mBackupSynced;
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
 
 	static VivenciaDB* s_instance;

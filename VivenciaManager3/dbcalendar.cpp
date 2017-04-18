@@ -254,12 +254,12 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 						payRecord = const_cast<stringRecord* >( &payInfo.readRecord ( i ) );
 						price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 						date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
-						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, i + 1 );
+						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 						addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, price );
 						if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 						{
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );
-							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, i + 1 );
+							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
 							addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
 						}
 					}
@@ -475,8 +475,6 @@ void dbCalendar::updateCalendarDB ( const DBRecord* dbrec, PointersList<CALENDAR
 	stringRecord calendarIdTrio;
 	calendarIdTrio.fastAppendValue ( dbrec->actualRecordStr ( 0 ) );
 	calendarIdTrio.fastAppendValue ( dbrec->actualRecordStr ( 1 ) );
-
-	CALENDAR_EXCHANGE* ce ( nullptr );
 	
 	uint calendarField[4] = { 0 };
 	switch ( dbrec->typeID () )
@@ -499,6 +497,7 @@ void dbCalendar::updateCalendarDB ( const DBRecord* dbrec, PointersList<CALENDAR
 		break;
 	}
 
+	CALENDAR_EXCHANGE* ce ( nullptr );
 	for ( uint i ( 0 ); i < ce_list.count (); ++i )
 	{
 		ce = ce_list.at ( i );

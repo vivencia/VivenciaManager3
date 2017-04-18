@@ -30,22 +30,22 @@ class vmNumber
 	};
 
 public:
-    inline vmNumber () : m_type ( VMNT_UNSET ), mb_cached ( false ), mb_valid ( false ) {
+	inline vmNumber () : m_type ( VMNT_UNSET ), mb_cached ( false ), mb_valid ( false ) {
 		for ( unsigned int i ( 0 ); i < 5; ++i ) nbr_part[i] = nbr_upart[i] = 0;
 	}
 	inline explicit vmNumber ( const int n ) {
 		fromInt ( n );
 	}
 	inline explicit vmNumber ( const unsigned int n ) {
-		fromInt ( static_cast<int>(n) );
+		fromUInt ( n );
 	}
 	inline explicit vmNumber ( const double n ) {
 		fromDoubleNbr ( n );
 	}
-	inline vmNumber ( const QDate& date ) {
+	inline explicit vmNumber ( const QDate& date ) {
 		fromQDate ( date );
 	}
-	inline vmNumber ( const QTime& time ) {
+	inline explicit vmNumber ( const QTime& time ) {
 		fromQTime ( time );
 	}
 	inline vmNumber ( const vmNumber& vmnumber ) {
@@ -61,9 +61,9 @@ public:
 	// Force set type. Use with care under controlled circumstances. Internal use is preferred.
 	inline void setType ( const VM_NUMBER_TYPE type ) const {
 		m_type = type;
-        mb_valid = true; //this line is one of the reasons this method should not be called directly
+		mb_valid = true; //this line is one of the reasons this method should not be called directly
 	}
-    inline bool isValid () const { return mb_valid; }
+	inline bool isValid () const { return mb_valid; }
 	// Safe convertion
 	bool convertTo ( const VM_NUMBER_TYPE new_type, const bool force = false );
 
@@ -76,7 +76,7 @@ public:
 
 //------------------------------------INT-unsigned int---------------------------------------
 	inline bool isInt () const {
-        return ( m_type == VMNT_INT ) && isValid ();
+		return ( m_type == VMNT_INT ) && isValid ();
 	}
 
 	vmNumber& fromStrInt ( const QString& integer );
@@ -90,7 +90,7 @@ public:
 
 //-------------------------------------DOUBLE----------------------------------------
 	inline bool isDouble () const {
-        return ( m_type == VMNT_DOUBLE ) && isValid ();
+		return ( m_type == VMNT_DOUBLE ) && isValid ();
 	}
 
 	vmNumber& fromStrDouble ( const QString& str_double );
@@ -103,7 +103,7 @@ public:
 
 //-------------------------------------PHONE-----------------------------------------
 	inline bool isPhone () const {
-        return ( m_type == VMNT_PHONE ) && isValid ();
+		return ( m_type == VMNT_PHONE ) && isValid ();
 	}
 
 	vmNumber& fromStrPhone ( const QString& phone );
@@ -122,7 +122,7 @@ public:
 
 //-------------------------------------PRICE-----------------------------------------
 	inline bool isPrice () const {
-        return ( m_type == VMNT_PRICE ) && isValid ();
+		return ( m_type == VMNT_PRICE ) && isValid ();
 	}
 	void setPrice ( const int tens, const int cents, const bool update = false );
 
@@ -141,7 +141,7 @@ public:
 	};
 
 	inline bool isDate () const {
-        return ( m_type == VMNT_DATE ) && isValid ();
+		return ( m_type == VMNT_DATE ) && isValid ();
 	}
 	void setDate ( const int day = 0, const int month = 0, const int year = 0, const bool update = false );
 
@@ -178,7 +178,7 @@ public:
 		return static_cast<int>(( ( this->year () - year ) * 12 ) + this->month () - month);
 	}
 
-    bool isDateWithinRange ( const vmNumber& checkDate, const unsigned int years = 0, const unsigned int months = 0, const unsigned int days = 0 ) const;
+	bool isDateWithinRange ( const vmNumber& checkDate, const unsigned int years = 0, const unsigned int months = 0, const unsigned int days = 0 ) const;
 	unsigned int julianDay () const;
 	unsigned int dayOfYear () const;
 	unsigned int dayOfWeek () const;
@@ -211,7 +211,7 @@ public:
 	};
 
 	inline bool isTime () const {
-        return ( m_type == VMNT_TIME ) && isValid ();
+		return ( m_type == VMNT_TIME ) && isValid ();
 	}
 	void setTime ( const int hours = 10000, const int minutes = -1, const bool update = false );
 
@@ -222,7 +222,7 @@ public:
 
 	const QString& toTime ( const VM_TIME_FORMAT format = VTF_DAYS ) const;
 	const QTime& toQTime () const;
-	const QString& formatTime ( const int hours, const unsigned int mins, const VM_TIME_FORMAT format ) const;
+	const QString& formatTime ( const int hour, const unsigned int min, const VM_TIME_FORMAT format ) const;
 
 	inline int hours () const {
 		return nbr_part[VM_IDX_HOUR];
@@ -291,7 +291,7 @@ private:
 	unsigned int nbr_upart[5];
 	mutable QString cached_str;
 	mutable bool mb_cached;
-    mutable bool mb_valid;
+	mutable bool mb_valid;
 
 	mutable QDate mQDate;
 	mutable QTime mQTime;

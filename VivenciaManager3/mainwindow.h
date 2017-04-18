@@ -55,7 +55,6 @@ class MainWindow;
 class MainWindow : public QMainWindow
 {
 
-friend class Data;
 friend class searchUI;
 
 public:
@@ -76,7 +75,14 @@ public:
 
 	explicit MainWindow ();
 	virtual ~MainWindow ();
-
+	
+	inline Ui::MainWindow* UserInterface () const { return ui; }
+	static void initMainWindow ()
+	{
+		if ( s_instance == nullptr )
+			s_instance = new MainWindow;
+	}
+	
 	void continueStartUp ();
 	void exitRequested ( const bool user_requested = false );
 
@@ -155,9 +161,7 @@ public:
 	void jobOpenProjectFile ( QAction* action );
 	void jobEMailProjectFile ( QAction* action );
 
-	inline void setTempCallbackForJobSelect ( std::function<void ( const uint )> func ) {
-		selJob_callback = func;
-	}
+	inline void setTempCallbackForJobSelect ( const std::function<void ( const uint )>& func ) { selJob_callback = func; }
 //--------------------------------------------JOB------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-JOB-----------------------------------------------------------
@@ -281,6 +285,11 @@ public:
 //--------------------------------------------SHARED-----------------------------------------------------------
 	void removeListItem ( vmListItem* item, const bool b_delete_item = true, const bool b_auto_select_another = true );
 	void postFieldAlterationActions ( vmListItem* item );
+	inline clientListItem* currentClient () const { return mClientCurItem; }
+	inline jobListItem* currentJob () const { return mJobCurItem; }
+	inline payListItem* currentPay () const { return mPayCurItem; }
+	inline buyListItem* currentBuy () const { return mBuyCurItem; }
+	
 //--------------------------------------------SHARED-----------------------------------------------------------
 
 protected:
@@ -289,6 +298,10 @@ protected:
 	bool eventFilter ( QObject* o, QEvent* e );
 
 private:
+	static MainWindow* s_instance;
+	friend MainWindow* MAINWINDOW ();
+	friend void deleteMainWindowInstance ();
+	
 	Ui::MainWindow* ui;
 
 	QSystemTrayIcon* trayIcon;
@@ -386,5 +399,10 @@ private:
 	void trayActivated ( QSystemTrayIcon::ActivationReason );
 //--------------------------------------------TRAY-----------------------------------------------------------
 };
+
+inline MainWindow* MAINWINDOW ()
+{
+	return MainWindow::s_instance;
+}
 
 #endif // MAINWINDOW_H

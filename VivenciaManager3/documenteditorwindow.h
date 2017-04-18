@@ -3,9 +3,10 @@
 
 #include <QFileInfo>
 #include <QMainWindow>
-#include <QGridLayout>
 
 #include <functional>
+
+class QVBoxLayout;
 class documentEditor;
 
 class documentEditorWindow : public QWidget
@@ -65,13 +66,13 @@ public:
 		return strippedName ( curFile ) + QLatin1String ( mb_modified ? "[*]" : "" ) ;
 	}
 
-	inline void setCallbackForDocumentModified ( std::function<void ( documentEditorWindow* )> func ) {
+	inline void setCallbackForDocumentModified ( const std::function<void ( documentEditorWindow* )>& func ) {
 		documentModified_func = func;
 	}
 
 
 protected:
-	QGridLayout* mainLayout;
+	QVBoxLayout* mainLayout;
 
 	void documentWasModified ();
 	void documentWasModifiedByUndo ( const bool );

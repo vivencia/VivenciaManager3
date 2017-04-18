@@ -17,10 +17,7 @@ class QScrollArea;
 class DB_Image : public QFrame
 {
 
-friend class Data;
-
 private:
-
 	QLabel* imageViewer;
 	QScrollArea* scrollArea;
 
@@ -41,13 +38,13 @@ private:
 	void loadImage ( const QPixmap& );
 	void loadImage ( const QString& );
 	void scrollBy ( const int x, const int y );
-	void adjustScrollBar ( const float  factor );
-	void scaleImage ( const float factor );
+	void adjustScrollBar ( const double factor );
+	void scaleImage ( const double factor );
 
 	QStringList name_filters;
 	int mouse_ex, mouse_ey;
 	bool mb_fitToWindow, mb_maximized;
-	float scaleFactor;
+	double scaleFactor;
 	PointersList <RECORD_IMAGES*> images_array;
 	QString mstr_FileName;
 
@@ -76,11 +73,11 @@ public:
 		if ( images_array.current () ) images_array.current ()->rec_id = id;
 	}
 
-	inline void setCallbackForshowImageRequested ( std::function<void ( const int )> func ) {
+	inline void setCallbackForshowImageRequested ( const std::function<void ( const int )>& func ) {
 		funcImageRequested = func;
 	}
 
-	inline void setCallbackForshowMaximized ( std::function<void ( const bool )> func ) {
+	inline void setCallbackForshowMaximized ( const std::function<void ( const bool )>& func ) {
 		funcShowMaximized = func;
 	}
 

@@ -37,8 +37,8 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	if ( mCompleter != nullptr )
 	{
 		mCompleter->setWidget ( this );
-		connect ( mCompleter, static_cast<void (QCompleter::*)( const QString& )>( &QCompleter::activated ),
-			this, [&, this] ( const QString& text ) { return insertCompletion ( text, this->mCompleter ); } );
+		static_cast<void>(connect ( mCompleter, static_cast<void (QCompleter::*)( const QString& )>( &QCompleter::activated ),
+			this, [&, this] ( const QString& text ) { return insertCompletion ( text, this->mCompleter ); } ));
 	}
 
 	/* When print previewing, Qt makes a copy of QTextEdit (not textEditWithCompleter) and certain features of this class are, therefore,
@@ -68,12 +68,12 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 		misspelledWordsActs[i] = new QAction ( this );
 		misspelledWordsActs[i]->setVisible ( false );
 		action = misspelledWordsActs[i];
-		connect ( action, &QAction::triggered, [&, action] ( const bool ) { return correctWord ( action ); } );
+		static_cast<void>(connect ( action, &QAction::triggered, [&, action] ( const bool ) { return correctWord ( action ); } ));
 	}
 
 	createContextMenu ();
 	newest_edited_text.reserve ( 20000 );
-	connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocumentModified = bChanged); } );
+	static_cast<void>(connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocumentModified = bChanged); } ));
 }
 
 textEditWithCompleter::~textEditWithCompleter ()
@@ -110,12 +110,11 @@ void textEditWithCompleter::setPreview ( const bool preview )
 void textEditWithCompleter::showhideUtilityPanel ()
 {
 	if ( !m_searchPanel )
+	{
 		m_searchPanel = new searchWordPanel ( this );
-
-	if ( m_searchPanel->isVisible () )
-		m_searchPanel->hide ();
-	else
-		m_searchPanel->showPanel ();
+		addUtilityPanel ( m_searchPanel );
+	}
+	static_cast<void>(toggleUtilityPanel ( 0 ));
 }
 
 void textEditWithCompleter::createContextMenu ()
@@ -127,7 +126,7 @@ void textEditWithCompleter::createContextMenu ()
 		return m_highlighter->enableSpellChecking ( b_spell_enabled ); } );
 	mContextMenu->addSeparator ();
 	QAction* findAction ( new QAction ( TR_FUNC ( "Find... (CTRL+F)" ), nullptr ) );
-	connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showhideUtilityPanel (); } );
+	static_cast<void>(connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showhideUtilityPanel (); } ));
 	mContextMenu->addAction ( findAction );
 	mContextMenu->addSeparator ();
 }
@@ -139,13 +138,13 @@ void textEditWithCompleter::insertCustomActionToContextMenu ( QAction* action )
 	mContextMenu->addAction ( action );
 }
 
-void textEditWithCompleter::saveContents ( const bool b_force )
+void textEditWithCompleter::saveContents ( const bool b_force, const bool b_notify )
 {
 	if ( mbDocumentModified || b_force )
 	{
 		newest_edited_text = document ()->toPlainText ();
 		mbDocumentModified = false;
-		if ( contentsAltered_func )
+		if ( contentsAltered_func && b_notify )
 			contentsAltered_func ( this );
 	}
 }
@@ -482,7 +481,7 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 
 	// Remove misspelled words menus because the next context menu might be over a empty string or a known word, so that
 	// these menus will not be needed
-	for ( i = 0; i < qMin ( signed ( WRONG_WORDS_MENUS ), list_words.size () + 3 ); ++i )
+	for ( i = 0; i < qMin ( static_cast<int>(WRONG_WORDS_MENUS), list_words.size () + 3 ); ++i )
 		mContextMenu->removeAction ( misspelledWordsActs[i] );
 	e->setAccepted ( true );
 }
@@ -595,64 +594,48 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	searchField = new vmLineEdit;
 	searchField->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return searchField_textAltered ( sender->text () );
-	} );
+		return searchField_textAltered ( sender->text () ); } );
 	searchField->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return searchField_keyPressed ( ke );
-	} );
+		return searchField_keyPressed ( ke ); } );
 
 	btnSearchStart = new QToolButton;
 	btnSearchStart->setEnabled ( false );
 	btnSearchStart->setIcon ( ICON ( "search" ) );
-	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () {
-		return searchStart ();
-	} );
+	static_cast<void>(connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } ));
 
 	btnSearchPrev = new QToolButton;
 	btnSearchPrev->setEnabled ( false );
 	btnSearchPrev->setToolTip ( QString ( tr ( "Find previous word" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F2" ) ) );
 	btnSearchPrev->setIcon ( ICON ( "arrow-left" ) );
-	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () {
-		return searchPrev ();
-	} );
+	static_cast<void>(connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () { return searchPrev ();} ));
 
 	btnSearchNext = new QToolButton;
 	btnSearchNext->setEnabled ( false );
 	btnSearchNext->setToolTip ( QString ( tr ( "Find next word" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F3" ) ) );
 	btnSearchNext->setIcon ( ICON ( "arrow-right" ) );
-	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () {
-		return searchNext ();
-	} );
+	static_cast<void>(connect ( btnSearchNext, &QToolButton::clicked, this, [&] () { return searchNext (); } ));
 
 	btnClose = new QToolButton;
 	btnClose->setIcon ( ICON ( "cancel" ) );
-	connect ( btnClose, &QToolButton::clicked, this, [&] () {
-		return searchCancel ();
-	} );
+	static_cast<void>(connect ( btnClose, &QToolButton::clicked, this, [&] () { return searchCancel (); } ));
 
 	replaceField = new vmLineEdit;
 	replaceField->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return replaceField_textAltered ( sender->text () );
-	} );
+		return replaceField_textAltered ( sender->text () ); } );
 	replaceField->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return replaceField_keyPressed ( ke );
-	} );
+		return replaceField_keyPressed ( ke ); } );
 
 	btnRplcWord = new QToolButton;
 	btnRplcWord->setEnabled ( false );
 	btnRplcWord->setIcon ( ICON ( "find-service" ) );
 	btnRplcWord->setToolTip ( QString ( tr ( "Replace currently selected occurence" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F4" ) ) );
-	connect ( btnRplcWord, &QToolButton::clicked, this, [&] () {
-		return replaceWord ();
-	} );
+	static_cast<void>(connect ( btnRplcWord, &QToolButton::clicked, this, [&] () { return replaceWord (); } ));
 
 	btnRplcAll = new QToolButton;
 	btnRplcAll->setEnabled ( false );
 	btnRplcAll->setIcon ( ICON ( "replace-all" ) );
 	btnRplcAll->setToolTip ( QString ( tr ( "Replace all highlighted occurences" )  + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F5" ) ) );
-	connect ( btnRplcAll, &QToolButton::clicked, this, [&] () {
-		return rplcAll ();
-	} );
+	static_cast<void>(connect ( btnRplcAll, &QToolButton::clicked, this, [&] () { return rplcAll (); } ));
 
 	mLayout = new QGridLayout;
 	mLayout->addWidget ( new QLabel ( tr ( "Search: " ) ), 0, 0 );
@@ -674,7 +657,7 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	setLayout ( mLayout );
 
-	if ( m_texteditor && m_texteditor->layout () != nullptr )
+	if ( tewc && tewc->layout () != nullptr )
 	{
 		QVBoxLayout* bLayout ( static_cast<QVBoxLayout*> ( m_texteditor->layout () ) );
 		bLayout->insertWidget ( 0, this );

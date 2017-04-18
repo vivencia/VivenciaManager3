@@ -19,7 +19,7 @@ public:
 	void setCurrentRow ( int row, const bool b_makecall );
 	inline vmListItem* currentItem () const { return mCurrentItem; }
 	void addItem ( vmListItem* item, const bool b_makecall = true );
-	inline void removeItem ( vmListItem* item, const bool bDel = false ) { removeRow ( item->row (), 1, bDel ); }
+	inline void removeItem ( vmListItem* item, const bool bDel = false ) { if ( item ) removeRow ( static_cast<uint>(item->row ()), 1, bDel ); }
 	void insertRow ( const uint row, const uint n = 1 );
 	void removeRow ( const uint row, const uint n = 1, const bool bDel = false );
 	void clear ( const bool b_ignorechanges = true, const bool b_del = false );
@@ -42,8 +42,7 @@ public:
 	 **/
 	void setAlwaysEmitCurrentItemChanged ( const bool b_emit );
 	inline bool alwaysEmitCurrentItemChanged () const { return mbForceEmit; }
-	inline void setCallbackForCurrentItemChanged ( std::function<void( vmListItem* current )> func ) {
-		mCurrentItemChangedFunc = func; }
+	inline void setCallbackForCurrentItemChanged ( const std::function<void( vmListItem* current )>& func ) { mCurrentItemChangedFunc = func; }
 
 protected:
 	void resizeEvent ( QResizeEvent* e );

@@ -19,54 +19,54 @@ class machinesDlg : public QDialog
 {
 
 public:
-    virtual ~machinesDlg ();
+	virtual ~machinesDlg ();
 	void showJobMachineUse ( const QString& jobid );
 
 private:
-    explicit machinesDlg ( QWidget* parent = nullptr );
-    static machinesDlg* s_instance;
-    friend machinesDlg* MACHINES ();
-    friend void deleteMachinesInstance ();
+	explicit machinesDlg ( QWidget* parent = nullptr );
+	static machinesDlg* s_instance;
+	friend machinesDlg* MACHINES ();
+	friend void deleteMachinesInstance ();
 
-    machinesRecord* mMacRec;
-    vmComboBox* cboMachines, *cboBrand, *cboType, *cboEvents;
+	machinesRecord* mMacRec;
+	vmComboBox* cboMachines, *cboBrand, *cboType, *cboEvents;
 	vmLineEdit* txtJob; //, *txtMachineTotalTime;
-    vmDateEdit* dteEventDate;
-    vmTimeEdit* timeEventTime;
-    QToolButton* btnAddEvent, *btnDelEvent;
-    QToolButton* btnSelectJob;
-    QPushButton* btnEdit, *btnCancel, *btnSave, *btnClose;
+	vmDateEdit* dteEventDate;
+	vmTimeEdit* timeEventTime;
+	QToolButton* btnAddEvent, *btnDelEvent;
+	QToolButton* btnSelectJob;
+	QPushButton* btnEdit, *btnCancel, *btnSave, *btnClose;
 	vmTableWidget* tableMachineHistory, *tableJobEvents;
 	vmActionGroup* grpHistory, *grpJobMachineEvents;
 
-    void setupUI ();
-    void setupConnections ();
+	void setupUI ();
+	void setupConnections ();
 	void initTableMachineEvents ();
 	void inittableMachineHistory ();
-    void canClose ();
-    void controlForms ();
-    void clearForms ();
-    void fillComboBoxes ();
+	void canClose ();
+	void controlForms ();
+	void clearForms ();
+	void fillComboBoxes ();
 	int loadJobMachineEventsTable ( const QString& jobid );
 	QString decodeStringRecord ( const uint field );
 	bool loadData ( const int id );
-    void getSelectedJobID ( const uint jobid );
+	void getSelectedJobID ( const uint jobid );
 
-    void cboMachines_IndexChanged ( const int idx );
-    void dataAltered ( const vmWidget* const sender );
-    void btnAddEvent_clicked ();
-    void btnDelEvent_clicked ();
-    void btnSelectJob_clicked ();
-    void btnEdit_clicked ();
-    void btnCancel_clicked ();
-    void btnSave_clicked ();
+	void cboMachines_IndexChanged ( const int idx );
+	void dataAltered ( const vmWidget* const sender );
+	void btnAddEvent_clicked ();
+	void btnDelEvent_clicked ();
+	void btnSelectJob_clicked ();
+	void btnEdit_clicked ();
+	void btnCancel_clicked ();
+	void btnSave_clicked ();
 };
 
 inline machinesDlg* MACHINES ()
 {
-    if ( !machinesDlg::s_instance )
-        machinesDlg::s_instance = new machinesDlg;
-    return machinesDlg::s_instance;
+	if ( !machinesDlg::s_instance )
+		machinesDlg::s_instance = new machinesDlg;
+	return machinesDlg::s_instance;
 }
 
 #endif // MACHINESDLG_H

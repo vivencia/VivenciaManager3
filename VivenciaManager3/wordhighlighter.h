@@ -14,27 +14,27 @@ class wordHighlighter : public QSyntaxHighlighter
 {
 
 public:
-    explicit wordHighlighter ( QTextDocument* parent );
+	explicit wordHighlighter ( QTextDocument* parent );
 	virtual ~wordHighlighter ();
 
 	inline bool spellCheckingEnbled () const { return mb_spellCheckEnabled; }
-    void enableSpellChecking ( const bool state );
+	void enableSpellChecking ( const bool enable );
 
 	inline bool highlightingEnabled () const { return mb_HighlightEnabled; }
-    void enableHighlighting ( const bool );
+	void enableHighlighting ( const bool );
 
-    void unHighlightWord ( const QString& );
-    void highlightWord ( const QString& );
-    void highlightWords ( const QStringList& );
+	void unHighlightWord ( const QString& );
+	void highlightWord ( const QString& );
+	void highlightWords ( const QStringList& );
 
 protected:
-    void highlightBlock ( const QString& );
+	void highlightBlock ( const QString& );
 
 private:
-    QStringList highlightedWordsList;
+	QStringList highlightedWordsList;
 	bool mb_spellCheckEnabled, mb_HighlightEnabled;
 
-    static QTextCharFormat* __restrict m_spellCheckFormat, * __restrict m_HighlightFormat;
+	static QTextCharFormat* __restrict m_spellCheckFormat, * __restrict m_HighlightFormat;
 };
 
 #endif // WORDHIGHLIGHTER_H

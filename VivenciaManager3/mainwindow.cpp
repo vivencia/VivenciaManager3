@@ -50,7 +50,7 @@
 #include <QScrollBar>
 
 bool EXITING_PROGRAM ( false );
-MainWindow* globalMainWindow ( nullptr );
+MainWindow* MainWindow::s_instance ( nullptr );
 
 QLatin1String MainWindow::lstJobReportItemPrefix ( "o dia - " );
 
@@ -65,6 +65,11 @@ static const QString chkPayOverdueToolTip_overdue[3] = {
 
 static const QString jobPicturesSubDir ( QStringLiteral ( "Pictures/" ) );
 
+void deleteMainWindowInstance ()
+{
+	heap_del ( MainWindow::s_instance );
+}
+
 MainWindow::MainWindow ()
 	: QMainWindow ( nullptr ),
 	  ui ( new Ui::MainWindow ),  menuJobDoc ( nullptr ), menuJobXls ( nullptr ), menuJobPdf ( nullptr ), 
@@ -77,6 +82,7 @@ MainWindow::MainWindow ()
 	setWindowIcon ( ICON ( "vm-logo-22x22" ) );
 	setWindowTitle ( PROGRAM_NAME + QLatin1String ( " - " ) + PROGRAM_VERSION );
 	createTrayIcon (); // create the icon for VM_NOTIFY () use
+	addPostRoutine ( deleteMainWindowInstance );
 }
 
 MainWindow::~MainWindow ()
@@ -114,6 +120,10 @@ MainWindow::~MainWindow ()
 	heap_del ( ui );
 	heap_del ( mCal );
 
+	delete listIndicatorIcons[1];
+	delete listIndicatorIcons[2];
+	delete listIndicatorIcons[3];
+	
 	cleanUpApp ();
 }
 
@@ -163,7 +173,6 @@ void MainWindow::exitRequested ( const bool user_requested )
 	if ( user_requested )
 	{
 		already_called = true;
-		delete globalMainWindow;
 		qApp->quit ();
 	}
 }
@@ -195,7 +204,6 @@ void MainWindow::setupClientPanel ()
 	ui->clientsList->sortItems ( 0 );
 	ui->clientsList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { 
 		return clientsListWidget_currentItemChanged ( item ); } );
-	ui->clientsList->toggleUtilitiesPanel ();
 
 	saveClientWidget ( ui->txtClientID, FLD_CLIENT_ID );
 	saveClientWidget ( ui->txtClientName, FLD_CLIENT_NAME );
@@ -459,8 +467,8 @@ void MainWindow::loadClientInfo ( const Client* const client )
 		ui->txtClientNumberAddress->setText ( recStrValue ( client, FLD_CLIENT_NUMBER ) );
 		ui->txtClientStreetAddress->setText ( recStrValue ( client, FLD_CLIENT_STREET ) );
 		ui->txtClientZipCode->setText ( client->action () != ACTION_ADD ? recStrValue ( client, FLD_CLIENT_ZIP ) : QStringLiteral ( "13520-000" ) );
-		ui->dteClientDateFrom->setDate ( client->date ( FLD_CLIENT_STARTDATE ).toQDate () );
-		ui->dteClientDateTo->setDate ( client->date ( FLD_CLIENT_ENDDATE ).toQDate () );
+		ui->dteClientDateFrom->setDate ( client->date ( FLD_CLIENT_STARTDATE ) );
+		ui->dteClientDateTo->setDate ( client->date ( FLD_CLIENT_ENDDATE ) );
 		ui->chkClientActive->setChecked ( client->opt ( FLD_CLIENT_STATUS ) );
 		ui->contactsClientPhones->decodePhones ( client->recordStr ( FLD_CLIENT_PHONES ) );
 		ui->contactsClientEmails->decodeEmails ( client->recordStr ( FLD_CLIENT_EMAIL ) );
@@ -471,11 +479,11 @@ clientListItem* MainWindow::getClientItem ( const uint id ) const
 {
 	if ( id >= 1 )
 	{
-		const int n ( globalMainWindow->ui->clientsList->count () );
+		const int n ( MAINWINDOW ()->ui->clientsList->count () );
 		clientListItem* client_item ( nullptr );
 		for ( int i ( 0 ); i < n; ++i )
 		{
-			client_item = static_cast<clientListItem*> ( globalMainWindow->ui->clientsList->item ( i ) );
+			client_item = static_cast<clientListItem*> ( MAINWINDOW ()->ui->clientsList->item ( i ) );
 			if ( client_item->dbRecID () == id )
 				return client_item;
 		}
@@ -650,7 +658,7 @@ void MainWindow::setupJobPanel ()
 	ui->jobsList->setUtilitiesPlaceLayout ( ui->layoutJobsListUtility );
 	ui->jobsList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) {
 		return jobsListWidget_currentItemChanged ( item ); } );
-	ui->lstJobDayReport->setParentLayout( ui->gLayoutJobExtraInfo );
+	ui->lstJobDayReport->setParentLayout ( ui->gLayoutJobExtraInfo );
 	ui->lstJobDayReport->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) {
 		return jobDayReportListWidget_currentItemChanged ( item ); } );
 
@@ -710,6 +718,7 @@ void MainWindow::setupJobPanel ()
 		return updateJobInfo ( static_cast<textEditWithCompleter*>( const_cast<vmWidget*> ( widget ) )->currentText (), JILUR_REPORT ); } );
 	ui->txtJobReport->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return jobKeyPressedSelector ( ke ); } );
+	ui->txtJobReport->setUtilitiesPlaceLayout ( ui->layoutTxtJobUtilities );
 
 	saveJobWidget ( ui->timeJobStart, FLD_JOB_REPORT + Job::JRF_START_TIME );
 	ui->timeJobStart->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) {
@@ -941,10 +950,18 @@ void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item )
 {
 	if ( item && !item->data ( JILUR_REMOVED ).toBool () )
 	{
+		// Sometimes, we do not receive, in time, Qt's notification that there was a FocusOut event for the txtTextEditWithCompler.
+		// The control loses focus to the lstJobDayReport but its text content is lost if we don't force its synchronization
+		const triStateType editing_action ( mJobCurItem ? static_cast<TRI_STATE>(mJobCurItem->action () >= ACTION_ADD) : TRI_UNDEF );
+		if ( editing_action.isOn () )
+		{
+			ui->txtJobReport->saveContents ( true, false );
+		}
+		
 		const vmNumber time1 ( item->data ( JILUR_START_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
-		ui->timeJobStart->setTime ( time1.toQTime () );
+		ui->timeJobStart->setTime ( time1 );
 		vmNumber timeAndDate ( item->data ( JILUR_END_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
-		ui->timeJobEnd->setTime ( timeAndDate.toQTime () );
+		ui->timeJobEnd->setTime ( timeAndDate );
 		timeAndDate -= time1;
 		ui->txtJobTotalDayTime->setText ( timeAndDate.toTime ( vmNumber::VTF_FANCY ) );
 		timeAndDate.fromTrustedStrDate ( item->data ( JILUR_DATE ).toString (), vmNumber::VDF_HUMAN_DATE );
@@ -1210,8 +1227,8 @@ void MainWindow::loadJobInfo ( const Job* const job )
 		ui->txtJobPicturesPath->setText ( recStrValue ( job, FLD_JOB_PICTURE_PATH ) );
 		ui->txtJobProjectID->setText ( recStrValue ( job, FLD_JOB_PROJECT_ID ) );
 		ui->jobImageViewer->showImage ( recIntValue ( job, FLD_JOB_ID ), recStrValue ( job, FLD_JOB_PICTURE_PATH ) );
-		ui->dteJobStart->setDate ( job->date ( FLD_JOB_STARTDATE ).toQDate () );
-		ui->dteJobEnd->setDate ( job->date ( FLD_JOB_ENDDATE ).toQDate () );
+		ui->dteJobStart->setDate ( job->date ( FLD_JOB_STARTDATE ) );
+		ui->dteJobEnd->setDate ( job->date ( FLD_JOB_ENDDATE ) );
 		ui->txtJobTotalAllDaysTime->setText ( job->time ( FLD_JOB_TIME ).toTime ( vmNumber::VTF_FANCY ) );
 	}
 	else
@@ -1460,7 +1477,7 @@ void MainWindow::alterJobPayPrice ( jobListItem* const job_item )
 void MainWindow::calcJobTime ()
 {
 	vmNumber time ( ui->timeJobEnd->time () );
-	time -= ui->timeJobStart->time ();
+	time -= vmNumber ( ui->timeJobStart->time () );
 	ui->txtJobTotalDayTime->setText ( time.toTime ( vmNumber::VTF_FANCY ) ); // Just a visual feedback
 
 	vmNumber total_time;
@@ -1823,8 +1840,8 @@ void MainWindow::txtJobTotalDayTime_textAltered ( const vmWidget* const sender )
 		}
 		else
 		{
-			ui->timeJobStart->setTime ( QTime () );
-			ui->timeJobEnd->setTime ( time.toQTime (), true );
+			ui->timeJobStart->setTime ( vmNumber () );
+			ui->timeJobEnd->setTime ( time, true );
 		}
 	}
 }
@@ -3066,14 +3083,13 @@ void MainWindow::loadBuyInfo ( const Buy* const buy )
 		ui->txtBuyTotalPaid->setText ( recStrValue ( buy, FLD_BUY_TOTALPAID ) );
 		ui->txtBuyNotes->setText ( recStrValue ( buy, FLD_BUY_NOTES ) );
 		ui->txtBuyDeliveryMethod->setText ( recStrValue ( buy, FLD_BUY_DELIVERMETHOD ) );
-		ui->dteBuyDate->setDate ( buy->date ( FLD_BUY_DATE ).toQDate () );
-		ui->dteBuyDeliveryDate->setDate ( buy->date ( FLD_BUY_DELIVERDATE ).toQDate () );
+		ui->dteBuyDate->setDate ( buy->date ( FLD_BUY_DATE ) );
+		ui->dteBuyDeliveryDate->setDate ( buy->date ( FLD_BUY_DELIVERDATE ) );
 		ui->tableBuyItems->loadFromStringTable ( recStrValue ( buy, FLD_BUY_REPORT ) );
 		ui->tableBuyPayments->loadFromStringTable ( recStrValue ( buy, FLD_BUY_PAYINFO ) );
 
 		const int cur_idx ( ui->cboBuySuppliers->findText ( recStrValue ( buy, FLD_BUY_SUPPLIER ) ) );		
 		ui->cboBuySuppliers->setCurrentIndex ( cur_idx );
-		//cboBuySuppliers_indexChanged ( cur_idx );
 	}
 	else
 	{
@@ -3296,11 +3312,8 @@ void MainWindow::setBuyPayValueToBuyPrice ( const QString& price )
 		row = 0;
 		ui->tableBuyPayments->setCurrentCell ( 0, 0, QItemSelectionModel::ClearAndSelect );
 	}
-	//if ( row == 0 )
-	//{
-		ui->tableBuyPayments->sheetItem ( static_cast<uint>(row), PHR_VALUE )->setText ( price, false, true );
-		ui->tableBuyPayments->sheetItem ( static_cast<uint>(row), PHR_DATE )->setDate ( ui->dteBuyDate->date () );
-	//}
+	ui->tableBuyPayments->sheetItem ( static_cast<uint>(row), PHR_VALUE )->setText ( price, false, true );
+	ui->tableBuyPayments->sheetItem ( static_cast<uint>(row), PHR_DATE )->setDate ( vmNumber ( ui->dteBuyDate->date () ) );
 }
 //--------------------------------------------BUY------------------------------------------------------------
 
@@ -3315,8 +3328,7 @@ void MainWindow::txtBuy_textAltered ( const vmWidget* const sender )
 		mBuyCurItem->setFieldInputStatus ( FLD_BUY_PRICE, input_ok, ui->txtBuyTotalPrice );
 		setBuyPayValueToBuyPrice ( sender->text () );
 	}
-	//if ( input_ok )
-		setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>(sender->id ()), sender->text () );
+	setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>(sender->id ()), sender->text () );
 	postFieldAlterationActions ( mBuyCurItem );
 }
 
@@ -3324,7 +3336,6 @@ void MainWindow::dteBuy_dateAltered ( const vmWidget* const sender )
 {
 	const vmNumber date ( static_cast<const vmDateEdit* const>( sender )->date () );
 	const bool input_ok ( date.isDateWithinRange ( vmNumber::currentDate, 0, 4 ) );
-	//if ( input_ok )
 	{
 		setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>(sender->id ()), date.toDate ( vmNumber::VDF_DB_DATE ) );
 		mBuyCurItem->update ();
@@ -3379,11 +3390,11 @@ void MainWindow::setupCustomControls ()
 
 	APP_RESTORER ()->addRestoreInfo ( m_crash = new crashRestore ( QStringLiteral ( "vmmain" ) ) );
 	ui->txtSearch->setEditable ( true );
-	connect ( ui->txtSearch, &QLineEdit::textChanged, this, [&] ( const QString& text ) { return on_txtSearch_textEdited ( text ); } );
+	static_cast<void>(connect ( ui->txtSearch, &QLineEdit::textChanged, this, [&] ( const QString& text ) { return on_txtSearch_textEdited ( text ); } ));
 	ui->txtSearch->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return searchCallbackSelector ( ke ); } );
-	connect ( ui->btnSearchStart, &QToolButton::clicked, this, [&] () { return on_btnSearchStart_clicked (); } );
-	connect ( ui->btnSearchCancel, &QToolButton::clicked, this, [&] () { return on_btnSearchCancel_clicked (); } );
+	static_cast<void>(connect ( ui->btnSearchStart, &QToolButton::clicked, this, [&] () { return on_btnSearchStart_clicked (); } ));
+	static_cast<void>(connect ( ui->btnSearchCancel, &QToolButton::clicked, this, [&] () { return on_btnSearchCancel_clicked (); } ));
 	
 	ui->lblCurInfoClient->setCallbackForLabelActivated ( [&] () { return ui->scrollWorkFlow->ensureWidgetVisible ( grpClients ); } );
 	ui->lblCurInfoJob->setCallbackForLabelActivated ( [&] () { return ui->scrollWorkFlow->ensureWidgetVisible ( ui->btnJobAdd ); } );
@@ -3398,13 +3409,13 @@ void MainWindow::setupCustomControls ()
 	reOrderTabSequence ();
 	setupWorkFlow ();
 
-	connect ( ui->btnReportGenerator, &QToolButton::clicked, this, [&] () { return btnReportGenerator_clicked (); } );
-	connect ( ui->btnBackupRestore, &QToolButton::clicked, this, [&] () { return btnBackupRestore_clicked (); } );
-	connect ( ui->btnCalculator, &QToolButton::clicked, this, [&] () { return btnCalculator_clicked (); } );
-	connect ( ui->btnEstimates, &QToolButton::clicked, this, [&] () { return btnEstimates_clicked (); } );
-	connect ( ui->btnCompanyPurchases, &QToolButton::clicked, this, [&] () { return btnCompanyPurchases_clicked (); } );
-	connect ( ui->btnConfiguration, &QToolButton::clicked, this, [&] () { return btnConfiguration_clicked (); } );
-	connect ( ui->btnExitProgram, &QToolButton::clicked, this, [&] () { return btnExitProgram_clicked (); } );
+	static_cast<void>(connect ( ui->btnReportGenerator, &QToolButton::clicked, this, [&] () { return btnReportGenerator_clicked (); } ));
+	static_cast<void>(connect ( ui->btnBackupRestore, &QToolButton::clicked, this, [&] () { return btnBackupRestore_clicked (); } ));
+	static_cast<void>(connect ( ui->btnCalculator, &QToolButton::clicked, this, [&] () { return btnCalculator_clicked (); } ));
+	static_cast<void>(connect ( ui->btnEstimates, &QToolButton::clicked, this, [&] () { return btnEstimates_clicked (); } ));
+	static_cast<void>(connect ( ui->btnCompanyPurchases, &QToolButton::clicked, this, [&] () { return btnCompanyPurchases_clicked (); } ));
+	static_cast<void>(connect ( ui->btnConfiguration, &QToolButton::clicked, this, [&] () { return btnConfiguration_clicked (); } ));
+	static_cast<void>(connect ( ui->btnExitProgram, &QToolButton::clicked, this, [&] () { return btnExitProgram_clicked (); } ));
 
 	installEventFilter ( this );
 }
@@ -3607,18 +3618,18 @@ void MainWindow::setupTabNavigationButtons ()
 void MainWindow::setupCalendarMethods ()
 {
 	mCal = new dbCalendar;
-	connect ( ui->calMain, &QCalendarWidget::activated, this, [&] ( const QDate& date ) {
-				return calMain_activated ( date ); } );
-	connect ( ui->calMain, &QCalendarWidget::clicked, this, [&] ( const QDate& date ) {
-				return calMain_activated ( date ); } );
-	connect ( ui->calMain, &QCalendarWidget::currentPageChanged, this, [&] ( const int year, const int month ) {
-				return updateCalendarView ( static_cast<uint>(year), static_cast<uint>(month) ); } );
-	connect ( ui->tboxCalJobs, &QToolBox::currentChanged, this, [&] ( const int index ) {
-				return tboxCalJobs_currentChanged ( index ); } );
-	connect ( ui->tboxCalPays, &QToolBox::currentChanged, this, [&] ( const int index ) {
-				return tboxCalPays_currentChanged ( index ); } );
-	connect ( ui->tboxCalBuys, &QToolBox::currentChanged, this, [&] ( const int index ) {
-				return tboxCalBuys_currentChanged ( index ); } );
+	static_cast<void>(connect ( ui->calMain, &QCalendarWidget::activated, this, [&] ( const QDate& date ) {
+				return calMain_activated ( date ); } ));
+	static_cast<void>(connect ( ui->calMain, &QCalendarWidget::clicked, this, [&] ( const QDate& date ) {
+				return calMain_activated ( date ); } ));
+	static_cast<void>(connect ( ui->calMain, &QCalendarWidget::currentPageChanged, this, [&] ( const int year, const int month ) {
+				return updateCalendarView ( static_cast<uint>(year), static_cast<uint>(month) ); } ));
+	static_cast<void>(connect ( ui->tboxCalJobs, &QToolBox::currentChanged, this, [&] ( const int index ) {
+				return tboxCalJobs_currentChanged ( index ); } ));
+	static_cast<void>(connect ( ui->tboxCalPays, &QToolBox::currentChanged, this, [&] ( const int index ) {
+				return tboxCalPays_currentChanged ( index ); } ));
+	static_cast<void>(connect ( ui->tboxCalBuys, &QToolBox::currentChanged, this, [&] ( const int index ) {
+				return tboxCalBuys_currentChanged ( index ); } ));
 	
 	ui->lstCalJobsDay->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) {
 				return displayJobFromCalendar ( item ); } );
@@ -3901,7 +3912,7 @@ bool MainWindow::eventFilter ( QObject* o, QEvent* e )
 	bool b_accepted ( false );
 	if ( e->type () == QEvent::KeyPress )
 	{
-		const QKeyEvent* k = static_cast<QKeyEvent*> ( e );
+		const QKeyEvent* k ( static_cast<QKeyEvent*> ( e ) );
 		if ( k->modifiers () & Qt::ControlModifier )
 		{
 			switch ( k->key () )
@@ -3968,7 +3979,7 @@ void MainWindow::selectBuysItems ( const PROCESS_STEPS step )
 
 void MainWindow::navigatePrev ()
 {
-	(void) navItems.prev ();
+	static_cast<void>(navItems.prev ());
 	mBtnNavNext->setEnabled ( true );
 	displayNav ();
 	mBtnNavPrev->setEnabled ( navItems.peekPrev () != nullptr );
@@ -3976,7 +3987,7 @@ void MainWindow::navigatePrev ()
 
 void MainWindow::navigateNext ()
 {
-	(void) navItems.next ();
+	static_cast<void>(navItems.next ());
 	mBtnNavPrev->setEnabled ( true );
 	displayNav ();
 	mBtnNavNext->setEnabled ( navItems.peekNext () != nullptr );

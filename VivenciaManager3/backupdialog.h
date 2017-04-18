@@ -23,16 +23,14 @@ class BackupDialog;
 class BackupDialog : public QDialog
 {
 
-friend class Data;
-
 public:
 	virtual ~BackupDialog ();
 
 	void showWindow ();
 	static bool doBackup ( const QString& filename, const QString& path, const bool bUserInteraction = false );
-    static void doDayBackup ();
+	static void doDayBackup ();
 	bool doExport ( const QString& prefix, const QString& path, const bool bUserInteraction = false );
-	bool doRestore ( const QString& filepath );
+	bool doRestore ( const QString& files );
 
 	static void addToRestoreList ( const QString& filepath, BackupDialog* bDlg );
 	void readFromBackupList ();
@@ -54,14 +52,14 @@ private:
 
 	enum AFTER_CLOSE_ACTION
 	{
-        ACA_RETURN_TO_PREV_WINDOW, ACA_RESTART, ACA_CONTINUE
+		ACA_RETURN_TO_PREV_WINDOW, ACA_RESTART, ACA_CONTINUE
 	};
 
 	Ui::BackupDialog* ui;
 	dataFile* tdb;
 
 	bool b_IgnoreItemListChange, mb_success, mb_nodb;
-	uint progress_bar_steps;
+	int progress_bar_steps;
 
 	QRadioButton* rdImport;
 	QRadioButton* rdStartNew;
@@ -76,7 +74,7 @@ private:
 	bool canDoRestore () const;
 	bool getSelectedItems ( QString& selected );
 
-	void initProgressBar ( const uint max );
+	void initProgressBar ( const int max );
 	static bool checkThatFileDoesNotExist ( const QString& filepath, const bool bUserInteraction );
 	static bool checkDir ( const QString& dir );
 	static bool checkFile ( const QString& file );

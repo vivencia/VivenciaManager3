@@ -18,51 +18,51 @@ friend class VivenciaDB;
 friend class MainWindow;
 
 public:
-    virtual ~dbSuppliesUI ();
+	virtual ~dbSuppliesUI ();
 
-    static void init () {
-        if ( !s_instance )
-            s_instance = new dbSuppliesUI;
-    }
+	static void init () {
+		if ( !s_instance )
+			s_instance = new dbSuppliesUI;
+	}
 
-    bool setupUI ();
-    void createTable ();
+	bool setupUI ();
+	void createTable ();
 
-    inline vmTableWidget* table () const {
-        return m_table;
-    }
-    inline QVBoxLayout* layout () const {
-        return suppliesLayout;
-    }
-    void insertRow ( const uint );
-    void showSearchResult ( vmListItem* item, const bool bshow );
+	inline vmTableWidget* table () const {
+		return m_table;
+	}
+	inline QVBoxLayout* layout () const {
+		return suppliesLayout;
+	}
+	void insertRow ( const uint );
+	void showSearchResult ( vmListItem* item, const bool bshow );
 
 private:
-    explicit dbSuppliesUI ();
-    friend dbSuppliesUI* SUPPLIES ();
-    friend void deleteDBSuppliesInstance ();
-    static dbSuppliesUI* s_instance;
+	explicit dbSuppliesUI ();
+	friend dbSuppliesUI* SUPPLIES ();
+	friend void deleteDBSuppliesInstance ();
+	static dbSuppliesUI* s_instance;
 
-    vmTableWidget* m_table;
-    dbSupplies* supplies_rec;
+	vmTableWidget* m_table;
+	dbSupplies* supplies_rec;
 
-    QVBoxLayout* suppliesLayout;
-    QPushButton* btnSuppliesEditTable;
-    QPushButton* btnSuppliesCancelEdit;
-    QPushButton* btnSuppliesInsertRowAbove;
-    QPushButton* btnSuppliesInsertRowBelow;
-    QPushButton* btnSuppliesRemoveRow;
+	QVBoxLayout* suppliesLayout;
+	QPushButton* btnSuppliesEditTable;
+	QPushButton* btnSuppliesCancelEdit;
+	QPushButton* btnSuppliesInsertRowAbove;
+	QPushButton* btnSuppliesInsertRowBelow;
+	QPushButton* btnSuppliesRemoveRow;
 
-    void readRowData ( const uint row, const uint col, const uint prev_row, const uint = 0 );
-    void tableChanged ( const vmTableItem* const item );
-    void rowRemoved ( const uint row = 0 );
-    void btnSuppliesCancelEdit_clicked ();
-    void btnSuppliesEditTable_clicked ( const bool checked );
+	void readRowData ( const uint row, const uint col, const uint prev_row, const uint = 0 );
+	void tableChanged ( const vmTableItem* const item );
+	void rowRemoved ( const uint row = 0 );
+	void btnSuppliesCancelEdit_clicked ();
+	void btnSuppliesEditTable_clicked ( const bool checked );
 };
 
 inline dbSuppliesUI *SUPPLIES ()
 {
-    return dbSuppliesUI::s_instance;
+	return dbSuppliesUI::s_instance;
 }
 
 #endif // DBSUPPLIESUI_H

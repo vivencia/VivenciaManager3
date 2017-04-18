@@ -72,7 +72,7 @@ configOps::configOps ()
 	if ( m_filename.isEmpty () )
 		m_filename = DEFAULT_OPTS[CONFIG_FILE];
 
-    fileOps::createDir ( fileOps::dirFromPath ( m_filename ) );
+	fileOps::createDir ( fileOps::dirFromPath ( m_filename ) );
 	m_cfgFile = new configFile ( m_filename );
 	addPostRoutine ( deleteConfigInstance );
 }
@@ -93,7 +93,7 @@ const QString& configOps::getConfigValue ( const CFG_FIELDS field, const bool us
 const QString& configOps::setApp ( const CFG_FIELDS field, const QString& app )
 {
 	mRetString = app.contains ( CHR_F_SLASH ) ? app : fileOps::appPath ( app );
-    if ( fileOps::exists ( mRetString ).isOn () )
+	if ( fileOps::exists ( mRetString ).isOn () )
 		writeConfigFile ( field, mRetString );
 	else
 		mRetString = getConfigValue ( field, false );
@@ -102,7 +102,7 @@ const QString& configOps::setApp ( const CFG_FIELDS field, const QString& app )
 
 const QString& configOps::setDir ( const CFG_FIELDS field, const QString& dir )
 {
-    if ( fileOps::isDir ( dir ).isOn () )
+	if ( fileOps::isDir ( dir ).isOn () )
 	{
 		writeConfigFile ( field, dir );
 		return dir;
@@ -112,29 +112,29 @@ const QString& configOps::setDir ( const CFG_FIELDS field, const QString& dir )
 
 bool configOps::setConfigFile ( const QString& filename )
 {
-    if ( fileOps::canWrite ( fileOps::dirFromPath ( filename ) ).isOn () )
+	if ( fileOps::canWrite ( fileOps::dirFromPath ( filename ) ).isOn () )
 	{
-        m_cfgFile->remove ();
-        heap_del ( m_cfgFile );
-        m_cfgFile = new configFile ( filename );
-        m_cfgFile->open ();
-        m_filename = filename;
+		m_cfgFile->remove ();
+		heap_del ( m_cfgFile );
+		m_cfgFile = new configFile ( filename );
+		m_cfgFile->open ();
+		m_filename = filename;
 
-        generalTable gen_rec;
-        if ( gen_rec.readFirstRecord () )
+		generalTable gen_rec;
+		if ( gen_rec.readFirstRecord () )
 		{
-            gen_rec.setAction ( ACTION_EDIT );
-            setRecValue ( &gen_rec, FLD_GENERAL_CONFIG_FILE, m_filename );
-            if ( gen_rec.saveRecord () )
-                return true;
-        }
+			gen_rec.setAction ( ACTION_EDIT );
+			setRecValue ( &gen_rec, FLD_GENERAL_CONFIG_FILE, m_filename );
+			if ( gen_rec.saveRecord () )
+				return true;
+		}
 	}
 	return false;
 }
 
 const QString& configOps::readConfigFile ( const int category, QString category_name ) const
 {
-    if ( fileOps::exists ( m_filename ).isOn () )
+	if ( fileOps::exists ( m_filename ).isOn () )
 	{
 		if ( m_cfgFile->sectionCount () == 0 )// First time read. Load data
 			m_cfgFile->load ();
@@ -230,18 +230,18 @@ uint configOps::lastViewedRecord ( const uint table ) const
 	return 0;
 }
 
-const QString& configOps::defaultConfigDir () const
+const QString& configOps::defaultConfigDir ()
 {
 	return DEFAULT_CONFIG_DIR;
 }
 
 const QString configOps::kdesu ( const QString& message )
 {
-    QString ret ( fileOps::appPath ( QStringLiteral ( "kdesudo" ) ) );
+	QString ret ( fileOps::appPath ( QStringLiteral ( "kdesudo" ) ) );
 	if ( ret.isEmpty () )
 	{
 		ret = QStringLiteral ( "/etc/alternatives/kdesu" );
-        if ( !fileOps::fileOps::exists ( ret ).isOn () )
+		if ( !fileOps::fileOps::exists ( ret ).isOn () )
 			return gksu ( message, emptyString );
 	}
 	ret += QLatin1String ( " --comment \"" ) + message + QLatin1String ( "\" -n -d -c " );
@@ -259,22 +259,22 @@ const QString configOps::gksu ( const QString& message, const QString& appname )
 bool configOps::isSystem ( const QString& os_name )
 {
 	bool ret ( false );
-    QFile file ( QStringLiteral ( "/etc/issue" ) );
-    if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
+	QFile file ( QStringLiteral ( "/etc/issue" ) );
+	if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
 	{
-        QTextStream in ( &file );
-        if ( in.readLine ().contains ( os_name, Qt::CaseInsensitive ) )
-            ret = true;
-        file.close ();
-    }
+		QTextStream in ( &file );
+		if ( in.readLine ().contains ( os_name, Qt::CaseInsensitive ) )
+			ret = true;
+		file.close ();
+	}
 	return ret;
 }
 
 bool configOps::initSystem ( const QString& initName )
 {
-    int exitCode ( -1 );
-    fileOps::executeWait ( initName, QStringLiteral ( "pgrep" ), &exitCode );
-    return exitCode == 0;
+	int exitCode ( -1 );
+	fileOps::executeWait ( initName, QStringLiteral ( "pgrep" ), &exitCode );
+	return exitCode == 0;
 }
 
 const QString& configOps::loggedUser () const
@@ -289,7 +289,7 @@ const QString& configOps::appConfigFile ( const bool use_default ) const
 
 const QString configOps::setAppConfigFile ( const QString& str )
 {
-    if ( fileOps::isDir ( fileOps::dirFromPath ( str ) ).isOn () )
+	if ( fileOps::isDir ( fileOps::dirFromPath ( str ) ).isOn () )
 	{
 		writeConfigFile ( CONFIG_FILE, str );
 		return str;
@@ -335,7 +335,7 @@ const QString& configOps::setReportsDir ( const QString& str, const bool full_pa
 				  );
 }
 
-const QString& configOps::defaultEmailAddress () const
+const QString& configOps::defaultEmailAddress ()
 {
 	return DEFAULT_OPTS[EMAIL_ADDRESS];
 }
@@ -380,6 +380,6 @@ bool configOps::writeConfig ( const QString& filename, const QString& field, con
 configDialog* configOps::dialogWindow ()
 {
 	if ( !cfgDlg )
-		cfgDlg = new configDialog ( globalMainWindow );
+		cfgDlg = new configDialog ( MAINWINDOW () );
 	return cfgDlg;
 }

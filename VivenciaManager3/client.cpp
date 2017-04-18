@@ -41,53 +41,11 @@ int getOldClientID ( const int new_id )
 
 bool updateClientTable ()
 {
-#ifdef TRANSITION_PERIOD
-	QSqlQuery query;
-	QString email;
-	Client client ( false );
-
-	(void) VDB ()->renameColumn ( QStringLiteral ( "PHONE1" ), FLD_CLIENT_PHONES, &Client::t_info );
-	//( void ) VDB ()->database ()->exec ( QStringLiteral (
-	//		"ALTER TABLE CLIENTS CHANGE PHONE1 PHONES varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL" ) );
-
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT * FROM `CLIENTS`" ), query ) ) {
-		stringRecord rec;
-		int idx ( 0 );
-		vmNumber phone1, phone2, phone3;
-
-		do {
-			client.setAction ( ACTION_EDIT );
-			phone1.fromStrPhone ( query.value ( FLD_OLDCLIENT_PHONE1 ).toString () );
-			if ( phone1.isPhone () ) {
-				rec.clear ();
-				rec.fastAppendValue ( phone1.toPhone () );
-				phone2.fromStrPhone ( query.value ( FLD_OLDCLIENT_PHONE2 ).toString () );
-				if ( phone2.isPhone () && phone2 != phone1 ) {
-					rec.fastAppendValue ( phone2.toPhone () );
-					phone3.fromStrPhone ( query.value ( FLD_OLDCLIENT_PHONE3 ).toString () );
-					if ( phone3.isPhone () && phone3 != phone1 && phone3 != phone2 )
-						rec.fastAppendValue ( phone3.toPhone () );
-				}
-				setRecValue ( &client, FLD_CLIENT_PHONES, rec.toString () );
-			}
-			idx = recStrValue ( &client, FLD_OLDCLIENT_EMAIL ).indexOf ( CHR_SEMICOLON );
-			if ( idx != -1 ) {
-				rec.clear ();
-				email = query.value ( FLD_OLDCLIENT_EMAIL ).toString ();
-				rec.fastAppendValue ( email.left ( idx ) );
-				rec.fastAppendValue ( email.right ( email.length () - 1 - idx ) );
-				setRecValue ( &client, FLD_CLIENT_EMAIL, rec.toString () );
-			}
-			client.setValue ( FLD_OLDCLIENT_ID, query.value ( 0 ).toString () );
-			client.saveRecord ();
-		} while ( query.next () );
-	}
-	( void ) VDB ()->database ()->exec ( QStringLiteral ( "ALTER TABLE CLIENTS DROP PHONE2" ) );
-	( void ) VDB ()->database ()->exec ( QStringLiteral ( "ALTER TABLE CLIENTS DROP PHONE3" ) );
-	updateIDs ( TABLE_CLIENT_ORDER, &newClientIds );
+#ifdef TABLE_UPDATE_AVAILABLE
 	return true;
-#endif
+#else
 	return false;
+#endif //TABLE_UPDATE_AVAILABLE
 }
 
 const TABLE_INFO Client::t_info = {
@@ -99,7 +57,7 @@ const TABLE_INFO Client::t_info = {
 	QStringLiteral ( " int ( 9 ) NOT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 6 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 20 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL, | "
-    " varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | int ( 2 ) DEFAULT NULL, |" ),
+	" varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | int ( 2 ) DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Name|Street|Number|District|City|Zip code|Phones|E-mail|Client since|Client to|Active|" ),
 	CLIENTS_FIELDS_TYPE,
 	TABLE_VERSION, CLIENT_FIELD_COUNT, TABLE_CLIENT_ORDER, &updateClientTable
@@ -287,10 +245,10 @@ QString Client::concatenateClientInfo ( const Client& client )
 
 void Client::setListItem ( clientListItem* client_item )
 {
-    DBRecord::mListItem = static_cast<vmListItem*>( client_item );
+	DBRecord::mListItem = static_cast<vmListItem*>( client_item );
 }
 
 clientListItem* Client::clientItem () const
 {
-    return static_cast<clientListItem*>( DBRecord::mListItem );
+	return static_cast<clientListItem*>( DBRecord::mListItem );
 }

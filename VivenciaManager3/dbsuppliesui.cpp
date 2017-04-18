@@ -209,7 +209,7 @@ void dbSuppliesUI::showSearchResult ( vmListItem* item, const bool bshow )
 		for ( uint i ( 0 ); i < SUPPLIES_FIELD_COUNT; ++i )
 			m_table->setColumnSearchStatus ( i, item->searchFieldStatus ( i ) == SS_SEARCH_FOUND );
 		if ( m_table->searchStart ( SEARCH_UI ()->searchTerm () ) ) {
-			globalMainWindow->showTab ( MainWindow::TI_SUPPLIES );
+			MAINWINDOW ()->showTab ( MainWindow::TI_SUPPLIES );
 			m_table->searchFirst ();
 		}
 	}

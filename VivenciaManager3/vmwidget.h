@@ -11,6 +11,7 @@
 class vmTableItem;
 
 class QKeyEvent;
+class QVBoxLayout;
 
 enum PREDEFINED_WIDGET_TYPES {
 	WT_WIDGET_ERROR = -1, WT_WIDGET_UNKNOWN = 0,
@@ -64,16 +65,12 @@ public:
 	inline void setID ( const int id ) { m_id = id; }
 
 	inline void setCallbackForRelevantKeyPressed
-	( std::function<void ( const QKeyEvent* const, const vmWidget* const )> func ) {
-		keypressed_func = func; }
+			( const std::function<void ( const QKeyEvent* const, const vmWidget* const )>& func ) { keypressed_func = func; }
+	inline virtual void setCallbackForContentsAltered ( const std::function<void ( const vmWidget* const )>& func ) { contentsAltered_func = func; }
 
 	// assumes a derivative of a real QWidget
-	void setCallbackForContextMenu
-	( std::function<void ( const QPoint& pos, const vmWidget* const )> func );
-
-	inline virtual void setCallbackForContentsAltered ( std::function<void ( const vmWidget* const )> func )
-	{ contentsAltered_func = func; }
-
+	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const )>& func );
+	
 	void showContextMenu ( const QPoint& pos );
 
 	inline const vmTableItem* ownerItem () const { return m_sheetItem; }
@@ -85,6 +82,12 @@ public:
 	 */
 	inline void setInternalData ( const QVariant& data ) { m_data = data; }
 	inline const QVariant& internalData () const { return m_data; }
+
+	inline void setUtilitiesPlaceLayout ( QVBoxLayout* layoutUtilities ) { m_LayoutUtilities = layoutUtilities; }
+	inline QVBoxLayout* utilitiesLayout () { return m_LayoutUtilities; }
+	inline int addUtilityPanel ( QWidget* panel ) { return m_UtilityWidgetsList.append ( panel ); }
+	inline QWidget* utilityPanel ( const int widget_idx ) const { return m_UtilityWidgetsList.at ( widget_idx ); }
+	bool toggleUtilityPanel ( const int widget_idx );
 
 protected:
 	std::function<void ( const QKeyEvent* const ke, const vmWidget* const widget )> keypressed_func;
@@ -101,6 +104,8 @@ private:
 	QWidget* mWidgetPtr;
 	vmWidget* mParent;
 	vmTableItem* m_sheetItem;
+	QVBoxLayout* m_LayoutUtilities;
+	PointersList<QWidget*> m_UtilityWidgetsList;
 	TEXT_TYPE mTextType;
 };
 

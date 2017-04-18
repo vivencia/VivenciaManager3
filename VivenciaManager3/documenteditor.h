@@ -2,7 +2,7 @@
 #define DOCUMENTEDITOR_H
 
 #include "documenteditorwindow.h"
-#include "vmlist.h"
+#include "stringrecord.h"
 
 #include <QMainWindow>
 #include <QStringList>
@@ -53,6 +53,10 @@ protected:
 	void closeEvent ( QCloseEvent* );
 	
 private:
+	friend documentEditor* EDITOR ();
+	friend void deleteEditorInstance ();
+	static documentEditor* s_instance;
+	
 	explicit documentEditor ( QWidget* parent = nullptr );
 
 	void openDocument ( const QString& filename );
@@ -70,7 +74,6 @@ private:
 	uint openByFileType ( const QString& filename );
 
 	QTabWidget* tabDocuments;
-
 	QMenu* fileMenu;
 	QMenu* editMenu;
 	QMenu* windowMenu;
@@ -94,22 +97,18 @@ private:
 	vmAction* separatorAct;
 	vmAction* calcAct;
 
-	friend documentEditor* EDITOR ();
-	friend void deleteEditorInstance ();
-	static documentEditor* s_instance;
-
 	bool mb_ClosingAllTabs;
-	VMList<QString> recentFilesList;
+	stringRecord recentFilesList;
 };
 
 inline documentEditor* EDITOR ()
 {
-	if ( !EXITING_PROGRAM ) {
-		if ( !documentEditor::s_instance )
+	if ( !documentEditor::s_instance )
+	{
+		if ( !EXITING_PROGRAM )
 			documentEditor::s_instance = new documentEditor;
-		return documentEditor::s_instance;
 	}
-	return nullptr;
+	return documentEditor::s_instance;
 }
 
 #endif // DOCUMENTEDITOR_H

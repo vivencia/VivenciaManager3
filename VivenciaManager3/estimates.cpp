@@ -728,8 +728,8 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 	}
 
 	changeJobData ( jobItem, targetPath, m_npdlg->projectID () );
-	if ( DATA ()->currentJob () == jobItem->jobRecord () ) //update view on main window if necessary
-		globalMainWindow->displayJob ( jobItem );
+	if ( MAINWINDOW ()->currentJob ()->dbRecID () == jobItem->dbRecID () ) //update view on main window if necessary
+		MAINWINDOW ()->displayJob ( jobItem );
 
 	addToTree ( files, Client::clientName ( static_cast<uint>(recIntValue ( jobItem->jobRecord (), FLD_JOB_CLIENTID )) ) );
 	VM_NOTIFY ()->messageBox ( TR_FUNC ( "Success!" ), project_name + TR_FUNC ( " was converted!" ) );
@@ -823,7 +823,7 @@ void estimateDlg::projectActions ( QAction *action )
 					f_info->is_dir = true;
 					f_info->is_file = false;
 					files.append ( f_info );
-					(void) fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) );
+					static_cast<void>(fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) ));
 					addFilesToDir ( bAddDoc, bAddXls, strProjectPath, strProjectID, files );
 					bAddDoc = bAddXls = false;
 				}
@@ -849,8 +849,8 @@ void estimateDlg::projectActions ( QAction *action )
 			}
 			else
 				changeJobData ( jobItem, strProjectPath, strProjectID );
-			if ( DATA ()->currentJob () == jobItem->jobRecord () ) //update view on main window if necessary
-				globalMainWindow->displayJob ( jobItem );
+			if ( MAINWINDOW ()->currentJob ()->dbRecID () == jobItem->dbRecID () ) //update view on main window if necessary
+				MAINWINDOW ()->displayJob ( jobItem );
 			if ( !bGetJobOnly )
 				addToTree ( files, item->text ( 0 ) );
 		}
@@ -870,14 +870,14 @@ jobListItem* estimateDlg::findJobByPath ( QTreeWidgetItem* const item )
 {
 	jobListItem* jobItem ( nullptr );
 	const QString clientID ( Client::clientID ( item->text ( 0 ) ) );
-	clientListItem* clientItem ( globalMainWindow->getClientItem ( clientID.toInt () ) );
+	clientListItem* clientItem ( MAINWINDOW ()->getClientItem ( clientID.toUInt () ) );
 	if ( clientItem )
 	{
 		const QString strPath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () );
 		const QString strQuery ( QStringLiteral ( "SELECT ID FROM JOBS WHERE CLIENTID=%1 AND PROJECTPATH=%2" ) );
 		QSqlQuery queryRes;
 		if ( VDB ()->runQuery ( strQuery.arg ( clientID, strPath ), queryRes ) )
-			jobItem = globalMainWindow->getJobItem ( clientItem, queryRes.value ( 0 ).toInt () );
+			jobItem = MAINWINDOW ()->getJobItem ( clientItem, queryRes.value ( 0 ).toUInt () );
 	}
 	return jobItem;
 }

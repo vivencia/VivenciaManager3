@@ -105,7 +105,7 @@ void vmNotify::initNotify ()
 {
 	if ( !s_instance )
 	{
-		s_instance = new vmNotify ( QString::null, globalMainWindow );
+		s_instance = new vmNotify ( QString::null, MAINWINDOW () );
 		addPostRoutine ( deleteNotifyInstance );
 	}
 }
@@ -132,7 +132,7 @@ void vmNotify::enterEventLoop ()
 
 void vmNotify::addMessage ( Message* message )
 {
-	// if a message was issued modal or with an undefined timeout
+	// if a message was issued as modal or with an undefined timeout
 	// we will probably need to probe the results (which button was clicked, or some text
 	message->mbAutoRemove = ( message->timeout != -1 || !message->isModal );
 	setupWidgets ( message );
@@ -168,7 +168,7 @@ void vmNotify::removeMessage ( Message* message )
 			delete message;
 		adjustSizeAndPosition ();
 		if ( mEventLoop )
-            mEventLoop->exit ();
+			mEventLoop->exit ();
 	}
 }
 
@@ -179,6 +179,8 @@ void vmNotify::buttonClicked ( QPushButton* btn, Message* const message )
 	{
 		message->mBtnID = btn->property ( PROPERTY_BUTTON_ID ).toInt ();
 		result = btn->property ( PROPERTY_BUTTON_RESULT ).toInt ();
+		if ( result == MESSAGE_BTN_CUSTOM )
+			result = QDialog::Rejected;
 	}
 	else
 		result = message->mBtnID;
@@ -200,7 +202,7 @@ void vmNotify::buttonClicked ( QPushButton* btn, Message* const message )
 void vmNotify::setupWidgets ( Message* const message )
 {
 	QHBoxLayout* rowLayout ( nullptr );
-	int row ( -1 );
+	uint row ( UINT_MAX );
 
 	if ( !message->iconName.isEmpty () )
 		message->icon = new QPixmap ( message->iconName );
@@ -208,12 +210,16 @@ void vmNotify::setupWidgets ( Message* const message )
 	message->mGroup = mPanel->createGroup ( message->icon != nullptr ? QIcon ( *message->icon ) : QIcon (), message->title, false, false, message->mbClosable );
 	message->mGroup->setCallbackForClosed ( [&, message] () { return buttonClicked ( nullptr, message ); } );
 	if ( !message->bodyText.isEmpty () )
-		message->addWidget ( new QLabel ( message->bodyText ), 0 );
+	{
+		QLabel* lblMessage ( new QLabel ( message->bodyText ) );
+		lblMessage->setWordWrap ( true );
+		message->addWidget ( lblMessage , 0 );
+	}
 
 	QWidget* widget ( nullptr );
 	for ( uint i ( 0 ); i < message->widgets.count (); ++i )
 	{
-		if ( row != signed ( message->widgets.at ( i )->row ) )
+		if ( row != message->widgets.at ( i )->row )
 		{
 			if ( rowLayout != nullptr )
 				rowLayout->addStretch ( 1 ); // inserts a stretchable space at the end of the previous row
@@ -226,8 +232,8 @@ void vmNotify::setupWidgets ( Message* const message )
 		message->mGroup->addQEntry ( widget, rowLayout );
 		if ( message->widgets.at ( i )->isButton )
 		{
-			connect ( static_cast<QPushButton*>( widget ), &QPushButton::clicked, this, 
-					  [&, widget, message] () { return buttonClicked ( static_cast<QPushButton*>( widget ), message ); } );
+			static_cast<void>(connect ( static_cast<QPushButton*>( widget ), &QPushButton::clicked, this, 
+					  [&, widget, message] () { return buttonClicked ( static_cast<QPushButton*>( widget ), message ); } ));
 		}
 	}
 	if ( rowLayout != nullptr )
@@ -284,7 +290,7 @@ QPoint vmNotify::displayPosition ( const QSize& widgetSize )
 {
 	QRect parentGeometry;
 
-	if ( m_parent == nullptr || m_parent == globalMainWindow )
+	if ( m_parent == nullptr || m_parent == MAINWINDOW () )
 	{
 		parentGeometry = qApp->desktop ()->availableGeometry ();
 
@@ -297,17 +303,6 @@ QPoint vmNotify::displayPosition ( const QSize& widgetSize )
 			if ( availableRect.height () < displayRect.height () )
 			{
 				mPos = QStringLiteral ( "BR" );
-
-				// The following code does not work because trayIconGeometry always returns 0,0
-
-				/*const QRect trayIconGeometry ( globalMainWindow != nullptr ?
-							globalMainWindow->appTrayIcon ()->geometry () :
-							QRect ( 0, 0, 0, 0 ) );
-
-				if ( availableRect.y () > displayRect.y () )
-					mPos = trayIconGeometry.x () < ( availableRect.width () / 2 ) ? QStringLiteral ( "TL" ) : QStringLiteral ( "TR" );
-				else
-					mPos = trayIconGeometry.x () < ( availableRect.width () / 2 ) ? QStringLiteral ( "BL" ) : QStringLiteral ( "BR" );*/
 			}
 			else
 			{
@@ -318,11 +313,11 @@ QPoint vmNotify::displayPosition ( const QSize& widgetSize )
 	else
 	{
 		int x ( 0 ), y ( 0 );
-		if ( globalMainWindow && ( m_parent->parent () == globalMainWindow ) )
+		if ( MAINWINDOW () && ( m_parent->parent () == MAINWINDOW () ) )
 		{ // mapTo: first argument must be a parent of caller object
-			const QPoint mainwindowpos ( globalMainWindow->pos () );
-			x = mainwindowpos.x () + m_parent->mapTo ( globalMainWindow, m_parent->pos () ).x () - m_parent->x ();
-			y = mainwindowpos.y () + m_parent->mapTo ( globalMainWindow, m_parent->pos () ).y () - m_parent->y ();
+			const QPoint mainwindowpos ( MAINWINDOW ()->pos () );
+			x = mainwindowpos.x () + m_parent->mapTo ( MAINWINDOW (), m_parent->pos () ).x () - m_parent->x ();
+			y = mainwindowpos.y () + m_parent->mapTo ( MAINWINDOW (), m_parent->pos () ).y () - m_parent->y ();
 		}
 		else
 		{
@@ -395,10 +390,10 @@ int vmNotify::notifyBox ( const QString& title, const QString& msg,
 	{
 		int nextBtnId ( MESSAGE_BTN_CANCEL );
 		if ( !btnsText[2].isEmpty () )
-			nextBtnId = 2;
+			nextBtnId = MESSAGE_BTN_CUSTOM;
 		btn1 = new QPushButton ( btnsText[1] );
 		btn1->setProperty ( PROPERTY_BUTTON_ID, nextBtnId );
-		btn1->setProperty ( PROPERTY_BUTTON_RESULT, nextBtnId == MESSAGE_BTN_CANCEL ? QDialog::Rejected : QDialog::Accepted );
+		btn1->setProperty ( PROPERTY_BUTTON_RESULT, nextBtnId == MESSAGE_BTN_CANCEL ? MESSAGE_BTN_CUSTOM : static_cast<int>(QDialog::Rejected) );
 		message->addWidget ( btn1, 1, Qt::AlignCenter, true );
 	}
 	if ( !btnsText[2].isEmpty () ) // this button is always a cancel button
@@ -605,7 +600,7 @@ vmNotify* vmNotify::progressBox ( vmNotify* box, QWidget* parent, const uint max
 		pBar = new QProgressBar ();
 		pBar->setTextVisible ( true );
 		pBar->setMinimumWidth ( 200 );
-		pBar->setMaximum ( max_value );
+		pBar->setMaximum ( static_cast<int>(max_value) );
 		message->addWidget ( pBar, 1 );
 		QPushButton* btnCancel ( new QPushButton ( QApplication::tr ( "Cancel" ) ) );
 		btnCancel->setProperty ( PROPERTY_BUTTON_ID, MESSAGE_BTN_CANCEL );
@@ -619,7 +614,7 @@ vmNotify* vmNotify::progressBox ( vmNotify* box, QWidget* parent, const uint max
 		QLabel* labelWdg ( static_cast<QLabel*>( message->widgets.at ( 0 )->widget ) );
 		labelWdg->setText ( label );
 		pBar = static_cast<QProgressBar*>( message->widgets.at ( 1 )->widget );
-		pBar->setValue ( next_value );
+		pBar->setValue ( static_cast<int>(next_value) );
 		box->enterEventLoop ();
 	}
 

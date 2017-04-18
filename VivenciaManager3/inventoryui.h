@@ -14,59 +14,59 @@ class QVBoxLayout;
 class InventoryUI : public QObject
 {
 
-    friend class VivenciaDB;
-    friend class companyPurchasesUI;
+friend class VivenciaDB;
+friend class companyPurchasesUI;
 
 public:
-    virtual ~InventoryUI ();
+	virtual ~InventoryUI ();
 
-    static void init () {
-        if ( !s_instance )
-            s_instance = new InventoryUI;
-    }
+	static void init () {
+		if ( !s_instance )
+			s_instance = new InventoryUI;
+	}
 
-    bool setupUI ();
+	bool setupUI ();
 
-    inline vmTableWidget* table () const {
-        const_cast<InventoryUI*> ( this )->createTable ();
-        return m_table;
-    }
+	inline vmTableWidget* table () const {
+		const_cast<InventoryUI*> ( this )->createTable ();
+		return m_table;
+	}
 
-    inline QVBoxLayout* layout () const { return inventoryLayout; }
+	inline QVBoxLayout* layout () const { return inventoryLayout; }
 
-    void insertRow ( const uint );
+	void insertRow ( const uint );
 
 private:
-    explicit InventoryUI ();
-    static InventoryUI* s_instance;
-    friend void deleteInventoryInstance ();
-    friend InventoryUI* INVENTORY ();
+	explicit InventoryUI ();
+	static InventoryUI* s_instance;
+	friend void deleteInventoryInstance ();
+	friend InventoryUI* INVENTORY ();
 
-    void createTable ();
+	void createTable ();
 
-    Inventory* inventory_rec;
-    vmTableWidget* m_table;
+	Inventory* inventory_rec;
+	vmTableWidget* m_table;
 
-    QVBoxLayout* inventoryLayout;
-    QPushButton* btnInventoryEditTable;
-    QPushButton* btnInventoryCancelEdit;
-    QPushButton* btnInventoryInsertRowAbove;
-    QPushButton* btnInventoryInsertRowBelow;
-    QPushButton* btnInventoryRemoveRow;
+	QVBoxLayout* inventoryLayout;
+	QPushButton* btnInventoryEditTable;
+	QPushButton* btnInventoryCancelEdit;
+	QPushButton* btnInventoryInsertRowAbove;
+	QPushButton* btnInventoryInsertRowBelow;
+	QPushButton* btnInventoryRemoveRow;
 
-    void readRowData ( const uint row, const uint col, const uint prev_row, const uint = 0 );
-    void tableChanged ( const vmTableItem* const item );
-    void rowRemoved ( const uint row = 0 );
-    void btnInventoryInsertRowAbove_clicked ();
-    void btnInventoryInsertRowBelow_clicked ();
-    void btnInventoryRemoveRow_clicked ();
-    void btnInventoryCancelEdit_clicked ();
-    void btnInventoryEditTable_clicked ( const bool checked );
+	void readRowData ( const uint row, const uint col, const uint prev_row, const uint = 0 );
+	void tableChanged ( const vmTableItem* const item );
+	void rowRemoved ( const uint row = 0 );
+	void btnInventoryInsertRowAbove_clicked ();
+	void btnInventoryInsertRowBelow_clicked ();
+	void btnInventoryRemoveRow_clicked ();
+	void btnInventoryCancelEdit_clicked ();
+	void btnInventoryEditTable_clicked ( const bool checked );
 };
 
 inline InventoryUI* INVENTORY ()
 {
-    return InventoryUI::s_instance;
+	return InventoryUI::s_instance;
 }
 
 #endif // INVENTORYITEMS_H

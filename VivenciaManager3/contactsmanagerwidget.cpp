@@ -204,9 +204,9 @@ void contactsManagerWidget::btnExtra_clicked ()
 
 void contactsManagerWidget::decodePhones ( const stringRecord& phones, const bool bClear )
 {
-    if ( bClear )
+	if ( bClear )
 	{
-        clearAll ();
+		clearAll ();
 	}
 	if ( !phones.isNull () )
 	{
@@ -228,9 +228,9 @@ void contactsManagerWidget::decodePhones ( const stringRecord& phones, const boo
 
 void contactsManagerWidget::decodeEmails ( const stringRecord& emails, const bool bClear )
 {
-    if ( bClear )
+	if ( bClear )
 	{
-        clearAll ();
+		clearAll ();
 	}
 	if ( emails.first () )
 	{

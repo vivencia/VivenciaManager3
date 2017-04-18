@@ -129,9 +129,9 @@ QString passwdManager::key () const
 	return d->key;
 }
 
-void passwdManager::setKey ( const QString& key_ )
+void passwdManager::setKey ( const QString& key )
 {
-	d->key = key_;
+	d->key = key;
 }
 
 passwdManager_Write::passwdManager_Write( const QString& service )

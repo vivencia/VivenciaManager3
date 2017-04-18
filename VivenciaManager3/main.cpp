@@ -30,6 +30,5 @@ int main ( int argc, char *argv[] )
 #endif
 
 	Data::init ();
-	DATA ()->startUserInteface ();
 	return app.exec ();
 }

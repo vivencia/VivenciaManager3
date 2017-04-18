@@ -38,7 +38,7 @@ fixDatabase::~fixDatabase ()
 bool fixDatabase::readOutputFile ( const QString& r_passwd )
 {
 	bool ok ( false );
-    if ( fileOps::exists ( tempFile ).isOn () )
+	if ( fileOps::exists ( tempFile ).isOn () )
 	{
 		QFile file ( tempFile );
 		if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )

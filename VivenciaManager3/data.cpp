@@ -46,13 +46,6 @@ QIcon* listIndicatorIcons[4] = { nullptr };
 #define ERR_SETUP_FILES_MISSING 4
 #define ERR_COMMAND_MYSQL 5
 
-Data* Data::s_instance ( nullptr );
-
-void deleteDataInstance ()
-{
-	heap_del ( Data::s_instance );
-}
-
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
 
 void Data::restartProgram ()
@@ -183,8 +176,7 @@ void Data::checkDatabase ()
 	}
 }
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
-
-Data::Data ()
+void Data::init ()
 {
 	vmNumber::updateCurrentDate ();
 	configOps::init ();
@@ -195,21 +187,10 @@ Data::Data ()
 	vmCompleters::init ();
 	vmDateEdit::createDateButtonsMenu ();
 	VDB ()->doPreliminaryWork ();
-	addPostRoutine ( deleteDataInstance );
-}
-
-Data::~Data ()
-{
-	delete listIndicatorIcons[1];
-	delete listIndicatorIcons[2];
-	delete listIndicatorIcons[3];
-}
-
-void Data::startUserInteface ()
-{
-	globalMainWindow = new MainWindow;
+	
+	MainWindow::initMainWindow ();
 	loadDataIntoMemory ();
-	globalMainWindow->continueStartUp ();
+	MAINWINDOW ()->continueStartUp ();
 }
 
 void Data::loadDataIntoMemory ()
@@ -235,21 +216,21 @@ void Data::loadDataIntoMemory ()
 	Buy buy;
 	do
 	{
-		if ( client.readRecord ( static_cast<int>(id), false ) )
+		if ( client.readRecord ( id, false ) )
 		{
 			client_item = new clientListItem;
-			client_item->setDBRecID ( static_cast<int>(id) );
+			client_item->setDBRecID ( id );
 			client_item->setRelation ( RLI_CLIENTITEM );
 			client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 			(void) client_item->loadData ();
-			client_item->addToList ( globalMainWindow->ui->clientsList );
+			client_item->addToList ( MAINWINDOW ()->UserInterface ()->clientsList );
 
 			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) )
 			{
 				do
 				{
 					job_item = new jobListItem;
-					job_item->setDBRecID ( job.actualRecordInt ( FLD_JOB_ID ) );
+					job_item->setDBRecID ( static_cast<uint>(job.actualRecordInt ( FLD_JOB_ID )) );
 					job_item->setRelation ( RLI_CLIENTITEM );
 					job_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 					job_item->setRelatedItem ( RLI_JOBPARENT, job_item );
@@ -262,7 +243,7 @@ void Data::loadDataIntoMemory ()
 						do
 						{
 							pay_item = new payListItem;
-							pay_item->setDBRecID ( pay.actualRecordInt ( FLD_PAY_ID ) );
+							pay_item->setDBRecID ( static_cast<uint>(pay.actualRecordInt ( FLD_PAY_ID )) );
 							pay_item->setRelation ( RLI_CLIENTITEM );
 							pay_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 							pay_item->setRelatedItem ( RLI_JOBPARENT, job_item );
@@ -276,7 +257,7 @@ void Data::loadDataIntoMemory ()
 						do
 						{
 							buy_item = new buyListItem;
-							buy_item->setDBRecID ( buy.actualRecordInt ( FLD_BUY_ID ) );
+							buy_item->setDBRecID ( static_cast<uint>(buy.actualRecordInt ( FLD_BUY_ID )) );
 							buy_item->setRelation ( RLI_CLIENTITEM );
 							buy_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
 							buy_item->setRelatedItem ( RLI_JOBPARENT, job_item );
@@ -293,13 +274,6 @@ void Data::loadDataIntoMemory ()
 			}
 		}
 	} while ( ++id <= lastRec );
-}
-
-Job* Data::currentJob () const
-{
-	if ( globalMainWindow->ui->jobsList->currentItem () )
-		return static_cast<jobListItem*> ( globalMainWindow->ui->jobsList->currentItem () )->jobRecord ();
-	return nullptr;
 }
 
 void Data::copyToClipboard ( const QString& str )
@@ -379,8 +353,8 @@ int Data::insertStringListItem ( QStringList& list, const QString& text )
 QPoint Data::getGlobalWidgetPosition ( const QWidget* widget )
 {
 	QWidget* refWidget ( nullptr );
-	if ( globalMainWindow->isAncestorOf ( widget ) )
-		refWidget = globalMainWindow;
+	if ( MAINWINDOW ()->isAncestorOf ( widget ) )
+		refWidget = MAINWINDOW ();
 	else
 	{
 		refWidget = widget->parentWidget ();
@@ -413,4 +387,20 @@ void Data::fillJobTypeList ( QStringList& jobList, const QString& clientid )
 		} while ( job.readNextRecord ( true ) );
 	}
 }
-//--------------------------------------EXTRAS-----------------------------------------------
+
+int Data::vmColorIndex ( const VMColors vmcolor )
+{
+	int idx ( -1 );
+	switch ( vmcolor )
+	{
+		case vmGray: idx = 0; break;
+		case vmRed: idx = 1; break;
+		case vmYellow: idx = 2; break;
+		case vmGreen: idx = 3; break;
+		case vmBlue: idx = 4; break;
+		case vmWhite: idx = 5; break;
+		case vmDefault_Color: break;
+	}
+	return idx;
+}
+

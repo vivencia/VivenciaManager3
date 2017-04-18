@@ -42,7 +42,7 @@ suppliersDlg::~suppliersDlg ()
 	heap_del ( supRec );
 }
 
-void suppliersDlg::saveWidget ( vmWidget* widget, const uint id )
+void suppliersDlg::saveWidget ( vmWidget* widget, const int id )
 {
 	widget->setID ( id );
 	widgetList[id] = widget;
@@ -191,9 +191,11 @@ void suppliersDlg::setupUI ()
 
 void suppliersDlg::retrieveInfo ()
 {
-	if ( m_supchanged ) {
+	if ( m_supchanged )
+	{
 		clearForms ( false );
-		if ( supRec->readRecord ( FLD_SUPPLIER_NAME, txtSupName->text () ) ) {
+		if ( supRec->readRecord ( FLD_SUPPLIER_NAME, txtSupName->text () ) )
+		{
 			txtSupID->setText ( recStrValue ( supRec, FLD_SUPPLIER_ID ) );
 			txtSupStreet->setText ( recStrValue ( supRec, FLD_SUPPLIER_STREET ) );
 			txtSupNbr->setText ( recStrValue ( supRec, FLD_SUPPLIER_NUMBER ) );
@@ -241,7 +243,8 @@ void suppliersDlg::keyPressedSelector ( const QKeyEvent* ke )
 	btnEdit->setChecked ( false );
 	if ( ke->key () == Qt::Key_Escape )
 		btnCancelClicked ();
-	else {
+	else
+	{
 		btnCopyAllToEditor->setFocus (); // trigger any pending editing_Finished or textAltered event
 		if ( supRec->action () == ACTION_ADD )
 			btnInsertClicked ( false );
@@ -265,28 +268,33 @@ void suppliersDlg::clearForms ( const bool b_clear_supname )
 
 void suppliersDlg::txtSupplier_textAltered ( const vmWidget* const sender )
 {
-	setRecValue ( supRec, sender->id (), sender->text () );
+	setRecValue ( supRec, static_cast<uint>(sender->id ()), sender->text () );
 }
 
 void suppliersDlg::contactsAdd ( const QString& info, const vmWidget* const sender )
 {
-	setRecValue ( supRec, sender->id (),
-				  stringRecord::joinStringRecords ( recStrValue ( supRec, sender->id () ), info ) );
+	setRecValue ( supRec, static_cast<uint>(sender->id ()),
+				  stringRecord::joinStringRecords ( recStrValue ( supRec, static_cast<uint>(sender->id ()) ), info ) );
 }
 
 void suppliersDlg::contactsDel ( const int idx, const vmWidget* const sender )
 {
-	stringRecord info_rec ( recStrValue ( supRec, sender->id () ) );
-	info_rec.removeField ( idx );
-	setRecValue ( supRec, sender->id (), info_rec.toString () );
+	if ( idx >= 0 )
+	{
+		stringRecord info_rec ( recStrValue ( supRec, static_cast<uint>(sender->id ()) ) );
+		info_rec.removeField ( static_cast<uint>(idx) );
+		setRecValue ( supRec, static_cast<uint>(sender->id ()), info_rec.toString () );
+	}
 }
 
 void suppliersDlg::displaySupplier ( const QString& supName )
 {
-    if  ( isVisible () ) {
-        if ( supName != txtSupName->text () ) {
-            txtSupName->setText ( supName );
-            m_supchanged = true;
+	if  ( isVisible () )
+	{
+		if ( supName != txtSupName->text () )
+		{
+			txtSupName->setText ( supName );
+			m_supchanged = true;
 			retrieveInfo ();
 			m_supchanged = false;
 		}
@@ -295,11 +303,13 @@ void suppliersDlg::displaySupplier ( const QString& supName )
 
 void suppliersDlg::btnInsertClicked ( const bool checked )
 {
-	if ( checked ) {
+	if ( checked )
+	{
 		clearForms ();
 		supRec->setAction ( ACTION_ADD );
 	}
-	else {
+	else
+	{
 		supRec->saveRecord ();
 		supRec->setAction ( ACTION_READ );
 	}
@@ -310,7 +320,8 @@ void suppliersDlg::btnEditClicked ( const bool checked )
 {
 	if ( checked )
 		supRec->setAction ( ACTION_EDIT );
-	else {
+	else
+	{
 		supRec->saveRecord ();
 		supRec->setAction ( ACTION_READ );
 	}
@@ -319,7 +330,7 @@ void suppliersDlg::btnEditClicked ( const bool checked )
 
 void suppliersDlg::btnCancelClicked ()
 {
-    supRec->setAction ( ACTION_REVERT );
+	supRec->setAction ( ACTION_REVERT );
 	m_supchanged = true;
 	retrieveInfo ();
 }
@@ -335,7 +346,8 @@ void suppliersDlg::btnCopyToEditorClicked ()
 {
 	QString info;
 	supplierInfo ( txtSupName->text (), info );
-	if ( !info.isEmpty () ) {
+	if ( !info.isEmpty () )
+	{
 		hideDialog ();
 		textEditor* editor ( EDITOR ()->startNewTextEditor () );
 		editor->displayText ( info );
@@ -347,7 +359,8 @@ void suppliersDlg::btnCopyAllToEditorClicked ()
 {
 	QString info;
 	supplierInfo ( emptyString, info );
-	if ( !info.isEmpty () ) {
+	if ( !info.isEmpty () )
+	{
 		hideDialog ();
 		textEditor* editor ( EDITOR ()->startNewTextEditor () );
 		editor->displayText ( info );
@@ -357,7 +370,8 @@ void suppliersDlg::btnCopyAllToEditorClicked ()
 
 void suppliersDlg::showDialog ()
 {
-	if ( !isVisible () ) {
+	if ( !isVisible () )
+	{
 		retrieveInfo ();
 		show ();
 	}
@@ -372,12 +386,15 @@ void suppliersDlg::hideDialog ()
 
 void suppliersDlg::showSearchResult ( vmListItem* item, const bool bshow )
 {
-	if ( bshow ) {
-		if ( supRec->readRecord ( item->dbRecID () ) ) {
+	if ( bshow )
+	{
+		if ( supRec->readRecord ( item->dbRecID () ) )
+		{
 			showDialog ();
 		}
 	}
-	for ( uint i ( 0 ); i < SUPPLIER_FIELD_COUNT; ++i ) {
+	for ( uint i ( 0 ); i < SUPPLIER_FIELD_COUNT; ++i )
+	{
 		if ( item->searchFieldStatus ( i ) == SS_SEARCH_FOUND )
 			widgetList.at ( i )->highlight ( bshow ? vmBlue : vmDefault_Color, SEARCH_UI ()->searchTerm () );
 	}
@@ -390,7 +407,8 @@ void suppliersDlg::supplierInfo ( const QString& name, QString& info )
 	QString cmd ( QStringLiteral ( "SELECT FROM %1 WHERE %2=\"%3\"" ) );
 	cmd.replace ( QStringLiteral ( "%1" ), supplierRecord::t_info.table_name );
 
-	if ( !name.isEmpty () ) {
+	if ( !name.isEmpty () )
+	{
 		cmd.replace ( QStringLiteral ( "%2" ), VivenciaDB::getTableColumnName ( &supplierRecord::t_info, FLD_SUPPLIER_NAME ) );
 		cmd.replace ( QStringLiteral ( "%3" ), name );
 	}
@@ -400,8 +418,10 @@ void suppliersDlg::supplierInfo ( const QString& name, QString& info )
 	QSqlQuery query ( cmd, *( VDB ()->database () ) );
 	query.setForwardOnly ( true );
 	query.exec ( cmd );
-	if ( query.first () ) {
-		do {
+	if ( query.first () )
+	{
+		do
+		{
 			info += template_str.arg (
 						query.value ( FLD_SUPPLIER_NAME ).toString (),
 						query.value ( FLD_SUPPLIER_STREET ).toString (),

@@ -80,10 +80,6 @@ constexpr const Qt::GlobalColor vmColorToQt[6] = {
 	Qt::gray, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::white
 };
 
-#ifdef TRANSITION_PERIOD
-constexpr const QLatin1Char CHR_PLUS ( '+' );
-#endif
-
 const QString CHR_ZERO ( QStringLiteral ( "0" ) );
 const QString CHR_ONE ( QStringLiteral ( "1" ) );
 const QString CHR_TWO ( QStringLiteral ( "2" ) );
@@ -99,18 +95,17 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 1
-#define VERSION_REVISION 10
-constexpr const QLatin1String VERSION_APPEND ( "Broken back", 11 );
-constexpr const QLatin1String VERSION_DATE ( "2017-03-28", 10 );
+#define VERSION_REVISION 12
+constexpr const QLatin1String VERSION_APPEND ( "Broken back (NO MORE)", 21 );
+constexpr const QLatin1String VERSION_DATE ( "2017-04-04", 10 );
 
 static const QString PROGRAM_VERSION (
-    QUOTEME(VERSION_MAJOR) + CHR_DOT +
-    QUOTEME(VERSION_MINOR) + CHR_DOT +
-    QUOTEME(VERSION_REVISION ) + QLatin1String ( " - " ) +
-    VERSION_APPEND + CHR_SPACE + CHR_L_PARENTHESIS + VERSION_DATE + CHR_R_PARENTHESIS
+	QUOTEME(VERSION_MAJOR) + CHR_DOT +
+	QUOTEME(VERSION_MINOR) + CHR_DOT +
+	QUOTEME(VERSION_REVISION ) + QLatin1String ( " - " ) +
+	VERSION_APPEND + CHR_SPACE + CHR_L_PARENTHESIS + VERSION_DATE + CHR_R_PARENTHESIS
 );
 
-//#define ICON(name) QIcon ( QStringLiteral ( ":resources/" name ) )
 #define ICON(name) QIcon::fromTheme ( QStringLiteral ( name ), QIcon ( QStringLiteral ( ":resources/" name"" ) ) )
 #define PIXMAP(name) QPixmap ( QStringLiteral ( ":resources/" name ) )
 
@@ -125,9 +120,6 @@ static const QString SYSTEM_ROOT_PASSWORD_ID ( QStringLiteral ( "SYSTEM_ROOT_PAS
 static const QString DB_NAME ( QStringLiteral ( "VivenciaDatabase3" ) );
 static const QString USER_NAME ( QStringLiteral ( "vivenciamngr3" ) );
 static const QString PASSWORD ( QStringLiteral ( "fenixfenix3" ) ) ;
-
-class MainWindow;
-extern MainWindow* globalMainWindow;
 
 #include <QWidget>
 #define TITLE_BAR_HEIGHT qApp->style ()->pixelMetric ( QStyle::PM_TitleBarHeight )

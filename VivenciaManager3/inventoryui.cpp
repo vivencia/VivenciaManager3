@@ -21,7 +21,7 @@ void deleteInventoryInstance ()
 }
 
 InventoryUI::InventoryUI ()
-    : QObject ( nullptr ), inventory_rec ( new Inventory ( true ) ),
+	: QObject ( nullptr ), inventory_rec ( new Inventory ( true ) ),
 	  m_table ( nullptr ), btnInventoryEditTable ( nullptr )
 {
 	addPostRoutine ( deleteInventoryInstance );

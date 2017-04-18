@@ -22,7 +22,7 @@ class QPushButton;
 class QVBoxLayout;
 class QTimerEvent;
 
-enum { MESSAGE_BTN_OK = 1, MESSAGE_BTN_CANCEL = 0 };
+enum { MESSAGE_BTN_OK = 1, MESSAGE_BTN_CANCEL = 0, MESSAGE_BTN_CUSTOM = -1 };
 
 class Message
 {
@@ -40,14 +40,14 @@ public:
 		bool isButton;
 	};
 
-	Message ( vmNotify* parent = nullptr );
+	explicit Message ( vmNotify* parent = nullptr );
 	~Message ();
 
 	void addWidget ( QWidget* widget, const uint row,
 					 const Qt::Alignment alignment = Qt::AlignLeft,
 					 const bool is_button = false );
 
-	inline void setMessageFinishedCallback ( std::function<void ( Message* )> func ) {
+	inline void setMessageFinishedCallback ( const std::function<void ( Message* )>& func ) {
 		messageFinishedFunc = func; }
 
 	void inputFormKeyPressed ( const QKeyEvent* ke );
@@ -76,7 +76,7 @@ public:
 	vmNotify ( const QString& position = QString::null, const QWidget* parent = nullptr );
 	virtual ~vmNotify ();
 
-	// globalMainWindow will call this
+	// MAINWINDOW () will call this
 	static void initNotify ();
 
 	void notifyMessage ( const QString& title, const QString& msg, const int msecs = 3000, const bool b_critical = false );

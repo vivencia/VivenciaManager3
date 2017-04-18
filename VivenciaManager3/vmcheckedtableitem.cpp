@@ -13,22 +13,25 @@ vmCheckedTableItem::vmCheckedTableItem ( const Qt::Orientation orientation, QWid
 
 void vmCheckedTableItem::paintSection ( QPainter* painter, const QRect& rect, const int logicalIndex ) const
 {
-	if ( !mbIsCheckable )
-		QHeaderView::paintSection ( painter, rect, logicalIndex );
-	else
+	if ( logicalIndex >= 0 )
 	{
-		painter->save ();
-		QHeaderView::paintSection ( painter, rect, logicalIndex );
-		painter->restore ();
-		QStyleOptionButton option;
-		if ( isEnabled () )
-			option.state |= QStyle::State_Enabled;
-		option.rect = checkBoxRect ( rect );
-		if ( isBitSet ( mColumnState, logicalIndex ) )
-			option.state |= QStyle::State_On;
+		if ( !mbIsCheckable )
+			QHeaderView::paintSection ( painter, rect, logicalIndex );
 		else
-			option.state |= QStyle::State_Off;
-		style ()->drawControl ( QStyle::CE_CheckBox, &option, painter );
+		{
+			painter->save ();
+			QHeaderView::paintSection ( painter, rect, logicalIndex );
+			painter->restore ();
+			QStyleOptionButton option;
+			if ( isEnabled () )
+				option.state |= QStyle::State_Enabled;
+			option.rect = checkBoxRect ( rect );
+			if ( isBitSet ( mColumnState, static_cast<uchar>(logicalIndex) ) )
+				option.state |= QStyle::State_On;
+			else
+				option.state |= QStyle::State_Off;
+			style ()->drawControl ( QStyle::CE_CheckBox, &option, painter );
+		}
 	}
 }
 
@@ -38,7 +41,7 @@ void vmCheckedTableItem::mousePressEvent ( QMouseEvent* event )
 	{
 		const int column ( logicalIndexAt ( event->pos () ) );
 		if ( column >= 0 )
-			setChecked ( column, !isBitSet ( mColumnState, column ), true );
+			setChecked ( static_cast<uint>(column), !isBitSet ( mColumnState, static_cast<uchar>(column) ), true );
 	}
 	else
 		QHeaderView::mousePressEvent ( event );
@@ -54,14 +57,15 @@ void vmCheckedTableItem::setCheckable ( const bool checkable )
 bool vmCheckedTableItem::isChecked ( const uint column ) const
 {
 	// when not checkable, all columns are considered checked
-	return mbIsCheckable ? isBitSet ( mColumnState, column ) : true;
+	return mbIsCheckable ? isBitSet ( mColumnState, static_cast<uchar>(column) ) : true;
 }
 
 void vmCheckedTableItem::setChecked ( const uint column, const bool checked, const bool b_notify )
 {
-	if ( isEnabled () && ( isBitSet ( mColumnState, column ) != checked ) ) {
-		checked ? setBit ( mColumnState, column ) : unSetBit ( mColumnState, column );
-		updateSection ( column );
+	if ( isEnabled () && ( isBitSet ( mColumnState, static_cast<uchar>(column) ) != checked ) )
+	{
+		checked ? setBit ( mColumnState, static_cast<uchar>(column) ) : unSetBit ( mColumnState, static_cast<uchar>(column) );
+		updateSection ( static_cast<int>(column) );
 		if ( b_notify && checkChange_func )
 			checkChange_func ( column, checked );
 	}

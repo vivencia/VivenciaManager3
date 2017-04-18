@@ -13,9 +13,9 @@ extern "C"
 
 static bool checkSomeThingsFirst ( const QString& in_filename, const QString& out_filename )
 {
-    if ( !fileOps::isFile ( in_filename ).isOn () )
+	if ( !fileOps::isFile ( in_filename ).isOn () )
 		return false;
-    return fileOps::canWrite ( fileOps::dirFromPath ( out_filename ) ).isOn ();
+	return fileOps::canWrite ( fileOps::dirFromPath ( out_filename ) ).isOn ();
 }
 
 bool VMCompress::compress ( const QString& in_filename, const QString& out_filename )
@@ -47,18 +47,21 @@ bool VMCompress::compress ( const QString& in_filename, const QString& out_filen
 	}
 
 	const uint max_len ( 50000 );
-	uint bytes_read = 0;
+	int bytes_read = 0;
 	bool error ( false );
 	char buf[max_len] = { '\0' };
 
-	do {
-		bytes_read = static_cast<uint> ( in_file.read ( buf, max_len ) );
-		if ( bytes_read <= 0 ) {
+	do
+	{
+		bytes_read = static_cast<int>(in_file.read ( buf, max_len ));
+		if ( bytes_read <= 0 )
+		{
 			error = true;
 			break;
 		}
 		::BZ2_bzWrite ( &bzerror, bzf, static_cast<void*> ( buf ), bytes_read );
-		if ( bzerror != BZ_OK ) {
+		if ( bzerror != BZ_OK )
+		{
 			error = true;
 			break;
 		}
@@ -122,7 +125,7 @@ bool VMCompress::decompress ( const QString& in_filename, const QString& out_fil
 	}
 
 	static const uint max_len ( 50000 );
-	uint bytes_read ( 0 );
+	int bytes_read ( 0 );
 	uint bytes_written ( 0 );
 	bool error ( false );
 	char buf[max_len] = { '\0' };
@@ -155,7 +158,7 @@ bool VMCompress::decompress ( const QString& in_filename, const QString& out_fil
 
 bool VMCompress::createTar ( const QString& input_dir, const QString& out_filename, const bool overwrite )
 {
-    if ( fileOps::isFile ( out_filename ).isOn () && !overwrite )
+	if ( fileOps::isFile ( out_filename ).isOn () && !overwrite )
 		return true;
 
 	const QString cmd ( QStringLiteral ( "tar -C %1 -cf %2 %3" ) );
@@ -164,7 +167,7 @@ bool VMCompress::createTar ( const QString& input_dir, const QString& out_filena
 
 bool VMCompress::addToTar ( const QString& input, const QString& tar_file, const bool create_if_not_exists )
 {
-    if ( !fileOps::isFile ( tar_file ).isOn () )
+	if ( !fileOps::isFile ( tar_file ).isOn () )
 	{
 		if ( create_if_not_exists )
 		{
@@ -174,7 +177,7 @@ bool VMCompress::addToTar ( const QString& input, const QString& tar_file, const
 		else
 			return false;
 	}
-    const QString cmd ( QStringLiteral ( "tar -C %1 -rf %2 %3" ) );
+	const QString cmd ( QStringLiteral ( "tar -C %1 -rf %2 %3" ) );
 	const QString topDir ( fileOps::nthDirFromPath ( input, 0 ) );
 	return ( ::system ( cmd.arg ( topDir, tar_file,	QString ( input ).remove ( topDir ) ).toLocal8Bit ().constData () ) == 0 );
 }

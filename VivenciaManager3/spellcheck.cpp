@@ -164,7 +164,7 @@ void spellCheck::createDictionaryInterface ()
 		heap_del ( mChecker );
 		QString dicAff;
 		getDictionaryAff( dicAff );
-		mChecker = new Hunspell ( dicAff.toUtf8 ().constData (), mDictionary.toUtf8 ().constData () );
+		mChecker = new Hunspell ( dicAff.toLatin1 ().constData (), mDictionary.toLatin1 ().constData () );
 		mCodec = QTextCodec::codecForName ( mChecker->get_dic_encoding () );
 	}
 }

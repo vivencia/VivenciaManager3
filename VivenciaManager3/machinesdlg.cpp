@@ -515,9 +515,9 @@ void machinesDlg::btnDelEvent_clicked ()
 
 void machinesDlg::btnSelectJob_clicked ()
 {
-	globalMainWindow->setTempCallbackForJobSelect ( [&] ( const uint jobid ) {
+	MAINWINDOW ()->setTempCallbackForJobSelect ( [&] ( const uint jobid ) {
 			return getSelectedJobID ( jobid ); } );
-	globalMainWindow->selectJob ();
+	MAINWINDOW ()->selectJob ();
 }
 
 void machinesDlg::btnEdit_clicked ()

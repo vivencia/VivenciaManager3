@@ -29,7 +29,7 @@ friend class searchWordPanel;
 
 public:
 	explicit textEditWithCompleter ( QWidget* parent = nullptr );
-    virtual ~textEditWithCompleter ();
+	virtual ~textEditWithCompleter ();
 
 	void setEditable ( const bool editable );
 	void setPreview ( const bool preview );
@@ -42,7 +42,7 @@ public:
 	void createContextMenu ();
 	void insertCustomActionToContextMenu ( QAction* action );
 
-	void saveContents ( const bool b_force = false );
+	void saveContents ( const bool b_force = false, const bool b_notify = true );
 	QString paragraphText () const;
 	void setText ( const QString& text, const bool b_notify = false );
 	inline const QString& currentText () const
@@ -101,8 +101,8 @@ private:
 	static QString defaultBGColor;
 
 	QString textUnderCursor () const;
-    void insertCompletion ( const QString& completion, QCompleter* completer );
-    void correctWord ( const QAction* action );
+	void insertCompletion ( const QString& completion, QCompleter* completer );
+	void correctWord ( const QAction* action );
 	void addWord ();
 	void ignoreWord ();
 };
@@ -113,7 +113,7 @@ private:
 class searchWordPanel : public QFrame
 {
 
-	friend class textEditWithCompleter;
+friend class textEditWithCompleter;
 
 public:
 	explicit searchWordPanel ( textEditWithCompleter* );

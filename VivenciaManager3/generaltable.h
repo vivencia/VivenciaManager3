@@ -11,7 +11,6 @@ class generalTable : public DBRecord
 {
 
 friend class VivenciaDB;
-friend class Data;
 
 public:
 	generalTable ();

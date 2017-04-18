@@ -17,56 +17,55 @@ class spellCheck : public QObject
 {
 
 public:
-    virtual ~spellCheck ();
+	virtual ~spellCheck ();
 
-    static void init () {
-        if ( !s_instance )
-            s_instance = new spellCheck;
-    }
+	static void init () {
+		if ( !s_instance )
+			s_instance = new spellCheck;
+	}
 
-    void updateUserDict ();
-    bool suggestionsList ( const QString& word, QStringList& wordList );
-    void addWord ( const QString& word, const bool b_add );
+	void updateUserDict ();
+	bool suggestionsList ( const QString& word, QStringList& wordList );
+	void addWord ( const QString& word, const bool b_add );
 
-    inline triStateType checkWord ( const QString& word )
-    {
-        return ( mChecker ? mChecker->spell ( mCodec->fromUnicode ( word ).constData () ) : TRI_UNDEF );
-    }
+	inline triStateType checkWord ( const QString& word )
+	{
+		return ( mChecker ? mChecker->spell ( mCodec->fromUnicode ( word ).constData () ) : TRI_UNDEF );
+	}
 
-    inline void setCallbackForMenuEntrySelected ( std::function<void ( const bool )> func ) {
-        menuEntrySelected_func = func; }
+	inline void setCallbackForMenuEntrySelected ( const std::function<void ( const bool )>& func ) { menuEntrySelected_func = func; }
 
-    QMenu* menuAvailableDicts ();
+	QMenu* menuAvailableDicts ();
 
 private:
-    spellCheck ();
+	spellCheck ();
 
-    friend spellCheck* SPELLCHECKER ();
-    friend void deleteSpellCheckInstance ();
-    static spellCheck* s_instance;
+	friend spellCheck* SPELLCHECKER ();
+	friend void deleteSpellCheckInstance ();
+	static spellCheck* s_instance;
 
-    void menuEntrySelected ( const QAction* action );
-    void getDictionariesPath ();
-    void setDictionaryLanguage ( const QString& localeString );
-    void getDictionaryAff ( QString& dicAff ) const;
-    void createDictionaryInterface ();
-    bool setUserDictionary ();
+	void menuEntrySelected ( const QAction* action );
+	void getDictionariesPath ();
+	void setDictionaryLanguage ( const QString& localeString );
+	void getDictionaryAff ( QString& dicAff ) const;
+	void createDictionaryInterface ();
+	bool setUserDictionary ();
 
-    QStringList unknownWordList;
-    QString mUserDict;
-    QString mDicPath;
-    QString mDictionary;
+	QStringList unknownWordList;
+	QString mUserDict;
+	QString mDicPath;
+	QString mDictionary;
 
-    Hunspell* __restrict mChecker;
-    QTextCodec* __restrict mCodec;
-    QMenu* mMenu;
+	Hunspell* __restrict mChecker;
+	QTextCodec* __restrict mCodec;
+	QMenu* mMenu;
 
-    std::function<void ( const bool )> menuEntrySelected_func;
+	std::function<void ( const bool )> menuEntrySelected_func;
 };
 
 inline spellCheck* SPELLCHECKER ()
 {
-    return spellCheck::s_instance;
+	return spellCheck::s_instance;
 }
 
 #endif // SPELLCHECK_H

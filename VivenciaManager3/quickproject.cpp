@@ -11,37 +11,11 @@ static const uint QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] = {
 
 bool updateQuickProjectTable ()
 {
-#ifdef TRANSITION_PERIOD
-	static const QString oldColumnNames[7] { QStringLiteral ( "QUANTITY_SOLD" ),
-				QStringLiteral ( "SELL_PRICE" ), QStringLiteral ( "SELL_TOTAL_PRICE" ),
-				QStringLiteral ( "QUANTITY_BOUGHT" ), QStringLiteral ( "BOUGHT_PRICE" ),
-				QStringLiteral ( "BOUGHT_TOTAL_PRICE" ), QStringLiteral ( "PROFIT" ) };
-	(void) VDB ()->removeColumn ( QStringLiteral ( "N_ROWS" ), &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[0], FLD_QP_SELL_QUANTITY, &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[1], FLD_QP_SELL_UNIT_PRICE, &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[2], FLD_QP_SELL_TOTALPRICE, &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[3], FLD_QP_PURCHASE_QUANTITY, &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[4], FLD_QP_PURCHASE_UNIT_PRICE, &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[5], FLD_QP_PURCHASE_TOTAL_PRICE, &quickProject::t_info );
-	(void) VDB ()->renameColumn ( oldColumnNames[6], FLD_QP_RESULT, &quickProject::t_info );
+#ifdef TABLE_UPDATE_AVAILABLE
 	return true;
-	quickProject qp;
-	if ( qp.readFirstRecord () ) {
-		//Fix stringRecord format to use the new version used in VivenciaManager3
-		QString field_value;
-		do {
-			qp.setAction ( ACTION_EDIT );
-			for ( uint i ( FLD_QP_ITEM ); i <= FLD_QP_RESULT; ++i ) {
-				field_value = recStrValue ( &qp, i );
-				field_value.remove ( 0, 1 );
-				setRecValue ( &qp, i, field_value );
-			}
-			qp.saveRecord ();
-		} while ( qp.readNextRecord () );
-	}
-	return true;
-#endif //TRANSITION_PERIOD
+#else
 	return false;
+#endif
 }
 
 const TABLE_INFO quickProject::t_info = {

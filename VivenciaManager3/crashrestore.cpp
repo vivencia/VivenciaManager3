@@ -45,7 +45,7 @@ void restoreManager::saveSession ()
 		crash->done ();
 		crash = crashInfoList.next ();
 	}
-	globalMainWindow->exitRequested ( true );
+	MAINWINDOW ()->exitRequested ( true );
 	deleteRestoreManagerInstance ();
 }
 

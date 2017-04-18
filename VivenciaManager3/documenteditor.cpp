@@ -39,34 +39,10 @@ inline const QString configFileName ()
 	return CONFIG ()->defaultConfigDir () + QLatin1String ( "doc_editor.conf" );
 }
 
-const QString joinRecentFilesList ( const VMList<QString>& list )
+documentEditor::~documentEditor ()
 {
-	QString res;
-	for ( uint i ( 0 ); i < list.count (); ++i )
-		res += list.at ( i ) + CHR_COMMA;
-	return res;
+	static_cast<void>( disconnect () );
 }
-
-void listFromString ( VMList<QString>& list, const QString& str )
-{
-	int idx ( 0 );
-	int idx2 ( 0 );
-	QString temp;
-	do
-	{
-		idx2 = str.indexOf ( CHR_COMMA, idx );
-		if ( idx2 != -1 )
-		{
-			temp = str.mid ( idx, idx2 - idx );
-			list.append ( temp );
-			idx = idx2 + 1;
-		}
-		else
-			break;
-	} while ( true );
-}
-
-documentEditor::~documentEditor () {}
 
 documentEditor::documentEditor ( QWidget* parent )
 	: QMainWindow ( parent ), mb_ClosingAllTabs ( false ), recentFilesList ( emptyString, MAX_RECENT_FILES )
@@ -195,12 +171,13 @@ void documentEditor::createMenus ()
 	fileMenu->addAction ( openAct );
 
 	recentFilesSubMenu = new QMenu ( TR_FUNC ( "Recent documents" ) );
-	connect ( recentFilesSubMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return openRecentFile ( action ); } );
-	listFromString ( recentFilesList, configOps::readConfig ( configFileName (), CFG_FIELD_RECENT_FILES ) );
-	if ( !recentFilesList.isEmpty () )
+	static_cast<void>(connect ( recentFilesSubMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return openRecentFile ( action ); } ));
+	recentFilesList.fromString ( configOps::readConfig ( configFileName (), CFG_FIELD_RECENT_FILES ) );
+	if ( recentFilesList.first () )
 	{
-		for ( uint i ( 0 ); i < recentFilesList.count (); ++i )
-			addToRecentFiles ( recentFilesList.at ( i ), false );
+		do {
+			addToRecentFiles ( recentFilesList.curValue (), false );
+		} while ( recentFilesList.next () );
 	}
 	fileMenu->addMenu ( recentFilesSubMenu );
 	fileMenu->addSeparator ();
@@ -321,7 +298,8 @@ void documentEditor::makeWindowActive ( QAction* action )
 
 void documentEditor::changeTabText ( documentEditorWindow* window )
 {
-	tabDocuments->setTabText ( tabDocuments->currentIndex (), window->title () );
+	if ( tabDocuments->currentWidget () == static_cast<QWidget*>(window) )
+		tabDocuments->setTabText ( tabDocuments->currentIndex (), window->title () );
 	saveAct->setEnabled ( window->isModified () );
 }
 
@@ -335,7 +313,7 @@ void documentEditor::closeTab ( int tab_index )
 	}
 	if ( tab_index < tabDocuments->count () )
 	{
-		if ( static_cast<documentEditorWindow*> ( tabDocuments->widget ( tab_index ) )->canClose () )
+		if ( static_cast<documentEditorWindow*>(tabDocuments->widget ( tab_index ))->canClose () )
 		{
 			QWidget* doc ( tabDocuments->widget ( tab_index ) );
 			tabDocuments->removeTab ( tab_index );
@@ -600,7 +578,7 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 	if ( n_menus == MAX_RECENT_FILES )
 	{
 		recentFilesSubMenu->removeAction ( recentFilesSubMenu->actions ().at ( n_menus - 1 ) );
-		recentFilesList.remove ( n_menus - 1 );
+		recentFilesList.removeField ( static_cast<uint>(n_menus) - 1 );
 	}
 	vmAction* filemenu ( new vmAction ( -1, menuText ) );
 	filemenu->setData ( filename );
@@ -608,8 +586,8 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 
 	if ( b_AddToList )
 	{
-		recentFilesList.prepend ( filename );
-		configOps::writeConfig ( configFileName (), CFG_FIELD_RECENT_FILES, joinRecentFilesList ( recentFilesList ) );
+		recentFilesList.fastAppendValue ( filename );
+		configOps::writeConfig ( configFileName (), CFG_FIELD_RECENT_FILES, recentFilesList.toString () );
 	}
 }
 

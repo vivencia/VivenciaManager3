@@ -54,7 +54,7 @@ void vmTableItem::setText ( const QString& text, const bool b_from_cell_itself,
 	}
 	else
 	{
-        if ( hasFormula () && b_from_cell_itself )
+		if ( hasFormula () && b_from_cell_itself )
 			setFormulaOverride ( true );
 	}
 
@@ -86,14 +86,14 @@ void vmTableItem::setText ( const QString& text, const bool b_from_cell_itself,
 void vmTableItem::setDate ( const vmNumber& date )
 {
 	if ( m_widget->type () == WT_DATEEDIT )
-		static_cast<vmDateEdit*> ( m_widget )->setDate ( date.toQDate (), isEditable () );
+		static_cast<vmDateEdit*> ( m_widget )->setDate ( date, isEditable () );
 }
 
 vmNumber vmTableItem::date ( const bool bCurText ) const
 {
 	if ( m_widget->type () == WT_DATEEDIT )
 	{
-		return bCurText ? static_cast<vmDateEdit*> ( m_widget )->date () :
+		return bCurText ? vmNumber ( static_cast<vmDateEdit*>( m_widget )->date () ) :
 					vmNumber ( originalText (), VMNT_DATE, vmNumber::VDF_HUMAN_DATE );
 	}
 	return vmNumber::emptyNumber;
@@ -107,14 +107,18 @@ static VM_NUMBER_TYPE textTypeToNbrType ( const vmLineEdit::TEXT_TYPE tt )
 		case vmWidget::TT_DOUBLE:	return VMNT_DOUBLE;
 		case vmWidget::TT_PHONE:	return VMNT_PHONE;
 		case vmWidget::TT_INTEGER:	return VMNT_INT;
-		default:					return VMNT_UNSET;
+		case vmWidget::TT_TEXT:
+		case vmWidget::TT_NUMBER_PLUS_SYMBOL:
+		case vmWidget::TT_UPPERCASE:
+									return VMNT_UNSET;
 	}
+	return VMNT_UNSET;
 }
 
 vmNumber vmTableItem::number ( const bool bCurText ) const
 {
 	if ( m_texttype != vmLineEdit::TT_TEXT )
-        return vmNumber ( bCurText ? text () : originalText (), textTypeToNbrType ( textType () ), 1 );
+		return vmNumber ( bCurText ? text () : originalText (), textTypeToNbrType ( textType () ), 1 );
 	return vmNumber::emptyNumber;
 }
 
@@ -176,7 +180,7 @@ void vmTableItem::targetsFromFormula ()
 						/* This cell depends on value of some cell that is not created yet
 						 * We can break the calculation now, because it is pointless, and resume
 						 * at a later point, but never during the actual use of a table. All this
-						 * means a little longer to show the table, but smoother operation
+						 * means it takes a little longer to show the table, but its operation is smoother
 						 */
 						m_table->reScanItem ( this );
 						return;

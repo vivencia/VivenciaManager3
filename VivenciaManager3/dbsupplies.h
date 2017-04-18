@@ -9,7 +9,6 @@ class dbSupplies : public DBRecord
 {
 
 friend class VivenciaDB;
-friend class Data;
 friend class dbSuppliesUI;
 
 public:

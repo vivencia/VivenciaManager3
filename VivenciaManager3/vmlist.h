@@ -57,16 +57,19 @@ public:
 		removeOne ( const T& item, int from_pos = 0, const bool delete_item = false ), //removes an item from pos
 		remove ( const int = 0, const bool delete_item = false ); //returns nItems
 
+	static void
+		deletePointer ( TIsNotPointerType*, const uint pos ),
+		deletePointer ( TIsFuncPointerType*, const uint pos );
+	
 	void
 		clear ( const uint from, const uint to, const bool keep_memory = false, const bool delete_items = false ),
 		setAutoDeleteItem ( const bool bauto_del ),
 		deletePointer ( TIsPointerType*, const uint pos ),
-		deletePointer ( TIsNotPointerType*, const uint pos ),
-		deletePointer ( TIsFuncPointerType*, const uint pos ),
 		resize ( const uint n ),
 		setPreAllocNumber ( const uint n ),
 		setDefaultValue ( const T& default_value ),
-		setCurrent ( const int pos ) const;
+		setCurrent ( const int pos ) const,
+		setCurrent ( const uint pos ) const;
 
 	T
 		&operator[] ( const int pos ),
@@ -98,26 +101,20 @@ public:
 		&end () const;
 
 	inline uint
-	count () const {
-		return nItems;
-	}
+		count () const { return nItems; }
 
 	inline int
-	currentIndex () const {
-		return ptr;
-	}
+		currentIndex () const { return ptr; }
 
 	inline uint
-	preallocNumber () const {
-		return m_nprealloc;
-	}
+		preallocNumber () const { return m_nprealloc; }
 
 	bool
-	getAlwaysPrealloc () const,
-					  isEmpty () const,
-					  currentIsLast () const,
-					  currentIsFirst () const,
-					  TIsPointer () const;
+		getAlwaysPrealloc () const,
+		isEmpty () const,
+		currentIsLast () const,
+		currentIsFirst () const,
+		TIsPointer () const;
 	
 	virtual bool
 		operator!= ( const VMList<T>& other ) const,
@@ -274,13 +271,13 @@ inline void VMList<T>::setData ( T* data_ptr )
 }
 
 template <typename T>
-inline int VMList<T>::append ( const T &item )
+inline int VMList<T>::append ( const T& item )
 {
 	return insert ( nItems, item );
 }
 
 template <typename T>
-inline int VMList<T>::prepend ( const T &item )
+inline int VMList<T>::prepend ( const T& item )
 {
 	return insert ( 0, item );
 }
@@ -406,6 +403,13 @@ template <typename T>
 inline void VMList<T>::setCurrent ( const int pos ) const
 {
 	if ( pos < static_cast<int> ( nItems ) )
+		const_cast<VMList<T>*> ( this )->ptr = pos;
+}
+
+template <typename T>
+inline void VMList<T>::setCurrent ( const uint pos ) const
+{
+	if ( pos < nItems )
 		const_cast<VMList<T>*> ( this )->ptr = pos;
 }
 
@@ -678,9 +682,9 @@ void VMList<T>::clearButKeepMemory ( const bool delete_items )
 {
 	if ( _data != nullptr )
 	{
-		uint i ( 0 );
 		if ( delete_items || mb_autodel )
 		{
+			uint i ( 0 );
 			while ( i < nItems )
 				deletePointer ( &r, i++ );
 		}
@@ -693,7 +697,7 @@ void VMList<T>::clearButKeepMemory ( const bool delete_items )
 template <typename T>
 void VMList<T>::resize ( const uint n )
 {
-	if ( signed ( n ) >= nItems )
+	if ( n >= nItems )
 	{
 		if ( n > capacity )
 			reserve ( n );
@@ -706,7 +710,7 @@ void VMList<T>::resize ( const uint n )
 }
 
 template <typename T>
-int VMList<T>::remove ( int pos, const bool delete_item )
+int VMList<T>::remove ( const int pos, const bool delete_item )
 {
 	int ret ( -1 );
 	if ( (pos >= 0) && (pos < static_cast<int>( nItems ) ) )
@@ -997,17 +1001,17 @@ public:
 	virtual inline ~PointersList () { this->clear (); }
 
 	uint
-	realloc ( const uint );
+		realloc ( const uint );
 
 	void
-	clear ( const bool delete_items = false ),
-		  clearButKeepMemory ( const bool delete_items = false );
+		clear ( const bool delete_items = false ),
+		clearButKeepMemory ( const bool delete_items = false );
 
 	void
-	resetMemory ( const T&, uint length = 0 ),
-				moveItems ( const uint to, const uint from, const uint amount ),
-				copyItems ( T* dest, const T* src, const uint amount ),
-				reserve ( const uint );
+		resetMemory ( const T&, uint length = 0 ),
+		moveItems ( const uint to, const uint from, const uint amount ),
+		copyItems ( T* dest, const T* src, const uint amount ),
+		reserve ( const uint );
 
 	const PointersList<T>&
 			operator= ( const PointersList<T>& other );
@@ -1073,7 +1077,8 @@ PointersList<T>::PointersList ( const uint n_prealloc )
 template<typename T>
 const PointersList<T>& PointersList<T>::operator= ( const PointersList<T>& other )
 {
-	if ( this != &other ) {
+	if ( this != &other )
+	{
 		this->clear ();
 		VMList<T>::setPreAllocNumber ( other.preallocNumber () );
 		VMList<T>::setCapacity ( other.getCapacity () );

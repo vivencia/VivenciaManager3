@@ -21,7 +21,7 @@
 SimpleCalculator *SimpleCalculator::s_instance ( nullptr );
 
 SimpleCalculator::SimpleCalculator ()
-	: QDialog ( globalMainWindow ), ui ( new Ui::SimpleCalculator )
+	: QDialog ( MAINWINDOW () ), ui ( new Ui::SimpleCalculator )
 {
 	ui->setupUi ( this );
 	
@@ -39,7 +39,7 @@ SimpleCalculator::~SimpleCalculator () {}
 void SimpleCalculator::showCalc ( const QPoint& pos, vmLineEdit* line, QWidget* parentWindow )
 {
 	txtReceiveResult = line;
-	setParent ( parentWindow != nullptr ? parentWindow : globalMainWindow );
+	setParent ( parentWindow != nullptr ? parentWindow : MAINWINDOW () );
 	show ();
 	move ( pos.x () + width () , pos.y () );
 	qApp->setActiveWindow ( this );

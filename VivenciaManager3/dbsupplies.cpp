@@ -13,30 +13,13 @@ const uint SUPPLIES_FIELDS_TYPE[SUPPLIES_FIELD_COUNT] = {
 	DBTYPE_SHORTTEXT
 };
 
-#ifdef TRANSITION_PERIOD
-#include "vivenciadb.h"
-#include "vmnumberformats.h"
-#endif
-
 bool updateSuppliesTable ()
 {
-#ifdef TRANSITION_PERIOD
-	QString cmd;
-	vmNumber t_version ( dbSupplies::t_info.version );
-	if ( t_version == vmNumber ( 2.5 ) ) {
-		cmd = QStringLiteral ( "ALTER TABLE STOCK DROP DATE_OUT" );
-		VDB ()->database ()->exec ( cmd );
-
-		cmd = QStringLiteral ( "ALTER TABLE STOCK DROP DATE_BUY" );
-		VDB ()->database ()->exec ( cmd );
-
-		cmd = QStringLiteral ( "RENAME TABLE STOCK TO SUPPLIES" );
-		VDB ()->database ()->exec ( cmd );
-	}
+#ifdef TABLE_UPDATE_AVAILABLE
 	return true;
 #else
 	return false;
-#endif
+#endif //TABLE_UPDATE_AVAILABLE
 }
 
 void updateSuppliesISRUnitCompleter ( const DBRecord* db_rec )

@@ -94,7 +94,7 @@ void newProjectDialog::showDialog ( const QString& clientname, const bool b_allo
 	exec ();
 }
 
-void newProjectDialog::loadJobsList ( const int clientid )
+void newProjectDialog::loadJobsList ( const uint clientid )
 {
 	lstJobTypes->setIgnoreChanges ( true );
 	lstJobTypes->clear ();
@@ -106,14 +106,14 @@ void newProjectDialog::loadJobsList ( const int clientid )
 	Data::fillJobTypeList ( jobTypesList, QString::number ( clientid ) );
 
 	QString jobid;
-	mClientItem = globalMainWindow->getClientItem ( clientid );
+	mClientItem = MAINWINDOW ()->getClientItem ( clientid );
 	jobListItem* job_parent ( nullptr );
 	QStringList::const_iterator itr ( jobTypesList.constBegin () );
 	const QStringList::const_iterator itr_end ( jobTypesList.constEnd () );
 	for ( ; itr != itr_end; ++itr )
 	{
 		jobid = (*itr).mid ( 1, (*itr).indexOf ( CHR_R_PARENTHESIS, 2 ) - 1 );
-		job_parent = globalMainWindow->getJobItem ( mClientItem, jobid.toInt () );
+		job_parent = MAINWINDOW ()->getJobItem ( mClientItem, jobid.toUInt () );
 		if ( job_parent )
 		{
 			mJobItem = static_cast<jobListItem*>( job_parent->relatedItem ( RLI_EXTRAITEMS ) );
@@ -185,7 +185,6 @@ void newProjectDialog::chkUseDefaultName_checked ()
 {
 	jobTypeItemSelected ( lstJobTypes->currentItem () );
 	txtProjectName->setEditable ( !chkUseDefaultName->isChecked () );
-	//qDebug () << !chkUseDefaultName->isChecked ();
 }
 
 void newProjectDialog::btnOK_clicked ()

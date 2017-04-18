@@ -15,35 +15,11 @@ static const uint MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] = {
 
 bool updateMachinesTable ()
 {
-#ifdef TRANSITION_PERIOD
-	VDB ()->createTable ( &machinesRecord::t_info );
-	/*Inventory invRec;
-	if ( invRec.readFirstRecord () ) {
-		machinesRecord macRec;
-		QString brand, type;
-		do {
-			if ( recStrValue ( &invRec, FLD_INVENTORY_TYPE ) == QStringLiteral ( "Ferramenta" ) ) {
-				macRec.setAction ( ACTION_ADD );
-				setRecValue ( &macRec, FLD_MACHINES_NAME, recStrValue ( &invRec, FLD_INVENTORY_ITEM ) );
-				brand = recStrValue ( &invRec, FLD_INVENTORY_BRAND );
-				if ( brand == QStringLiteral ( "BOSCH" ) || brand == QStringLiteral ( "DEWALT" ) || brand == QStringLiteral ( "TRAPP" ) )
-					type = QStringLiteral ( "Elétrica" );
-				else if ( brand == QStringLiteral ( "HUSQVARNA" ) || brand == QStringLiteral ( "BRIGGS" ) )
-					type = QStringLiteral ( "Combustão (gasolina)" );
-				else
-					type = QStringLiteral ( "Manual" );
-
-				setRecValue ( &macRec, FLD_MACHINES_BRAND, brand );
-				setRecValue ( &macRec, FLD_MACHINES_BRAND, type );
-				macRec.saveRecord ();
-				macRec.clearAll ();
-			}
-		} while ( invRec.readNextRecord () );
-	}*/
+#ifdef TABLE_UPDATE_AVAILABLE
 	return true;
-
-#endif //TRANSITION_PERIOD
+#else
 	return false;
+#endif //TABLE_UPDATE_AVAILABLE
 }
 
 const TABLE_INFO machinesRecord::t_info = {

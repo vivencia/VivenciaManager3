@@ -22,8 +22,6 @@ enum SEARCH_STEPS {
 class searchUI : public QDialog
 {
 
-friend class Data;
-
 public:
 	virtual ~searchUI ();
 
@@ -32,8 +30,8 @@ public:
 			searchUI::s_instance = new searchUI ();
 	}
 
-    inline bool canSearch () const { return static_cast<SEARCH_STATUS>( searchStatus.state () ) == SS_NOT_FOUND; }
-    inline bool isSearching () const { return static_cast<SEARCH_STATUS>( searchStatus.state () ) == SS_SEARCH_FOUND; }
+	inline bool canSearch () const { return static_cast<SEARCH_STATUS>( searchStatus.state () ) == SS_NOT_FOUND; }
+	inline bool isSearching () const { return static_cast<SEARCH_STATUS>( searchStatus.state () ) == SS_SEARCH_FOUND; }
 	inline const QString& searchTerm () const { return mSearchTerm; }
 
 	void searchCancel ();

@@ -27,20 +27,13 @@
 #include <QLabel>
 #include <QColorDialog>
 #include <QVariant>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
-/*
-I am using the object's property objectName () pointer by doc because I cannot use any info that its parent holds that is derived
-from Qt. That's because doc gets copied from its original source to be used by the printer class, and only Qt's original info is copied,
-not my subclassed variations. It is a hack, but it works.
-*/
 QSizeF imageTextObject::intrinsicSize ( QTextDocument*, int /*posInDocument*/, const QTextFormat &format )
 {
 	const QImage bufferedImage ( qvariant_cast<QImage> ( format.property ( 1 ) ) );
-	QSizeF size ( bufferedImage.size () );
-
-	//if ( doc->property ( PROPERTY_PRINT_PREVIEW ).toBool () == true )
-	//	size *= 10.0;
-	return size;
+	return bufferedImage.size ();
 }
 
 void imageTextObject::drawObject ( QPainter* painter, const QRectF& rect, QTextDocument* doc, int posInDocument,
@@ -56,18 +49,25 @@ textEditor::textEditor ( documentEditor* mdiParent )
 {
 	setEditorType ( TEXT_EDITOR_SUB_WINDOW );
 	mDocument = new textEditWithCompleter ( nullptr );
-	//mDocument->resize ( 300, 300 );
-	//mDocument->document ()->documentLayout ()->registerHandler ( QTextFormat::UserObject + 1, new imageTextObject );
-	connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } );
 	mCursor = mDocument->textCursor ();
 	mCursor.movePosition ( QTextCursor::Start );
-	connect ( mDocument->document (), &QTextDocument::contentsChanged, this, [&] () { return documentWasModified (); } );
-	connect ( mDocument->document (), &QTextDocument::undoAvailable, this, [&] ( const bool undo ) { return documentWasModifiedByUndo ( undo ); } );
-	connect ( mDocument->document (), &QTextDocument::redoAvailable, this, [&] ( const bool redo ) { return documentWasModifiedByRedo ( redo ); } );
-	mainLayout->addWidget ( mDocument, 0, 0, 1, 1 );
+	static_cast<void>(connect ( mDocument->document (), &QTextDocument::contentsChanged, this, [&] () { return documentWasModified (); } ));
+	static_cast<void>(connect ( mDocument->document (), &QTextDocument::undoAvailable, this, [&] ( const bool undo ) { return documentWasModifiedByUndo ( undo ); } ));
+	static_cast<void>(connect ( mDocument->document (), &QTextDocument::redoAvailable, this, [&] ( const bool redo ) { return documentWasModifiedByRedo ( redo ); } ));
+	//mainLayout->addWidget ( mDocument, 0, 0, 1, 1 );
+	mainLayout->addWidget ( mDocument, 3 );
+	mDocument->setUtilitiesPlaceLayout ( mainLayout );
 
+	textEditorToolBar::initToolbarInstace ();
+	static_cast<void>(connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } ));
 	TEXT_EDITOR_TOOLBAR ()->show ( mdiParent );
 	mDocument->setFocus ();
+}
+
+textEditor::~textEditor ()
+{
+	static_cast<void>( mDocument->disconnect ());
+	delete mDocument;
 }
 
 void textEditor::cut ()
@@ -178,9 +178,7 @@ bool textEditor::saveFile ( const QString& filename )
 	QFile file ( filename );
 	if ( file.open ( QFile::WriteOnly | QFile::Text ) )
 	{
-		QString str = mb_UseHtml ?
-					  mDocument->document()->toHtml ( "utf-8" ) :
-					  mDocument->document()->toPlainText ();
+		QString str ( mb_UseHtml ? mDocument->document()->toHtml ( "utf-8" ) : mDocument->document()->toPlainText () );
 
 		if ( !mapImages.isEmpty () )
 		{
@@ -214,8 +212,10 @@ bool textEditor::saveAs ( const QString& filename )
 	QString new_filename ( filename );
 	QString extension ( fileOps::fileExtension ( filename ) );
 	if ( extension.isEmpty () )
+	{
 		// rtf is the safe option. since we don't know whether the user formatted the document or not
 		new_filename = fileOps::replaceFileExtension ( filename, ( extension = QStringLiteral ( "rtf" ) ) );
+	}
 	mb_UseHtml = !( extension == QStringLiteral ( "txt" ) );
 	return saveFile ( new_filename );
 }
@@ -246,14 +246,13 @@ const QString textEditor::initialDir () const
 }
 
 //---------------------------------------TOOL-BAR----------------------------------------------------
-
 static QString stringFloatKey ( const uint increment )
 {
 	if ( increment >= 100 )
 		return emptyString;
 
 	QString magicNumber ( QStringLiteral ( "1.1111" ) );
-	int multiplier ( static_cast<int>( increment / 10 ) );
+	uint multiplier ( increment / 10 );
 	QChar uns ( QLatin1Char ( '0' ) );
 	QChar tens ( QLatin1Char ( '0' ) );
 
@@ -388,7 +387,7 @@ textEditorToolBar::textEditorToolBar ()
 	btnHighlightColor->setToolTip ( TR_FUNC ( "Font highlight color" ) );
 	connect ( btnHighlightColor, &QToolButton::clicked, this, [&] () { return btnHighlightColor_clicked (); } );
 
-	QHBoxLayout* layoutFontStyleButtons = new QHBoxLayout;
+	QHBoxLayout* layoutFontStyleButtons ( new QHBoxLayout );
 	layoutFontStyleButtons->setSpacing ( 1 );
 	layoutFontStyleButtons->setContentsMargins ( 1, 1, 1, 1 );
 	layoutFontStyleButtons->addWidget ( btnBold );
@@ -651,7 +650,7 @@ void textEditorToolBar::updateControls ()
 
 			const QTextTable* table ( mEditorWindow->mDocument->textCursor ().currentTable () );
 			if ( table != nullptr )
-				{
+			{
 				spinNRows->setValue ( table->rows () );
 				spinNCols->setValue ( table->columns () );
 			}
@@ -861,6 +860,12 @@ void textEditorToolBar::btnTextColor_clicked ()
 		setFontColor ( color );
 }
 
+void textEditorToolBar::initToolbarInstace ()
+{
+	if ( textEditorToolBar::s_instance == nullptr )
+		textEditorToolBar::s_instance = new textEditorToolBar ();	
+}
+
 void textEditorToolBar::setFontColor ( const QColor &color )
 {
 	QTextCharFormat charFormat;
@@ -887,8 +892,6 @@ void textEditorToolBar::createList ( const QTextListFormat::Style style )
 {
 	if ( mEditorWindow == nullptr ) return;
 
-	//mEditorWindow->mCursor = mEditorWindow->mDocument->textCursor ();
-
 	QTextListFormat listformat;
 	QTextList* list ( mEditorWindow->mCursor.currentList () );
 
@@ -910,7 +913,6 @@ void textEditorToolBar::btnPrint_clicked ()
 	mEditorWindow->mDocument->setPreview ( true );
 	QPrinter printer ( QPrinter::ScreenResolution );
 	preparePrinterDevice ( &printer );
-	//printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
 	QPrintDialog* printerDlg ( new QPrintDialog ( &printer, this ) );
 	if ( mEditorWindow->mDocument->textCursor ().hasSelection () )
 		printerDlg->addEnabledOption ( QAbstractPrintDialog::PrintSelection );
@@ -931,9 +933,8 @@ void textEditorToolBar::btnPrintPreview_clicked ()
 	mEditorWindow->mDocument->setPreview ( true );
 	QPrinter printer ( QPrinter::ScreenResolution );
 	preparePrinterDevice ( &printer );
-	//printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
 	QPrintPreviewDialog preview ( &printer, this );
-	connect ( &preview, &QPrintPreviewDialog::paintRequested, this, [&] ( QPrinter* printer ) { return previewPrint ( printer ); } );
+	static_cast<void>(connect ( &preview, &QPrintPreviewDialog::paintRequested, this, [&] ( QPrinter* printer ) { return previewPrint ( printer ); } ));
 	preview.exec ();
 	mEditorWindow->setPreview ( false );
 	mEditorWindow->mDocument->setPreview ( false );
@@ -973,7 +974,6 @@ void textEditorToolBar::btnExportToPDF_clicked ()
 		mEditorWindow->mPDFName = fileName;
 		QPrinter printer ( QPrinter::HighResolution );
 		preparePrinterDevice ( &printer );
-		//printer.setPageMargins ( 12.00, 12.00, 12.00, 12.00, QPrinter::Millimeter );
 		printer.setOutputFormat ( QPrinter::PdfFormat );
 		printer.setOutputFileName ( fileName );
 		mEditorWindow->mDocument->document ()->print ( &printer );
