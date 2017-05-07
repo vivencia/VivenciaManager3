@@ -205,7 +205,7 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 	QString backupFile ( path + filename + QLatin1String ( ".sql" ) );
 
 	bool ok ( false );
-	if ( EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) )
+	if ( Data::EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) )
 	{
 		QString tables;
 		if ( bDlg )
@@ -637,8 +637,9 @@ bool BackupDialog::getSelectedItems ( QString& selected )
 	if ( !ui->restoreList->selectedItems ().isEmpty () )
 	{
 		selected.clear ();
-		QList<QListWidgetItem*>::const_iterator itr ( ui->restoreList->selectedItems ().constBegin () );
-		const QList<QListWidgetItem*>::const_iterator itr_end ( ui->restoreList->selectedItems ().constEnd () );
+		const QList<QListWidgetItem*> sel_items ( ui->restoreList->selectedItems () );
+		QList<QListWidgetItem*>::const_iterator itr ( sel_items.constBegin () );
+		const QList<QListWidgetItem*>::const_iterator itr_end ( sel_items.constEnd () );
 		for ( ; itr != itr_end; ++itr )
 		{
 			if ( !selected.isEmpty () )

@@ -125,7 +125,7 @@ bool fixDatabase::fixTables ( const QString& tables )
 														APP_TR_FUNC ( "In order to fix the database, you need to have root privileges." ) ) )
 	{
 
-		QString command ( fixApp + fixAppSafeRecover + mysqlLibDir.arg ( DB_NAME ).arg ( tables ).arg ( tempFile ) );
+		QString command ( fixApp + fixAppSafeRecover + mysqlLibDir.arg ( DB_NAME, tables, tempFile ) );
 		commandQueue ( command );
 		static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( r_passwd, command ), emptyString ) );
 		if ( readOutputFile ( r_passwd ) )

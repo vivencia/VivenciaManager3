@@ -96,7 +96,7 @@ void documentEditorWindow::documentWasModified ()
 		true when printing and calling it so many times).
 		 */
 		static int wasInPreview ( 0 );
-		if ( mb_inPreview )
+		if ( inPreview () )
 		{
 			++wasInPreview;
 			return;

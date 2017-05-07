@@ -26,6 +26,7 @@ namespace Data
 {
 
 	extern void init ();
+	extern void de_init ();
 	extern void loadDataIntoMemory ();
 
 	//--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
@@ -56,5 +57,8 @@ namespace Data
 	}
 
 	extern int vmColorIndex ( const VMColors vmcolor );
+	
+	extern QIcon* listIndicatorIcons[4];
+	extern bool EXITING_PROGRAM;
 }
 #endif // DATA_H

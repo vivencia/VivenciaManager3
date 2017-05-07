@@ -35,6 +35,7 @@
 #include "machinesdlg.h"
 #include "cleanup.h"
 #include "configdialog.h"
+#include "dbstatistics.h"
 #include "fast_library_functions.h"
 
 #include <QEvent>
@@ -49,7 +50,6 @@
 #include <QDesktopWidget>
 #include <QScrollBar>
 
-bool EXITING_PROGRAM ( false );
 MainWindow* MainWindow::s_instance ( nullptr );
 
 QLatin1String MainWindow::lstJobReportItemPrefix ( "o dia - " );
@@ -76,7 +76,7 @@ MainWindow::MainWindow ()
 	  subMenuJobPdfView ( nullptr ), subMenuJobPdfEMail ( nullptr ), todoListWidget ( nullptr ), timerUpdate ( nullptr ),
 	  sepWin_JobPictures ( nullptr ), sepWin_JobReport ( nullptr ), jobsPicturesMenuAction ( nullptr ),
 	  mainTaskPanel ( nullptr ), selJob_callback ( nullptr ), mb_jobPosActions ( false ),
-	  mClientCurItem ( nullptr ), mJobCurItem ( nullptr ), mPayCurItem ( nullptr ), mBuyCurItem ( nullptr )
+	  mClientCurItem ( nullptr ), mJobCurItem ( nullptr ), mPayCurItem ( nullptr ), mBuyCurItem ( nullptr ), dlgSaveEditItems ( nullptr )
 {
 	ui->setupUi ( this );
 	setWindowIcon ( ICON ( "vm-logo-22x22" ) );
@@ -87,10 +87,7 @@ MainWindow::MainWindow ()
 
 MainWindow::~MainWindow ()
 {
-	EXITING_PROGRAM = true;
-	BackupDialog::doDayBackup ();
 	saveEditItems ();
-
 	timerUpdate->stop ();
 	
 	ui->clientsList->setIgnoreChanges ( true );
@@ -115,16 +112,17 @@ MainWindow::~MainWindow ()
 	for ( int i ( ui->clientsList->count () - 1 ); i >= 0; --i )
 		delete ui->clientsList->item ( i );
 	
+	int coords[4] = { 0 };
+	coords[0] = pos ().x ();
+	coords[1] = pos ().y ();
+	coords[2] = width ();
+	coords[3] = height ();
+	CONFIG ()->saveGeometry ( coords );
+	
 	heap_del ( sepWin_JobPictures );
 	heap_del ( sepWin_JobReport );
 	heap_del ( ui );
 	heap_del ( mCal );
-
-	delete listIndicatorIcons[1];
-	delete listIndicatorIcons[2];
-	delete listIndicatorIcons[3];
-	
-	cleanUpApp ();
 }
 
 void MainWindow::continueStartUp ()
@@ -141,40 +139,9 @@ void MainWindow::continueStartUp ()
 	show ();
 	
 	// connect for last to avoid unnecessary signal emission when we are removing tabs
-	connect ( ui->tabMain, &QTabWidget::currentChanged, this, &MainWindow::tabMain_currentTabChanged );
-	connect ( qApp, &QCoreApplication::aboutToQuit, this, [&] () { return exitRequested (); } );
+	static_cast<void>( connect ( ui->tabMain, &QTabWidget::currentChanged, this, &MainWindow::tabMain_currentTabChanged ) );
+	static_cast<void>( connect ( qApp, &QCoreApplication::aboutToQuit, this, [&] () { return Data::de_init (); } ) );
 	this->tabPaysLists_currentChanged ( 0 ); // update pay totals line edit text
-}
-
-void MainWindow::exitRequested ( const bool user_requested )
-{
-	static bool already_called ( false );
-
-	// the user clicked a button to exit the program. This function gets called and do the cleanup
-	// job. Now, it asks Qt to exit the program and will be called again because it is hooked up to the
-	// signal aboutToQuit (); only, we do not need to do anything this time, so we return.
-	if ( already_called )
-		return;
-
-	EXITING_PROGRAM = true;
-
-	int coords[4] = { 0 };
-	coords[0] = pos ().x ();
-	coords[1] = pos ().y ();
-	coords[2] = width ();
-	coords[3] = height ();
-	CONFIG ()->saveGeometry ( coords );
-
-	// It seems pointless to start EDITOR () when we are leaving the program. So we check before calling closeAllTabs.
-	// EDITOR will check for EXITING_PROGRAM as well to cope with this situation
-	if ( EDITOR () != nullptr )
-		EDITOR ()->closeAllTabs ();
-
-	if ( user_requested )
-	{
-		already_called = true;
-		qApp->quit ();
-	}
 }
 //--------------------------------------------CLIENT------------------------------------------------------------
 //TODO
@@ -279,35 +246,28 @@ void MainWindow::setupClientPanel ()
 	ui->chkClientActive->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClient_textAltered ( sender ); } );
 
-	//const bool b_enabled ( DATA ()->writes[TABLE_CLIENT_ORDER] && mClientCurItem != nullptr );
-	//const bool b_enabled ( mClientCurItem != nullptr );
-
-	connect ( ui->btnClientAdd, &QToolButton::clicked, this, [&] () {
-		return (mClientCurItem = addClient ()); } );
-	connect ( ui->btnClientEdit, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(editClient ( mClientCurItem )); } );
-	connect ( ui->btnClientDel, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(delClient ( mClientCurItem )); } );
-	connect ( ui->btnClientSave, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(saveClient ( mClientCurItem )); } );
-	connect ( ui->btnClientCancel, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>( cancelClient ( mClientCurItem )); } );
+	static_cast<void>( connect ( ui->btnClientAdd, &QToolButton::clicked, this, [&] () { return (mClientCurItem = addClient ()); } ) );
+	static_cast<void>( connect ( ui->btnClientEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editClient ( mClientCurItem )); } ) );
+	static_cast<void>( connect ( ui->btnClientDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delClient ( mClientCurItem )); } ) );
+	static_cast<void>( connect ( ui->btnClientSave, &QToolButton::clicked, this, [&] () { return static_cast<void>( saveClient ( mClientCurItem )); } ) );
+	static_cast<void>( connect ( ui->btnClientCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelClient ( mClientCurItem )); } ) );
 }
 
 void MainWindow::clientKeyPressedSelector ( const QKeyEvent* ke )
 {
 	if ( ke->key () == Qt::Key_Escape )
-		static_cast<void>(cancelClient ( mClientCurItem ));
-	else {
+		static_cast<void>( cancelClient ( mClientCurItem ) );
+	else
+	{
 		ui->clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
-		static_cast<void>(saveClient ( mClientCurItem ));
+		static_cast<void>( saveClient ( mClientCurItem ) );
 	}
 }
 
 void MainWindow::clientsListWidget_currentItemChanged ( vmListItem* item )
 {
 	insertNavItem ( item );
-	(void) displayClient ( static_cast<clientListItem*> ( item ) );
+	static_cast<void>( displayClient( static_cast<clientListItem*> ( item ) ) );
 }
 
 void MainWindow::controlClientForms ( const clientListItem* const client_item )
@@ -340,9 +300,9 @@ bool MainWindow::saveClient ( clientListItem* client_item )
 {
 	if ( client_item != nullptr )
 	{
-		if ( client_item->clientRecord ()->saveRecord () )
+		if ( client_item->clientRecord ()->saveRecord ( false ) )
 		{
-			client_item->setAction ( client_item->clientRecord ()->action () );
+			client_item->setAction ( ACTION_READ, true ); // now we can change indexes
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved!" ), TR_FUNC ( "Client data saved!" ) );
 			controlClientForms ( client_item );
 			controlJobForms ( nullptr );
@@ -362,7 +322,7 @@ clientListItem* MainWindow::addClient ()
 	static_cast<void>(client_item->loadData ());
 	client_item->setAction ( ACTION_ADD, true );
 	client_item->addToList ( ui->clientsList );
-	insertEditItem ( static_cast<vmListItem*>(client_item) );
+	insertEditItem ( static_cast<vmListItem*>( client_item ) );
 	client_item->setDBRecID ( static_cast<uint>(recIntValue ( client_item->clientRecord (), FLD_CLIENT_ID )) );
 	ui->txtClientName->setFocus ();
 	return client_item;
@@ -375,7 +335,7 @@ bool MainWindow::editClient ( clientListItem* client_item, const bool b_dogui )
 		if ( client_item->action () == ACTION_READ )
 		{
 			client_item->setAction ( ACTION_EDIT, true );
-			insertEditItem ( static_cast<vmListItem*>(client_item) );
+			insertEditItem ( static_cast<vmListItem*>( client_item ) );
 			if ( b_dogui )
 			{
 				VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Editing client record" ),
@@ -505,7 +465,7 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 		for ( i = 0; i < client_item->jobs->count (); ++i )
 		{
 			job_item = client_item->jobs->at ( i );
-			(void) job_item->loadData ();
+			static_cast<void>( job_item->loadData () );
 			job_item->addToList ( ui->jobsList );
 		}
 
@@ -514,7 +474,7 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 		for ( i = 0; i < client_item->pays->count (); ++i )
 		{
 			pay_item = client_item->pays->at ( i );
-			(void) pay_item->loadData ();
+			static_cast<void>( pay_item->loadData () );
 			pay_item->addToList ( ui->paysList );
 			totalPays += pay_item->payRecord ()->price ( FLD_PAY_PRICE );
 		}
@@ -525,7 +485,7 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 		for ( i = 0; i < client_item->buys->count (); ++i )
 		{
 			buy_item = client_item->buys->at ( i );
-			(void) buy_item->loadData ();
+			static_cast<void>( buy_item->loadData () );
 			buy_item->addToList ( ui->buysList );
 		}
 	}
@@ -533,6 +493,28 @@ void MainWindow::fillAllLists ( const clientListItem* client_item )
 	ui->jobsList->setIgnoreChanges ( false );
 	ui->paysList->setIgnoreChanges ( false );
 	ui->buysList->setIgnoreChanges ( false );
+}
+
+// Update client's end date. This might be the last job for the client, so we mark what could be the last day working for that client
+void MainWindow::alterClientEndDate ( const jobListItem* const job_item )
+{
+	clientListItem* client_item ( static_cast<clientListItem*>( job_item->relatedItem ( RLI_CLIENTPARENT ) ) );
+	if ( client_item->clientRecord ()->date ( FLD_CLIENT_ENDDATE ) != job_item->jobRecord ()->date ( FLD_JOB_ENDDATE ) )
+	{
+		if ( client_item == mClientCurItem )
+		{
+			static_cast<void>( editClient ( client_item ) );
+			ui->dteClientDateTo->setDate ( vmNumber ( ui->dteJobEnd->date () ), true );
+			static_cast<void>( saveClient ( client_item ) );
+		}
+		else
+		{
+			Client* client ( client_item->clientRecord () );
+			client->setAction ( ACTION_EDIT );
+			setRecValue ( client, FLD_CLIENT_ENDDATE, job_item->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_DB_DATE ) );
+			static_cast<void>( client->saveRecord () );
+		}
+	}
 }
 //--------------------------------------------CLIENT------------------------------------------------------------
 
@@ -557,7 +539,7 @@ void MainWindow::txtClientName_textAltered ( const QString& text )
 
 void MainWindow::txtClient_textAltered ( const vmWidget* const sender )
 {
-	setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>(sender->id ()), sender->text () );
+	setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>( sender->id () ), sender->text () );
 	postFieldAlterationActions ( mClientCurItem );
 }
 
@@ -576,15 +558,15 @@ void MainWindow::txtClientZipCode_textAltered ( const QString& text )
 
 void MainWindow::dteClient_dateAltered ( const vmWidget* const sender )
 {
-	setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>(sender->id ()),
+	setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>( sender->id () ),
 				  static_cast<const vmDateEdit* const>( sender )->date ().toString ( DATE_FORMAT_DB ) );
 	postFieldAlterationActions ( mClientCurItem );
 }
 
 void MainWindow::contactsClientAdd ( const QString& info, const vmWidget* const sender )
 {
-	setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>(sender->id ()),
-				  stringRecord::joinStringRecords ( recStrValue ( mClientCurItem->clientRecord (), static_cast<uint>(sender->id ()) ), info ) );
+	setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>( sender->id () ),
+				  stringRecord::joinStringRecords ( recStrValue ( mClientCurItem->clientRecord (), static_cast<uint>( sender->id () ) ), info ) );
 	postFieldAlterationActions ( mClientCurItem );
 }
 
@@ -592,9 +574,9 @@ void MainWindow::contactsClientDel ( const int idx, const vmWidget* const sender
 {
 	if ( idx >= 0 )
 	{
-		stringRecord info_rec ( recStrValue ( mClientCurItem->clientRecord (), static_cast<uint>(sender->id ()) ) );
+		stringRecord info_rec ( recStrValue ( mClientCurItem->clientRecord (), static_cast<uint>( sender->id () ) ) );
 		info_rec.removeField ( static_cast<uint>(idx) );
-		setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>(sender->id ()), info_rec.toString () );
+		setRecValue ( mClientCurItem->clientRecord (), static_cast<uint>( sender->id () ), info_rec.toString () );
 		postFieldAlterationActions ( mClientCurItem );
 	}
 }
@@ -640,20 +622,14 @@ void MainWindow::showJobSearchResult ( vmListItem* item, const bool bshow )
 
 void MainWindow::setupJobPanel ()
 {
-	connect ( ui->btnJobAdd, &QToolButton::clicked, this, [&] () {
-		return (mJobCurItem = addJob ( mClientCurItem )); } );
-	connect ( ui->btnJobEdit, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(editJob ( mJobCurItem )); } );
-	connect ( ui->btnJobSave, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(saveJob ( mJobCurItem )); } );
-	connect ( ui->btnJobCancel, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(cancelJob ( mJobCurItem )); } );
-	connect ( ui->btnJobDel, &QToolButton::clicked, this, [&] () {
-		return static_cast<void>(delJob ( mJobCurItem )); } );
-	connect ( ui->btnQuickProject, &QPushButton::clicked, this, [&] () {
-		return on_btnQuickProject_clicked (); } );
-	connect ( ui->btnJobEditProjectPath, static_cast<void (QToolButton::*)( const bool )>(&QToolButton::clicked),
-			  this, [&] ( const bool checked ) { ui->txtJobProjectPath->setEditable ( checked ); if ( checked ) ui->txtJobProjectPath->setFocus (); } );
+	static_cast<void>( connect ( ui->btnJobAdd, &QToolButton::clicked, this, [&] () { return (mJobCurItem = addJob ( mClientCurItem )); } ) );
+	static_cast<void>( connect ( ui->btnJobEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editJob ( mJobCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnJobSave, &QToolButton::clicked, this, [&] () { return static_cast<void>( saveJob ( mJobCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnJobCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelJob ( mJobCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnJobDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delJob ( mJobCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnQuickProject, &QPushButton::clicked, this, [&] () { return on_btnQuickProject_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobEditProjectPath, static_cast<void (QToolButton::*)( const bool )>(&QToolButton::clicked),
+			  this, [&] ( const bool checked ) { ui->txtJobProjectPath->setEditable ( checked ); if ( checked ) ui->txtJobProjectPath->setFocus (); } ) );
 
 	ui->jobsList->setUtilitiesPlaceLayout ( ui->layoutJobsListUtility );
 	ui->jobsList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) {
@@ -745,24 +721,16 @@ void MainWindow::setupJobPanel ()
 
 	setupJobPictureControl ();
 
-	connect ( ui->btnJobSelectJob, &QToolButton::clicked, this, [&] () {
-		return btnJobSelect_clicked (); } );
-	connect ( ui->btnJobAddDay, &QToolButton::clicked, this, [&] () {
-		return btnJobAddDay_clicked (); } );
-	connect ( ui->btnJobEditDay, &QToolButton::clicked, this, [&] () {
-		return btnJobEditDay_clicked (); } );
-	connect ( ui->btnJobDelDay, &QToolButton::clicked, this, [&] () {
-		return btnJobDelDay_clicked (); } );
-	connect ( ui->btnJobCancelDelDay, &QToolButton::clicked, this, [&] () {
-		return btnJobCancelDelDay_clicked (); } );
-	connect ( ui->btnJobPrevDay, &QToolButton::clicked, this, [&] () {
-		return btnJobPrevDay_clicked (); } );
-	connect ( ui->btnJobNextDay, &QToolButton::clicked, this, [&] () {
-		return btnJobNextDay_clicked (); } );
-	ui->dteJobAddDate->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) {
-		return dteJobAddDate_dateAltered (); } );
-	connect ( ui->btnJobMachines, &QToolButton::clicked, this, [&] () {
-		return btnJobMachines_clicked (); } );
+	static_cast<void>( connect ( ui->btnJobSelectJob, &QToolButton::clicked, this, [&] () { return btnJobSelect_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobAddDay, &QToolButton::clicked, this, [&] () { return btnJobAddDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobEditDay, &QToolButton::clicked, this, [&] () { return btnJobEditDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobDelDay, &QToolButton::clicked, this, [&] () { return btnJobDelDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobCancelDelDay, &QToolButton::clicked, this, [&] () { return btnJobCancelDelDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobPrevDay, &QToolButton::clicked, this, [&] () { return btnJobPrevDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobNextDay, &QToolButton::clicked, this, [&] () { return btnJobNextDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobMachines, &QToolButton::clicked, this, [&] () { return btnJobMachines_clicked (); } ) );
+	
+	ui->dteJobAddDate->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return dteJobAddDate_dateAltered (); } );
 }
 
 void MainWindow::setUpJobButtons ( const QString& path )
@@ -1079,6 +1047,8 @@ bool MainWindow::saveJob ( jobListItem* job_item )
 			{
 				if ( job->wasModified ( FLD_JOB_PRICE ) )
 					alterJobPayPrice ( job_item );
+				if ( job->wasModified ( FLD_JOB_ENDDATE ) )
+					alterClientEndDate ( job_item );
 			}
 			mCal->updateCalendarWithJobInfo ( job );
 			job_item->setAction ( ACTION_READ, true ); // now we can change indexes
@@ -1399,8 +1369,8 @@ void MainWindow::updateJobInfo ( const QString& text, const uint user_role, vmLi
 	vmListItem* const day_entry ( item ? item : ui->lstJobDayReport->currentItem () );
 	if ( day_entry )
 	{
-		const uint cur_row ( static_cast<uint>(ui->lstJobDayReport->currentRow ()) );
-		day_entry->setData ( static_cast<int>(user_role), text );
+		const uint cur_row ( static_cast<uint> (ui->lstJobDayReport->currentRow () ) );
+		day_entry->setData ( static_cast<int>( user_role ), text );
 		stringTable job_report ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_REPORT ) );
 		stringRecord rec ( job_report.readRecord ( cur_row ) );
 		rec.changeValue ( user_role - Qt::UserRole, text );
@@ -1468,10 +1438,23 @@ void MainWindow::removeJobPayment ( payListItem* pay_item )
 
 void MainWindow::alterJobPayPrice ( jobListItem* const job_item )
 {
-	Payment* pay ( job_item->payItem ()->payRecord () );
-	pay->setAction ( ACTION_EDIT );
-	ui->txtPayTotalPrice->setText ( recStrValue ( job_item->jobRecord (), FLD_JOB_PRICE ), true );
-	savePay ( job_item->payItem () );
+	payListItem* pay_item ( static_cast<payListItem*>( job_item->payItem () ) );
+	if ( pay_item->payRecord ()->price ( FLD_PAY_PRICE ) != job_item->jobRecord ()->price ( FLD_JOB_PRICE ) )
+	{
+		if ( pay_item == mPayCurItem )
+		{
+			static_cast<void>( editPay ( pay_item ) );
+			ui->txtPayTotalPrice->setText ( recStrValue ( job_item->jobRecord (), FLD_JOB_PRICE ), true );
+			static_cast<void>( savePay ( pay_item ) );
+		}
+		else
+		{
+			Payment* pay ( pay_item->payRecord () );
+			pay->setAction ( ACTION_EDIT );
+			setRecValue ( pay, FLD_PAY_PRICE, recStrValue ( job_item->jobRecord (), FLD_JOB_PRICE ) );
+			static_cast<void>( pay->saveRecord () );
+		}
+	}
 }
 
 void MainWindow::calcJobTime ()
@@ -1532,7 +1515,7 @@ void MainWindow::rescanJobDaysList ( jobListItem *const job_item )
 		day_entry = ui->lstJobDayReport->item ( i );
 		if ( day_entry->data ( JILUR_REMOVED ).toBool () == true )
 		{
-			ui->lstJobDayReport->removeRow ( static_cast<uint>(i) ); // Let the jobListItem handle the item deletion
+			ui->lstJobDayReport->removeRow_list ( static_cast<uint>(i) ); // Let the jobListItem handle the item deletion
 			job_item->daysList->remove ( i, true );
 			b_reorder = true;
 			removedRow = i;
@@ -1792,7 +1775,7 @@ void MainWindow::jobEMailProjectFile ( QAction* action )
 //-----------------------------------EDITING-FINISHED-JOB----------------------------------------------------
 void MainWindow::cboJobType_textAltered ( const vmWidget* const sender )
 {
-	// Do not use static_cast<uint>(sender->id ()). Could use sender->parentWidget ()->id () but this method
+	// Do not use static_cast<uint>( sender->id () ). Could use sender->parentWidget ()->id () but this method
 	// is not shared between objects, only cboJobType uses it
 	const bool b_ok ( !sender->text ().isEmpty () );
 	mJobCurItem->setFieldInputStatus ( FLD_JOB_TYPE, b_ok, sender->vmParent () );
@@ -1819,7 +1802,7 @@ void MainWindow::txtJob_textAltered ( const vmWidget* const sender )
 			btnJobReloadPictures_clicked ();
 		break;
 	}
-	setRecValue ( mJobCurItem->jobRecord (), static_cast<uint>(static_cast<uint>(sender->id ())), new_value );
+	setRecValue ( mJobCurItem->jobRecord (), static_cast<uint>(static_cast<uint>( sender->id () )), new_value );
 	postFieldAlterationActions ( mJobCurItem );
 }
 
@@ -1835,7 +1818,7 @@ void MainWindow::txtJobTotalDayTime_textAltered ( const vmWidget* const sender )
 		if ( ui->lstJobDayReport->count () == 1 )
 		{
 			ui->txtJobTotalAllDaysTime->setText ( sender->text () );
-			setRecValue ( mJobCurItem->jobRecord (), static_cast<uint>(sender->id ()), sender->text () );
+			setRecValue ( mJobCurItem->jobRecord (), static_cast<uint>( sender->id () ), sender->text () );
 			postFieldAlterationActions ( mJobCurItem );
 		}
 		else
@@ -1863,14 +1846,13 @@ void MainWindow::dteJob_dateAltered ( const vmWidget* const sender )
 	const vmNumber date ( static_cast<const vmDateEdit* const>( sender )->date () );
 	const bool input_ok ( date.isDateWithinRange ( vmNumber::currentDate, 0, 4 ) );
 	//if ( input_ok )
-		setRecValue ( mJobCurItem->jobRecord (), static_cast<uint>(sender->id ()), date.toDate ( vmNumber::VDF_DB_DATE ) );
+		setRecValue ( mJobCurItem->jobRecord (), static_cast<uint>( sender->id () ), date.toDate ( vmNumber::VDF_DB_DATE ) );
 	
-	if ( static_cast<uint>(sender->id ()) == FLD_JOB_STARTDATE )
+	if ( static_cast<uint>( sender->id () ) == FLD_JOB_STARTDATE )
 	{
 		mJobCurItem->setFieldInputStatus ( FLD_JOB_STARTDATE, input_ok, sender );
 		ui->btnQuickProject->setEnabled ( input_ok );
 	}
-
 	postFieldAlterationActions ( mJobCurItem );
 }
 
@@ -1964,18 +1946,15 @@ void MainWindow::setupPayPanel ()
 	ui->tablePayments->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return payKeyPressedSelector ( ke ); } );
 	
-	connect ( ui->tabPaysLists, &QTabWidget::currentChanged, this, [&] ( const int index ) { return tabPaysLists_currentChanged ( index ); } );
+	static_cast<void>( connect ( ui->tabPaysLists, &QTabWidget::currentChanged, this, [&] ( const int index ) { return tabPaysLists_currentChanged ( index ); } ) );
 	
-	connect ( ui->btnPayPayReceipt, &QToolButton::clicked, this, [&] () { return
-			EDITOR ()->startNewReport ()->createPaymentStub ( mPayCurItem->dbRecID () ); } );
-	connect ( ui->btnPayPaymentsReport, &QToolButton::clicked, this, [&] () { return
-			EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), true ); } );
-	connect ( ui->btnPayPaymentsReportOnlyUnPaid, &QToolButton::clicked, this, [&] () { return
-			EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), false ); } );
-	connect ( ui->btnPayInfoDel, &QToolButton::clicked, this, [&] () { return static_cast<void>(delPay ( mPayCurItem )); } );
-	connect ( ui->btnPayInfoEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>(editPay ( mPayCurItem)); } );
-	connect ( ui->btnPayInfoSave, &QToolButton::clicked, this, [&] () { return static_cast<void>(savePay ( mPayCurItem )); } );
-	connect ( ui->btnPayInfoCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>(cancelPay ( mPayCurItem)); } );
+	static_cast<void>( connect ( ui->btnPayPayReceipt, &QToolButton::clicked, this, [&] () { return EDITOR ()->startNewReport ()->createPaymentStub ( mPayCurItem->dbRecID () ); } ) );
+	static_cast<void>( connect ( ui->btnPayPaymentsReport, &QToolButton::clicked, this, [&] () { return EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), true ); } ) );
+	static_cast<void>( connect ( ui->btnPayPaymentsReportOnlyUnPaid, &QToolButton::clicked, this, [&] () { return EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), false ); } ) );
+	static_cast<void>( connect ( ui->btnPayInfoDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delPay ( mPayCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnPayInfoEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editPay ( mPayCurItem) ); } ) );
+	static_cast<void>( connect ( ui->btnPayInfoSave, &QToolButton::clicked, this, [&] () { return static_cast<void>( savePay ( mPayCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnPayInfoCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelPay ( mPayCurItem) ); } ) );
 }
 
 void MainWindow::displayPayFromCalendar ( vmListItem* cal_item )
@@ -2058,12 +2037,12 @@ void MainWindow::removePaymentOverdueItems ( payListItem* pay_item )
 {
 	if ( pay_item->relatedItem ( PAY_ITEM_OVERDUE_CLIENT ) )
 	{
-		ui->paysOverdueClientList->removeRow ( static_cast<uint>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_CLIENT )->row () ), 1, true );
+		ui->paysOverdueClientList->removeRow_list ( static_cast<uint>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_CLIENT )->row () ), 1, true );
 	}
 	
 	if ( pay_item->relatedItem ( PAY_ITEM_OVERDUE_ALL ) )
 	{
-		ui->paysOverdueList->removeRow ( static_cast<uint>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_ALL )->row () ), 1, true );
+		ui->paysOverdueList->removeRow_list ( static_cast<uint>( pay_item->relatedItem ( PAY_ITEM_OVERDUE_ALL )->row () ), 1, true );
 	}
 }
 
@@ -2110,7 +2089,7 @@ void MainWindow::payOverdueGUIActions ( Payment* const pay, const RECORD_ACTION 
 			vmNumber new_price, old_price;
 			vmNumber new_paid, old_paid;
 			if ( overdueIdx == 2 && new_action == ACTION_EDIT )
-				*(const_cast<RECORD_ACTION*>(&new_action)) = ACTION_DEL;
+				*(const_cast<RECORD_ACTION*>( &new_action )) = ACTION_DEL;
 			switch ( new_action )
 			{
 				case ACTION_EDIT:
@@ -2204,6 +2183,8 @@ bool MainWindow::savePay ( payListItem* pay_item )
 		
 		if ( pay->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
 		{	
+			mCal->updateCalendarWithPayInfo ( pay );
+			ui->tablePayments->setTableUpdated ();
 			if ( pay->wasModified ( FLD_PAY_OVERDUE ) )
 			{
 				const bool bIsOverdue ( recStrValue ( pay, FLD_PAY_OVERDUE ) == CHR_ONE );
@@ -2212,12 +2193,8 @@ bool MainWindow::savePay ( payListItem* pay_item )
 				else if ( !bIsOverdue && bWasOverdue )
 					removePaymentOverdueItems ( pay_item );
 			}
-			if ( ui->tablePayments->tableChanged () )
-			{
-				mCal->updateCalendarWithPayInfo ( pay );
-				ui->tablePayments->setTableUpdated ();
-			}
 			pay_item->setAction ( ACTION_READ, true );
+			
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), TR_FUNC ( "Payment data saved!" ) );
 			controlPayForms ( pay_item );
 			removeEditItem ( static_cast<vmListItem*>(pay_item) );
@@ -2505,6 +2482,9 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 				input_ok = cell_date.isDateWithinRange ( vmNumber::currentDate, 0, 4 );
 			}
 			mPayCurItem->setFieldInputStatus ( col + INFO_TABLE_COLUMNS_OFFSET, input_ok.isOn (), item );
+			if ( col == PHR_DATE )
+				ui->tablePayments->sheetItem ( row, PHR_VALUE )->setText ( 
+							recStrValue ( mPayCurItem->payRecord (), FLD_PAY_OVERDUE_VALUE ), false, false, false ) ;
 		}
 		break;
 		case PHR_PAID:
@@ -2591,11 +2571,11 @@ void MainWindow::updatePayTotalPaidValue ()
 void MainWindow::payKeyPressedSelector ( const QKeyEvent* ke )
 {
 	if ( ke->key () == Qt::Key_Escape )
-		static_cast<void>(cancelPay ( mPayCurItem ));
+		static_cast<void>( cancelPay ( mPayCurItem ) );
 	else
 	{
 		ui->clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
-		static_cast<void>(savePay ( mPayCurItem ));
+		static_cast<void>( savePay ( mPayCurItem ) );
 	}
 }
 
@@ -2634,10 +2614,10 @@ void MainWindow::txtPayTotalPrice_textAltered ( const QString& text )
 
 void MainWindow::txtPay_textAltered ( const vmWidget* const sender )
 {
-	setRecValue ( mPayCurItem->payRecord (), static_cast<uint>(sender->id ()), sender->text () );
+	setRecValue ( mPayCurItem->payRecord (), static_cast<uint>( sender->id () ), sender->text () );
 	/* No need to call postFieldAlterationActions because the controls bound to the other fields
 	 * are readonly and that function will be called from the table change callback */
-	if ( static_cast<uint>(sender->id ()) == FLD_PAY_OBS )
+	if ( static_cast<uint>( sender->id () ) == FLD_PAY_OBS )
 		postFieldAlterationActions ( mPayCurItem );
 }
 
@@ -2917,11 +2897,8 @@ bool MainWindow::saveBuy ( buyListItem* buy_item )
 		{
 			mCal->updateCalendarWithBuyInfo ( buy );
 			buy_item->setAction ( ACTION_READ, true ); // now we can change indexes
-			if ( ui->tableBuyPayments->tableChanged () )
-			{
-				vmTableWidget::exchangePurchaseTablesInfo ( ui->tableBuyItems, SUPPLIES ()->table (), buy, SUPPLIES ()->supplies_rec );
-				ui->tableBuyPayments->setTableUpdated ();
-			}
+			vmTableWidget::exchangePurchaseTablesInfo ( ui->tableBuyItems, SUPPLIES ()->table (), buy, SUPPLIES ()->supplies_rec );
+			ui->tableBuyPayments->setTableUpdated ();
 			updateBuyTotalPriceWidgets ( buy_item );
 
 			static_cast<void>(Data::insertComboItem ( ui->cboBuySuppliers, recStrValue ( buy, FLD_BUY_SUPPLIER ) ));
@@ -3321,14 +3298,14 @@ void MainWindow::setBuyPayValueToBuyPrice ( const QString& price )
 void MainWindow::txtBuy_textAltered ( const vmWidget* const sender )
 {
 	bool input_ok ( true );
-	if ( static_cast<uint>(sender->id ()) == FLD_BUY_PRICE )
+	if ( static_cast<uint>( sender->id () ) == FLD_BUY_PRICE )
 	{
 		const vmNumber price ( sender->text (), VMNT_PRICE, 1 );
 		input_ok = price > 0;
 		mBuyCurItem->setFieldInputStatus ( FLD_BUY_PRICE, input_ok, ui->txtBuyTotalPrice );
 		setBuyPayValueToBuyPrice ( sender->text () );
 	}
-	setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>(sender->id ()), sender->text () );
+	setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>( sender->id () ), sender->text () );
 	postFieldAlterationActions ( mBuyCurItem );
 }
 
@@ -3337,10 +3314,10 @@ void MainWindow::dteBuy_dateAltered ( const vmWidget* const sender )
 	const vmNumber date ( static_cast<const vmDateEdit* const>( sender )->date () );
 	const bool input_ok ( date.isDateWithinRange ( vmNumber::currentDate, 0, 4 ) );
 	{
-		setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>(sender->id ()), date.toDate ( vmNumber::VDF_DB_DATE ) );
+		setRecValue ( mBuyCurItem->buyRecord (), static_cast<uint>( sender->id () ), date.toDate ( vmNumber::VDF_DB_DATE ) );
 		mBuyCurItem->update ();
 	}
-	mBuyCurItem->setFieldInputStatus ( static_cast<uint>(sender->id ()), input_ok, sender );
+	mBuyCurItem->setFieldInputStatus ( static_cast<uint>( sender->id () ), input_ok, sender );
 	postFieldAlterationActions ( mBuyCurItem );
 }
 
@@ -3409,110 +3386,126 @@ void MainWindow::setupCustomControls ()
 	reOrderTabSequence ();
 	setupWorkFlow ();
 
-	static_cast<void>(connect ( ui->btnReportGenerator, &QToolButton::clicked, this, [&] () { return btnReportGenerator_clicked (); } ));
-	static_cast<void>(connect ( ui->btnBackupRestore, &QToolButton::clicked, this, [&] () { return btnBackupRestore_clicked (); } ));
-	static_cast<void>(connect ( ui->btnCalculator, &QToolButton::clicked, this, [&] () { return btnCalculator_clicked (); } ));
-	static_cast<void>(connect ( ui->btnEstimates, &QToolButton::clicked, this, [&] () { return btnEstimates_clicked (); } ));
-	static_cast<void>(connect ( ui->btnCompanyPurchases, &QToolButton::clicked, this, [&] () { return btnCompanyPurchases_clicked (); } ));
-	static_cast<void>(connect ( ui->btnConfiguration, &QToolButton::clicked, this, [&] () { return btnConfiguration_clicked (); } ));
-	static_cast<void>(connect ( ui->btnExitProgram, &QToolButton::clicked, this, [&] () { return btnExitProgram_clicked (); } ));
+	static_cast<void>( connect ( ui->btnReportGenerator, &QToolButton::clicked, this, [&] () { return btnReportGenerator_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnBackupRestore, &QToolButton::clicked, this, [&] () { return btnBackupRestore_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnCalculator, &QToolButton::clicked, this, [&] () { return btnCalculator_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnEstimates, &QToolButton::clicked, this, [&] () { return btnEstimates_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnCompanyPurchases, &QToolButton::clicked, this, [&] () { return btnCompanyPurchases_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnConfiguration, &QToolButton::clicked, this, [&] () { return btnConfiguration_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnExitProgram, &QToolButton::clicked, this, [&] () { return btnExitProgram_clicked (); } ) );
 
 	installEventFilter ( this );
 }
 
-void MainWindow::restoreCrashedItems ( const crashRestore* crash )
+void MainWindow::restoreCrashedItems ( crashRestore* const crash, clientListItem* &client_item, jobListItem* &job_item, buyListItem* &buy_item)
 {
 	stringRecord* __restrict savedRec ( nullptr );
-	if ( (savedRec = const_cast<stringRecord*>(&crash->restoreFirstState ())) )
+	if ( (savedRec = const_cast<stringRecord*>( &crash->restoreFirstState () )) )
 	{
 		bool ok ( true );
 		int type_id ( -1 );
 		RECORD_ACTION action ( ACTION_NONE );
+		payListItem* pay_item ( nullptr );
 		vmListItem* item ( nullptr );
-		clientListItem* client_parent ( nullptr );
-		jobListItem* job_parent ( nullptr );
 		
-		type_id = savedRec->fieldValue ( CF_SUBTYPE ).toInt ( &ok );
-		if ( !ok || type_id < 0 )
-			return;
-		action = static_cast<RECORD_ACTION> ( savedRec->fieldValue ( CF_ACTION ).toInt ( &ok ) );
-		
-		do
+		while ( savedRec->isOK () )
 		{
+			type_id = savedRec->fieldValue ( CF_SUBTYPE ).toInt ( &ok );
+			if ( !ok || type_id < 0 )
+				return;
+			action = static_cast<RECORD_ACTION>( savedRec->fieldValue ( CF_ACTION ).toInt ( &ok ) );
+
 			switch ( type_id )
 			{
 				case CLIENT_TABLE:
 					if ( action == ACTION_EDIT )
 					{
-						client_parent = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_CLIENT_ID ).toUInt ( &ok ) );
-						if ( !client_parent )
-							break;
-						client_parent->loadData ();
-						static_cast<void>(editClient ( client_parent, false ));
+						client_item = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_CLIENT_ID ).toUInt ( &ok ) );
+						if ( ( ok = (client_item != nullptr) ) )
+						{
+							client_item->loadData ();
+							static_cast<void>( editClient ( client_item, false ) );
+						}
 					}
 					else
-						client_parent = addClient ();
-					client_parent->clientRecord ()->fromStringRecord ( *savedRec, CF_DBRECORD );
+						client_item = addClient ();
+					item = client_item;
 				break;
 				case JOB_TABLE:
-					client_parent = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_JOB_CLIENTID ).toUInt ( &ok ) );
-					if ( !client_parent )
-						break;
-					if ( action == ACTION_EDIT )
+					client_item = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_JOB_CLIENTID ).toUInt ( &ok ) );
+					if ( ( ok = (client_item != nullptr) ) )
 					{
-						job_parent = getJobItem ( client_parent, savedRec->fieldValue ( CF_DBRECORD + FLD_JOB_ID ).toUInt ( &ok ) );
-						if ( !job_parent )
-							break;
-						job_parent->loadData ();
-						static_cast<void>(editJob ( job_parent, false ));
+						if ( action == ACTION_EDIT )
+						{
+							job_item = getJobItem ( client_item, savedRec->fieldValue ( CF_DBRECORD + FLD_JOB_ID ).toUInt ( &ok ) );
+							if ( ( ok = (job_item != nullptr) ) )
+							{
+								job_item->loadData ();
+								static_cast<void>( editJob ( job_item, false ) );
+							}
+						}
+						else
+							job_item = addJob ( client_item );
+						item = job_item;
 					}
-					else
-						job_parent = addJob ( client_parent );
-					job_parent->jobRecord ()->fromStringRecord ( *savedRec, CF_DBRECORD );
 				break;
 				case PAYMENT_TABLE:
-					client_parent = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_PAY_CLIENTID ).toUInt ( &ok ) );
-					if ( !client_parent )
-						break;
-					job_parent = getJobItem ( client_parent, savedRec->fieldValue ( CF_DBRECORD + FLD_PAY_JOBID ).toUInt ( &ok ) );
-					if ( !job_parent )
-						break;
-					if ( action == ACTION_EDIT )
+					client_item = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_PAY_CLIENTID ).toUInt ( &ok ) );
+					if ( ( ok = (client_item != nullptr) ) )
 					{
-						item = getPayItem ( client_parent, savedRec->fieldValue ( CF_SUBTYPE + FLD_PAY_ID ).toUInt ( &ok ) );
-						if ( !item )
-							break;
-						static_cast<payListItem*>(item)->loadData ();
-						static_cast<void>(editPay ( static_cast<payListItem*>(item), false ));
+						job_item = getJobItem ( client_item, savedRec->fieldValue ( CF_DBRECORD + FLD_PAY_JOBID ).toUInt ( &ok ) );
+						if ( ( ok = (job_item != nullptr) ) )
+						{
+							if ( action == ACTION_EDIT )
+							{
+								pay_item = getPayItem ( client_item, savedRec->fieldValue ( CF_SUBTYPE + FLD_PAY_ID ).toUInt ( &ok ) );
+								if ( !pay_item )
+									pay_item = job_item->payItem ();
+								pay_item->loadData ();
+								static_cast<void>( editPay ( pay_item, false ) );
+							}
+							else
+								pay_item = job_item->payItem ();
+							item = pay_item;
+						}
 					}
-					else
-						item = job_parent->payItem ();
-					item->dbRec ()->fromStringRecord ( *savedRec, CF_DBRECORD );
 				break;
 				case PURCHASE_TABLE:
-					client_parent = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_BUY_CLIENTID ).toUInt ( &ok ) );
-					if ( !client_parent )
-						break;
-					job_parent = getJobItem ( client_parent, savedRec->fieldValue ( CF_DBRECORD + FLD_BUY_JOBID ).toUInt ( &ok ) );
-					if ( !job_parent )
-						break;
-					if ( action == ACTION_EDIT )
+					client_item = getClientItem ( savedRec->fieldValue ( CF_DBRECORD + FLD_BUY_CLIENTID ).toUInt ( &ok ) );
+					if ( ( ok = (client_item != nullptr ) ) )
 					{
-						item = getBuyItem ( client_parent, savedRec->fieldValue ( CF_DBRECORD + FLD_BUY_ID ).toUInt ( &ok ) );
-						if ( !item )
-							break;
-						static_cast<buyListItem*>(item)->loadData ();
+						job_item = getJobItem ( client_item, savedRec->fieldValue ( CF_DBRECORD + FLD_BUY_JOBID ).toUInt ( &ok ) );
+						if ( ( ok = (job_item != nullptr) ) )
+						{
+							if ( action == ACTION_EDIT )
+							{
+								buy_item = getBuyItem ( client_item, savedRec->fieldValue ( CF_DBRECORD + FLD_BUY_ID ).toUInt ( &ok ) );
+								if ( ( ok = (buy_item != nullptr) ) )
+								{
+									buy_item->loadData ();
+									static_cast<void>( editBuy ( buy_item, false ) );
+								}
+							}
+							else
+								buy_item = addBuy ( client_item, job_item );
+							item = buy_item;
+						}
 					}
-					else
-						item = addBuy ( client_parent, job_parent );
-					item->dbRec ()->fromStringRecord ( *savedRec, CF_DBRECORD );
 				break;
 				default:
 				break;
 			}
+			if ( item != nullptr )
+			{
+				item->setCrashID ( savedRec->fieldValue ( CF_CRASHID ).toInt () );
+				item->dbRec ()->fromStringRecord ( *savedRec, CF_DBRECORD );
+				item = nullptr;
+			}
+			else if ( !ok )
+				crash->eliminateRestoreInfo ( savedRec->fieldValue ( CF_CRASHID ).toInt ( &ok ) );
+			
+			savedRec = const_cast<stringRecord*>( &crash->restoreNextState () );
 		}
-		while ( (savedRec = const_cast<stringRecord*>(&crash->restoreNextState ())) );
-		
 	}
 }
 
@@ -3520,18 +3513,37 @@ void MainWindow::restoreLastSession ()
 {
 	ui->clientsList->setIgnoreChanges ( false );
 	ui->tabMain->setCurrentIndex ( 0 );
+	
+	clientListItem* client_item ( nullptr );
+	jobListItem* job_item ( nullptr );
+	buyListItem* buy_item ( nullptr );
+	
 	if ( m_crash->needRestore () )
 	{
 		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Session Manager" ), TR_FUNC ( "Restoring last session due to unclean program termination" ) );
-		restoreCrashedItems ( m_crash );
+		restoreCrashedItems ( m_crash, client_item, job_item, buy_item );
 	}
 
-	clientListItem* client_item ( getClientItem ( CONFIG ()->lastViewedRecord ( CLIENT_TABLE ) ) );
 	if ( !client_item )
-		client_item = static_cast<clientListItem*> ( ui->clientsList->item ( ui->clientsList->count () - 1 ) );
-	jobListItem* job_item ( getJobItem ( client_item, CONFIG ()->lastViewedRecord ( JOB_TABLE ) ) );
-	displayClient ( client_item, true, job_item, getBuyItem ( client_item, CONFIG ()->lastViewedRecord ( PURCHASE_TABLE ) ) );
-	insertNavItem ( ui->jobsList->currentItem () );
+	{
+		client_item = getClientItem ( CONFIG ()->lastViewedRecord ( CLIENT_TABLE ) );
+		if ( !client_item )
+			client_item = static_cast<clientListItem*>( ui->clientsList->item ( ui->clientsList->count () - 1 ) );
+	}
+	
+	if ( !job_item )
+	{
+		job_item = getJobItem ( client_item, CONFIG ()->lastViewedRecord ( JOB_TABLE ) );
+		if ( !job_item )
+			job_item = static_cast<jobListItem*>( ui->jobsList->item ( ui->jobsList->count () - 1 ) );
+		if ( !buy_item )
+		{
+			buy_item = getBuyItem ( client_item, CONFIG ()->lastViewedRecord ( PURCHASE_TABLE ) );
+			if ( !buy_item )
+				buy_item = static_cast<buyListItem*>( ui->buysList->item ( ui->buysList->count () - 1 ) );
+		}
+	}
+	displayClient ( client_item, true, job_item, buy_item );
 	ui->clientsList->setFocus ();
 }
 
@@ -3584,10 +3596,10 @@ void MainWindow::setupWorkFlow ()
 	ui->scrollWorkFlow->setWidget ( mainTaskPanel );
 
 	setupTabNavigationButtons ();
+	ui->tabMain->removeTab ( 8 );
 	ui->tabMain->removeTab ( 7 );
 	ui->tabMain->removeTab ( 6 );
 	ui->tabMain->removeTab ( 5 );
-	ui->tabMain->removeTab ( 4 );
 }
 
 void MainWindow::setupTabNavigationButtons ()
@@ -4059,10 +4071,10 @@ void MainWindow::removeEditItem ( vmListItem* item )
 
 void MainWindow::saveEditItems ()
 {
-	if ( !EXITING_PROGRAM || editItems.isEmpty () )
+	if ( !Data::EXITING_PROGRAM || editItems.isEmpty () )
 		return;
 	
-	QDialog* dlgSaveEditItems ( new QDialog ( this, Qt::Tool ) );
+	dlgSaveEditItems = new QDialog ( this, Qt::Tool );
 	dlgSaveEditItems->setWindowTitle ( TR_FUNC ( "Save these alterations?" ) );
 	
 	vmTableWidget* editItemsTable ( new vmTableWidget ( dlgSaveEditItems ) );
@@ -4085,7 +4097,9 @@ void MainWindow::saveEditItems ()
 	for ( uint i ( 0 ); i < editItems.count (); ++i )
 	{
 		edititem = editItems.at ( i );
-		s_row->row = static_cast<int>(i);
+		if ( edititem == nullptr )
+			continue;
+		s_row->row = static_cast<int> ( i );
 		s_row->field_value[0] = edititem->text ();
 		s_row->field_value[1] = edititem->action () == ACTION_EDIT ? TR_FUNC ( "Editing" ) : TR_FUNC ( "New entry" );
 		s_row->field_value[2] = CHR_ONE;
@@ -4095,7 +4109,7 @@ void MainWindow::saveEditItems ()
 	editItemsTable->setEditable ( true );
 	
 	QPushButton* btnOK ( new QPushButton ( TR_FUNC ( "Continue" ) ) );
-	connect ( btnOK, &QPushButton::clicked, this, [&] () { return dlgSaveEditItems->done ( 0 ); } );
+	static_cast<void>( connect ( btnOK, &QPushButton::clicked, this, [&] () { return dlgSaveEditItems->done ( 0 ); } ) );
 	QVBoxLayout* vLayout ( new QVBoxLayout );
 	vLayout->setMargin ( 2 );
 	vLayout->setSpacing ( 2 );
@@ -4112,16 +4126,16 @@ void MainWindow::saveEditItems ()
 			switch ( edititem->subType () )
 			{
 				case CLIENT_TABLE:
-					static_cast<void>(saveClient ( static_cast<clientListItem*>(edititem) ));
+					static_cast<void>( saveClient ( static_cast<clientListItem*>( edititem ) ) ) ;
 				break;
 				case JOB_TABLE:
-					static_cast<void>(saveJob ( static_cast<jobListItem*>(edititem) ));
+					static_cast<void>( saveJob ( static_cast<jobListItem*>( edititem ) ) );
 				break;
 				case PAYMENT_TABLE:
-					static_cast<void>(savePay ( static_cast<payListItem*>(edititem) ));
+					static_cast<void>( savePay ( static_cast<payListItem*>( edititem ) ) );
 				break;
 				case PURCHASE_TABLE:
-					static_cast<void>(saveBuy ( static_cast<buyListItem*>(edititem) ));
+					static_cast<void>( saveBuy ( static_cast<buyListItem*>( edititem ) ) );
 				break;
 				default:
 				break;
@@ -4156,6 +4170,10 @@ void MainWindow::tabMain_currentTabChanged ( const int tab_idx )
 			if ( SUPPLIES ()->setupUI () )
 				ui->tabSupplies->setLayout ( SUPPLIES ()->layout () );
 			SUPPLIES ()->table ()->setFocus ();
+		break;
+		case TI_STATISTICS:
+			ui->tabStatistics->setLayout ( DB_STATISTICS ()->layout () );
+			DB_STATISTICS ()->reload ();
 		break;
 		default:
 		break;
@@ -4195,11 +4213,11 @@ void MainWindow::quickProjectClosed ()
 	{
 		const bool bReading ( mJobCurItem->action () == ACTION_READ );
 		if ( bReading )
-			static_cast<void>(editJob ( mJobCurItem ));
+			static_cast<void>( editJob ( mJobCurItem ) );
 		ui->txtJobProjectID->setText ( QUICK_PROJECT ()->qpString (), true );
 		ui->txtJobPrice->setText ( QUICK_PROJECT ()->totalPrice (), true );
 		if ( bReading )
-			static_cast<void>(saveJob ( mJobCurItem ));
+			static_cast<void>( saveJob ( mJobCurItem ) );
 	}
 }
 
@@ -4228,7 +4246,7 @@ inline void MainWindow::btnCompanyPurchases_clicked () { COMPANY_PURCHASES ()->i
 inline void MainWindow::btnConfiguration_clicked () { CONFIG ()->dialogWindow ()->isVisible ()
 			? CONFIG ()->dialogWindow ()->hide () : CONFIG ()->dialogWindow ()->show () ; }
 
-inline void MainWindow::btnExitProgram_clicked () { exitRequested ( true ); }
+inline void MainWindow::btnExitProgram_clicked () { Data::de_init (); }
 //--------------------------------------------SLOTS------------------------------------------------------------
 
 //--------------------------------------------SEARCH------------------------------------------------------------
@@ -4285,20 +4303,26 @@ void MainWindow::trayActivated ( QSystemTrayIcon::ActivationReason reason )
 				showNormal ();
 				activateWindow ();
 				raise ();
-				/*if ( reportWindow != nullptr ) {
-					if ( reportWindow->isHidden () )
-						reportWindow->showNormal ();
-				}*/
+				if ( documentEditor::isEditorStarted () )
+				{
+					if ( EDITOR ()->isHidden () )
+						EDITOR ()->showNormal ();
+				}
 			}
 			else
 			{
 				trayIconMenu->actions ().at ( 0 )->setText ( TR_FUNC ( "Restore" ) );
 				hide ();
-				/*if ( reportWindow != nullptr )
-					reportWindow->hide ();*/
+				if ( documentEditor::isEditorStarted () )
+				{
+					if ( EDITOR ()->isVisible () )
+						EDITOR ()->hide ();
+				}
 			}
 		break;
-		default:
+		case QSystemTrayIcon::MiddleClick:
+		case QSystemTrayIcon::Unknown:
+		case QSystemTrayIcon::Context:
 		break;
 	}
 }
@@ -4378,7 +4402,7 @@ void MainWindow::updateProgramDate ()
 	if ( timerUpdate == nullptr )
 	{
 		timerUpdate = new QTimer ( this );
-		connect ( timerUpdate, &QTimer::timeout, this, [&] () { return updateProgramDate (); } );
+		static_cast<void>( connect ( timerUpdate, &QTimer::timeout, this, [&] () { return updateProgramDate (); } ) );
 		timerUpdate->start ( 1000 * 60 * 5 ); // check date every five minutes (hibernation or suspend will thwart	the timer
 	}
 }
@@ -4394,12 +4418,11 @@ void MainWindow::addJobPictures ()
 		{
 			strPicturePath = recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_PROJECT_ID );
 			if ( !strPicturePath.isEmpty () )
-				strPicturePath.prepend ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_TYPE ) + QLatin1String ( " - " ) );
+				strPicturePath.append ( QLatin1String ( " - " ) + recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_TYPE ) );
 			else
 			{
-				strPicturePath = recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_TYPE ) 
-						+ QLatin1String ( " - " ) + vmNumber ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_STARTDATE ), 
-							VMNT_DATE, vmNumber::VDF_DB_DATE ).toDate ( vmNumber::VDF_FILE_DATE ) + CHR_F_SLASH;
+				strPicturePath = mJobCurItem->jobRecord ()->date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE ) +
+						QLatin1String ( " - " ) + recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_TYPE )  + CHR_F_SLASH;
 			}
 			
 			const QString simpleJobBaseDir ( CONFIG ()->getProjectBasePath ( recStrValue ( mClientCurItem->clientRecord (), FLD_CLIENT_NAME ) )
@@ -4408,7 +4431,7 @@ void MainWindow::addJobPictures ()
 				fileOps::createDir ( simpleJobBaseDir );
 			strPicturePath.prepend ( simpleJobBaseDir );
 			fileOps::createDir ( strPicturePath );
-			if ( static_cast<TRI_STATE> ( mJobCurItem->action () >= ACTION_READ ) )
+			if ( static_cast<TRI_STATE>( mJobCurItem->action () >= ACTION_READ ) )
 			{
 				mJobCurItem->setAction ( ACTION_EDIT, true );
 				ui->txtJobPicturesPath->setText ( strPicturePath, true );

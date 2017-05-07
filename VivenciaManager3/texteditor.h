@@ -39,24 +39,24 @@ public:
 		return tr ( "Text files (*.txt);;Richtext files (*.rtf)" );
 	}
 
-	void cut ();
-	void copy ();
-	void paste ();
+	void cut () override;
+	void copy () override;
+	void paste () override;
 
-	void createNew ();
-	bool loadFile ( const QString& filename );
-	bool displayText ( const QString& text );
-	bool saveAs ( const QString& filename );
-	bool saveFile ( const QString& filename );
+	void createNew () override;
+	bool loadFile ( const QString& filename ) override;
+	bool displayText ( const QString& text ) override;
+	bool saveAs ( const QString& filename ) override;
+	bool saveFile ( const QString& filename ) override;
 
-	void buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body );
+	void buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body ) override;
 
 	inline bool useHtml () const { return mb_UseHtml; }
 	inline void setUseHtml ( const bool html ) { mb_UseHtml = html; }
 	inline bool ignoreCursorPos () const { return mb_IgnoreCursorPos; }
 	inline void setIgnoreCursorPos ( const bool ignore ) { mb_IgnoreCursorPos = ignore; }
 
-	const QString initialDir () const;
+	const QString initialDir () const override;
 
 protected:
 	QTextCursor mCursor;

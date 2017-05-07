@@ -18,10 +18,11 @@
 #include "heapmanager.h"
 #include "emailconfigdialog.h"
 
-documentEditor* documentEditor::s_instance = nullptr;
+documentEditor* documentEditor::s_instance ( nullptr );
 
 void deleteEditorInstance ()
 {
+	documentEditor::s_instance->closeAllTabs ();
 	heap_del ( documentEditor::s_instance );
 }
 
@@ -54,8 +55,8 @@ documentEditor::documentEditor ( QWidget* parent )
 	tabDocuments->setTabsClosable ( true );
 	tabDocuments->setMovable ( true );
 	setCentralWidget ( tabDocuments );
-	connect ( tabDocuments, &QTabWidget::currentChanged, this, [&] ( const int index ) { return updateMenus ( index ); } );
-	connect ( tabDocuments, &QTabWidget::tabCloseRequested, this, [&] ( const int index ) { return closeTab ( index ); } );
+	static_cast<void>( connect ( tabDocuments, &QTabWidget::currentChanged, this, [&] ( const int index ) { return updateMenus ( index ); } ) );
+	static_cast<void>( connect ( tabDocuments, &QTabWidget::tabCloseRequested, this, [&] ( const int index ) { return closeTab ( index ); } ) );
 
 	createActions ();
 	createMenus ();
@@ -91,76 +92,76 @@ void documentEditor::createActions ()
 	newAct = new vmAction ( -1, ( ICON ( "document-new" ) ), TR_FUNC ( "&New text file" ), this );
 	newAct->setShortcuts ( QKeySequence::New );
 	newAct->setStatusTip ( TR_FUNC ( "Create a new document" ) );
-	connect ( newAct, &QAction::triggered, this, [&] ( const bool ) { return newTextDocument (); } );
+	static_cast<void>( connect ( newAct, &QAction::triggered, this, [&] ( const bool ) { return startNewTextEditor ()->show (); } ) );
 
 	newReportAct = new vmAction ( -1, ( ICON ( "report" ) ), TR_FUNC ( "New &Report" ), this );
 	newReportAct->setShortcuts ( QKeySequence::Refresh );
 	newReportAct->setStatusTip ( TR_FUNC ( "Create a new report" ) );
-	connect ( newReportAct, &QAction::triggered, this, [&] ( const bool ) { return newReport (); } );
+	static_cast<void>( connect ( newReportAct, &QAction::triggered, this, [&] ( const bool ) { return startNewReport ()->show (); } ) );
 
 	openAct = new vmAction ( -1, ICON ( "document-open" ), TR_FUNC ( "&Open..." ), this );
 	openAct->setShortcuts ( QKeySequence::Open );
 	openAct->setStatusTip ( TR_FUNC ( "Open an existing file" ) );
-	connect ( openAct, &QAction::triggered, this, [&] ( const bool ) { return openDocument (); } );
+	static_cast<void>( connect ( openAct, &QAction::triggered, this, [&] ( const bool ) { return openDocument (); } ) );
 
 	saveAct = new vmAction ( -1, ICON ( "document-save" ), TR_FUNC ( "&Save" ), this );
 	saveAct->setShortcuts ( QKeySequence::Save );
 	saveAct->setStatusTip ( TR_FUNC ( "Save the document to disk" ) );
-	connect ( saveAct, &QAction::triggered, this, [&] ( const bool ) { return saveDocument (); } );
+	static_cast<void>( connect ( saveAct, &QAction::triggered, this, [&] ( const bool ) { return saveDocument (); } ) );
 
 	saveAsAct = new vmAction ( -1, ICON ( "document-save-as" ), TR_FUNC ( "Save &as..." ), this );
 	saveAsAct->setShortcuts ( QKeySequence::SaveAs );
 	saveAsAct->setStatusTip ( TR_FUNC ( "Save the document under a new name" ) );
-	connect ( saveAsAct, &QAction::triggered, this, [&] ( const bool ) { return saveAsDocument (); } );
+	static_cast<void>( connect ( saveAsAct, &QAction::triggered, this, [&] ( const bool ) { return saveAsDocument (); } ) );
 
 	mailAct = new vmAction ( -1, ICON ( "email" ), TR_FUNC ( "Send via email" ), this );
 	mailAct->setStatusTip ( TR_FUNC ( "Send the document as an email attachment unless the editor provides another option" ) );
-	connect ( mailAct, &QAction::triggered, this, [&] ( const bool ) { return sendMailAttachment (); } );
+	static_cast<void>( connect ( mailAct, &QAction::triggered, this, [&] ( const bool ) { return sendMailAttachment (); } ) );
 
 	cutAct = new vmAction ( -1, ICON ( "edit-cut" ), TR_FUNC ( "Cu&t" ), this );
 	cutAct->setShortcuts ( QKeySequence::Cut );
 	cutAct->setStatusTip ( TR_FUNC ( "Cut the current selection's contents to the clipboard" ) );
-	connect ( cutAct, &QAction::triggered, this, [&] ( const bool ) { return cut (); } );
+	static_cast<void>( connect ( cutAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->cut (); } ) );
 
 	copyAct = new vmAction ( -1, ICON ( "edit-copy" ), TR_FUNC ( "&Copy" ), this );
 	copyAct->setShortcuts ( QKeySequence::Copy );
 	copyAct->setStatusTip ( TR_FUNC ( "Copy the current selection's contents to the clipboard" ) );
-	connect ( copyAct, &QAction::triggered, this, [&] ( const bool ) { return copy (); } );
+	static_cast<void>( connect ( copyAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->copy (); } ) );
 
 	pasteAct = new vmAction ( -1, ICON ( "edit-paste" ), TR_FUNC ( "&Paste" ), this );
 	pasteAct->setShortcuts ( QKeySequence::Paste );
 	pasteAct->setStatusTip ( TR_FUNC ( "Paste the clipboard's contents into the current selection" ) );
-	connect ( pasteAct, &QAction::triggered, this, [&] ( const bool ) { return paste (); } );
+	static_cast<void>( connect ( pasteAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->paste (); } ) );
 
 	closeAct = new vmAction ( -1, ICON ( "close-active-window" ), TR_FUNC ( "Cl&ose" ), this );
 	closeAct->setStatusTip ( TR_FUNC ( "Close the active window" ) );
-	connect ( closeAct, &QAction::triggered, this, [&] ( const bool ) { return closeTab (); } );
+	static_cast<void>( connect ( closeAct, &QAction::triggered, this, [&] ( const bool ) { return tabDocuments->currentWidget ()->close (); } ) );
 
 	closeAllAct = new vmAction ( -1, ICON ( "close-all" ), TR_FUNC ( "Close &All" ), this );
 	closeAllAct->setStatusTip ( TR_FUNC ( "Close all the windows" ) );
-	connect ( closeAllAct, &QAction::triggered, this, [&] ( const bool ) { return closeAllTabs (); } );
+	static_cast<void>( connect ( closeAllAct, &QAction::triggered, this, [&] ( const bool ) { return closeAllTabs (); } ) );
 
-	hideAct = new vmAction ( -1, ICON ( "window-close" ), TR_FUNC ( "Leave" ), this);
+	hideAct = new vmAction ( -1, ICON ( "window-close" ), TR_FUNC ( "Close editor window" ), this );
 	hideAct->setShortcuts ( QKeySequence::Quit );
 	hideAct->setStatusTip ( TR_FUNC ( "Close Document Editor window" ) );
-	connect ( hideAct, &QAction::triggered, this, [&] ( const bool ) { return hide (); } );
+	static_cast<void>( connect ( hideAct, &QAction::triggered, this, [&] ( const bool ) { return hide (); } ) );
 
 	nextAct = new vmAction ( -1, TR_FUNC ( "Ne&xt" ), this );
 	nextAct->setShortcuts ( QKeySequence::NextChild );
 	nextAct->setStatusTip ( TR_FUNC ( "Move the focus to the next window" ) );
-	connect ( nextAct, &QAction::triggered, this, [&] ( const bool ) { return activateNextTab (); } );
+	static_cast<void>( connect ( nextAct, &QAction::triggered, this, [&] ( const bool ) { return activateNextTab (); } ) );
 
 	previousAct = new vmAction ( -1, TR_FUNC ( "Pre&vious" ), this );
 	previousAct->setShortcuts ( QKeySequence::PreviousChild );
 	previousAct->setStatusTip ( TR_FUNC ( "Move the focus to the previous window" ) );
-	connect ( previousAct, &QAction::triggered, this, [&] ( const bool ) { return activatePreviousTab (); } );
+	static_cast<void>( connect ( previousAct, &QAction::triggered, this, [&] ( const bool ) { return activatePreviousTab (); } ) );
 
 	separatorAct = new vmAction ( -1, this );
 	separatorAct->setSeparator ( true );
 
 	calcAct = new vmAction ( -1, ICON ( "calc" ), TR_FUNC ( "Show calculator" ), this );
 	calcAct->setStatusTip ( TR_FUNC ( "Show the calculator window" ) );
-	connect ( calcAct, &QAction::triggered, this, [&] ( const bool ) { return showCalc (); } );
+	static_cast<void>( connect ( calcAct, &QAction::triggered, this, [&] ( const bool ) { return CALCULATOR ()->showCalc ( mapToGlobal ( pos () ), nullptr, this ); } ) );
 }
 
 void documentEditor::createMenus ()
@@ -171,7 +172,7 @@ void documentEditor::createMenus ()
 	fileMenu->addAction ( openAct );
 
 	recentFilesSubMenu = new QMenu ( TR_FUNC ( "Recent documents" ) );
-	static_cast<void>(connect ( recentFilesSubMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return openRecentFile ( action ); } ));
+	static_cast<void>( connect ( recentFilesSubMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return openRecentFile ( action ); } ) );
 	recentFilesList.fromString ( configOps::readConfig ( configFileName (), CFG_FIELD_RECENT_FILES ) );
 	if ( recentFilesList.first () )
 	{
@@ -195,9 +196,9 @@ void documentEditor::createMenus ()
 	editMenu->addAction ( pasteAct );
 
 	windowMenu = menuBar ()->addMenu ( TR_FUNC ( "&Window" ) );
-	connect ( windowMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return makeWindowActive ( action ); } );
+	static_cast<void>( connect ( windowMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return makeWindowActive ( action ); } ) );
 	updateWindowMenu ();
-	connect ( windowMenu, &QMenu::aboutToShow, this, [&] () { return updateWindowMenu (); } );
+	static_cast<void>( connect ( windowMenu, &QMenu::aboutToShow, this, [&] () { return updateWindowMenu (); } ) );
 }
 
 void documentEditor::createToolBars ()
@@ -240,15 +241,15 @@ void documentEditor::updateMenus ( const int tab_index )
 
 	if ( hasMdiChild )
 	{
-		documentEditorWindow* dew ( static_cast<documentEditorWindow*> ( tabDocuments->widget ( tab_index ) ) );
+		documentEditorWindow* dew ( static_cast<documentEditorWindow*>( tabDocuments->widget ( tab_index ) ) );
 		if ( dew != nullptr )
 		{
 			if ( dew->editorType () & TEXT_EDITOR_SUB_WINDOW )
 				TEXT_EDITOR_TOOLBAR ()->setCurrentWindow ( static_cast<textEditor*> ( dew ) );
 			if ( dew->editorType () & REPORT_GENERATOR_SUB_WINDOW )
 			{
-				DOCK_QP ()->setCurrentWindow ( static_cast<reportGenerator*> ( dew ) );
-				DOCK_BJ ()->setCurrentWindow ( static_cast<reportGenerator*> ( dew ) );
+				DOCK_QP ()->setCurrentWindow ( static_cast<reportGenerator*>( dew ) );
+				DOCK_BJ ()->setCurrentWindow ( static_cast<reportGenerator*>( dew ) );
 			}
 			saveAct->setEnabled ( dew->isModified () );
 		}
@@ -265,7 +266,7 @@ void documentEditor::updateWindowMenu ()
 	windowMenu->addAction ( previousAct );
 	windowMenu->addAction ( separatorAct );
 
-	const uint open_tabs ( static_cast<uint>(tabDocuments->count ()) );
+	const uint open_tabs ( static_cast<uint>( tabDocuments->count () ) );
 	separatorAct->setVisible ( open_tabs > 0 );
 
 	if ( open_tabs > 0 )
@@ -275,11 +276,11 @@ void documentEditor::updateWindowMenu ()
 
 		for ( uint i = 0; i < open_tabs; ++i )
 		{
-			child = static_cast<documentEditorWindow*>(tabDocuments->widget ( static_cast<int>(i) ));
+			child = static_cast<documentEditorWindow*>(tabDocuments->widget ( static_cast<int>( i ) ));
 			if ( child )
 			{
 				text =  (i < 9 ? TR_FUNC ( "&%1 %2" ) : TR_FUNC ( "%1 %2" )).arg ( i + 1 ).arg ( child->title () );
-				vmAction* action ( new vmAction ( static_cast<int>(i), text, this ) );
+				vmAction* action ( new vmAction ( static_cast<int>( i ), text, this ) );
 				action->setCheckable ( true );
 				action->setChecked ( child == activeDocumentWindow () );
 				windowMenu->addAction ( action );
@@ -290,7 +291,7 @@ void documentEditor::updateWindowMenu ()
 
 void documentEditor::makeWindowActive ( QAction* action )
 {
-	const int window_id ( static_cast<vmAction*> ( action )->id () );
+	const int window_id ( static_cast<vmAction*>( action )->id () );
 	if ( window_id < 0 )
 		return;
 	tabDocuments->setCurrentIndex ( window_id );
@@ -298,7 +299,7 @@ void documentEditor::makeWindowActive ( QAction* action )
 
 void documentEditor::changeTabText ( documentEditorWindow* window )
 {
-	if ( tabDocuments->currentWidget () == static_cast<QWidget*>(window) )
+	if ( tabDocuments->currentWidget () == static_cast<QWidget*>( window ) )
 		tabDocuments->setTabText ( tabDocuments->currentIndex (), window->title () );
 	saveAct->setEnabled ( window->isModified () );
 }
@@ -313,7 +314,7 @@ void documentEditor::closeTab ( int tab_index )
 	}
 	if ( tab_index < tabDocuments->count () )
 	{
-		if ( static_cast<documentEditorWindow*>(tabDocuments->widget ( tab_index ))->canClose () )
+		if ( static_cast<documentEditorWindow*>( tabDocuments->widget ( tab_index ) )->canClose () )
 		{
 			QWidget* doc ( tabDocuments->widget ( tab_index ) );
 			tabDocuments->removeTab ( tab_index );
@@ -343,7 +344,7 @@ void documentEditor::closeAllTabs ()
 	mb_ClosingAllTabs = false;
 	// Mainwindow, when it receives the signal indicating the program is about to be closed
 	// will call here. To avoid a destructor, put clean up code here
-	if ( EXITING_PROGRAM )
+	if ( Data::EXITING_PROGRAM )
 		recentFilesList.clear ();
 }
 
@@ -361,25 +362,16 @@ void documentEditor::activatePreviousTab ()
 		tabDocuments->setCurrentIndex ( tab_index - 1 );
 }
 
-void documentEditor::showCalc ()
-{
-	CALCULATOR ()->showCalc ( mapToGlobal ( pos () ), nullptr, this );
-}
-
-void documentEditor::newTextDocument ()
-{
-	startNewTextEditor ();
-}
-
 void documentEditor::closeEvent ( QCloseEvent* ce )
 {
 	closeAllTabs ();
 	ce->accept ();
 }
 
-textEditor* documentEditor::startNewTextEditor ()
+textEditor* documentEditor::startNewTextEditor ( textEditor* editor )
 {
-	textEditor* editor ( new textEditor ( this ) );
+	if ( editor == nullptr )
+		editor = new textEditor ( this );
 	editor->setCallbackForDocumentModified ( [&] ( documentEditorWindow* dew ) { return changeTabText ( dew ); } );
 	const int tab_id ( tabDocuments->addTab ( editor, emptyString ) );
 	tabDocuments->setCurrentIndex ( tab_id );
@@ -389,32 +381,20 @@ textEditor* documentEditor::startNewTextEditor ()
 	return editor;
 }
 
-void documentEditor::newReport ()
-{
-	startNewReport ()->show ();
-}
-
 reportGenerator* documentEditor::startNewReport ( const bool b_windowless )
 {
 	reportGenerator* report ( new reportGenerator ( this ) );
 	if ( !b_windowless )
 	{
-		report->setCallbackForDocumentModified ( [&] ( documentEditorWindow* dew ) { return changeTabText ( dew ); } );
-		// In a windowfull editor, closeTab will delete the instance created here.
-		const int tab_id ( tabDocuments->addTab ( report, emptyString ) );
-		tabDocuments->setCurrentIndex ( tab_id );
-		report->newFile ();
-		tabDocuments->setTabText ( tab_id, report->title () );
-		resizeViewPort ( report );
+		static_cast<void>( startNewTextEditor ( report ) );
 	}
 	else
 	{
 		// In a windowless, we must manage the pointers and delete when we are destroyed
-		heap_mngr.register_use ( const_cast<reportGenerator*> ( report ) );
+		heap_mngr.register_use ( const_cast<reportGenerator*>( report ) );
 		TEXT_EDITOR_TOOLBAR ()->setCurrentWindow ( report );
 
 	}
-	show ();
 	return report;
 }
 
@@ -495,6 +475,7 @@ void documentEditor::openDocument ( const QString& filename )
 		tabDocuments->setTabText ( tabDocuments->currentIndex (), window->title () );
 		addToRecentFiles ( filename );
 	}
+	window->show ();
 	window->setFocus ();
 }
 
@@ -547,24 +528,6 @@ void documentEditor::sendMailAttachment ()
 	}
 }
 
-void documentEditor::cut ()
-{
-	if ( activeDocumentWindow () )
-		activeDocumentWindow ()->cut ();
-}
-
-void documentEditor::copy ()
-{
-	if ( activeDocumentWindow () )
-		activeDocumentWindow ()->copy ();
-}
-
-void documentEditor::paste ()
-{
-	if ( activeDocumentWindow () )
-		activeDocumentWindow ()->paste ();
-}
-
 void documentEditor::addToRecentFiles ( const QString& filename, const bool b_AddToList )
 {
 	const QString menuText ( fileOps::fileNameWithoutPath ( filename ) );
@@ -594,6 +557,5 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 void documentEditor::openRecentFile ( QAction* selectedMenu )
 {
 	const vmAction* action ( static_cast<vmAction*> ( selectedMenu ) );
-	const QString filename ( action->data ().toString () );
-	openDocument ( filename );
+	openDocument ( action->data ().toString () );
 }

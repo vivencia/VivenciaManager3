@@ -16,9 +16,10 @@
 #include "vmnotify.h"
 #endif
 
-const double TABLE_VERSION ( 1.3 );
+const unsigned int TABLE_VERSION ( 'A' );
 
-const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] = {
+const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] =
+{
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
@@ -27,6 +28,8 @@ const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] = {
 bool updateCompleterRecordTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &completerRecord::t_info );
+	return true;
 	vmNotify* pBox ( nullptr );
 	uint step ( 0 );
 	const uint max_steps ( 9 );
@@ -138,11 +141,13 @@ bool updateCompleterRecordTable ()
 	VDB ()->optimizeTable( &completerRecord::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &completerRecord::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO completerRecord::t_info = {
+const TABLE_INFO completerRecord::t_info =
+{
 	COMPLETER_RECORDS_TABLE,
 	QStringLiteral ( "COMPLETER_RECORDS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
@@ -212,6 +217,7 @@ void completerRecord::updateCompleterInternal ( const uint field, const QStringL
 		return;
 
 #ifdef TABLE_UPDATE_AVAILABLE
+	return;
 	QStringList::const_iterator itr ( str_list.constBegin () );
 	const QStringList::const_iterator itr_end ( str_list.constEnd () );
 	bool bFromStart ( true );

@@ -5,50 +5,21 @@
 #include "fileops.h"
 #include "vivenciadb.h"
 
-const double TABLE_VERSION ( 2.3 );
-
-//
-//  " UNIQUE KEY `id` (`ID`), FULLTEXT  (`NAME`,`STREET`, ... ) "
-//
-
-#ifdef TRANSITION_PERIOD
-#include "stringrecord.h"
-#include "vmlist.h"
-#include "generaltable.h"
-
-enum {
-	FLD_OLDCLIENT_ID = 0, FLD_OLDCLIENT_NAME = 1, FLD_OLDCLIENT_STREET = 2, FLD_OLDCLIENT_NUMBER = 3,
-	FLD_OLDCLIENT_DISTRICT = 4, FLD_OLDCLIENT_CITY = 5, FLD_OLDCLIENT_ZIP = 6, FLD_OLDCLIENT_PHONE1 = 7,
-	FLD_OLDCLIENT_PHONE2 = 8, FLD_OLDCLIENT_PHONE3 = 9, FLD_OLDCLIENT_EMAIL = 10, FLD_OLDCLIENT_STARTDATE = 11,
-	FLD_OLDCLIENT_ENDDATE = 12, FLD_OLDCLIENT_STATUS = 13
-};
-
-static podList<int> newClientIds;
-int getNewClientID ( const int old_id )
-{
-	return newClientIds.at ( old_id );
-}
-
-int getOldClientID ( const int new_id )
-{
-	for ( uint old_id ( 0 ); old_id < newClientIds.count (); ++old_id ) {
-		if ( newClientIds.at ( old_id ) == new_id )
-			return old_id;
-	}
-	return -1;
-}
-#endif
+const unsigned char TABLE_VERSION ( 'A' );
 
 bool updateClientTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &Client::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &Client::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO Client::t_info = {
+const TABLE_INFO Client::t_info =
+{
 	CLIENT_TABLE,
 	QStringLiteral ( "CLIENTS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

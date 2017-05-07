@@ -37,14 +37,14 @@ public:
 		return tr ( "VivenciaManager Report (*.vmr)" );
 	}
 
-	bool loadFile ( const QString& filename );
-	bool saveAs ( const QString& filename );
+	bool loadFile ( const QString& filename ) override;
+	bool saveAs ( const QString& filename ) override;
 
 	void createJobReport ( const uint c_id, const bool include_all_paid = false,
 						   const QString& filename = QString::null, const bool show = true );
 	void createPaymentStub ( const uint payID = 0 );
-	void buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body );
-	const QString initialDir () const;
+	void buildMailMessage ( QString& address, QString& subject, QString& attachment, QString& body ) override;
+	const QString initialDir () const override;
 
 private:
 	void insertReadCarefullyBlock ();

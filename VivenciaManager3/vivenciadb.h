@@ -9,6 +9,8 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlQuery>
 
+#include <functional>
+
 class vmTableWidget;
 class passwordManager;
 class BackupDialog;
@@ -39,14 +41,14 @@ public:
 			s_instance = new VivenciaDB;
 	}
 
-	static inline const TABLE_INFO* tableInfo ( const uint ti )
-	{ //ti = table order
-		return table_info[ti];
+	static inline const TABLE_INFO* tableInfo ( const uint to ) //to = table order
+	{
+		return table_info[to];
 	}
 
-	inline QSqlDatabase* database ()
+	inline QSqlDatabase* database () const
 	{
-		return &m_db;
+		return &const_cast<VivenciaDB*>( this )->m_db;
 	}
 
 	bool openDataBase ();
@@ -151,4 +153,19 @@ inline VivenciaDB* VDB ()
 	return VivenciaDB::s_instance;
 }
 
+#include <QObject>
+ 
+class threadedDBOps : public QObject
+{
+
+public:
+	explicit threadedDBOps ();
+	virtual ~threadedDBOps ();
+	inline void setCallbackForFinished ( const std::function<void ()>& func ) { m_finishedFunc = func; }
+	
+	void populateTable ( const DBRecord* db_rec, vmTableWidget* table );
+ 
+protected:
+	std::function<void ()> m_finishedFunc;
+};
 #endif // VIVENCIADB_H

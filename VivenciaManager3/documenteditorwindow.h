@@ -16,26 +16,14 @@ public:
 	explicit documentEditorWindow ( documentEditor* parent );
 	virtual ~documentEditorWindow ();
 
-	inline uint editorType () const {
-		return m_type;
-	}
-	inline void setEditorType ( const uint type ) {
-		m_type = type;
-	}
+	inline uint editorType () const { return m_type; }
+	inline void setEditorType ( const uint type ) { m_type = type; }
 
-	inline bool isUntitled () const {
-		return mb_untitled;
-	}
-	inline void setIsUntitled ( const bool untitled ) {
-		mb_untitled = untitled;
-	}
+	inline bool isUntitled () const { return mb_untitled; }
+	inline void setIsUntitled ( const bool untitled ) { mb_untitled = untitled; }
 
-	inline bool isModified () const {
-		return mb_modified;
-	}
-	inline void setIsModified ( const bool modified ) {
-		mb_modified = modified;
-	}
+	inline bool isModified () const { return mb_modified; }
+	inline void setIsModified ( const bool modified ) { mb_modified = modified; }
 
 	bool canClose ();
 	void newFile ();
@@ -91,12 +79,8 @@ protected:
 	virtual bool saveFile ( const QString& fileName ) = 0;
 	virtual bool displayText ( const QString& text ) = 0;
 
-	inline void setPreview ( const bool preview ) {
-		mb_inPreview = preview;
-	}
-	inline bool inPreview () const {
-		return mb_inPreview;
-	}
+	inline void setPreview ( const bool preview ) { mb_inPreview = preview; }
+	inline bool inPreview () const { return mb_inPreview; }
 
 private:
 	uint m_type;

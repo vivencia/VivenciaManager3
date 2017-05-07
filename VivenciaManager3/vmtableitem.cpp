@@ -16,7 +16,7 @@ static void decode_pos ( const QString& pos, int* const row, int* const col )
 	else
 	{
 		*col = pos.at ( 0 ).toLatin1 () - 'A';
-		*row = pos.right ( pos.size () - 1 ).toInt ();
+		*row = pos.rightRef ( pos.size () - 1 ).toInt ();
 	}
 }
 

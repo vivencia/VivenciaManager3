@@ -830,7 +830,7 @@ class podList : public VMList<T>
 public:
 	explicit podList ( const T& default_value = 0, const uint n_prealloc = 100 );
 	explicit inline podList ( const podList<T>& other )
-		: VMList<T> (){
+		: VMList<T> () {
 		operator= ( other );
 	}
 
@@ -857,15 +857,15 @@ template <typename T>
 inline void podList<T>::moveItems ( const uint to, const uint from, const uint amount )
 {
 	if ( to > from ) {
-		::memmove ( static_cast<void*> ( VMList<T>::data () + to ),
-					static_cast<void*> ( VMList<T>::data () + from ), amount * sizeof ( T ) );
-		::memset ( static_cast<void*> ( VMList<T>::data () + from ),
+		::memmove ( static_cast<void*>( VMList<T>::data () + to ),
+					static_cast<void*>( VMList<T>::data () + from ), amount * sizeof ( T ) );
+		::memset ( static_cast<void*>( VMList<T>::data () + from ),
 				   VMList<T>::defaultValue (), ( ( to - from - 1 ) * sizeof ( T ) ) );
 	}
 	else {
-		::memmove ( static_cast<void*> ( VMList<T>::data () + to ),
-					static_cast<void*> ( VMList<T>::data () + from ), amount * sizeof ( T ) );
-		::memset ( static_cast<void*> ( VMList<T>::data () + from ),
+		::memmove ( static_cast<void*>( VMList<T>::data () + to ),
+					static_cast<void*>( VMList<T>::data () + from ), amount * sizeof ( T ) );
+		::memset ( static_cast<void*>( VMList<T>::data () + from ),
 				   VMList<T>::defaultValue (), ( ( from - to - 1 ) * sizeof ( T ) ) );
 	}
 }
@@ -873,7 +873,7 @@ inline void podList<T>::moveItems ( const uint to, const uint from, const uint a
 template <typename T>
 inline void podList<T>::copyItems ( T* dest, const T* src, const uint amount )
 {
-	::memcpy ( static_cast<void*> ( dest ), static_cast<void*> ( const_cast<T*> ( src ) ), amount * sizeof ( T ) );
+	::memcpy ( static_cast<void*>( dest ), static_cast<void*>( const_cast<T*> ( src ) ), amount * sizeof ( T ) );
 }
 
 template <typename T>
@@ -895,7 +895,7 @@ void podList<T>::resetMemory ( const T& value, uint length )
 		return;
 	}
 
-	::memset ( static_cast<void*> ( VMList<T>::data () ), VMList<T>::defaultValue (), length * sizeof ( T ) );
+	::memset ( static_cast<void*>( VMList<T>::data () ), VMList<T>::defaultValue (), length * sizeof ( T ) );
 }
 
 template<typename T>
@@ -937,7 +937,7 @@ uint podList<T>::realloc ( const uint newsize )
 	const uint newMemCapacity ( newsize * sizeof ( T ) );
 
 	VMList<T>::setData ( static_cast<T*> (
-							 ::realloc ( static_cast<void*> ( VMList<T>::data () ), newMemCapacity ) ) );
+							 ::realloc ( static_cast<void*>( VMList<T>::data () ), newMemCapacity ) ) );
 	if ( newsize < VMList<T>::count () )
 		VMList<T>::setNItems ( newsize );
 	else {
@@ -956,7 +956,7 @@ void podList<T>::reserve ( const uint length )
 		return;
 
 	uint newMemCapacity ( length * sizeof ( T ) );
-	VMList<T>::setData ( static_cast<T*> ( ::realloc ( static_cast<void*> ( VMList<T>::data () ), newMemCapacity ) ) );
+	VMList<T>::setData ( static_cast<T*> ( ::realloc ( static_cast<void*>( VMList<T>::data () ), newMemCapacity ) ) );
 	::memset ( VMList<T>::data (), VMList<T>::defaultValue (), newMemCapacity );
 	VMList<T>::setMemCapacity ( newMemCapacity );
 	VMList<T>::setCapacity ( length );
@@ -966,7 +966,7 @@ template <typename T>
 void podList<T>::clear ( const bool )
 {
 	if ( VMList<T>::data () != nullptr ) {
-		::free ( static_cast<void*> ( VMList<T>::data () ) );
+		::free ( static_cast<void*>( VMList<T>::data () ) );
 		VMList<T>::setData ( nullptr );
 		VMList<T>::setMemCapacity ( 0 );
 		VMList<T>::setCapacity ( 0 );
@@ -1024,15 +1024,15 @@ template <typename T>
 inline void PointersList<T>::moveItems ( const uint to, const uint from, const uint amount )
 {
 	if ( to > from ) {
-		::memmove ( static_cast<void*> ( VMList<T>::data () + to ),
-					static_cast<void*> ( VMList<T>::data () + from ), amount * sizeof ( T ) );
-		::memset ( static_cast<void*> ( VMList<T>::data () + from ),
+		::memmove ( static_cast<void*>( VMList<T>::data () + to ),
+					static_cast<void*>( VMList<T>::data () + from ), amount * sizeof ( T ) );
+		::memset ( static_cast<void*>( VMList<T>::data () + from ),
 				   0, ( ( to - from - 1 ) * sizeof ( T ) ) );
 	}
 	else {
-		::memmove ( static_cast<void*> ( VMList<T>::data () + to ),
-					static_cast<void*> ( VMList<T>::data () + from ), amount * sizeof ( T ) );
-		::memset ( static_cast<void*> ( VMList<T>::data () + from ),
+		::memmove ( static_cast<void*>( VMList<T>::data () + to ),
+					static_cast<void*>( VMList<T>::data () + from ), amount * sizeof ( T ) );
+		::memset ( static_cast<void*>( VMList<T>::data () + from ),
 				   0, ( ( from - to - 1 ) * sizeof ( T ) ) );
 	}
 }
@@ -1040,7 +1040,7 @@ inline void PointersList<T>::moveItems ( const uint to, const uint from, const u
 template <typename T>
 inline void PointersList<T>::copyItems ( T* dest, const T* src, const uint amount )
 {
-	::memcpy ( static_cast<void*> ( dest ), static_cast<void*> ( const_cast<T*> ( src ) ), amount * sizeof ( T ) );
+	::memcpy ( static_cast<void*>( dest ), static_cast<void*>( const_cast<T*> ( src ) ), amount * sizeof ( T ) );
 }
 
 template <typename T>
@@ -1059,7 +1059,7 @@ void PointersList<T>::resetMemory ( const T&, uint length )
 		return;
 	}
 
-	::memset ( static_cast<void*> ( VMList<T>::data () ), 0, length * sizeof ( T ) );
+	::memset ( static_cast<void*>( VMList<T>::data () ), 0, length * sizeof ( T ) );
 }
 
 template<typename T>
@@ -1102,7 +1102,7 @@ uint PointersList<T>::realloc ( const uint newsize )
 	const uint newMemCapacity ( newsize * sizeof ( T ) );
 
 	VMList<T>::setData ( static_cast<T*> (
-							 ::realloc ( static_cast<void*> ( VMList<T>::data () ), newMemCapacity ) ) );
+							 ::realloc ( static_cast<void*>( VMList<T>::data () ), newMemCapacity ) ) );
 	if ( newsize < VMList<T>::count () )
 		VMList<T>::setNItems ( newsize );
 	else {
@@ -1121,7 +1121,7 @@ void PointersList<T>::reserve ( const uint length )
 		return;
 
 	const uint newMemCapacity ( length * sizeof ( T ) );
-	VMList<T>::setData ( static_cast<T*> ( ::realloc ( static_cast<void*> ( VMList<T>::data () ), newMemCapacity ) ) );
+	VMList<T>::setData ( static_cast<T*> ( ::realloc ( static_cast<void*>( VMList<T>::data () ), newMemCapacity ) ) );
 	::memset ( VMList<T>::data (), 0, newMemCapacity );
 	VMList<T>::setMemCapacity ( newMemCapacity );
 	VMList<T>::setCapacity ( length );
@@ -1135,7 +1135,7 @@ void PointersList<T>::clear ( const bool delete_items )
 			for ( uint pos ( 0 ); pos < VMList<T>::count (); ++pos )
 				this->deletePointer ( &r, pos );
 		}
-		::free ( static_cast<void*> ( VMList<T>::data () ) );
+		::free ( static_cast<void*>( VMList<T>::data () ) );
 		VMList<T>::setData ( nullptr );
 		VMList<T>::setMemCapacity ( 0 );
 		VMList<T>::setCapacity ( 0 );

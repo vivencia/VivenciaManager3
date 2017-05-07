@@ -2,22 +2,25 @@
 #include "global_enums.h"
 #include "completers.h"
 #include "supplierrecord.h"
+#include "vivenciadb.h"
 
 #include <QCoreApplication>
 
-const double TABLE_VERSION ( 2.5 );
+const unsigned int TABLE_VERSION ( 'A' );
 
-const uint SUPPLIES_FIELDS_TYPE[SUPPLIES_FIELD_COUNT] = {
-	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
-	DBTYPE_LIST, DBTYPE_DATE, DBTYPE_PRICE, DBTYPE_LIST,
-	DBTYPE_SHORTTEXT
+const uint SUPPLIES_FIELDS_TYPE[SUPPLIES_FIELD_COUNT] =
+{
+	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_SHORTTEXT, DBTYPE_LIST, DBTYPE_DATE, DBTYPE_PRICE, 
+	DBTYPE_LIST, DBTYPE_SHORTTEXT
 };
 
 bool updateSuppliesTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &dbSupplies::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &dbSupplies::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
@@ -60,7 +63,8 @@ void updateSuppliesBrandCompleter ( const DBRecord* db_rec )
 	APP_COMPLETERS ()->encodeCompleterISRForSpreadSheet ( db_rec );
 }
 
-const TABLE_INFO dbSupplies::t_info = {
+const TABLE_INFO dbSupplies::t_info =
+{
 	SUPPLIES_TABLE,
 	QStringLiteral ( "SUPPLIES" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

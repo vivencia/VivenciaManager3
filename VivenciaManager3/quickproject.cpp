@@ -2,9 +2,10 @@
 #include "vivenciadb.h"
 #include "global.h"
 
-const double TABLE_VERSION ( 2.2 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] = {
+static const uint QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] =
+{
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_PRICE,
 	DBTYPE_PRICE, DBTYPE_NUMBER, DBTYPE_PRICE, DBTYPE_PRICE, DBTYPE_PRICE
 };
@@ -12,13 +13,16 @@ static const uint QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] = {
 bool updateQuickProjectTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &quickProject::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &quickProject::t_info );
 	return false;
 #endif
 }
 
-const TABLE_INFO quickProject::t_info = {
+const TABLE_INFO quickProject::t_info =
+{
 	QUICK_PROJECT_TABLE,
 	QStringLiteral ( "QUICK_PROJECT" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

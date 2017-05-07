@@ -8,18 +8,21 @@
 #include "vmwidgets.h"
 #include "stringrecord.h"
 
-const double TABLE_VERSION ( 2.0 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
 bool updateJobTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &Job::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &Job::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO Job::t_info = {
+const TABLE_INFO Job::t_info =
+{
 	JOB_TABLE,
 	QStringLiteral ( "JOBS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
@@ -138,22 +141,22 @@ QString Job::concatenateJobInfo ( const Job& job )
 {
 	QString info;
 
-	info = QLatin1String ( "Serviço " ) + recStrValue ( &job, FLD_JOB_PROJECT_ID ) + CHR_NEWLINE;
+	info = QStringLiteral ( "Serviço " ) + recStrValue ( &job, FLD_JOB_PROJECT_ID ) + CHR_NEWLINE;
 	info += QLatin1String ( "Cliente: " ) + recStrValue ( &job, FLD_JOB_CLIENTID ) + CHR_NEWLINE;
 	info += QLatin1String ( "Catetoria: " ) + recStrValue ( &job, FLD_JOB_TYPE ) + CHR_NEWLINE;
 
-	info += QLatin1String ( "Período de execução: " ) +
+	info += QStringLiteral ( "Período de execução: " ) +
 			job.date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_LONG_DATE ) + QLatin1String ( " a " ) +
 			job.date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_LONG_DATE ) + CHR_NEWLINE;
 
-	info += QLatin1String ( "Tempo de serviço: " ) + job.time ( FLD_JOB_TIME ).toTime ( vmNumber::VTF_FANCY ) + CHR_NEWLINE;
+	info += QStringLiteral ( "Duração do serviço: " ) + job.time ( FLD_JOB_TIME ).toTime ( vmNumber::VTF_FANCY ) + CHR_NEWLINE;
 
 	if ( !recStrValue ( &job, FLD_JOB_PROJECT_ID ).isEmpty () )
 		info += QLatin1String ( "Projeto #: " ) + recStrValue ( &job, FLD_JOB_PROJECT_ID ) + CHR_NEWLINE;
 
 	if ( !recStrValue ( &job, FLD_JOB_REPORT ).isEmpty () )
 	{
-		info += QLatin1String ( "Relatório de execução:" ) + CHR_NEWLINE;
+		info += QStringLiteral ( "Relatório de execução:" ) + CHR_NEWLINE;
 		const stringTable jobReport ( recStrValue ( &job, FLD_JOB_REPORT ) );
 		if ( jobReport.firstStr () ) {
 			stringRecord jobDay;

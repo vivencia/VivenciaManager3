@@ -40,14 +40,10 @@ void contactsManagerWidget::initInterface ()
 	cboInfoData->setMinimumWidth ( 200 );
 	if ( m_contact_type == CMW_PHONES )
 		cboInfoData->setTextType ( vmWidget::TT_PHONE );
-	cboInfoData->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return cbo_textAltered ( sender->text () ); });
-	cboInfoData->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const sender ) {
-		return keyPressedSelector ( ke, sender ); } );
-	cboInfoData->setCallbackForEnterKeyPressed ( [&] () {
-		return btnAdd_clicked ( false ); } );
-	cboInfoData->setCallbackForEscKeyPressed ( [&] () {
-		return btnDel_clicked (); } );
+	cboInfoData->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { return cbo_textAltered ( sender->text () ); });
+	cboInfoData->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const sender ) { return keyPressedSelector ( ke, sender ); } );
+	cboInfoData->setCallbackForEnterKeyPressed ( [&] () { return btnAdd_clicked ( false ); } );
+	cboInfoData->setCallbackForEscKeyPressed ( [&] () { return btnDel_clicked (); } );
 
 	btnAdd = new QToolButton ( this );
 	btnAdd->setCheckable ( true );
@@ -56,8 +52,7 @@ void contactsManagerWidget::initInterface ()
 		return btnAdd_clicked ( checked ); } );
 	btnDel = new QToolButton ( this );
 	btnDel->setIcon ( ICON ( "remove" ) );
-	connect ( btnDel, &QToolButton::clicked, this, [&] () {
-		return btnDel_clicked (); } );
+	connect ( btnDel, &QToolButton::clicked, this, [&] () { return btnDel_clicked (); } );
 
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );

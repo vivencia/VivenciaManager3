@@ -4,39 +4,21 @@
 #include "vivenciadb.h"
 #include "stringrecord.h"
 
-const double TABLE_VERSION ( 2.3 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
 bool updatePaymentTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
-	Payment pay;
-	if ( pay.readFirstRecord () )
-	{
-		Job job;
-		do 
-		{
-			if ( recStrValue ( &pay, FLD_PAY_OVERDUE ) == CHR_ONE )
-			{
-				if ( job.readRecord ( static_cast<uint>(recIntValue ( &pay, FLD_PAY_JOBID )) ) )
-				{
-					if ( job.date ( FLD_JOB_ENDDATE ).year () < 2014 )
-					{
-						pay.setAction ( ACTION_EDIT );
-						setRecValue ( &pay, FLD_PAY_OVERDUE, CHR_ZERO );
-						pay.saveRecord ( true );
-						pay.clearAll ();
-					}
-				}
-			}
-		} while ( pay.readNextRecord () );
-	}
+	VDB ()->optimizeTable ( &Payment::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &Payment::t_info );
 	return false;
 #endif
 }
 
-const TABLE_INFO Payment::t_info = {
+const TABLE_INFO Payment::t_info =
+{
 	PAYMENT_TABLE,
 	QStringLiteral ( "PAYMENTS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

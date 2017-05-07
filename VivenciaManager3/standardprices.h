@@ -18,6 +18,8 @@ public:
 	static const TABLE_INFO t_info;
 
 private:
+	friend bool updateServicesOffered ();
+	
 	RECORD_FIELD m_RECFIELDS[SERVICES_FIELD_COUNT];
 	void ( *helperFunction[SERVICES_FIELD_COUNT] ) ( const DBRecord* );
 };

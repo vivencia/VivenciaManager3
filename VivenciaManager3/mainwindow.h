@@ -46,6 +46,7 @@ class QLabel;
 class QListWidgetItem;
 class QTimer;
 class QTabWidget;
+class QDialog;
 
 namespace Ui
 {
@@ -59,7 +60,7 @@ friend class searchUI;
 
 public:
 
-	enum TAB_INDEXES { TI_MAIN = 0, TI_CALENDAR, TI_INVENTORY, TI_SUPPLIES };
+	enum TAB_INDEXES { TI_MAIN = 0, TI_CALENDAR, TI_INVENTORY, TI_SUPPLIES, TI_STATISTICS };
 
 	enum JOB_INFO_LIST_USER_ROLES
 	{
@@ -77,14 +78,14 @@ public:
 	virtual ~MainWindow ();
 	
 	inline Ui::MainWindow* UserInterface () const { return ui; }
-	static void initMainWindow ()
+	static void init ()
 	{
 		if ( s_instance == nullptr )
 			s_instance = new MainWindow;
 	}
 	
 	void continueStartUp ();
-	void exitRequested ( const bool user_requested = false );
+	void exitRequested ();
 
 //--------------------------------------------CLIENT------------------------------------------------------------
 	void saveClientWidget ( vmWidget* widget, const int id );
@@ -102,6 +103,7 @@ public:
 	void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const uint id ) const;
 	void fillAllLists ( const clientListItem* client_item );
+	void alterClientEndDate ( const jobListItem* const job_item );
 //--------------------------------------------CLIENT------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-CLIENT-----------------------------------------------------------
@@ -248,7 +250,7 @@ public:
 
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 	void setupCustomControls ();
-	void restoreCrashedItems ( const crashRestore* crash );
+	void restoreCrashedItems ( crashRestore* const crash, clientListItem* &client_item, jobListItem* &job_item, buyListItem* &buy_item );
 	void restoreLastSession ();
 	void searchCallbackSelector ( const QKeyEvent* ke );
 	void reOrderTabSequence ();
@@ -265,7 +267,6 @@ public:
 	void tboxCalBuys_currentChanged ( const int index );
 	void changeCalendarToolBoxesText ( const vmNumber& date );
 //--------------------------------------------CALENDAR-----------------------------------------------------------
-
 	void showTab ( const TAB_INDEXES ti );
 	void tabMain_currentTabChanged ( const int tab_idx );
 	void saveView ();
@@ -293,9 +294,9 @@ public:
 //--------------------------------------------SHARED-----------------------------------------------------------
 
 protected:
-	void closeEvent ( QCloseEvent * );
-	void changeEvent ( QEvent* e );
-	bool eventFilter ( QObject* o, QEvent* e );
+	void closeEvent ( QCloseEvent * ) override;
+	void changeEvent ( QEvent* e ) override;
+	bool eventFilter ( QObject* o, QEvent* e ) override;
 
 private:
 	static MainWindow* s_instance;
@@ -352,6 +353,7 @@ private:
 	buyListItem* mBuyCurItem;
 
 	QToolButton* mBtnNavPrev, *mBtnNavNext;
+	QDialog* dlgSaveEditItems;
 //---------------------------CUSTOM-WIDGETS-------------------------------------
 
 //--------------------------------------------JOB-----------------------------------------------------------

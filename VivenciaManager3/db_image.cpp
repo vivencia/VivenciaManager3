@@ -33,8 +33,8 @@ DB_Image::DB_Image ( QWidget* parent )
 	scrollArea->setMouseTracking ( true );
 	scrollArea->setGeometry ( 0, 0, width (), height () );
 
-	installEventFilter ( imageViewer );
-	installEventFilter ( this );
+	imageViewer->installEventFilter ( this );
+	//installEventFilter ( this );
 
 	name_filters.insert ( 0, QStringLiteral ( "*.jpg" ) );
 	name_filters.insert ( 1, QStringLiteral ( "*.JPG" ) );
@@ -400,7 +400,7 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 			break;
 		case QEvent::KeyPress:
 		{
-			const QKeyEvent* k ( static_cast<QKeyEvent*> ( e ) );
+			const QKeyEvent* k ( static_cast<QKeyEvent*>( e ) );
 			switch  ( k->key () )
 			{
 				default:

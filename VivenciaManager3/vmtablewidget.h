@@ -138,7 +138,7 @@ public:
 	
 	inline void setKeepModificationRecords ( const bool bkeeprec ) { mbKeepModRec = bkeeprec; }
 
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 
 	inline bool isEmpty () const {
 		return static_cast<bool> ( m_lastUsedRow == 0 ); }
@@ -170,7 +170,7 @@ public:
 	void insertMonitoredCell ( const uint row, const uint col );
 	void removeMonitoredCell ( const uint row, const uint col );
 	void setCellColor ( const uint row, const uint col, const Qt::GlobalColor color );
-	void highlight ( const VMColors color, const QString& text );
+	void highlight ( const VMColors color, const QString& text ) override;
 
 	bool isColumnSelectedForSearch ( const uint column ) const;
 	void setColumnSearchStatus ( const uint column, const bool bsearch );
@@ -195,7 +195,7 @@ public:
 	inline void callRowActivated_func ( const int row ) const { if ( rowActivated_func ) rowActivated_func ( row ); }
 	
 protected:
-	void keyPressEvent ( QKeyEvent* k );
+	void keyPressEvent ( QKeyEvent* k ) override;
 	inline void setVisibleRows ( const uint n ) { m_nVisibleRows = n; }
 
 private:

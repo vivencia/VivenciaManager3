@@ -50,7 +50,7 @@ vmListItem::vmListItem ( const QString& label )
 
 vmListItem::~vmListItem ()
 {
-	if ( !EXITING_PROGRAM )
+	if ( !Data::EXITING_PROGRAM )
 		disconnectRelation ( static_cast<int>( RLI_CLIENTITEM ), this );
 	if ( mbSearchCreated )
 		delete[] searchFields;
@@ -247,7 +247,7 @@ void vmListItem::changeAppearance ()
 	{
 		if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
 		{
-			relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setIcon ( *listIndicatorIcons[static_cast<uint>( action () )] );
+			relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setIcon ( *Data::listIndicatorIcons[static_cast<uint>( action () )] );
 		}
 	}
 	
@@ -278,16 +278,17 @@ void vmListItem::setFieldInputStatus ( const uint field, const bool ok, const vm
 		ok ? --n_badInputs : ++n_badInputs;
 	badInputs_ptr[bad_field] = ok;
 	if ( widget )
-		const_cast<vmWidget*> ( widget )->highlight ( ok ? vmDefault_Color : vmRed );
+		const_cast<vmWidget*>( widget )->highlight ( ok ? vmDefault_Color : vmRed );
 }
 
 void vmListItem::saveCrashInfo ( crashRestore* crash )
 {
-	stringRecord state_info;
+	stringRecord state_info ( crash->fieldSeparatorForRecord () );
 	state_info.fastAppendValue ( QString::number ( subType () ) ); // CF_SUBTYPE - client, job, pay or buy
-	state_info.fastAppendValue ( QString::number ( m_action ) ); //CF_ACTION
-	state_info.appendStrRecord ( m_dbrec->toStringRecord () ); //CF_DBRECORD
-	m_crashid = crash->commitState ( m_crashid, state_info );
+	state_info.fastAppendValue ( QString::number ( static_cast<int>(action ()) ) ); //CF_ACTION
+	state_info.fastAppendValue ( QString::number ( crashID () ) ); //CF_CRASHID
+	state_info.appendStrRecord ( m_dbrec->toStringRecord ( crash->fieldSeparatorForRecord () ) ); //CF_DBRECORD
+	setCrashID ( crash->commitState ( crashID (), state_info ) );
 }
 
 void vmListItem::setSearchArray ()
@@ -614,8 +615,7 @@ void buyListItem::updateCalendarItem ()
 	
 	if ( data ( Qt::UserRole + 1 ).toBool () == true )
 	{
-		bodyText += purchaseDateStr.arg ( recStrValue ( buyRecord (), FLD_BUY_PRICE ) )
-								   .arg ( recStrValue ( buyRecord (), FLD_BUY_DATE ) );
+		bodyText += purchaseDateStr.arg ( recStrValue ( buyRecord (), FLD_BUY_PRICE ), recStrValue ( buyRecord (), FLD_BUY_DATE ) );
 	}
 	
 	if ( data ( Qt::UserRole + 2 ).toBool () == true )
@@ -628,10 +628,7 @@ void buyListItem::updateCalendarItem ()
 		//	paynumber_str = bodyText.right ( bodyText.length () - bodyText.indexOf ( "#" ) + 1 ) + CHR_COMMA;
 		//paynumber_str += QString::number ( paynumber );
 		
-		bodyText += payDateStr.arg ( payRecord.fieldValue ( PHR_VALUE ) )
-							  .arg ( payRecord.fieldValue ( PHR_DATE ) )
-							  //.arg ( paynumber_str );
-							  .arg ( QString::number ( paynumber ) );
+		bodyText += payDateStr.arg ( payRecord.fieldValue ( PHR_VALUE ), payRecord.fieldValue ( PHR_DATE ), QString::number ( paynumber ) );
 	}
 	setText ( bodyText, false, false, false );
 }

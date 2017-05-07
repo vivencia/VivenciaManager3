@@ -64,7 +64,6 @@ void deleteConfigInstance ()
 configOps::configOps ()
 	: m_cfgFile ( nullptr ), cfgDlg ( nullptr )
 {
-	VivenciaDB::init ();
 	generalTable gen_rec;
 	if ( gen_rec.readFirstRecord () )
 		m_filename = recStrValue ( &gen_rec, FLD_GENERAL_CONFIG_FILE );
@@ -188,7 +187,7 @@ void configOps::saveGeometry ( const int* coords )
 
 void configOps::geometryFromConfigFile ( int* coords )
 {
-	stringRecord str_geometry ( readConfigFile ( MAINWINDOW_GEOMETRY ) );
+	const stringRecord& str_geometry ( readConfigFile ( MAINWINDOW_GEOMETRY ) );
 	if ( str_geometry.isOK () )
 	{
 		str_geometry.first ();
@@ -214,7 +213,7 @@ const QString& configOps::lastViewedRecords ( const bool use_default ) const
 // and the index within each category List of pointers
 uint configOps::lastViewedRecord ( const uint table ) const
 {
-	stringRecord lvr ( lastViewedRecords () );
+	const stringRecord& lvr ( lastViewedRecords () );
 
 	if ( lvr.isOK () )
 	{

@@ -235,7 +235,8 @@ void vmTableWidget::searchCancel ()
 {
 	for ( uint i ( 0 ); i < mSearchList.count (); ++i )
 		mSearchList.at ( i )->highlight ( vmDefault_Color );
-	static_cast<vmCheckedTableItem*> ( horizontalHeader () )->setCheckable ( false );
+	if ( horizontalHeader () )
+		static_cast<vmCheckedTableItem*>( horizontalHeader () )->setCheckable ( false );
 	mSearchList.clearButKeepMemory ( false );
 	mSearchTerm.clear ();
 }
@@ -478,13 +479,13 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 		mTotalsRow += n;
 		for ( ; i_row < n; ++i_row )
 		{ // Insert new rows accordingly, i.e., compute their formulas, if they have
-			QTableWidget::insertRow ( static_cast<int>(row + i_row) );
+			QTableWidget::insertRow ( static_cast<int>( row + i_row ) );
 			for ( i_col = 0; i_col < colCount (); ++i_col )
 			{
 				new_SheetItem = new vmTableItem ( mCols[i_col].wtype, mCols[i_col].text_type, mCols[i_col].default_value, this );
 				new_SheetItem->setButtonType ( mCols[i_col].button_type );
 				new_SheetItem->setCompleterType ( mCols[i_col].completer_type );
-				setItem ( static_cast<int>(row + i_row), static_cast<int>(i_col), new_SheetItem );
+				setItem ( static_cast<int>( row + i_row ), static_cast<int>( i_col ), new_SheetItem );
 				setCellWidget ( new_SheetItem );
 
 				/* The formula must be set for last because setFormula calls vmTableItem::targetsFromFormula ();
@@ -501,7 +502,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 		if ( !mbPlainTable )
 		{
 			// update all rows after the inserted ones, so that their formula reflects the row changes
-			for ( i_row = row + n; static_cast<int>(i_row) < mTotalsRow; ++i_row )
+			for ( i_row = row + n; static_cast<int>( i_row ) < mTotalsRow; ++i_row )
 			{
 				for ( i_col = 0; i_col < colCount (); ++i_col )
 				{
@@ -536,15 +537,15 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 void vmTableWidget::removeRow ( const uint row, const uint n )
 {
-	if ( static_cast<int>(row) < totalsRow () )
+	if ( static_cast<int>( row ) < totalsRow () )
 	{
 		uint i_row ( 0 );
 		m_nVisibleRows -= n;
 		for ( ; i_row < n; ++i_row )
-			QTableWidget::removeRow ( static_cast<int>(row) );
+			QTableWidget::removeRow ( static_cast<int>( row ) );
 
-		if ( static_cast<int>(row + n) >= m_lastUsedRow )
-			m_lastUsedRow = static_cast<int>(row - 1);
+		if ( static_cast<int>( row + n ) >= lastUsedRow () )
+			setLastUsedRow ( static_cast<int>( row - 1 ) );
 			
 		if ( !mbPlainTable )
 		{
@@ -552,7 +553,7 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 			vmTableItem* sheet_item ( nullptr );
 			uint i_col ( 0 );
 			QString new_formula;
-			for ( i_row = row; static_cast<int>(i_row) < totalsRow (); ++i_row )
+			for ( i_row = row; static_cast<int>( i_row ) < totalsRow (); ++i_row )
 			{
 				for ( i_col = 0; i_col < colCount (); ++i_col )
 				{
@@ -589,16 +590,16 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 
 void vmTableWidget::setRowVisible ( const uint row, const bool bVisible )
 {
-	const bool b_isVisible ( !isRowHidden ( static_cast<int>(row) ) );
+	const bool b_isVisible ( !isRowHidden ( static_cast<int>( row ) ) );
 	if ( !b_isVisible && bVisible )
 	{
 		++m_nVisibleRows;
-		QTableWidget::setRowHidden ( static_cast<int>(row), false );
+		QTableWidget::setRowHidden ( static_cast<int>( row ), false );
 	}
 	else if ( b_isVisible && !bVisible )
 	{
 		--m_nVisibleRows;
-		QTableWidget::setRowHidden ( static_cast<int>(row), true );
+		QTableWidget::setRowHidden ( static_cast<int>( row ), true );
 	}
 }
 
@@ -617,7 +618,7 @@ void vmTableWidget::clearRow ( const uint row, const uint n )
 				
 				for ( uint i_col ( 0 ); i_col <= ( colCount () - 1 ); ++i_col )
 				{
-					if ( !isBitSet ( readOnlyColumnsMask, static_cast<uchar>(i_col) ) )
+					if ( !isBitSet ( readOnlyColumnsMask, static_cast<uchar>( i_col ) ) )
 					{
 						item = sheetItem ( i_row, i_col );
 						/* TODO test: In previous versions the argument to setTextToDefault was set to true.
@@ -641,11 +642,11 @@ void vmTableWidget::clear ( const bool force )
 		setUpdatesEnabled ( false );
 		uint i_col ( 0 );
 		vmTableItem* item ( nullptr );
-		for ( uint i_row ( 0 ); i_row <= static_cast<uint>(max_row); ++i_row )
+		for ( uint i_row ( 0 ); i_row <= static_cast<uint>( max_row ); ++i_row )
 		{
 			for ( i_col = 0; i_col <= ( colCount () - 1 ); ++i_col )
 			{
-				if ( !isBitSet ( readOnlyColumnsMask, static_cast<uchar>(i_col) ) )
+				if ( !isBitSet ( readOnlyColumnsMask, static_cast<uchar>( i_col ) ) )
 				{
 					item = sheetItem ( i_row, i_col );
 					item->setTextToDefault ( isEditable () );
@@ -667,10 +668,10 @@ void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 	if ( rowActivated_func )
 	{
 		if ( b_activate )
-			static_cast<void>(connect ( this, &QTableWidget::itemClicked, this, [&] ( QTableWidgetItem* current ) {
-				return rowActivated_func ( current->row () ); } ));
+			static_cast<void>( connect ( this, &QTableWidget::itemClicked, this, [&] ( QTableWidgetItem* current ) {
+				return rowActivated_func ( current->row () ); } ) );
 		else
-			static_cast<void>(disconnect ( this, &QTableWidget::itemActivated, nullptr, nullptr ));
+			static_cast<void>( disconnect ( this, &QTableWidget::itemActivated, nullptr, nullptr ) );
 	}
 }
 
@@ -717,7 +718,7 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 	{
 		const uint row ( static_cast<uint>(item->row ()) );
 		uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
-		for ( int i ( signed ( modifiedRows.count () - 1 ) ); i >= 0; --i )
+		for ( int i ( static_cast<int>( modifiedRows.count () - 1 ) ); i >= 0; --i )
 		{
 			if ( row == modifiedRows.at ( i ) )
 			{
@@ -732,7 +733,7 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 			else
 				--insert_pos;
 		}
-		modifiedRows.insert ( insert_pos, unsigned ( row ) );
+		modifiedRows.insert ( insert_pos, row );
 	}
 	if ( mIsPurchaseTable )
 	{
@@ -740,7 +741,7 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 			setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
 		else
 		{
-			if ( sheetItem ( static_cast<uint>(item->row ()), PURCHASES_TABLE_REG_COL )->text () == CHR_ONE )
+			if ( sheetItem ( static_cast<uint>( item->row () ), PURCHASES_TABLE_REG_COL )->text () == CHR_ONE )
 				setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
 		}
 	}
@@ -791,7 +792,7 @@ void vmTableWidget::addContextMenuAction ( vmAction* action )
 	if ( mAddedItems == 0 )
 		mSeparator = mContextMenu->addSeparator ();
 	++mAddedItems;
-	mContextMenu->addAction ( static_cast<QAction*> ( action ) );
+	mContextMenu->addAction ( static_cast<QAction*>( action ) );
 }
 
 void vmTableWidget::removeContextMenuAction ( vmAction* action )
@@ -844,11 +845,11 @@ void vmTableWidget::loadFromStringTable ( const stringTable& data )
 
 void vmTableWidget::makeStringTable ( stringTable& data )
 {
-	if ( lastUsedRow () > 0 )
+	if ( lastUsedRow () >= 0 )
 	{
 		stringRecord rec;
 		uint i_col ( 0 );
-		for ( uint i_row ( 0 ); i_row <= static_cast<uint>(lastUsedRow ()); ++i_row )
+		for ( uint i_row ( 0 ); i_row <= static_cast<uint>( lastUsedRow () ); ++i_row )
 		{
 			for ( i_col = 0; i_col < colCount (); ++i_col )
 				rec.fastAppendValue ( sheetItem ( i_row, i_col )->text () );
@@ -862,56 +863,51 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 {
 	vmWidget* widget ( nullptr );
 	// read only columns do not connect signals, do not need completers
-	const bool bCellReadOnly ( isBitSet ( readOnlyColumnsMask, static_cast<uchar>(sheet_item->column ()) ) || sheet_item->row () == totalsRow () );
+	const bool bCellReadOnly ( isBitSet ( readOnlyColumnsMask, static_cast<uchar>( sheet_item->column () ) ) || sheet_item->row () == totalsRow () );
 
 	switch ( sheet_item->widgetType () )
 	{
 		case WT_LINEEDIT:
 			widget = new vmLineEdit;
-			static_cast<vmLineEdit*> ( widget )->setFrame ( false );
-			static_cast<vmLineEdit*> ( widget )->setTextType ( sheet_item->textType () );
+			static_cast<vmLineEdit*>( widget )->setFrame ( false );
+			static_cast<vmLineEdit*>( widget )->setTextType ( sheet_item->textType () );
 			if ( !bCellReadOnly )
 			{
 				APP_COMPLETERS ()->setCompleter ( static_cast<vmLineEdit*>( widget ), sheet_item->completerType () );
-				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-					return textWidgetChanged ( sender ); } );
+				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { return textWidgetChanged ( sender ); } );
 			}
 		break;
 		case WT_LINEEDIT_WITH_BUTTON:
 			widget = new vmLineEditWithButton;
-			static_cast<vmLineEditWithButton*> ( widget )->setButtonType ( sheet_item->buttonType () );
-			static_cast<vmLineEditWithButton*> ( widget )->lineControl ()->setTextType ( sheet_item->textType () );
+			static_cast<vmLineEditWithButton*>( widget )->setButtonType ( sheet_item->buttonType () );
+			static_cast<vmLineEditWithButton*>( widget )->lineControl ()->setTextType ( sheet_item->textType () );
 			if ( !bCellReadOnly )
 			{
-				APP_COMPLETERS ()->setCompleter ( static_cast<vmLineEditWithButton*> ( widget )->lineControl (), sheet_item->completerType () );
-					static_cast<vmLineEditWithButton*> ( widget )->lineControl ()->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
+				APP_COMPLETERS ()->setCompleter ( static_cast<vmLineEditWithButton*>( widget )->lineControl (), sheet_item->completerType () );
+					static_cast<vmLineEditWithButton*>( widget )->lineControl ()->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 						return textWidgetChanged ( sender ); } );
 			}
 		break;
 		case WT_CHECKBOX: // so far, only check box has a different default value, depending on the table to which they belong
 			widget = new vmCheckBox;
-			static_cast<vmCheckBox*> ( widget )->setChecked ( sheet_item->defaultValue () == CHR_ONE );
+			static_cast<vmCheckBox*>( widget )->setChecked ( sheet_item->defaultValue () == CHR_ONE );
 			if ( !bCellReadOnly )
-				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-					return checkBoxToggled ( sender ); } );
+				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { return checkBoxToggled ( sender ); } );
 		break;
 		case WT_DATEEDIT:
 			widget = new vmDateEdit;
 			if ( !bCellReadOnly )
-				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-					return dateWidgetChanged ( sender ); } );
+				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { return dateWidgetChanged ( sender ); } );
 		break;
 		case WT_TIMEEDIT:
 			widget = new vmTimeEdit;
 			if ( !bCellReadOnly )
-				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-					return timeWidgetChanged ( sender ); } );
+				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { return timeWidgetChanged ( sender ); } );
 		break;
 		case WT_COMBO:
 			widget = new vmComboBox;
 			if ( !bCellReadOnly )
-				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-					return textWidgetChanged ( sender ); } );
+				widget->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { return textWidgetChanged ( sender ); } );
 		break;
 		default:
 		return;
@@ -999,39 +995,38 @@ void vmTableWidget::setEditable ( const bool editable )
 	{
 		if ( isPlainTable () )
 		{
-			connect ( this, &QTableWidget::itemChanged, this, [&] ( QTableWidgetItem *item ) { 
-					return ( cellModified ( static_cast<vmTableItem*>( item ) ) ); } );
+			static_cast<void>( connect ( this, &QTableWidget::itemChanged, this, [&] ( QTableWidgetItem *item ) { 
+					return ( cellModified ( static_cast<vmTableItem*>( item ) ) ); } ) );
 		}
 		if ( cellNavigation_func != nullptr )
 		{
-			connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
-				return cellNavigation_func ( static_cast<uint> ( row ), static_cast<uint> ( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } );
+			static_cast<void>( connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
+				return cellNavigation_func ( static_cast<uint> ( row ), static_cast<uint> ( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } ) );
 		}
 		if ( mIsPurchaseTable )
 		{
-			connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
+			static_cast<void>( connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
 					  static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
 					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
-			} ) );
+			} ) ) );
 		}
 	}
 	else
 	{
-		this->disconnect ( nullptr, nullptr, nullptr );
-		//if ( isPlainTable () )
-		//	disconnect ( this, &QTableWidget::itemChanged, nullptr, nullptr );
-		//if ( cellNavigation_func != nullptr )
-		//	disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr );
-		//if ( mIsPurchaseTable )
-		//	disconnect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ), nullptr, this, nullptr );
+		static_cast<void>( this->disconnect ( nullptr, nullptr, nullptr ) );
 	}
 	vmWidget::setEditable ( editable );
 }
 
 void vmTableWidget::setLastUsedRow ( const int row )
 {
-	if ( row > m_lastUsedRow &&	row < ( isPlainTable () ? rowCount () : static_cast<int>( totalsRow () ) ) ) 
-		m_lastUsedRow = row;
+	if ( row < 0 )
+		m_lastUsedRow = -1;
+	else
+	{
+		if ( row > m_lastUsedRow &&	row < ( isPlainTable () ? rowCount () : static_cast<int>( totalsRow () ) ) ) 
+			m_lastUsedRow = row;
+	}
 }
 
 uint vmTableWidget::selectedRowsCount () const
@@ -1197,7 +1192,7 @@ void vmTableWidget::highlight ( const VMColors color, const QString& text )
 	{
 		vmTableItem* item ( nullptr );
 		uint i_col ( 0 );
-		for ( uint i_row ( 0 ); static_cast<int>(i_row) <= m_lastUsedRow; ++i_row )
+		for ( uint i_row ( 0 ); static_cast<int>(i_row) <= lastUsedRow (); ++i_row )
 		{
 			for ( i_col = 0; i_col < colCount (); ++i_col )
 			{
@@ -1385,7 +1380,7 @@ void vmTableWidget::enableOrDisableActionsForCell ( const vmTableItem* sheetItem
 
 void vmTableWidget::sharedContructorsCode ()
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	setSelectionMode ( QAbstractItemView::ExtendedSelection );
 	setSelectionBehavior ( QAbstractItemView::SelectItems );
 	setAlternatingRowColors ( true );
@@ -1399,36 +1394,28 @@ void vmTableWidget::sharedContructorsCode ()
 		vmTableWidget::defaultBGColor = palette ().color ( backgroundRole () ).name ();
 
 	mUndoAction = new vmAction ( UNDO, TR_FUNC ( "Undo change (CTRL+Z)" ), this );
-	connect ( mUndoAction, &vmAction::triggered, this, [&] () {
-				return undoChange (); } );
+	static_cast<void>( connect ( mUndoAction, &vmAction::triggered, this, [&] () { return undoChange (); } ) );
 
 	mCopyCellAction = new vmAction ( COPY_CELL, TR_FUNC ( "Copy cell contents to clipboard (CTRL+C)" ), this );
-	connect ( mCopyCellAction, &vmAction::triggered, this, [&] () {
-				return copyCellContents (); } );
+	static_cast<void>( connect ( mCopyCellAction, &vmAction::triggered, this, [&] () { return copyCellContents (); } ) );
 
 	mCopyRowContents = new vmAction ( COPY_ROW, TR_FUNC ( "Copy row contents to clipboard (CTRL+B)" ), this );
-	connect ( mCopyRowContents, &vmAction::triggered, this, [&] () {
-				return copyRowContents (); } );
+	static_cast<void>( connect ( mCopyRowContents, &vmAction::triggered, this, [&] () { return copyRowContents (); } ) );
 
 	mInsertRowAction = new vmAction ( ADD_ROW, TR_FUNC ( "Insert line here (CTRL+I)" ), this );
-	connect ( mInsertRowAction, &vmAction::triggered, this, [&] () {
-				return insertRow_slot (); } );
+	static_cast<void>( connect ( mInsertRowAction, &vmAction::triggered, this, [&] () { return insertRow_slot (); } ) );
 
 	mAppendRowAction = new vmAction ( APPEND_ROW, TR_FUNC ( "Append line (CTRL+O)" ), this );
-	connect ( mAppendRowAction, &vmAction::triggered, this, [&] () {
-				return appendRow_slot (); } );
+	static_cast<void>( connect ( mAppendRowAction, &vmAction::triggered, this, [&] () { return appendRow_slot (); } ) );
 
 	mDeleteRowAction = new vmAction ( DEL_ROW, TR_FUNC ( "Remove this line (CTRL+R)" ), this );
-	connect ( mDeleteRowAction, &vmAction::triggered, this, [&] () {
-				return removeRow_slot (); } );
+	static_cast<void>( connect ( mDeleteRowAction, &vmAction::triggered, this, [&] () { return removeRow_slot (); } ) );
 
 	mClearRowAction = new vmAction ( CLEAR_ROW, TR_FUNC ( "Clear line (CTRL+D)" ), this );
-	connect ( mClearRowAction, &vmAction::triggered, this, [&] () {
-				return clearRow_slot (); } );
+	static_cast<void>( connect ( mClearRowAction, &vmAction::triggered, this, [&] () { return clearRow_slot (); } ) );
 
 	mClearTableAction = new vmAction ( CLEAR_TABLE, TR_FUNC ( "Clear table (CTRL+T)" ), this );
-	connect ( mClearTableAction, &vmAction::triggered, this, [&] () {
-				return clearTable_slot (); } );
+	static_cast<void>( connect ( mClearTableAction, &vmAction::triggered, this, [&] () { return clearTable_slot (); } ) );
 
 	mSubMenuFormula = new QMenu ( QStringLiteral ( "Formula" ) );
 

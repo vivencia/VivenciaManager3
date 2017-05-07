@@ -1,11 +1,24 @@
 #include "standardprices.h"
+#include "vivenciadb.h"
 
-static const double TABLE_VERSION ( 1.0 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint SERVICES_FIELDS_TYPE[SERVICES_FIELD_COUNT] = {
+static const uint SERVICES_FIELDS_TYPE[SERVICES_FIELD_COUNT] =
+{
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_PRICE, DBTYPE_DATE, DBTYPE_TIME,
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
+
+bool updateServicesOffered ()
+{
+#ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &servicesOffered::t_info );
+	return true;
+#else
+	VDB ()->optimizeTable ( &servicesOffered::t_info );
+	return false;
+#endif
+}
 
 const TABLE_INFO servicesOffered::t_info =
 {
@@ -17,7 +30,7 @@ const TABLE_INFO servicesOffered::t_info =
 	QStringLiteral ( " int(9) NOT NULL, | varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar(10) DEFAULT NULL, | varchar(20) DEFAULT NULL, |"
 	" varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Service type|Basic unit|Price per unit|Last update|Execution average time|Discount from (units)|Discount factor|" ),
-	SERVICES_FIELDS_TYPE, TABLE_VERSION, SERVICES_FIELD_COUNT, TABLE_SERVICES_ORDER, nullptr
+	SERVICES_FIELDS_TYPE, TABLE_VERSION, SERVICES_FIELD_COUNT, TABLE_SERVICES_ORDER, &updateServicesOffered
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif

@@ -31,9 +31,7 @@ public:
 
 	inline virtual ~vmAction () {}
 	
-	inline void setLabel ( const QString& text ) {
-		QAction::setText ( text );
-	}
+	inline void setLabel ( const QString& text ) { QAction::setText ( text ); }
 };
 //------------------------------------------------VM-ACTION-------------------------------------------------
 
@@ -48,12 +46,12 @@ public:
 
 	virtual ~vmActionLabel ();
 
-	inline void setText ( const QString& text, const bool = false ) { QToolButton::setText ( text ); }
-	inline QString text () const { return QToolButton::text (); }
+	inline void setText ( const QString& text, const bool = false ) override { QToolButton::setText ( text ); }
+	inline QString text () const override { return QToolButton::text (); }
 
 	void setCallbackForLabelActivated ( const std::function<void ()>& func );
-	QSize sizeHint () const;
-	QSize minimumSizeHint () const;
+	QSize sizeHint () const override;
+	QSize minimumSizeHint () const override;
 
 protected:
 	void init ( const bool b_action = true );
@@ -74,25 +72,20 @@ public:
 	vmDateEdit ( QWidget* parent = nullptr );
 	virtual ~vmDateEdit ();
 
-	inline QLatin1String qtClassName () const {
-		return QLatin1String ( "QDateEdit" );
-	}
-	QString defaultStyleSheet () const;
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QDateEdit" ); }
+	QString defaultStyleSheet () const override;
 
 	void setDate ( const vmNumber& date, const bool b_notify = false );
 	const QDate date () const;
-	inline void setText ( const QString& text, const bool b_notify = false ) {
+	inline void setText ( const QString& text, const bool b_notify = false ) override {
 		setDate ( vmNumber ( text, VMNT_DATE ), b_notify );
 	}
-	inline QString text () const {
-		return vmNumber ( date () ).toDate ( vmNumber::VDF_HUMAN_DATE );
-	}
+	inline QString text () const override { return vmNumber ( date () ).toDate ( vmNumber::VDF_HUMAN_DATE ); }
 
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 	void contextMenuRequested ();
 
-	void setCallbackForContextMenu
-	( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
+	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
 
 	static void execDateButtonsMenu ( const vmAction* const action, pvmDateEdit* dte );
 	static void createDateButtonsMenu ( QWidget* parent = nullptr );
@@ -118,30 +111,24 @@ public:
 	vmTimeEdit ( QWidget* parent = nullptr );
 	virtual ~vmTimeEdit ();
 
-	inline QLatin1String qtClassName () const {
-		return QLatin1String ( "QTimeEdit" );
-	}
-	QString defaultStyleSheet () const;
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QTimeEdit" ); }
+	QString defaultStyleSheet () const override;
 
 	void setTime ( const vmNumber& time, const bool b_notify = false );
-	inline void setText ( const QString& text, const bool b_notify = false ) {
-		setTime ( vmNumber ( text, VMNT_TIME ), b_notify );
-	}
-	inline QString text () const {
-		return vmNumber ( time () ).toTime ();
-	}
-	inline void setEditable ( const bool editable ) {
+	inline void setText ( const QString& text, const bool b_notify = false ) override { setTime ( vmNumber ( text, VMNT_TIME ), b_notify ); }
+	inline QString text () const override { return vmNumber ( time () ).toTime (); }
+	
+	inline void setEditable ( const bool editable ) override {
 		setReadOnly ( !editable );
 		vmWidget::setEditable ( editable );
 	}
 
-	void setCallbackForContextMenu
-	( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func );
+	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
 
 protected:
-	void keyPressEvent ( QKeyEvent* );
-	void focusInEvent ( QFocusEvent* );
-	void focusOutEvent ( QFocusEvent* );
+	void keyPressEvent ( QKeyEvent* ) override;
+	void focusInEvent ( QFocusEvent* ) override;
+	void focusOutEvent ( QFocusEvent* ) override;
 
 private:
 	QTime mTimeBeforeFocus;
@@ -158,17 +145,15 @@ public:
 	explicit vmLineEdit ( QWidget* parent = nullptr, QWidget* ownerWindow = nullptr );
 	virtual ~vmLineEdit ();
 
-	inline QLatin1String qtClassName () const {
-		return QLatin1String ( "QLineEdit" );
-	}
-	QString defaultStyleSheet () const;
-	void highlight ( const VMColors vm_color, const QString& str = QString::null );
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QLineEdit" ); }
+	QString defaultStyleSheet () const override;
+	void highlight ( const VMColors vm_color, const QString& str = QString::null ) override;
 
-	void setText ( const QString& text, const bool b_notify = false );
-	inline QString text () const { return QLineEdit::text (); }
+	void setText ( const QString& text, const bool b_notify = false ) override;
+	inline QString text () const override { return QLineEdit::text (); }
 	void setTrackingEnabled ( const bool b_tracking );
 
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 	inline void setCallbackForMouseClicked ( const std::function<void ( const vmLineEdit* const )>& func ) { mouseClicked_func = func; }
 
 	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func );
@@ -179,14 +164,14 @@ public:
 	inline const QString& textBeforeChange () const { return mCurrentText; }
 
 protected:
-	void keyPressEvent ( QKeyEvent* );
-	void keyReleaseEvent ( QKeyEvent* );
-	void mouseMoveEvent ( QMouseEvent* );
-	void mousePressEvent ( QMouseEvent* );
-	void mouseReleaseEvent ( QMouseEvent* );
-	void contextMenuEvent ( QContextMenuEvent* );
-	void focusInEvent ( QFocusEvent* );
-	void focusOutEvent ( QFocusEvent* );
+	void keyPressEvent ( QKeyEvent* ) override;
+	void keyReleaseEvent ( QKeyEvent* ) override;
+	void mouseMoveEvent ( QMouseEvent* ) override;
+	void mousePressEvent ( QMouseEvent* ) override;
+	void mouseReleaseEvent ( QMouseEvent* ) override;
+	void contextMenuEvent ( QContextMenuEvent* ) override;
+	void focusInEvent ( QFocusEvent* ) override;
+	void focusOutEvent ( QFocusEvent* ) override;
 
 private:
 	bool mCtrlKey;
@@ -211,20 +196,12 @@ public:
 	vmLineEditWithButton ( QWidget* parent = nullptr );
 	virtual ~vmLineEditWithButton ();
 
-	inline QLatin1String qtClassName () const {
-		return QLatin1String ( "QLineEdit" );
-	}
-	inline QString defaultStyleSheet () const {
-		return mLineEdit->defaultStyleSheet () ;
-	}
-	inline void highlight ( const VMColors wm_color, const QString& str = QString::null ) {
-		mLineEdit->highlight ( wm_color, str );
-	}
-	void setEditable ( const bool editable );
-	inline void setText ( const QString& text , const bool b_notify = false ) {
-		mLineEdit->setText ( text, b_notify );
-	}
-	inline QString text () const { return mLineEdit->QLineEdit::text (); }
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QLineEdit" ); }
+	inline QString defaultStyleSheet () const override { return mLineEdit->defaultStyleSheet () ; }
+	inline void highlight ( const VMColors wm_color, const QString& str = QString::null ) override { mLineEdit->highlight ( wm_color, str ); }
+	void setEditable ( const bool editable ) override;
+	inline void setText ( const QString& text , const bool b_notify = false ) override { mLineEdit->setText ( text, b_notify ); }
+	inline QString text () const override { return mLineEdit->QLineEdit::text (); }
 
 	void setButtonType ( const LINE_EDIT_BUTTON_TYPE type );
 
@@ -252,16 +229,16 @@ public:
 		mLineEdit->setID ( id );
 		vmWidget::setID ( id );
 	}
-	inline QLatin1String qtClassName () const { return QLatin1String ( "QComboBox" ); }
-	QString defaultStyleSheet () const;
-	void highlight ( const VMColors vm_color, const QString& str = QString::null );
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QComboBox" ); }
+	QString defaultStyleSheet () const override;
+	void highlight ( const VMColors vm_color, const QString& str = QString::null ) override;
 
-	void setText ( const QString& text, const bool b_notify = false );
-	inline QString text () const { return mLineEdit->QLineEdit::text (); }
+	void setText ( const QString& text, const bool b_notify = false ) override;
+	inline QString text () const override { return mLineEdit->QLineEdit::text (); }
 
 	void setCompleter ( const vmCompleters::COMPLETER_CATEGORIES completer );
 	void setIgnoreChanges ( const bool b_ignore );
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 
 	/* Will check for existance of text and only append it if there is no match
 	 * For additions that we know there is no way of a match, call QComboBox::addItem dicrectly,
@@ -270,7 +247,7 @@ public:
 	void insertItem ( const QString& text, const int idx = -1, const bool b_check = true );
 
 	// The receiver should retrieve the line edit's parent to find the vmComboBox owning the sender of the signal
-	inline void setCallbackForContentsAltered ( const std::function<void ( const vmWidget* const )>& func )
+	inline void setCallbackForContentsAltered ( const std::function<void ( const vmWidget* const )>& func ) override
 	{
 		vmWidget::setCallbackForContentsAltered ( func );
 		mLineEdit->setCallbackForContentsAltered ( func );
@@ -285,10 +262,10 @@ public:
 	inline vmLineEdit* editor () const { return mLineEdit; }
 
 protected:
-	void focusOutEvent ( QFocusEvent* );
-	void keyPressEvent ( QKeyEvent* );
-	void focusInEvent ( QFocusEvent* );
-	void wheelEvent ( QWheelEvent* );
+	void focusOutEvent ( QFocusEvent* ) override;
+	void keyPressEvent ( QKeyEvent* ) override;
+	void focusInEvent ( QFocusEvent* ) override;
+	void wheelEvent ( QWheelEvent* ) override;
 
 private:
 	bool mbIgnoreChanges;
@@ -326,7 +303,7 @@ public:
 			QCheckBox::setText ( text );
 	}
 
-	inline QString text () const { return isChecked () ? CHR_ONE : emptyString; }
+	inline QString text () const { return isChecked () ? CHR_ONE : CHR_ZERO; }
 	void setEditable ( const bool editable );
 
 	// Qt's uic calls setText, which render the controle labelless because we use the same function name, which trumps the base's name.

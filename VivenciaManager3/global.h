@@ -3,6 +3,7 @@
 
 #ifdef DEBUG
 #include <QDebug>
+#undef USE_THREADS
 #define DBG_OUT(str,desc,separate) \
 		if ( separate ) \
 			qDebug () << QLatin1String ( "-----------------------------------" ); \
@@ -24,6 +25,7 @@
 			str << endl;
 #else
 #define DBG_OUT(str,desc,separate)
+#define USE_THREADS
 #endif
 
 #ifndef TRANSITION_PERIOD
@@ -32,7 +34,7 @@
 
 #ifndef TABLE_UPDATE_AVAILABLE
 // Uncomment when there is a table update. This compiler switch is used - generally - within the updateXXXTable functions
-//#define TABLE_UPDATE_AVAILABLE
+#define TABLE_UPDATE_AVAILABLE
 #endif
 
 #ifdef TRANSLATION_ENABLED
@@ -67,6 +69,9 @@ constexpr const QLatin1Char CHR_L_BRACKET ( '[' );
 constexpr const QLatin1Char CHR_R_BRACKET ( ']' );
 constexpr const QLatin1Char CHR_TILDE ( '~' );
 
+const char* const PROPERTY_PRINT_PREVIEW ( "ppp" );
+const char* const PROPERTY_DOC_MODIFIED ( "pdm" );
+
 constexpr const QLatin1String colorsStr[6] = {
 	QLatin1String ( "220, 220, 220", 13 ),		// gray		- 0
 	QLatin1String ( "255, 0, 0", 9 ),			// red		- 1
@@ -94,10 +99,10 @@ static const QString emptyString;
 constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
-#define VERSION_MINOR 1
-#define VERSION_REVISION 12
-constexpr const QLatin1String VERSION_APPEND ( "Broken back (NO MORE)", 21 );
-constexpr const QLatin1String VERSION_DATE ( "2017-04-04", 10 );
+#define VERSION_MINOR 2
+#define VERSION_REVISION 5
+constexpr const QLatin1String VERSION_APPEND ( "Laying low", 10 );
+constexpr const QLatin1String VERSION_DATE ( "2017-05-07", 10 );
 
 static const QString PROGRAM_VERSION (
 	QUOTEME(VERSION_MAJOR) + CHR_DOT +
@@ -109,7 +114,6 @@ static const QString PROGRAM_VERSION (
 #define ICON(name) QIcon::fromTheme ( QStringLiteral ( name ), QIcon ( QStringLiteral ( ":resources/" name"" ) ) )
 #define PIXMAP(name) QPixmap ( QStringLiteral ( ":resources/" name ) )
 
-extern bool EXITING_PROGRAM;
 extern QString APP_START_CMD;
 
 static const QString STR_MYSQL ( QStringLiteral ( "mysql" ) );

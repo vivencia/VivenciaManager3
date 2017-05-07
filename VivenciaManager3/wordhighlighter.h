@@ -4,6 +4,8 @@
 #undef QT_NO_CAST_FROM_ASCII
 #undef QT_NO_CAST_TO_ASCII
 
+#include "global.h"
+
 #include <QSyntaxHighlighter>
 #include <QStringList>
 
@@ -27,8 +29,11 @@ public:
 	void highlightWord ( const QString& );
 	void highlightWords ( const QStringList& );
 
+	inline bool inPreview () const { return property ( PROPERTY_PRINT_PREVIEW ).toBool (); }
+	inline void setInPreview ( const bool b_preview ) { setProperty ( PROPERTY_PRINT_PREVIEW, b_preview ); }
+	
 protected:
-	void highlightBlock ( const QString& );
+	void highlightBlock ( const QString& ) override;
 
 private:
 	QStringList highlightedWordsList;

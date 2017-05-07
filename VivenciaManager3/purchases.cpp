@@ -4,19 +4,23 @@
 #include "stringrecord.h"
 #include "completers.h"
 #include "supplierrecord.h"
+#include "vivenciadb.h"
 
-const double TABLE_VERSION ( 2.0 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
 bool updatePurchaseTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &Buy::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &Buy::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO Buy::t_info = {
+const TABLE_INFO Buy::t_info =
+{
 	PURCHASE_TABLE,
 	QStringLiteral ( "PURCHASES" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
@@ -82,9 +86,9 @@ QString Buy::isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_
 	{
 		if ( sub_record >= 0 )
 		{
-			const stringTable table ( recStrValue ( this, FLD_BUY_REPORT ) );
-			const stringRecord rec ( table.readRecord ( static_cast<uint>(sub_record) ) );
-			return rec.fieldValue ( isr_field );
+			const stringTable& table ( recStrValue ( this, FLD_BUY_REPORT ) );
+			const stringRecord* rec ( &table.readRecord ( static_cast<uint>( sub_record ) ) );
+			return rec->fieldValue ( isr_field );
 		}
 		return emptyString;
 	}

@@ -25,8 +25,6 @@ static const uint buy_nBadInputs ( 4 );
  * To avoid such compile errors, both callers and callees must add this offset whenever using INFO_TABLE_COLUMNS (Payment and Buy, so far)
  */
 static const uint INFO_TABLE_COLUMNS_OFFSET ( 100 );
-
-extern QIcon* listIndicatorIcons[4];
 									  
 enum RELATED_LIST_ITEMS {
 	RLI_CLIENTPARENT = 0, RLI_JOBPARENT = 1, RLI_CLIENTITEM = 2, RLI_JOBITEM = 3, 
@@ -37,7 +35,7 @@ constexpr uint PAY_ITEM_OVERDUE_CLIENT (static_cast<uint>(RLI_EXTRAITEMS) + 0 );
 constexpr uint PAY_ITEM_OVERDUE_ALL ( static_cast<uint>(RLI_EXTRAITEMS) + 1 );
 
 enum CRASH_FIELDS {
-	CF_SUBTYPE = 0, CF_ACTION, CF_DBRECORD
+	CF_SUBTYPE = 0, CF_ACTION, CF_CRASHID, CF_DBRECORD
 };
 
 class vmListItem : public vmTableItem
@@ -50,8 +48,8 @@ public:
 	vmListItem ( const QString& label );
 	virtual ~vmListItem ();
 	
-	QString defaultStyleSheet () const;
-	void highlight ( const VMColors vm_color, const QString& = QString::null );
+	QString defaultStyleSheet () const override;
+	void highlight ( const VMColors vm_color, const QString& = QString::null ) override;
 
 	inline RECORD_ACTION action () const { return m_action; }
 	void setRelation ( const uint relation  );
@@ -81,6 +79,7 @@ public:
 	virtual uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 
 	inline int crashID () const { return m_crashid; }
+	inline void setCrashID ( const int crashid ) { m_crashid = crashid; }
 	inline bool isGoodToSave () const { return n_badInputs <= 0; }
 	inline bool fieldInputStatus ( const uint field ) const { return badInputs_ptr[translatedInputFieldIntoBadInputField( field )]; }
 

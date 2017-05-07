@@ -19,16 +19,12 @@ public:
 
 	bool needRestore ();
 
-	inline bool isRestoring () const {
-		return crashInfoLoaded.isOn ();
-	}
-	inline void setInfoLoaded ( const bool bloaded ) {
-		mbInfoLoaded = bloaded;
-	}
-	inline bool infoLoaded () const {
-		return mbInfoLoaded;
-	}
-
+	inline bool isRestoring () const { return crashInfoLoaded.isOn (); }
+	inline void setInfoLoaded ( const bool b_loaded ) { mbInfoLoaded = b_loaded; }
+	inline bool infoLoaded () const { return mbInfoLoaded; }
+	inline static const QChar recordSeparatorForTable () { return public_table_sep; }
+	inline static const QChar fieldSeparatorForRecord () { return public_rec_sep; }
+	
 	int commitState ( const int id, const stringRecord& value );
 	void eliminateRestoreInfo ( const int id = -1 );
 

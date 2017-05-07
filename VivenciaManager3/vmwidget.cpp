@@ -96,7 +96,7 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 					imh = Qt::ImhFormattedNumbersOnly;
 				break;
 				case TT_PRICE:
-					qval = new QDoubleValidator ( -99.999, 99.999, 2 );
+					qval = new QDoubleValidator ( -999.999, 999.999, 2 );
 					imh = Qt::ImhFormattedNumbersOnly;
 				break;
 				case TT_INTEGER:
@@ -141,7 +141,7 @@ void vmWidget::setOwnerItem ( vmTableItem* const item )
 {
 	 m_sheetItem = item;
 	 if ( m_type == WT_LINEEDIT_WITH_BUTTON )
-		 static_cast<vmLineEditWithButton*> ( toQWidget () )->lineControl ()->setOwnerItem ( item );
+		 static_cast<vmLineEditWithButton*>( toQWidget () )->lineControl ()->setOwnerItem ( item );
 }
 
 bool vmWidget::toggleUtilityPanel ( const int widget_idx )

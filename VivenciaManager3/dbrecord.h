@@ -20,14 +20,15 @@ class vmListItem;
 class DBRecord
 {
 
-	typedef void ( DBRecord::*alterRecord ) ( const uint, const QString& );
-	typedef void ( DBRecord::*alterRecordInt ) ( const uint, const int );
-	typedef const QString& ( DBRecord::*recordValueStr ) ( const uint ) const;
-	typedef int ( DBRecord::*recordValueInt ) ( const uint ) const;
+typedef void ( DBRecord::*alterRecord ) ( const uint, const QString& );
+typedef void ( DBRecord::*alterRecordInt ) ( const uint, const int );
+typedef const QString& ( DBRecord::*recordValueStr ) ( const uint ) const;
+typedef int ( DBRecord::*recordValueInt ) ( const uint ) const;
 
-	friend class VivenciaDB;
-	friend class searchUI;
-	friend class vmListItem;
+friend class VivenciaDB;
+friend class searchUI;
+friend class vmListItem;
+friend class threadedDBOps;
 
 public:
 
@@ -159,7 +160,7 @@ public:
 	inline void setCompleterUpdated ( const bool b_updated ) { mb_completerUpdated = b_updated; }
 	inline bool completerUpdated () const { return mb_completerUpdated; }
 
-	stringRecord toStringRecord () const;
+	stringRecord toStringRecord ( const QChar& rec_sep ) const;
 	void fromStringRecord ( const stringRecord& str_rec, const uint fromField = 0 );
 
 	inline const QString& actualRecordStr ( const uint field ) const {

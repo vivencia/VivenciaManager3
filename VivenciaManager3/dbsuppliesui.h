@@ -34,7 +34,7 @@ public:
 	inline QVBoxLayout* layout () const {
 		return suppliesLayout;
 	}
-	void insertRow ( const uint );
+	void insertRow ( const int i_row );
 	void showSearchResult ( vmListItem* item, const bool bshow );
 
 private:
@@ -55,7 +55,7 @@ private:
 
 	void readRowData ( const uint row, const uint col, const uint prev_row, const uint = 0 );
 	void tableChanged ( const vmTableItem* const item );
-	void rowRemoved ( const uint row = 0 );
+	void rowRemoved ( const int row = -1 );
 	void btnSuppliesCancelEdit_clicked ();
 	void btnSuppliesEditTable_clicked ( const bool checked );
 };

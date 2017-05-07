@@ -37,30 +37,29 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	if ( mCompleter != nullptr )
 	{
 		mCompleter->setWidget ( this );
-		static_cast<void>(connect ( mCompleter, static_cast<void (QCompleter::*)( const QString& )>( &QCompleter::activated ),
-			this, [&, this] ( const QString& text ) { return insertCompletion ( text, this->mCompleter ); } ));
+		static_cast<void>( connect ( mCompleter, static_cast<void (QCompleter::*)( const QString& )>( &QCompleter::activated ),
+			this, [&, this] ( const QString& text ) { return insertCompletion ( text, this->mCompleter ); } ) );
 	}
 
 	/* When print previewing, Qt makes a copy of QTextEdit (not textEditWithCompleter) and certain features of this class are, therefore,
-	   lost. The objectName () property is carried with the copy and, if we deference the QTextEdit pointer Qt uses, we can extract objectName ()
-	   and get a value that will have a special meaning. "np" means Not Previewing, and "p" Previewing, which is a clue that something must be changed
-	   to accomodate the different viewing mode. Sometimes we need to check the Highligher as well as objectName ()'s change won't have any effect
+	   lost. The object's properties, though, are carried with the copy and, if we deference the QTextEdit pointer Qt uses, we can extract all of them,
+	   and get a value that will have a special meaning. Sometimes we need to check the Highligher's property as well change won't have any effect
 	   maybe because Qt copies the pointer before we have the chance to alter its name.
 	 */
 
 	document ()->setProperty ( PROPERTY_PRINT_PREVIEW, false );
 	m_highlighter = new wordHighlighter ( this->document () );
-	m_highlighter->setProperty ( PROPERTY_PRINT_PREVIEW, false );
-
+	m_highlighter->setInPreview ( false );
 	m_highlighter->enableSpellChecking ( true );
+	
 	misspelledWordsActs[0] = new QAction ( this );
 	misspelledWordsActs[0]->setVisible ( false );
 	misspelledWordsActs[0]->setSeparator ( true );
 	misspelledWordsActs[1] = new QAction ( this );
-	connect ( misspelledWordsActs[1], &QAction::triggered, this, [&] () { return addWord (); } );
+	static_cast<void>(connect ( misspelledWordsActs[1], &QAction::triggered, this, [&] () { return addWord (); } ));
 	misspelledWordsActs[1]->setVisible ( false );
 	misspelledWordsActs[2] = new QAction ( this );
-	connect ( misspelledWordsActs[2], &QAction::triggered, this, [&] () { return ignoreWord (); } );
+	static_cast<void>(connect ( misspelledWordsActs[2], &QAction::triggered, this, [&] () { return ignoreWord (); } ));
 	misspelledWordsActs[2]->setVisible ( false );
 	QAction* action ( nullptr );
 	for  ( uint i ( 3 ); i < WRONG_WORDS_MENUS; ++i )
@@ -73,7 +72,7 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 
 	createContextMenu ();
 	newest_edited_text.reserve ( 20000 );
-	static_cast<void>(connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocumentModified = bChanged); } ));
+	static_cast<void>( connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocumentModified = bChanged); } ) );
 }
 
 textEditWithCompleter::~textEditWithCompleter ()
@@ -96,7 +95,7 @@ void textEditWithCompleter::setEditable ( const bool editable )
 void textEditWithCompleter::setPreview ( const bool preview )
 {
 	document ()->setProperty ( PROPERTY_PRINT_PREVIEW, preview );
-	m_highlighter->setProperty ( PROPERTY_PRINT_PREVIEW, preview );
+	m_highlighter->setInPreview ( preview );
 	m_highlighter->enableSpellChecking ( !preview );
 	m_highlighter->enableHighlighting ( !preview );
 	// printing and print previewing set document () state to modified by default. We need to overrule
@@ -449,7 +448,7 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 		bool enableWhenReadonly ( false );
 		do
 		{
-			action = static_cast<vmAction*> ( mContextMenu->actions ().at ( n ) );
+			action = static_cast<vmAction*>( mContextMenu->actions ().at ( n ) );
 			if ( action != nullptr )
 			{
 				enableWhenReadonly = action->data ().toBool ();
@@ -588,7 +587,6 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 	  btnRplcWord ( nullptr ), btnRplcAll ( nullptr ), btnClose ( nullptr ),
 	  searchField ( nullptr ), replaceField ( nullptr )
 {
-	installEventFilter ( this );
 	setFrameStyle ( QFrame::Raised | QFrame::StyledPanel );
 	setMinimumSize ( 250, 60 );
 

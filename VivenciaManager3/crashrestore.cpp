@@ -6,6 +6,7 @@
 #include "heapmanager.h"
 #include "cleanup.h"
 #include "mainwindow.h"
+#include "data.h"
 
 restoreManager* restoreManager::s_instance ( nullptr );
 
@@ -45,8 +46,7 @@ void restoreManager::saveSession ()
 		crash->done ();
 		crash = crashInfoList.next ();
 	}
-	MAINWINDOW ()->exitRequested ( true );
-	deleteRestoreManagerInstance ();
+	Data::de_init ();
 }
 
 crashRestore::crashRestore ( const QString& str_id )

@@ -12,7 +12,7 @@ static const TABLE_INFO generic_tinfo = {
 	0,
 	emptyString, emptyString, emptyString,
 	emptyString, emptyString, emptyString,
-	nullptr, 0.0, 0, 0, nullptr
+	nullptr, 'A', 0, 0, nullptr
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif
@@ -135,7 +135,7 @@ bool DBRecord::readRecord ( const uint field, const QString& search, const bool 
 	if ( field != static_cast<uint>( stquery.field ) || search != stquery.search )
 	{
 		stquery.reset = true;
-		stquery.field = static_cast<int>(field);
+		stquery.field = static_cast<int>( field );
 		stquery.search = search;
 	}
 	else
@@ -303,6 +303,7 @@ void DBRecord::clearAll ()
 	} while  ( ++i < fld_count );
 	mb_modified = false;
 	mb_synced = true;
+	stquery.search.clear ();
 }
 
 void DBRecord::setAction ( const RECORD_ACTION action )
@@ -388,9 +389,9 @@ void DBRecord::fastCopy ( const DBRecord* dbrec )
 		*m_RECFIELDS = *( dbrec->m_RECFIELDS );
 }
 
-stringRecord DBRecord::toStringRecord () const
+stringRecord DBRecord::toStringRecord ( const QChar& rec_sep ) const
 {
-	stringRecord str_rec;
+	stringRecord str_rec ( rec_sep );
 	for ( uint i ( 0 ); i < fld_count; ++i )
 		str_rec.fastAppendValue ( recStrValue ( this, i ) );
 	return str_rec;
@@ -413,10 +414,10 @@ void DBRecord::fromStringRecord ( const stringRecord& str_rec, const uint fromFi
 		{
 			if ( str_rec.next () )
 			{
-				if ( fieldType ( i ) != DBTYPE_SUBRECORD )
+				//if ( fieldType ( i ) != DBTYPE_SUBRECORD )
 					setRecValue ( this, i, str_rec.curValue () );
-				else
-					copySubRecord ( i, str_rec ); // this func will advance the pointer inside the string record to after the sub string record
+				//else
+				//	copySubRecord ( i, str_rec ); // this func will advance the pointer inside the string record to after the sub string record
 				++i;
 			}
 			else

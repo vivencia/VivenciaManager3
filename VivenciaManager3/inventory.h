@@ -24,6 +24,7 @@ public:
 	static const TABLE_INFO t_info;
 
 protected:
+	friend bool updateInvetory ();
 	RECORD_FIELD m_RECFIELDS[INVENTORY_FIELD_COUNT];
 	void ( *helperFunction[INVENTORY_FIELD_COUNT] ) ( const DBRecord* );
 };

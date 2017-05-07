@@ -3,11 +3,10 @@
 
 #include "documenteditorwindow.h"
 #include "stringrecord.h"
+#include "data.h"
 
 #include <QMainWindow>
 #include <QStringList>
-
-extern bool EXITING_PROGRAM;
 
 class textEditor;
 class reportGenerator;
@@ -22,23 +21,20 @@ class documentEditor : public QMainWindow
 
 public:
 	virtual ~documentEditor ();
-	textEditor* startNewTextEditor ();
+	textEditor* startNewTextEditor ( textEditor* editor = nullptr );
 	reportGenerator* startNewReport ( const bool b_windowless = false );
 
+	inline static bool isEditorStarted () { return s_instance != nullptr; }
+											
 	void addDockWindow ( Qt::DockWidgetArea area, QDockWidget* dockwidget );
 	void removeDockWindow ( QDockWidget* dockwidget );
 
 	void updateMenus ( const int tab_index );
 	void updateWindowMenu ();
-	void newTextDocument ();
-	void newReport ();
 	void openDocument ();
 	void saveDocument ();
 	void saveAsDocument ();
 	void sendMailAttachment ();
-	void cut ();
-	void copy ();
-	void paste ();
 	void addToRecentFiles ( const QString& filename, const bool b_AddToList = true );
 	void openRecentFile ( QAction* action );
 	void makeWindowActive ( QAction* action );
@@ -47,10 +43,9 @@ public:
 	void closeAllTabs ();
 	void activateNextTab ();
 	void activatePreviousTab ();
-	void showCalc ();
 
 protected:
-	void closeEvent ( QCloseEvent* );
+	void closeEvent ( QCloseEvent* ) override;
 	
 private:
 	friend documentEditor* EDITOR ();
@@ -77,7 +72,6 @@ private:
 	QMenu* fileMenu;
 	QMenu* editMenu;
 	QMenu* windowMenu;
-	QMenu* helpMenu;
 	QMenu* recentFilesSubMenu;
 	QToolBar* fileToolBar;
 	QToolBar* editToolBar;
@@ -104,10 +98,7 @@ private:
 inline documentEditor* EDITOR ()
 {
 	if ( !documentEditor::s_instance )
-	{
-		if ( !EXITING_PROGRAM )
-			documentEditor::s_instance = new documentEditor;
-	}
+		documentEditor::s_instance = new documentEditor;
 	return documentEditor::s_instance;
 }
 

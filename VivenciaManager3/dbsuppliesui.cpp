@@ -41,28 +41,28 @@ bool dbSuppliesUI::setupUI ()
 	
 	btnSuppliesEditTable = new QPushButton ( tr ( "&Edit" ) );
 	btnSuppliesEditTable->setCheckable ( true );
-	btnSuppliesEditTable->connect ( btnSuppliesEditTable, &QPushButton::clicked,
-			this, [&] ( const bool checked ) { return btnSuppliesEditTable_clicked ( checked ); } );
+	static_cast<void>( btnSuppliesEditTable->connect ( btnSuppliesEditTable, &QPushButton::clicked,
+			this, [&] ( const bool checked ) { return btnSuppliesEditTable_clicked ( checked ); } ) );
 
 	btnSuppliesCancelEdit = new QPushButton ( tr ( "Cancel changes" ) );
 	btnSuppliesCancelEdit->setEnabled ( false );
-	btnSuppliesCancelEdit->connect ( btnSuppliesCancelEdit, &QPushButton::clicked,
-			this, [&] ( const bool ) { return btnSuppliesCancelEdit_clicked (); } );
+	static_cast<void>( btnSuppliesCancelEdit->connect ( btnSuppliesCancelEdit, &QPushButton::clicked,
+			this, [&] ( const bool ) { return btnSuppliesCancelEdit_clicked (); } ) );
 
 	btnSuppliesInsertRowAbove = new QPushButton ( tr ( "Add new item above" ) );
 	btnSuppliesInsertRowAbove->setEnabled ( false );
-	btnSuppliesInsertRowAbove->connect ( btnSuppliesInsertRowAbove, &QPushButton::clicked,
-			this, [&] ( const bool ) { return insertRow ( m_table->currentRow () ); } );
+	static_cast<void>( btnSuppliesInsertRowAbove->connect ( btnSuppliesInsertRowAbove, &QPushButton::clicked,
+			this, [&] ( const bool ) { return insertRow ( m_table->currentRow () ); } ) );
 
 	btnSuppliesInsertRowBelow = new QPushButton ( tr ( "Add new item below" ) );
 	btnSuppliesInsertRowBelow->setEnabled ( false );
-	btnSuppliesInsertRowBelow->connect ( btnSuppliesInsertRowBelow, &QPushButton::clicked,
-			this, [&] ( const bool ) { return insertRow ( m_table->currentRow () + 1 ); } );
+	static_cast<void>( btnSuppliesInsertRowBelow->connect ( btnSuppliesInsertRowBelow, &QPushButton::clicked,
+			this, [&] ( const bool ) { return insertRow ( m_table->currentRow () + 1 ); } ) );
 
 	btnSuppliesRemoveRow = new QPushButton ( tr ( "Remove item" ) );
 	btnSuppliesRemoveRow->setEnabled ( false );
-	btnSuppliesRemoveRow->connect ( btnSuppliesRemoveRow, &QPushButton::clicked,
-			this, [&] ( const bool ) { if ( m_table->currentRow () >= 1 ) return rowRemoved ( m_table->currentRow () ); } );
+	static_cast<void>( btnSuppliesRemoveRow->connect ( btnSuppliesRemoveRow, &QPushButton::clicked,
+			this, [&] ( const bool ) { if ( m_table->currentRow () >= 1 ) return rowRemoved ( m_table->currentRow () ); } ) );
 
 	QFrame* vLine ( new QFrame );
 	vLine->setFrameStyle ( QFrame::VLine|QFrame::Sunken );
@@ -82,19 +82,6 @@ bool dbSuppliesUI::setupUI ()
 	suppliesLayout = new QVBoxLayout;
 	m_table->addToLayout ( suppliesLayout );
 	suppliesLayout->addLayout ( lButtons, 1 );
-
-	/*if ( DATA ()->reads[TABLE_SUPPLIES_ORDER] ) {
-		const bool can_write ( DATA ()->writes[TABLE_SUPPLIES_ORDER] );
-		btnSuppliesCancelEdit->setEnabled ( can_write );
-		btnSuppliesInsertRowAbove->setEnabled ( can_write );
-		btnSuppliesInsertRowBelow->setEnabled ( can_write );
-		btnSuppliesRemoveRow->setEnabled ( can_write );
-	}
-	else {
-		btnsFrame->setEnabled ( false );
-		m_table->setEnabled ( false );
-	}*/
-
 	return true;
 }
 
@@ -105,10 +92,12 @@ void dbSuppliesUI::createTable ()
 	m_table = new vmTableWidget;
 	vmTableColumn *fields ( m_table->createColumns( SUPPLIES_FIELD_COUNT ) );
 
-	for ( uint i ( 0 ); i < SUPPLIES_FIELD_COUNT; ++i ) {
+	for ( uint i ( 0 ); i < SUPPLIES_FIELD_COUNT; ++i )
+	{
 		fields[i].label = VivenciaDB::getTableColumnLabel ( &supplies_rec->t_info, i );
 
-		switch ( i ) {
+		switch ( i )
+		{
 			case FLD_SUPPLIES_ID:
 				fields[FLD_SUPPLIES_ID].editable = false;
 				fields[FLD_SUPPLIES_ID].width = 40;
@@ -138,12 +127,13 @@ void dbSuppliesUI::createTable ()
 			break;
 			case FLD_SUPPLIES_DATE_IN:
 				fields[FLD_SUPPLIES_DATE_IN].wtype = WT_DATEEDIT;
+			break;
 			default:
 			break;
 		}
 	}
 	m_table->setKeepModificationRecords ( false );
-	m_table->initTable ( 500 );
+	m_table->initTable ( VDB ()->getHighestID ( TABLE_SUPPLIES_ORDER ) );
 
 	// ignore FLD_SUPPLIES_PLACE and FLD_SUPPLIES_QUANTITY in the UI, but keep them in the base class so that VivenciaDB will have no problems distinguishing between the two classes
 	m_table->setColumnHidden ( FLD_SUPPLIES_QUANTITY, true );
@@ -152,63 +142,70 @@ void dbSuppliesUI::createTable ()
 	m_table->setSelectionMode ( QAbstractItemView::SingleSelection );
 	VDB ()->populateTable ( supplies_rec, m_table );
 
-	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
-				return tableChanged ( item ); } );
-	m_table->setCallbackForCellNavigation ( [&] ( const uint row, const uint col, const uint prev_row, const uint ) {
-				return readRowData ( row, col, prev_row ); } );
-	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) {
-				return rowRemoved ( row ); } );
+	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) { return tableChanged ( item ); } );
+	m_table->setCallbackForCellNavigation ( [&] ( const uint row, const uint col, const uint prev_row, const uint ) { return readRowData ( row, col, prev_row ); } );
+	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) { return rowRemoved ( static_cast<int>( row ) ); } );
 }
 
 void dbSuppliesUI::readRowData ( const uint row, const uint, const uint prev_row, const uint )
 {
-	if ( prev_row != row ) {
+	if ( prev_row != row )
+	{
 		supplies_rec->clearAll ();
-		if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () ) {
+		if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () )
+		{
 			supplies_rec->setAction ( ACTION_READ );
-			for ( uint i_col ( 0 ) ; i_col < unsigned ( m_table->columnCount () ); ++i_col )
+			for ( uint i_col ( 0 ) ; i_col < static_cast<uint>( m_table->columnCount () ); ++i_col )
 				setRecValue ( supplies_rec, i_col, m_table->sheetItem ( row, i_col )->text () );
 			supplies_rec->setAction ( ACTION_EDIT );
 		}
 		else
 			supplies_rec->setAction ( ACTION_ADD );
-		supplies_rec->setIntBackupValue ( FLD_SUPPLIES_ITEM, row );
+		supplies_rec->setIntBackupValue ( FLD_SUPPLIES_ITEM, static_cast<int>( row ) );
 	}
 }
 
 void dbSuppliesUI::tableChanged ( const vmTableItem* const item )
 {
-	const bool bNewRecord ( m_table->sheetItem ( item->row (), FLD_SUPPLIES_ID )->text ().isEmpty () );
+	const bool bNewRecord ( m_table->sheetItem ( static_cast<uint>( item->row () ), FLD_SUPPLIES_ID )->text ().isEmpty () );
 	supplies_rec->setAction ( bNewRecord ? ACTION_ADD : ACTION_EDIT );
-	setRecValue ( supplies_rec, item->column (), item->text () );
+	setRecValue ( supplies_rec, static_cast<uint>( item->column () ), item->text () );
 	supplies_rec->saveRecord ();
 	if ( bNewRecord )
-		m_table->sheetItem ( item->row (), FLD_SUPPLIES_ID )->setText (
-			recStrValue ( supplies_rec, FLD_SUPPLIES_ID ), false, false );
+		m_table->sheetItem ( static_cast<uint>( item->row () ), FLD_SUPPLIES_ID )->setText ( recStrValue ( supplies_rec, FLD_SUPPLIES_ID ), false, false );
 	m_table->setTableUpdated ();
 }
 
-void dbSuppliesUI::rowRemoved ( const uint row )
+void dbSuppliesUI::rowRemoved ( const int row )
 {
-	if ( !m_table->sheetItem ( row, 0 )->text ().isEmpty () ) {
-		supplies_rec->setAction ( ACTION_DEL );
-		supplies_rec->deleteRecord (); // deletes from database before removing the row
+	if ( row >= 0 )
+	{
+		if ( !m_table->sheetItem ( static_cast<uint>( row ), 0 )->text ().isEmpty () )
+		{
+			supplies_rec->setAction ( ACTION_DEL );
+			supplies_rec->deleteRecord (); // deletes from database before removing the row
+		}
+		m_table->removeRow ( static_cast<uint>( row ) );
 	}
-	m_table->removeRow ( row );
 }
 
-void dbSuppliesUI::insertRow ( const uint i_row )
+void dbSuppliesUI::insertRow ( const int i_row )
 {
-	m_table->insertRow ( i_row );
-	m_table->setCurrentCell ( i_row, m_table->currentColumn () );
+	if ( i_row >= 0 )
+	{
+		m_table->insertRow ( static_cast<uint>( i_row ) );
+		m_table->setCurrentCell ( i_row, m_table->currentColumn () );
+	}
 }
 
 void dbSuppliesUI::showSearchResult ( vmListItem* item, const bool bshow )
 {
-	if ( bshow ) {
+	if ( bshow )
+	{
 		for ( uint i ( 0 ); i < SUPPLIES_FIELD_COUNT; ++i )
 			m_table->setColumnSearchStatus ( i, item->searchFieldStatus ( i ) == SS_SEARCH_FOUND );
-		if ( m_table->searchStart ( SEARCH_UI ()->searchTerm () ) ) {
+		if ( m_table->searchStart ( SEARCH_UI ()->searchTerm () ) )
+		{
 			MAINWINDOW ()->showTab ( MainWindow::TI_SUPPLIES );
 			m_table->searchFirst ();
 		}
@@ -220,7 +217,8 @@ void dbSuppliesUI::showSearchResult ( vmListItem* item, const bool bshow )
 void dbSuppliesUI::btnSuppliesEditTable_clicked ( const bool checked )
 {
 	m_table->setEditable ( checked );
-	if ( checked ) {
+	if ( checked )
+	{
 		btnSuppliesEditTable->setText ( tr ( "Save" ) );
 		m_table->setFocus ();
 	}
@@ -234,7 +232,8 @@ void dbSuppliesUI::btnSuppliesEditTable_clicked ( const bool checked )
 
 void dbSuppliesUI::btnSuppliesCancelEdit_clicked ()
 {
-	if ( m_table->isEditable () ) {
+	if ( m_table->isEditable () )
+	{
 		btnSuppliesEditTable->setChecked ( false );
 		btnSuppliesEditTable_clicked ( false );
 	}

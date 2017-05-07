@@ -52,7 +52,7 @@ private:
 	std::function<void ( const bool )> funcShowMaximized;
 
 protected:
-	bool eventFilter ( QObject* o, QEvent* e );
+	bool eventFilter ( QObject* o, QEvent* e ) override;
 
 public:
 	explicit DB_Image ( QWidget* parent = nullptr );

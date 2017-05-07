@@ -434,11 +434,10 @@ void vmTimeEdit::setTime ( const vmNumber& time, const bool b_notify )
 }
 
 void vmTimeEdit::setCallbackForContextMenu
-( std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> func )
+( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
 {
 	vmWidget::setCallbackForContextMenu ( func );
-	connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos ); } );
+	static_cast<void>( connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) { return showContextMenu ( pos ); } ) );
 }
 
 void vmTimeEdit::keyPressEvent ( QKeyEvent* e )
@@ -1118,10 +1117,10 @@ void vmCheckBox::setChecked ( const bool checked, const bool b_notify )
 void vmCheckBox::setEditable ( const bool editable )
 {
 	if ( editable )
-		connect ( this, static_cast<void (QCheckBox::*)(const bool)>( &QCheckBox::clicked ), this, [&] ( const bool ) {
-			return contentsAltered_func ( this ); } ); // clicked means mouse clicked, keyboard activated (enter, space bar) or shutcut activated
+		static_cast<void>( connect ( this, static_cast<void (QCheckBox::*)(const bool)>( &QCheckBox::clicked ), this, [&] ( const bool ) {
+			return contentsAltered_func ( this ); } ) ); // clicked means mouse clicked, keyboard activated (enter, space bar) or shutcut activated
 	else
-		disconnect ( this, nullptr, nullptr, nullptr );
+		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
 	setEnabled ( editable );
 	vmWidget::setEditable ( editable );
 }
@@ -1130,8 +1129,7 @@ void vmCheckBox::setCallbackForContextMenu
 ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
 {
 	vmWidget::setCallbackForContextMenu ( func );
-	connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos );
-	} );
+	static_cast<void>( connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
+		return showContextMenu ( pos ); }  ) );
 }
 //------------------------------------------------VM-CHECK-BOX------------------------------------------------

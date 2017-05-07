@@ -250,7 +250,7 @@ reportGenerator::reportGenerator ( documentEditor* mdiParent )
 
 reportGenerator::~reportGenerator ()
 {
-	static_cast<void>(disconnect ());
+	static_cast<void>( disconnect () );
 	DOCK_QP ()->detach ( this );
 	DOCK_BJ ()->detach ( this );
 	heap_del ( rgClient );
@@ -348,10 +348,9 @@ void reportGenerator::updateJobIDsAndQPs ( const QString& text )
 				cboQPIDs->clear ();
 				if ( rgJob->readRecord ( FLD_JOB_CLIENTID, recStrValue ( rgClient, FLD_CLIENT_ID ) ) )
 				{
-					QString job_project;
 					do
 					{
-						job_project = recStrValue ( rgJob, FLD_JOB_PROJECT_ID );
+						const QString& job_project ( recStrValue ( rgJob, FLD_JOB_PROJECT_ID ) );
 						cboJobIDs->insertItem ( recStrValue ( rgJob, FLD_JOB_ID ), 0, false );
 						if ( !job_project.isEmpty () )
 							cboQPIDs->insertItem ( job_project, 0, false );
@@ -539,7 +538,7 @@ const QString reportGenerator::initialDir () const
 	}
 	if ( dirstr.isEmpty () )
 	{
-		const QString client_name ( recStrValue ( rgClient, FLD_CLIENT_NAME ) );
+		const QString& client_name ( recStrValue ( rgClient, FLD_CLIENT_NAME ) );
 		if ( !client_name.isEmpty () )
 			dirstr = CONFIG ()->reportsDir ( client_name );
 		else
@@ -1023,7 +1022,7 @@ void reportGenerator::insertReportsText ( const bool include_all_paid )
 
 void reportGenerator::printPayInfo ( const Payment* pay, const uint pay_number, vmNumber& paid_total )
 {
-	const stringTable pay_info ( recStrValue ( pay, FLD_PAY_INFO ) );
+	const stringTable& pay_info ( recStrValue ( pay, FLD_PAY_INFO ) );
 	const stringRecord* payment ( &pay_info.readRecord ( pay_number ) );
 	if ( payment->isOK () )
 	{

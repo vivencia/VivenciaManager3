@@ -21,7 +21,7 @@ public:
 
 	inline void setContactType ( const CMW_TYPE type ) { m_contact_type = type; }
 	void initInterface ();
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 
 	void decodePhones ( const stringRecord& phones, const bool bClear = true );
 	void decodeEmails ( const stringRecord& emails, const bool bClear = true );
@@ -32,9 +32,9 @@ public:
 
 	inline vmComboBox* combo () const { return cboInfoData; }
 
-	inline void setCallbackForInsertion ( std::function<void ( const QString&, const vmWidget* const )> func ) {
+	inline void setCallbackForInsertion ( const std::function<void ( const QString&, const vmWidget* const )>& func ) {
 		insertFunc = func; }
-	inline void setCallbackForRemoval ( std::function<void ( const int idx, const vmWidget* const )> func ) {
+	inline void setCallbackForRemoval ( const std::function<void ( const int idx, const vmWidget* const )>& func ) {
 		removeFunc = func; }
 
 private:

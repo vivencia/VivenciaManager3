@@ -3,26 +3,31 @@
 #include "global_enums.h"
 #include "completers.h"
 #include "supplierrecord.h"
+#include "vivenciadb.h"
 
 #include <QCoreApplication>
 
-const double TABLE_VERSION ( 2.0 );
+const unsigned int TABLE_VERSION ( 'A' );
 
-constexpr uint CP_FIELDS_TYPE[COMPANY_PURCHASES_FIELD_COUNT] = {
-	DBTYPE_ID, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
-	DBTYPE_SHORTTEXT, DBTYPE_PRICE, DBTYPE_PRICE, DBTYPE_LIST, DBTYPE_LIST
+constexpr uint CP_FIELDS_TYPE[COMPANY_PURCHASES_FIELD_COUNT] =
+{
+	DBTYPE_ID, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_PRICE,
+	DBTYPE_PRICE, DBTYPE_LIST, DBTYPE_LIST
 };
 
 bool updateCPTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &companyPurchases::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &companyPurchases::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO companyPurchases::t_info = {
+const TABLE_INFO companyPurchases::t_info =
+{
 	COMPANY_PURCHASES_TABLE,
 	QStringLiteral ( "COMPANY_PURCHASES" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

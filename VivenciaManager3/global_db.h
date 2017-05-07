@@ -38,17 +38,17 @@ enum RECORD_ACTION
 
 struct TABLE_INFO //compile-time set
 {
-	const uint table_id;
+	const unsigned int table_id;
 	const QString table_name;
 	const QString table_flags;
 	const QString primary_key;
 	const QString field_names;
 	const QString field_flags;
 	const QString field_labels;
-	const uint* field_types;
-	const double version;
+	const unsigned int* field_types;
+	const unsigned char version;
 	uint field_count;
-	const uint table_order;
+	const unsigned int table_order;
 	bool ( *update_func ) ();// New field: From version 2.0, upates are conducted within the originating module
 #ifdef TRANSITION_PERIOD
 	/* certain routines in the transition period from the 2 to the 3 series (re)create tables. These

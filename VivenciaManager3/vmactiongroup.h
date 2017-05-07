@@ -65,10 +65,10 @@ public:
 	inline void setCallbackForCloseButtonClicked ( const std::function<void ()>& func ) { funcCloseButtonClicked = func; }
 
 protected:
-	void paintEvent ( QPaintEvent* event );
-	void keyPressEvent ( QKeyEvent* event );
-	void keyReleaseEvent ( QKeyEvent* event );
-	bool eventFilter ( QObject* obj, QEvent* event );
+	void paintEvent ( QPaintEvent* event ) override;
+	void keyPressEvent ( QKeyEvent* event ) override;
+	void keyReleaseEvent ( QKeyEvent* event ) override;
+	bool eventFilter ( QObject* obj, QEvent* event ) override;
 
 private:
 	void animate ();
@@ -167,7 +167,7 @@ public:
 	  */
 	QString headerText () const;
 
-	QSize minimumSizeHint () const;
+	QSize minimumSizeHint () const override;
 
 	/** Makes the group expandable if \a expandable is set to \a true.
 
@@ -190,7 +190,7 @@ public:
 
 protected:
 	void init ();
-	void paintEvent ( QPaintEvent* );
+	void paintEvent ( QPaintEvent* ) override;
 
 private:
 	/** Expands/collapses the group.

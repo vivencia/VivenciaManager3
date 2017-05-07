@@ -12,6 +12,7 @@
 #include <QCoreApplication>
 
 #include <cmath>
+
 /*	End bit			 Start bit	 End bit		 Start bit 				Bit number
  *	63				36		  35			  8		   7 6 5 4 3	  2	 1   0
  *	 1 ..............  1   		1...............1		   1 1 1 1 1	  1	 1   1

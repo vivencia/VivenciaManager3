@@ -1,18 +1,31 @@
 #include "inventory.h"
 #include "completers.h"
 #include "supplierrecord.h"
+#include "vivenciadb.h"
 
 #include <QCoreApplication>
 
-const double TABLE_VERSION ( 1.0 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
-const uint INVENTORY_FIELDS_TYPE[INVENTORY_FIELD_COUNT] = {
-	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
-	DBTYPE_LIST, DBTYPE_DATE, DBTYPE_PRICE, DBTYPE_LIST,
-	DBTYPE_SHORTTEXT
+const uint INVENTORY_FIELDS_TYPE[INVENTORY_FIELD_COUNT] =
+{
+	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_SHORTTEXT, DBTYPE_LIST, DBTYPE_DATE, DBTYPE_PRICE, 
+	DBTYPE_LIST, DBTYPE_SHORTTEXT
 };
 
-const TABLE_INFO Inventory::t_info = {
+bool updateInvetory ()
+{
+#ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &Inventory::t_info );
+	return true;
+#else
+	VDB ()->optimizeTable ( &Inventory::t_info );
+	return false;
+#endif //TABLE_UPDATE_AVAILABLE
+}
+
+const TABLE_INFO Inventory::t_info =
+{
 	INVENTORY_TABLE,
 	QStringLiteral ( "INVENTORY" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
@@ -22,7 +35,7 @@ const TABLE_INFO Inventory::t_info = {
 	" varchar ( 8 ) DEFAULT NULL, | varchar ( 80 ) DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, |"
 	" varchar ( 20 ) DEFAULT NULL, | varchar ( 50 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, |" ),
 	QCoreApplication::tr ( "ID|Item name|Brand|Quantity|Unity|Type/Category|Income date|Purchase price|Supplier|Place|" ),
-	INVENTORY_FIELDS_TYPE, TABLE_VERSION, INVENTORY_FIELD_COUNT, TABLE_INVENTORY_ORDER, nullptr
+	INVENTORY_FIELDS_TYPE, TABLE_VERSION, INVENTORY_FIELD_COUNT, TABLE_INVENTORY_ORDER, &updateInvetory
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif

@@ -3,7 +3,7 @@
 
 #include "dbrecord.h"
 
-const uint GENERAL_FIELD_COUNT ( 7 );
+const uint GENERAL_FIELD_COUNT ( 6 );
 
 extern void updateIDs ( const TABLE_ORDER table , podList<int>* new_ids = nullptr );
 

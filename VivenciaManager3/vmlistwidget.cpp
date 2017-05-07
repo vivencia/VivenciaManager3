@@ -23,10 +23,10 @@ void vmListWidget::setIgnoreChanges ( const bool b_ignore )
 {
 	rowActivatedConnection ( !(mbIgnore = b_ignore) );
 	if ( !b_ignore )
-		static_cast<void>(connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int, const int prev_row, const int )
-				  { return rowSelected ( row, prev_row ); } ));
+		static_cast<void>( connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int, const int prev_row, const int )
+				  { return rowSelected ( row, prev_row ); }	) );
 	else
-		static_cast<void>(disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr ));
+		static_cast<void>( disconnect ( this, &QTableWidget::currentCellChanged, nullptr, nullptr ) );
 	// When ignoring changes, disconnect from (possibly) connect signals. When not, restore the property to its previous value
 	setAlwaysEmitCurrentItemChanged ( isIgnoringChanges () ? false : alwaysEmitCurrentItemChanged () );
 }
@@ -87,7 +87,7 @@ void vmListWidget::clear ( const bool b_ignorechanges, const bool b_del )
 {
 	setUpdatesEnabled ( false );
 	setIgnoreChanges ( b_ignorechanges ); //once called, the callee must set/unset this property
-	removeRow ( 0, static_cast<uint>(rowCount ()), b_del );
+	removeRow_list ( 0, static_cast<uint>(rowCount ()), b_del );
 	mPrevRow = -2;
 	mCurrentItem = nullptr;
 	setUpdatesEnabled ( true );
@@ -104,7 +104,7 @@ void vmListWidget::insertRow ( const uint row, const uint n )
 	}
 }
 
-void vmListWidget::removeRow ( const uint row, const uint n, const bool bDel )
+void vmListWidget::removeRow_list ( const uint row, const uint n, const bool bDel )
 {
 	if ( row < static_cast<uint>( rowCount () ) )
 	{

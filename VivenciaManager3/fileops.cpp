@@ -594,7 +594,7 @@ const QString fileOps::executeAndCaptureOutput ( const QString& arguments, const
 
 	proc->start ( prog );
 	proc->waitForFinished ();
-	const QString output ( QString::fromUtf8 ( proc->readAllStandardOutput ().data () ) );
+	const QString output ( QString::fromUtf8 ( proc->readAllStandardOutput ().constData () ) );
 	if ( exitCode != nullptr ) {
 		*exitCode = proc->exitCode ();
 	}

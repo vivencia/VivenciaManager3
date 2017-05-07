@@ -217,7 +217,7 @@ void stringRecord::insertStrRecord ( const int field, const QString& inserting_r
 
 void stringRecord::appendStrRecord ( const QString& inserting_rec )
 {
-	if ( inserting_rec.endsWith ( record_sep ) )
+	//if ( inserting_rec.endsWith ( record_sep ) )
 		fastAppendValue ( inserting_rec.left ( inserting_rec.count () - 1 ) );
 }
 

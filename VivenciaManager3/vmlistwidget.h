@@ -11,7 +11,7 @@ class vmListWidget : public vmTableWidget
 
 public:
 	vmListWidget ( QWidget* parent = nullptr, const uint nRows = 0 );
-	virtual ~vmListWidget ();
+	virtual ~vmListWidget () override;
 
 	void setIgnoreChanges ( const bool b_ignore );
 	inline bool isIgnoringChanges () const { return mbIgnore; }
@@ -19,9 +19,9 @@ public:
 	void setCurrentRow ( int row, const bool b_makecall );
 	inline vmListItem* currentItem () const { return mCurrentItem; }
 	void addItem ( vmListItem* item, const bool b_makecall = true );
-	inline void removeItem ( vmListItem* item, const bool bDel = false ) { if ( item ) removeRow ( static_cast<uint>(item->row ()), 1, bDel ); }
-	void insertRow ( const uint row, const uint n = 1 );
-	void removeRow ( const uint row, const uint n = 1, const bool bDel = false );
+	inline void removeItem ( vmListItem* item, const bool bDel = false ) { if ( item ) removeRow_list ( static_cast<uint>(item->row ()), 1, bDel ); }
+	void insertRow ( const uint row, const uint n = 1 ) override;
+	void removeRow_list ( const uint row, const uint n = 1, const bool bDel = false );
 	void clear ( const bool b_ignorechanges = true, const bool b_del = false );
 	inline int count () const { return rowCount (); }
 	inline vmListItem* item ( const int row ) const { return static_cast<vmListItem*>( sheetItem ( row >= 0 ? static_cast<uint>(row) : static_cast<uint>(mPrevRow), 0 ) ); }
@@ -45,7 +45,7 @@ public:
 	inline void setCallbackForCurrentItemChanged ( const std::function<void( vmListItem* current )>& func ) { mCurrentItemChangedFunc = func; }
 
 protected:
-	void resizeEvent ( QResizeEvent* e );
+	void resizeEvent ( QResizeEvent* e ) override;
 	
 private:
 	void rowSelected ( const int row, const int prev_row );

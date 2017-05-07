@@ -118,7 +118,7 @@ void textFile::readType ()
 				else if ( data.contains ( QStringLiteral ( "@CSV" ) ) )
 					m_type = TF_DATA;
 				if ( m_type != TF_TEXT )
-					m_buffersize = data.mid ( data.indexOf ( CHR_COMMA ) + 1, 4 ) .toUInt ();
+					m_buffersize = data.midRef ( data.indexOf ( CHR_COMMA ) + 1, 4 ) .toUInt ();
 			}
 		}
 		if ( m_buffersize == 0 )

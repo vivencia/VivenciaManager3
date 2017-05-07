@@ -1,14 +1,11 @@
 #include "machinesrecord.h"
 #include "global.h"
-
-#ifdef TRANSITION_PERIOD
-#include "inventory.h"
 #include "vivenciadb.h"
-#endif
 
-static const double TABLE_VERSION ( 1.0 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] = {
+static const uint MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] =
+{
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
 	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
 };
@@ -16,13 +13,16 @@ static const uint MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] = {
 bool updateMachinesTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &machinesRecord::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &machinesRecord::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO machinesRecord::t_info = {
+const TABLE_INFO machinesRecord::t_info =
+{
 	MACHINES_TABLE,
 	QStringLiteral ( "MACHINES" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

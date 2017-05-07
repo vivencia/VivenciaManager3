@@ -40,24 +40,19 @@ bool InventoryUI::setupUI ()
 
 	btnInventoryEditTable = new QPushButton ( tr ( "&Edit" ) );
 	btnInventoryEditTable->setCheckable ( true );
-	btnInventoryEditTable->connect ( btnInventoryEditTable, &QPushButton::clicked,
-	this, [&] ( const bool checked ) { return btnInventoryEditTable_clicked ( checked ); } );
+	static_cast<void>( btnInventoryEditTable->connect ( btnInventoryEditTable, &QPushButton::clicked, this, [&] ( const bool checked ) { return btnInventoryEditTable_clicked ( checked ); } ) );
 
 	btnInventoryCancelEdit = new QPushButton ( tr ( "Cancel changes" ) );;
-	btnInventoryCancelEdit->connect ( btnInventoryCancelEdit, &QPushButton::clicked,
-					this, [&] ( const bool ) { return btnInventoryCancelEdit_clicked (); } );
+	static_cast<void>( btnInventoryCancelEdit->connect ( btnInventoryCancelEdit, &QPushButton::clicked, this, [&] ( const bool ) { return btnInventoryCancelEdit_clicked (); } ) );
 
 	btnInventoryInsertRowAbove = new QPushButton ( tr ( "Add new item above" ) );
-	btnInventoryInsertRowAbove->connect ( btnInventoryInsertRowAbove, &QPushButton::clicked,
-					this, [&] ( const bool ) { return btnInventoryInsertRowAbove_clicked (); } );
+	static_cast<void>( btnInventoryInsertRowAbove->connect ( btnInventoryInsertRowAbove, &QPushButton::clicked, this, [&] ( const bool ) { return btnInventoryInsertRowAbove_clicked (); } ) );
 
 	btnInventoryInsertRowBelow = new QPushButton ( tr ( "Add new item below" ) );
-	btnInventoryInsertRowBelow->connect ( btnInventoryInsertRowBelow, &QPushButton::clicked,
-					this, [&] ( const bool ) { return btnInventoryInsertRowBelow_clicked (); } );
+	static_cast<void>( btnInventoryInsertRowBelow->connect ( btnInventoryInsertRowBelow, &QPushButton::clicked, this, [&] ( const bool ) { return btnInventoryInsertRowBelow_clicked (); } ) );
 
 	btnInventoryRemoveRow = new QPushButton ( tr ( "Remove item" ) );
-	btnInventoryRemoveRow->connect ( btnInventoryRemoveRow, &QPushButton::clicked,
-					this, [&] ( const bool ) { return btnInventoryRemoveRow_clicked (); } );
+	static_cast<void>( btnInventoryRemoveRow->connect ( btnInventoryRemoveRow, &QPushButton::clicked, this, [&] ( const bool ) { return btnInventoryRemoveRow_clicked (); } ) );
 
 	QGridLayout* gLayoutInventoryButtons ( new QGridLayout );
 	gLayoutInventoryButtons->addWidget ( btnInventoryEditTable, 0, 0 );
@@ -68,28 +63,13 @@ bool InventoryUI::setupUI ()
 	gLayoutInventoryButtons->addWidget ( btnInventoryRemoveRow, 1, 2 );
 
 	createTable ();
-	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
-		return tableChanged ( item ); } );
-	m_table->setCallbackForCellNavigation ( [&] ( const uint row, const uint col, const uint prev_row, const uint ) {
-		return readRowData ( row, col, prev_row ); } );
-	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) {
-		return rowRemoved ( row ); } );
+	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) { return tableChanged ( item ); } );
+	m_table->setCallbackForCellNavigation ( [&] ( const uint row, const uint col, const uint prev_row, const uint ) { return readRowData ( row, col, prev_row ); } );
+	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) { return rowRemoved ( row ); } );
 
 	inventoryLayout = new QVBoxLayout;
 	m_table->addToLayout ( inventoryLayout );
 	inventoryLayout->addLayout ( gLayoutInventoryButtons, 1 );
-
-	/*if ( DATA ()->reads[TABLE_INVENTORY_ORDER] ) {
-		const bool can_write ( DATA ()->writes[TABLE_INVENTORY_ORDER] );
-		btnInventoryCancelEdit->setEnabled ( can_write );
-		btnInventoryInsertRowAbove->setEnabled ( can_write );
-		btnInventoryInsertRowBelow->setEnabled ( can_write );
-		btnInventoryRemoveRow->setEnabled ( can_write );
-	}
-	else {
-		btnsFrame->setEnabled ( false );
-		m_table->setEnabled ( false );
-	}*/
 	return true;
 }
 
@@ -137,6 +117,7 @@ void InventoryUI::insertRow ( const uint i_row )
 void InventoryUI::createTable ()
 {
 	if ( m_table != nullptr ) return;
+
 	m_table = new vmTableWidget;
 	vmTableColumn *fields ( m_table->createColumns ( INVENTORY_FIELD_COUNT ) );
 	m_table->setKeepModificationRecords ( false );
@@ -187,7 +168,8 @@ void InventoryUI::createTable ()
 			break;
 		}
 	}
-	m_table->initTable ( 30 );
+	m_table->setKeepModificationRecords ( false );
+	m_table->initTable ( VDB ()->getHighestID ( TABLE_INVENTORY_ORDER ) );
 	VDB ()->populateTable ( inventory_rec, m_table );
 }
 

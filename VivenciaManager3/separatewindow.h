@@ -24,15 +24,15 @@ public:
 	void returnToParent ();
 
 protected:
-	void closeEvent ( QCloseEvent* e );
-	bool eventFilter ( QObject* o, QEvent* e );
+	void closeEvent ( QCloseEvent* e ) override;
+	bool eventFilter ( QObject* o, QEvent* e ) override;
 
-	int exec ();
-	void open ();
+	int exec () override;
+	void open () override;
 	void show ();
-	void accept ();
-	void reject ();
-	void done ( int );
+	void accept () override;
+	void reject () override;
+	void done ( int ) override;
 	void hide ();
 
 	void childCloseRequested ( const int ); // intercept a child'd close request and handle and accept it

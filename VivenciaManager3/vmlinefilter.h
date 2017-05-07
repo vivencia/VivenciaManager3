@@ -26,7 +26,7 @@ private:
 	std::function<void ( const triStateType, const int )> validkey_func;
 	QString mBuffer;
 	
-	void keyPressEvent ( QKeyEvent* const ke );
+	void keyPressEvent ( QKeyEvent* const ke ) override;
 	void textCleared ();
 };
 

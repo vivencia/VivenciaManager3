@@ -273,8 +273,8 @@ void suppliersDlg::txtSupplier_textAltered ( const vmWidget* const sender )
 
 void suppliersDlg::contactsAdd ( const QString& info, const vmWidget* const sender )
 {
-	setRecValue ( supRec, static_cast<uint>(sender->id ()),
-				  stringRecord::joinStringRecords ( recStrValue ( supRec, static_cast<uint>(sender->id ()) ), info ) );
+	setRecValue ( supRec, static_cast<uint>( sender->id () ),
+				  stringRecord::joinStringRecords ( recStrValue ( supRec, static_cast<uint>( sender->id () ) ), info ) );
 }
 
 void suppliersDlg::contactsDel ( const int idx, const vmWidget* const sender )
@@ -282,8 +282,8 @@ void suppliersDlg::contactsDel ( const int idx, const vmWidget* const sender )
 	if ( idx >= 0 )
 	{
 		stringRecord info_rec ( recStrValue ( supRec, static_cast<uint>(sender->id ()) ) );
-		info_rec.removeField ( static_cast<uint>(idx) );
-		setRecValue ( supRec, static_cast<uint>(sender->id ()), info_rec.toString () );
+		info_rec.removeField ( static_cast<uint>( idx ) );
+		setRecValue ( supRec, static_cast<uint>( sender->id () ), info_rec.toString () );
 	}
 }
 

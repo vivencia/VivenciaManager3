@@ -36,9 +36,11 @@ extern "C"
 	#include <unistd.h>
 }
 
+QIcon* Data::listIndicatorIcons[4] = { nullptr };
+bool Data::EXITING_PROGRAM ( false );
+
 static const QString MYSQL_INIT_SCRIPT ( QStringLiteral ( "/etc/init.d/mysql" ) );
 QString APP_START_CMD ( emptyString );
-QIcon* listIndicatorIcons[4] = { nullptr };
 
 #define ERR_DATABASE_PROBLEM 1
 #define ERR_MYSQL_NOT_FOUND 2
@@ -118,7 +120,7 @@ bool Data::checkSystem ( const bool bFirstPass )
  */
 void Data::checkSetup ()
 {
-	(void) checkSystem ();
+	static_cast<void>( checkSystem () );
 	checkDatabase ();
 
 	if ( !fileOps::exists ( CONFIG ()->projectDocumentFile () ).isOn () )
@@ -178,6 +180,7 @@ void Data::checkDatabase ()
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
 void Data::init ()
 {
+	VivenciaDB::init ();
 	vmNumber::updateCurrentDate ();
 	configOps::init ();
 	checkSetup ();
@@ -187,19 +190,40 @@ void Data::init ()
 	vmCompleters::init ();
 	vmDateEdit::createDateButtonsMenu ();
 	VDB ()->doPreliminaryWork ();
-	
-	MainWindow::initMainWindow ();
-	loadDataIntoMemory ();
-	MAINWINDOW ()->continueStartUp ();
-}
 
-void Data::loadDataIntoMemory ()
-{
-	// Initialize icons here, once and for all. Not the most logical place, but I don't have that place yet
 	listIndicatorIcons[static_cast<int>( ACTION_DEL)] = new QIcon ( ICON ( "listitem-delete" ) );
 	listIndicatorIcons[static_cast<int>( ACTION_ADD)] = new QIcon ( ICON ( "listitem-add" ) );
 	listIndicatorIcons[static_cast<int>( ACTION_EDIT)] = new QIcon ( ICON ( "listitem-edit" ) );
 	
+	MainWindow::init ();
+	loadDataIntoMemory ();
+	MAINWINDOW ()->continueStartUp ();
+}
+
+void Data::de_init ()
+{
+	static bool already_called ( false );
+
+	// the user clicked a button to exit the program. This function gets called and do the cleanup
+	// job. Now, it asks Qt to exit the program and will be called again because it is hooked up to the
+	// signal aboutToQuit (); only, we do not need to do anything this time, so we return.
+	if ( already_called )
+		return;
+	already_called = true;
+	
+	EXITING_PROGRAM = true;
+	BackupDialog::doDayBackup ();
+	
+	delete listIndicatorIcons[1];
+	delete listIndicatorIcons[2];
+	delete listIndicatorIcons[3];
+	
+	cleanUpApp ();
+	qApp->quit ();
+}
+
+void Data::loadDataIntoMemory ()
+{	
 	// To debug the GUI, it is possible to introduce a return here and skip all the code below
 	clientListItem* client_item ( nullptr );
 	jobListItem* job_item ( nullptr );
@@ -222,7 +246,7 @@ void Data::loadDataIntoMemory ()
 			client_item->setDBRecID ( id );
 			client_item->setRelation ( RLI_CLIENTITEM );
 			client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
-			(void) client_item->loadData ();
+			static_cast<void>( client_item->loadData () );
 			client_item->addToList ( MAINWINDOW ()->UserInterface ()->clientsList );
 
 			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) )

@@ -1,19 +1,21 @@
 #include "userrecord.h"
 #include "vivenciadb.h"
 
-static const float USERS_FIELD_TABLE_VERSION ( 1.5 );
-static const uint USERS_FIELDS_TYPE[USERS_FIELD_COUNT] = {
-	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
-	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
+static const unsigned char USERS_FIELD_TABLE_VERSION ( 'A' );
+static const uint USERS_FIELDS_TYPE[USERS_FIELD_COUNT] =
+{
+	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
 
 bool updateUsersTable ()
 {
-#ifdef TRANSITION_PERIOD
-	VDB ()->deleteTable ( &userRecord::t_info );
-	VDB ()->createTable ( &userRecord::t_info );
+#ifdef TABLE_UPDATE_AVAILABLE
+	//VDB ()->deleteTable ( &userRecord::t_info );
+	//VDB ()->createTable ( &userRecord::t_info );
+	VDB ()->optimizeTable ( &userRecord::t_info );
 	return true;
 #endif
+	VDB ()->optimizeTable ( &userRecord::t_info );
 	return false;
 }
 

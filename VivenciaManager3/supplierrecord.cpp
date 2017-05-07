@@ -3,9 +3,10 @@
 #include "vivenciadb.h"
 #include "completers.h"
 
-static const double TABLE_VERSION ( 1.1 );
+static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint SUPPLIER_FIELDS_TYPE[SUPPLIER_FIELD_COUNT] = {
+static const uint SUPPLIER_FIELDS_TYPE[SUPPLIER_FIELD_COUNT] =
+{
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
 	DBTYPE_SHORTTEXT, DBTYPE_PHONE, DBTYPE_SHORTTEXT
 };
@@ -13,13 +14,16 @@ static const uint SUPPLIER_FIELDS_TYPE[SUPPLIER_FIELD_COUNT] = {
 bool updateSupplierTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->optimizeTable ( &supplierRecord::t_info );
 	return true;
 #else
+	VDB ()->optimizeTable ( &supplierRecord::t_info );
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
 
-const TABLE_INFO supplierRecord::t_info = {
+const TABLE_INFO supplierRecord::t_info =
+{
 	SUPPLIER_TABLE,
 	QStringLiteral ( "SUPPLIERS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),

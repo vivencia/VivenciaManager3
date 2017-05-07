@@ -87,9 +87,8 @@ void wordHighlighter::highlightWords ( const QStringList &words )
 
 void wordHighlighter::highlightBlock ( const QString& text )
 {
-	if ( objectName () == QStringLiteral ( "p" ) ) // In preview mode. Disable any highlight
-		return;
-	
+	if ( inPreview () ) return; // In preview mode. Disable any highlight
+
 	if ( spellCheckingEnbled () || highlightingEnabled () )
 	{
 		// split text into words

@@ -120,7 +120,7 @@ void companyPurchasesUI::tablePaymentsCellChanged ( const vmTableItem* const ite
 	if ( item )
 	{
 		stringTable items ( recStrValue ( cp_rec, FLD_CP_PAY_REPORT ) );
-		items.changeRecord ( static_cast<uint>(item->row ()), static_cast<uint>(item->column ()), item->text () );
+		items.changeRecord ( static_cast<uint>( item->row () ), static_cast<uint>( item->column () ), item->text () );
 		setRecValue ( cp_rec, FLD_CP_PAY_REPORT, items.toString () );
 	}
 }
@@ -133,22 +133,22 @@ void companyPurchasesUI::saveWidget ( vmWidget* widget, const int id )
 
 void companyPurchasesUI::setupUI ()
 {
-	ui->btnCPAdd->connect ( ui->btnCPAdd, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
-			this, [&] ( const bool checked ) { return btnCPAdd_clicked ( checked ); } );
-	ui->btnCPEdit->connect ( ui->btnCPEdit, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
-			this, [&] ( const bool checked ) { return btnCPEdit_clicked ( checked ); } );
-	ui->btnCPSearch->connect ( ui->btnCPSearch, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
-			this, [&] ( const bool checked ) { return btnCPSearch_clicked ( checked ); } );
-	ui->btnCPShowSupplier->connect ( ui->btnCPShowSupplier, static_cast<void (QToolButton::*)( const bool )>( &QToolButton::clicked ),
-			this, [&] ( const bool checked ) { return btnCPShowSupplier_clicked ( checked ); } );
-	ui->btnCPFirst->connect ( ui->btnCPFirst, &QPushButton::clicked, this, [&] () { return btnCPFirst_clicked (); } );
-	ui->btnCPPrev->connect ( ui->btnCPPrev, &QPushButton::clicked, this, [&] () { return btnCPPrev_clicked (); } );
-	ui->btnCPNext->connect ( ui->btnCPNext, &QPushButton::clicked, this, [&] () { return btnCPNext_clicked (); } );
-	ui->btnCPLast->connect ( ui->btnCPLast, &QPushButton::clicked, this, [&] () { return btnCPLast_clicked (); } );
-	ui->btnCPRemove->connect ( ui->btnCPRemove, &QPushButton::clicked, this, [&] () { return btnCPRemove_clicked (); } );
-	ui->btnClose->connect ( ui->btnClose, &QPushButton::clicked, this, [&] () { return hide (); } );
+	static_cast<void>( ui->btnCPAdd->connect ( ui->btnCPAdd, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
+			this, [&] ( const bool checked ) { return btnCPAdd_clicked ( checked ); } ) );
+	static_cast<void>( ui->btnCPEdit->connect ( ui->btnCPEdit, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
+			this, [&] ( const bool checked ) { return btnCPEdit_clicked ( checked ); } ) );
+	static_cast<void>( ui->btnCPSearch->connect ( ui->btnCPSearch, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
+			this, [&] ( const bool checked ) { return btnCPSearch_clicked ( checked ); } ) );
+	static_cast<void>( ui->btnCPShowSupplier->connect ( ui->btnCPShowSupplier, static_cast<void (QToolButton::*)( const bool )>( &QToolButton::clicked ),
+			this, [&] ( const bool checked ) { return btnCPShowSupplier_clicked ( checked ); } ) );
+	static_cast<void>( ui->btnCPFirst->connect ( ui->btnCPFirst, &QPushButton::clicked, this, [&] () { return btnCPFirst_clicked (); } ) );
+	static_cast<void>( ui->btnCPPrev->connect ( ui->btnCPPrev, &QPushButton::clicked, this, [&] () { return btnCPPrev_clicked (); } ) );
+	static_cast<void>( ui->btnCPNext->connect ( ui->btnCPNext, &QPushButton::clicked, this, [&] () { return btnCPNext_clicked (); } ) );
+	static_cast<void>( ui->btnCPLast->connect ( ui->btnCPLast, &QPushButton::clicked, this, [&] () { return btnCPLast_clicked (); } ) );
+	static_cast<void>( ui->btnCPRemove->connect ( ui->btnCPRemove, &QPushButton::clicked, this, [&] () { return btnCPRemove_clicked (); } ) );
+	static_cast<void>( ui->btnClose->connect ( ui->btnClose, &QPushButton::clicked, this, [&] () { return hide (); } ) );
 
-	( void ) vmTableWidget::createPurchasesTable ( ui->tableItems );
+	static_cast<void>( vmTableWidget::createPurchasesTable ( ui->tableItems ) );
 	saveWidget ( ui->tableItems, FLD_CP_ITEMS_REPORT );
 	ui->tableItems->setKeepModificationRecords ( false );
 	ui->tableItems->setParentLayout ( ui->layoutCPTable );
@@ -161,7 +161,7 @@ void companyPurchasesUI::setupUI ()
 	ui->tableItems->setCallbackForRowRemoved ( [&] ( const uint row ) {
 			return tableRowRemoved ( row ); } );
 
-	( void ) vmTableWidget::createPayHistoryTable ( ui->tablePayments );
+	static_cast<void>( vmTableWidget::createPayHistoryTable ( ui->tablePayments ) );
 	saveWidget ( ui->tablePayments, FLD_CP_PAY_REPORT );
 	ui->tablePayments->setParentLayout ( ui->layoutCPTable );
 	ui->tablePayments->setCallbackForMonitoredCellChanged ( [&] ( const vmTableItem* const item ) {

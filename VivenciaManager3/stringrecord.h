@@ -60,9 +60,7 @@ public:
 		insertStrRecord ( field, inserting_rec.toString () );
 	}
 	void appendStrRecord ( const QString& inserting_rec );
-	inline void appendStrRecord ( const stringRecord& inserting_rec ) {
-		appendStrRecord ( inserting_rec.toString () );
-	}
+	inline void appendStrRecord ( const stringRecord& inserting_rec ) { appendStrRecord ( inserting_rec.toString () ); }
 
 	const QString section ( const uint start_field, int end_field = -1 ) const;
 	const QString fieldValue ( uint field ) const;

@@ -84,7 +84,8 @@ SOURCES += main.cpp \
     keychain/keychain.cpp \
     keychain/kwallet_interface.cpp \
     keychain/passwordsessionmanager.cpp \
-    htmldb.cpp
+    htmldb.cpp \
+    dbstatistics.cpp
 
 HEADERS += dbrecord.h \
 	vmnumberformats.h \
@@ -168,7 +169,8 @@ HEADERS += dbrecord.h \
     keychain/keychain.h \
     keychain/kwallet_interface.h \
     keychain/passwordsessionmanager.h \
-    htmldb.h
+    htmldb.h \
+    dbstatistics.h
 
 FORMS += mainwindow.ui \
 	backupdialog.ui \
@@ -178,6 +180,7 @@ FORMS += mainwindow.ui \
 
 RESOURCES += \
     resources.qrc
+
 LIBS += -L/usr/lib -lhunspell -lbz2
 DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS
 INCLUDEPATH += -I/usr/include

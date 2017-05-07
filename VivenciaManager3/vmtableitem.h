@@ -26,16 +26,16 @@ public:
 	
 	inline vmTableWidget* table () const { return m_table; }
 	
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 
 	inline vmWidget* widget () const { return m_widget; }
 	inline void setWidget ( vmWidget* widget ) { m_widget = widget; }
 
-	void highlight ( const VMColors color, const QString& str = QString::null );
+	void highlight ( const VMColors color, const QString& str = QString::null ) override;
 
-	QVariant data ( const int role ) const;
+	QVariant data ( const int role ) const override;
 
-	inline QString text () const { return mCache.toString (); }
+	inline QString text () const override { return mCache.toString (); }
 	inline QString prevText () const { return mprev_datacache.toString (); }
 	//inline void setOriginalText ( const QString& text ) { mBackupData_cache = text; }
 	inline QString originalText () const { return mBackupData_cache.toString (); }
@@ -47,9 +47,8 @@ public:
 		mb_CellAltered = false;
 	}
 
-	inline void setText ( const QString& text = QString::null, const bool = false ) {
-		vmTableItem::setText ( text, false, false, false );
-	}
+	inline void setText ( const QString& text = QString::null, const bool = false ) override {
+		vmTableItem::setText ( text, false, false, false ); }
 	void setText ( const QString& text, const bool b_from_cell_itself = false,
 				   const bool force_notify = false, const bool b_formulaResult = false );
 	inline void setTextToDefault ( const bool force_notify = false ) {

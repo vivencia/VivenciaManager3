@@ -19,8 +19,6 @@ class QAction;
 //------------------------------------------------TEXT-EDIT-COMPLETER--------------------------------------------
 
 const uint WRONG_WORDS_MENUS ( 8 );
-const char* const PROPERTY_PRINT_PREVIEW ( "ppp" );
-const char* const PROPERTY_DOC_MODIFIED ( "pdm" );
 
 class textEditWithCompleter : public QTextEdit, public vmWidget
 {
@@ -31,11 +29,11 @@ public:
 	explicit textEditWithCompleter ( QWidget* parent = nullptr );
 	virtual ~textEditWithCompleter ();
 
-	void setEditable ( const bool editable );
+	void setEditable ( const bool editable ) override;
 	void setPreview ( const bool preview );
 	inline bool inPreview () const
 	{
-		return document ()->objectName () == QStringLiteral ( "np" );
+		return document ()->property ( PROPERTY_PRINT_PREVIEW ).toBool ();
 	}
 
 	void showhideUtilityPanel ();
@@ -44,16 +42,10 @@ public:
 
 	void saveContents ( const bool b_force = false, const bool b_notify = true );
 	QString paragraphText () const;
-	void setText ( const QString& text, const bool b_notify = false );
-	inline const QString& currentText () const
-	{
-		return newest_edited_text;
-	}
-
-	inline const QString& searchTerm () const
-	{
-		return mSearchTerm;
-	}
+	void setText ( const QString& text, const bool b_notify = false ) override;
+	inline const QString& currentText () const { return newest_edited_text; }
+	inline const QString& searchTerm () const { return mSearchTerm; }
+	
 	void replaceWord ( const int cursor_pos, const QString& word );
 	void selectFound ();
 	bool searchStart ( const QString& searchTerm );
@@ -63,22 +55,18 @@ public:
 	bool searchPrev ();
 	bool searchLast ();
 
-	inline static QString defaultBackgroundColor () {
-		return textEditWithCompleter::defaultBGColor;
-	}
+	inline static QString defaultBackgroundColor () { return textEditWithCompleter::defaultBGColor; }
 
-	inline QLatin1String qtClassName () const {
-		return QLatin1String ( "QTextEdit" );
-	}
-	QString defaultStyleSheet () const;
-	void highlight ( const VMColors wm_color, const QString& str = QString::null );
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QTextEdit" ); }
+	QString defaultStyleSheet () const override;
+	void highlight ( const VMColors wm_color, const QString& str = QString::null ) override;
 
 protected:
-	void keyPressEvent ( QKeyEvent* e );
-	void focusInEvent ( QFocusEvent* e );
-	void focusOutEvent ( QFocusEvent* e );
-	void mousePressEvent ( QMouseEvent* e );
-	void contextMenuEvent ( QContextMenuEvent* e );
+	void keyPressEvent ( QKeyEvent* e ) override;
+	void focusInEvent ( QFocusEvent* e ) override;
+	void focusOutEvent ( QFocusEvent* e ) override;
+	void mousePressEvent ( QMouseEvent* e ) override;
+	void contextMenuEvent ( QContextMenuEvent* e ) override;
 
 private:
 	QString spell_dic;
