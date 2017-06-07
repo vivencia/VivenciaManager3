@@ -114,13 +114,20 @@ int crashRestore::commitState ( const int id, const stringRecord& value )
 	return ret;
 }
 
-void crashRestore::eliminateRestoreInfo ( const int id )
+// The rationale here is to check for the deletion only. When it fails, signal the caller. When id == -1, there is no
+// record deletion, but whole file deletion. That will not fail because done () is a cleanup routine. When the record deletion
+// fails, the caller must then call this procedure with id = 1, because the crash file must be corrupted
+bool crashRestore::eliminateRestoreInfo ( const int id )
 {
+	bool b_deleted_ok ( true );
+	
 	if ( id != -1 )
-		fileCrash->deleteRecord ( id );
+		b_deleted_ok = fileCrash->deleteRecord ( id );
 
 	if ( ( id == -1 ) || ( fileCrash->recCount () == 0 ) )
 		done ();
+	
+	return b_deleted_ok;
 }
 
 const stringRecord& crashRestore::restoreState () const

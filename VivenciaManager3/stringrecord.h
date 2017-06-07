@@ -17,23 +17,35 @@ class stringRecord
 {
 
 public:
-	inline explicit stringRecord ( const QChar& sep = record_separator ) : mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_UNDEF )
+	friend void strrec_swap ( stringRecord& s_rec1, stringRecord& s_rec2 );
+	
+	inline stringRecord ()
+		: mFields ( 0 ), mFastIdx ( -1 ), mState ( TRI_UNDEF )
 	{
-		setFieldSeparationChar ( sep );	
+		setFieldSeparationChar ( record_separator );
 	}
 	
-	inline stringRecord ( const stringRecord& other )
-		: mData ( other.mData ), mFields ( other.mFields ), mFastIdx ( other.mFastIdx ), mState ( other.mState )
-	{
-		setFieldSeparationChar ( other.record_sep );
-	}
+	stringRecord ( const stringRecord& other );
+	stringRecord ( const QString& str, const QChar& sep = record_separator );
 	
-	inline stringRecord ( const QString& str, const QChar& sep = record_separator )
+	inline const stringRecord& operator= ( const stringRecord& other )
 	{
-		setFieldSeparationChar ( sep );
-		fromString ( str );
+		stringRecord temp ( other );
+		strrec_swap ( *this, temp );
+		return *this;
 	}
 
+	inline const stringRecord& operator= ( stringRecord&& other )
+	{
+		strrec_swap ( *this, other );
+		return *this;
+	}
+	
+	inline stringRecord ( stringRecord&& other ) : stringRecord ()
+	{
+		strrec_swap ( *this, other );
+	}
+	
 	inline void setFieldSeparationChar ( const QChar& chr )
 	{
 		record_sep = chr;
@@ -127,21 +139,33 @@ class stringTable
 {
 
 public:
-	inline explicit stringTable ( const QChar& sep = table_separator ) : nRecords ( 0 ), mFastIdx ( -1 ), mCurIdx ( -1 )
+	friend void strtable_swap ( stringTable& s_table1, stringTable& s_table2 );
+	
+	inline stringTable ()
+		: nRecords ( 0 ), mFastIdx ( -1 ), mCurIdx ( -1 )
+	{
+		setRecordSeparationChar ( table_separator );
+	}
+	
+	inline explicit stringTable ( const QChar& sep )
+		: stringTable ()
 	{
 		setRecordSeparationChar ( sep );
 	}
 	
-	inline stringTable ( const stringTable& other, const QChar& sep = table_separator )
-		: mRecords ( other.mRecords ), nRecords ( other.nRecords ), mFastIdx ( other.mFastIdx ), mCurIdx ( other.mCurIdx )
-	{
-		setRecordSeparationChar ( sep );
-	}
+	stringTable ( const stringTable& other );
+	stringTable ( const QString& str, const QChar& sep = table_separator );
 	
-	inline stringTable ( const QString& str, const QChar& sep = table_separator )
+	inline stringTable ( stringTable&& other ) : stringTable ()
 	{
-		setRecordSeparationChar ( sep );
-		fromString ( str );
+		strtable_swap ( *this, other );
+	}
+
+	inline const stringTable& operator= ( const stringTable& other )
+	{
+		stringTable temp ( other );
+		strtable_swap ( *this, temp );
+		return *this;
 	}
 	
 	inline void setRecordSeparationChar ( const QChar& chr )

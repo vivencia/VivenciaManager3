@@ -256,7 +256,6 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 						price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 						date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
-						addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, price );
 						if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 						{
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );
@@ -272,7 +271,6 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 						price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 						date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 						addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber );
-						addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, price );
 						if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 						{
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );
@@ -293,7 +291,6 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 							price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 							addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber );
-							addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, price );
 							if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 							{
 								date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );
@@ -308,7 +305,6 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 							price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
-							addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, price );
 							if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 							{
 								date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );

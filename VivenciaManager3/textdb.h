@@ -108,7 +108,7 @@ public:
 
 	void insertRecord ( const int pos, const stringRecord& rec );
 	void changeRecord ( const int pos, const stringRecord& rec );
-	void deleteRecord ( const int pos );
+	bool deleteRecord ( const int pos );
 	void appendRecord ( const stringRecord& rec );
 	bool getRecord ( stringRecord& rec, const int pos ) const;
 	bool getRecord ( stringRecord& rec, const QString& value, const uint field ) const;

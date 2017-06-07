@@ -7,6 +7,17 @@
 #include <cmath>
 #include <climits>
 
+void vm_swap ( vmNumber& n1, vmNumber& n2 )
+{
+	using std::swap;
+	swap ( n1.nbr_part, n2.nbr_part );
+	swap ( n1.nbr_upart, n2.nbr_upart );
+	swap ( n1.m_type, n2.m_type );
+	swap ( n1.mb_cached, n2.mb_cached );
+	swap ( n1.mb_valid, n2.mb_valid );
+	swap ( n1.cached_str, n2.cached_str );
+}
+
 /* you cannot use QStringLiteral outside a function in all compilers,
  * since GCC statement expressions don’t support that.
  * Moreover, the code for QT4 would work, but isn’t read-only sharable:
@@ -65,25 +76,15 @@ vmNumber::vmNumber ( const QString& str, const VM_NUMBER_TYPE type, const int fo
 	}
 }
 
-/*vmNumber::vmNumber ( const QString& str, const bool check_number_type )
-	: m_type ( VMNT_UNSET ), mb_cached ( false )
+vmNumber::vmNumber ( const vmNumber& other )
 {
-	if ( check_number_type ) {
-		for ( unsigned int i ( 0 ); i < 5; ++i )
-			nbr_part[i] = 0;
-
-		if ( str.contains ( CURRENCY ) )
-			fromStrPrice ( str );
-		else if ( str.contains ( CHR_DOT ) || str.contains ( CHR_COMMA ) )
-			fromStrDouble ( str );
-		else if ( str.contains ( CHR_F_SLASH ) )
-			fromStrDate ( str );
-		else if ( str.contains ( CHR_L_PARENTHESIS ) || str.contains ( CHR_HYPHEN ) )
-			fromStrPhone ( str );
-		else
-			fromStrInt ( str );
-	}
-}*/
+	std::copy ( other.nbr_part, other.nbr_part + 5, nbr_part );
+	std::copy ( other.nbr_upart, other.nbr_upart + 5, nbr_upart );
+	m_type = other.m_type;
+	mb_cached = other.mb_cached;
+	mb_valid = other.mb_valid;
+	cached_str = other.cached_str;
+}
 
 QString vmNumber::useCalc ( const vmNumber& n1, const vmNumber& res, const QString& op ) const
 {
@@ -94,34 +95,23 @@ QString vmNumber::useCalc ( const vmNumber& n1, const vmNumber& res, const QStri
 	return expression;
 }
 
-void vmNumber::copy ( vmNumber& dest, const vmNumber& src )
-{
-	for ( unsigned int i ( 0 ); i < 5; ++i )
-	{
-		dest.nbr_part[i] = src.nbr_part[i];
-		dest.nbr_upart[i] = src.nbr_upart[i];
-	}
-	dest.m_type = src.m_type;
-	dest.mb_cached = src.mb_cached;
-	dest.mb_valid = src.mb_valid;
-	dest.cached_str = src.cached_str;
-}
-
 void vmNumber::clear ( const bool b_unset_type )
 {
 	switch ( type () )
 	{
 		case VMNT_INT:
 		case VMNT_DOUBLE:
-		case VMNT_PRICE:
+		case VMNT_PRICE: 
 		case VMNT_TIME:
-			for ( unsigned int i ( 0 ); i < 5; ++i )
-				nbr_part[i] = 0;
+			std::fill ( nbr_part, nbr_part+5, 0 );
+			//for ( unsigned int i ( 0 ); i < 5; ++i )
+			//	nbr_part[i] = 0;
 		break;
 		case VMNT_PHONE:
 		case VMNT_DATE:
-			for ( unsigned int i ( 0 ); i < 5; ++i )
-				 nbr_upart[i] = 0;
+			std::fill ( nbr_upart, nbr_upart+5, 0 );
+			//for ( unsigned int i ( 0 ); i < 5; ++i )
+			//	 nbr_upart[i] = 0;
 		break;
 		case VMNT_UNSET:
 		break;
@@ -1695,13 +1685,6 @@ const QString& vmNumber::formatTime ( const int hour, const unsigned int min, co
 //-------------------------------------TIME------------------------------------------
 
 //-------------------------------------OPERATORS------------------------------------------
-const vmNumber& vmNumber::operator= ( const vmNumber& vmnumber )
-{
-	if ( this != &vmnumber )
-		copy ( *this, vmnumber );
-	return *this;
-}
-
 vmNumber& vmNumber::operator= ( const QDate& date )
 {
 	static_cast<void>(fromQDate ( date ));

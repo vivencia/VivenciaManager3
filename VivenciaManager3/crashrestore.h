@@ -26,7 +26,7 @@ public:
 	inline static const QChar fieldSeparatorForRecord () { return public_rec_sep; }
 	
 	int commitState ( const int id, const stringRecord& value );
-	void eliminateRestoreInfo ( const int id = -1 );
+	bool eliminateRestoreInfo ( const int id = -1 );
 
 	const stringRecord& restoreFirstState () const;
 	const stringRecord& restoreNextState () const;

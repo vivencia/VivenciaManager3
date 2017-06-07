@@ -25,17 +25,15 @@ friend class fixDatabase;
 friend class BackupDialog;
 
 public:
+	~VivenciaDB ();
 
 	//-----------------------------------------STATIC---------------------------------------------
 	static QString getTableColumnName ( const TABLE_INFO* t_info, uint column );
 	static QString getTableColumnFlags ( const TABLE_INFO* t_info, uint column );
 	static QString getTableColumnLabel ( const TABLE_INFO* t_info, uint column );
 	static QString tableName ( const TABLE_ORDER table );
-	//-----------------------------------------STATIC---------------------------------------------
 
-	~VivenciaDB ();
-
-	static void init ()
+	static inline void init ()
 	{
 		if ( !s_instance )
 			s_instance = new VivenciaDB;
@@ -45,7 +43,12 @@ public:
 	{
 		return table_info[to];
 	}
-
+	
+	static inline QString backupApp () { return QStringLiteral ( "mysqldump" ); }
+	static inline QString importApp () { return STR_MYSQL; }
+	static inline QString restoreApp () { return QStringLiteral ( "mysqlimport" ); }
+	//-----------------------------------------STATIC---------------------------------------------
+	
 	inline QSqlDatabase* database () const
 	{
 		return &const_cast<VivenciaDB*>( this )->m_db;
@@ -58,16 +61,6 @@ public:
 
 	inline bool db_oK ()  const { return m_ok; }
 	inline bool backUpSynced () const { return mBackupSynced; }
-
-	static inline QString backupApp () {
-		return QStringLiteral ( "mysqldump" );
-	}
-	static inline QString importApp () {
-		return STR_MYSQL;
-	}
-	static inline QString restoreApp () {
-		return QStringLiteral ( "mysqlimport" );
-	}
 
 	bool databaseIsEmpty () const;
 	bool createAllTables ();
@@ -153,18 +146,29 @@ inline VivenciaDB* VDB ()
 	return VivenciaDB::s_instance;
 }
 
+#undef USE_THREADS
 #include <QObject>
- 
+
+#ifdef USE_THREADS
 class threadedDBOps : public QObject
+{
+Q_OBJECT
+
+public:
+	virtual ~threadedDBOps ();
+	
+#else
+class threadedDBOps
 {
 
 public:
+	~threadedDBOps ();
+#endif
+	
 	explicit threadedDBOps ();
-	virtual ~threadedDBOps ();
+	void populateTable ( const DBRecord* db_rec, vmTableWidget* table );
 	inline void setCallbackForFinished ( const std::function<void ()>& func ) { m_finishedFunc = func; }
 	
-	void populateTable ( const DBRecord* db_rec, vmTableWidget* table );
- 
 protected:
 	std::function<void ()> m_finishedFunc;
 };

@@ -47,14 +47,31 @@ public:
 		~st_Query () {
 			delete query;
 		}
+		
+		st_Query& operator= ( const st_Query& other );
 	};
 
-
-	explicit DBRecord ( const uint field_count );
+	friend void db_rec_swap ( DBRecord& dbrec1, DBRecord& dbrec2 );
+	
+	DBRecord ();
+	
+	inline DBRecord ( const uint field_count ) : DBRecord ()
+	{
+		fld_count = field_count;
+	}
+	
 	explicit DBRecord ( const DBRecord& other );
+	inline DBRecord ( DBRecord&& other ) : DBRecord () { db_rec_swap ( *this, other ); }
+	
+	inline const DBRecord& operator= ( const DBRecord& other )
+	{
+		DBRecord temp ( other );
+		db_rec_swap ( *this, temp );
+		return *this;
+	}
+	
 	virtual ~DBRecord (); // if a class has virtual functions, if should have a virtual destructor
 
-	const DBRecord& operator= ( const DBRecord& other );
 	bool operator== ( const DBRecord& other ) const;
 	inline bool operator!= ( const DBRecord& other ) const {
 		return !( this->operator == ( other ) ); }
@@ -182,7 +199,6 @@ protected:
 	friend void updateInventoryItemCompleter ( const DBRecord* db_rec );
 
 	void callHelperFunctions ();
-	void copy ( const DBRecord& dbrec );
 
 	/* Load with value = ACTION_READ */
 	inline void setValue ( const uint field, const QString& value ) {

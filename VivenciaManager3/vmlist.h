@@ -24,6 +24,8 @@ class VMList
 
 public:
 
+	static void vmlist_swap ( VMList<T>& list1, VMList<T>& list2 );
+	
 	template<typename X>
 	struct IsPointer
 	{
@@ -44,10 +46,14 @@ public:
 
 	VMList ();
 	explicit VMList ( const T& default_value, const uint n_prealloc = 10 );
-	inline VMList ( const VMList<T>& other ) {
-		operator= ( other );
-	}
+	VMList ( const VMList<T>& other );	
+	const VMList<T>& operator= ( const VMList<T>& other );
 
+	inline VMList<T> ( VMList<T>&& other ) : VMList<T> ()
+	{
+		vmlist_swap ( *this, other );
+	}
+	
 	inline virtual ~VMList () { clear (); }
 
 	int
@@ -69,14 +75,12 @@ public:
 		setPreAllocNumber ( const uint n ),
 		setDefaultValue ( const T& default_value ),
 		setCurrent ( const int pos ) const,
-		setCurrent ( const uint pos ) const;
+		setCurrent ( const uint pos ) const,
+		setIsPointer ( const bool b_ispointer );
 
 	T
 		&operator[] ( const int pos ),
 		&operator[] ( const uint pos );
-
-	virtual const VMList<T>&
-		operator= ( const VMList<T>& other );
 
 	inline T
 		defaultValue () const { return end_value; }
@@ -114,7 +118,8 @@ public:
 		isEmpty () const,
 		currentIsLast () const,
 		currentIsFirst () const,
-		TIsPointer () const;
+		TIsPointer () const,
+		autoDeleteItem () const ;
 	
 	virtual bool
 		operator!= ( const VMList<T>& other ) const,
@@ -175,6 +180,23 @@ private:
 };
 
 template <typename T>
+void VMList<T>::vmlist_swap ( VMList<T>& list1, VMList<T>& list2 )
+{
+	using std::swap;
+	
+	swap ( list1._data, list2._data );
+	swap ( list1.end_value, list2.end_value );
+	swap ( list1.ptr, list2.ptr );
+	swap ( list1.nItems, list2.nItems );
+	swap ( list1.capacity, list2.capacity );
+	swap ( list1.memCapacity, list2.memCapacity );
+	swap ( list1.m_nprealloc, list2.m_nprealloc );
+	swap ( list1.mb_ispointer, list2.mb_ispointer );
+	swap ( list1.mb_autodel, list2.mb_autodel );
+	swap ( list1.r, list2.r );
+}
+
+template <typename T>
 inline bool VMList<T>::checkIsPointer ( TIsPointerType* ) const
 {
 	return true;
@@ -232,6 +254,12 @@ template <typename T>
 inline bool VMList<T>::TIsPointer () const
 {
 	return mb_ispointer;
+}
+
+template <typename T>
+inline bool VMList<T>::autoDeleteItem () const
+{
+	return mb_autodel;
 }
 
 template <typename T>
@@ -322,11 +350,6 @@ void VMList<T>::resetMemory ( const T& value, uint length )
 	}
 
 	std::fill ( _data, _data + length, value );
-	/*uint i ( 0 );
-	while ( i < length ) {
-		_data[i] = value;
-		++i;
-	};*/
 }
 
 template <typename T>
@@ -414,6 +437,12 @@ inline void VMList<T>::setCurrent ( const uint pos ) const
 }
 
 template <typename T>
+inline void VMList<T>::setIsPointer ( const bool b_ispointer )
+{
+	mb_ispointer = b_ispointer;
+}
+
+template <typename T>
 inline const T& VMList<T>::peekFirst () const
 {
 	if ( nItems >= 1 )
@@ -498,27 +527,6 @@ inline T& VMList<T>::operator[] ( const uint pos )
 }
 
 template <typename T>
-const VMList<T>& VMList<T>::operator= ( const VMList<T>& other )
-{
-	if ( this != &other )
-	{
-		this->clear ();
-		this->nItems = other.nItems;
-		this->capacity = other.capacity;
-		this->memCapacity = other.memCapacity;
-		this->m_nprealloc = other.m_nprealloc;
-		this->mb_autodel = other.mb_autodel;
-		this->ptr = other.ptr;
-		this->end_value = other.end_value;
-		this->mb_ispointer = other.mb_ispointer;
-
-		_data = new T[this->capacity];
-		copyItems ( this->_data, other._data, this->capacity );
-	}
-	return *this;
-}
-
-template <typename T>
 inline const T& VMList<T>::at ( const int pos ) const
 {
 	if ( (pos >= 0) && (pos < static_cast<int>( nItems )) ) // only return actually inserted items; therefore we use nItems
@@ -535,8 +543,16 @@ inline const T& VMList<T>::at ( const uint pos ) const
 }
 
 template <typename T>
+inline VMList<T>::VMList ()
+	: _data ( nullptr ), ptr ( -1 ), nItems ( 0 ), capacity ( 0 ),
+	  memCapacity ( 0 ), m_nprealloc ( 10 ), mb_autodel ( false )
+{
+	mb_ispointer = checkIsPointer ( &r );
+}
+
+template <typename T>
 VMList<T>::VMList ( const T& default_value, const uint n_prealloc )
-	: _data ( nullptr ), ptr ( -1 ), nItems ( 0 ), capacity ( 0 ), memCapacity ( 0 ), mb_autodel ( false )
+	: VMList ()
 {
 	m_nprealloc = n_prealloc;
 	capacity = m_nprealloc;
@@ -547,17 +563,33 @@ VMList<T>::VMList ( const T& default_value, const uint n_prealloc )
 	if ( capacity > 0 )
 	{
 		_data = new T[capacity];
-		for ( uint i ( 0 ); i < capacity; ++i )
-			_data[i] = end_value;
+		std::fill ( _data, _data + capacity, end_value );
 	}
 }
 
 template <typename T>
-inline VMList<T>::VMList ()
-	: _data ( nullptr ), ptr ( -1 ), nItems ( 0 ), capacity ( 0 ),
-	  memCapacity ( 0 ), m_nprealloc ( 10 ), mb_autodel ( false )
+VMList<T>::VMList ( const VMList<T>& other )
+	: VMList ()
 {
-	mb_ispointer = checkIsPointer ( &r );
+	nItems = other.nItems;
+	capacity = other.capacity;
+	memCapacity = other.memCapacity;
+	m_nprealloc = other.m_nprealloc;
+	mb_autodel = other.mb_autodel;
+	ptr = other.ptr;
+	end_value = other.end_value;
+	mb_ispointer = other.mb_ispointer;
+	r = other.r;
+	_data = new T[this->capacity];
+	copyItems ( this->_data, other._data, this->capacity );
+}
+
+template<typename T>
+inline const VMList<T>& VMList<T>::operator= ( const VMList<T>& other )
+{
+	VMList<T> temp ( other );
+	vmlist_swap ( *this, temp );
+	return *this;
 }
 
 template<typename T>
@@ -828,12 +860,17 @@ class podList : public VMList<T>
 {
 
 public:
-	explicit podList ( const T& default_value = 0, const uint n_prealloc = 100 );
-	explicit inline podList ( const podList<T>& other )
-		: VMList<T> () {
-		operator= ( other );
-	}
+	podList ();
+	explicit podList ( const T& default_value, const uint n_prealloc );
+	podList ( const podList<T>& other );
 
+	const podList<T>& operator= ( const podList<T>& other );
+	
+	inline podList<T> ( podList<T>&& other ) : podList<T> ()
+	{
+		VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>&>( other ) );
+	}
+	
 	virtual inline ~podList () { this->clear (); }
 
 	uint
@@ -848,10 +885,49 @@ public:
 				moveItems ( const uint to, const uint from, const uint amount ),
 				copyItems ( T* dest, const T* src, const uint amount ),
 				reserve ( const uint );
-
-	const podList<T>&
-		operator= ( const podList<T>& other );
 };
+
+template<typename T>
+inline podList<T>::podList ()
+	: VMList<T> ()
+{
+	VMList<T>::setDefaultValue ( 0 );
+	VMList<T>::setPreAllocNumber ( 10 );
+}
+
+template<typename T>
+podList<T>::podList ( const T& default_value, const uint n_prealloc )
+	: podList<T> ()
+{
+	VMList<T>::setDefaultValue ( default_value );
+	VMList<T>::setPreAllocNumber ( n_prealloc );
+	VMList<T>::setCapacity ( n_prealloc );
+	VMList<T>::setMemCapacity ( n_prealloc * sizeof ( T ) );
+	VMList<T>::setData ( static_cast<T*>( ::malloc ( VMList<T>::getMemCapacity () ) ) );
+	::memset ( VMList<T>::data (), default_value, VMList<T>::getMemCapacity () );
+}
+
+template<typename T>
+podList<T>::podList ( const podList<T>& other )
+	: podList<T> ()
+{
+	VMList<T>::setDefaultValue ( other.defaultValue () );
+	VMList<T>::setPreAllocNumber ( other.preallocNumber () );
+	VMList<T>::setCapacity ( other.getCapacity () );
+	VMList<T>::setMemCapacity ( other.getMemCapacity () );
+	VMList<T>::setNItems ( other.count () );
+	VMList<T>::setCurrent ( other.currentIndex () );
+	VMList<T>::setData ( static_cast<T*>( ::malloc ( VMList<T>::getMemCapacity () ) ) );
+	::memcpy ( VMList<T>::data (), other.data (), VMList<T>::getMemCapacity () );
+}
+
+template<typename T>
+const podList<T>& podList<T>::operator= ( const podList<T>& other )
+{
+	podList<T> temp ( other );
+	VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>&>( temp ) );
+	return *this;	
+}
 
 template <typename T>
 inline void podList<T>::moveItems ( const uint to, const uint from, const uint amount )
@@ -898,36 +974,6 @@ void podList<T>::resetMemory ( const T& value, uint length )
 	::memset ( static_cast<void*>( VMList<T>::data () ), VMList<T>::defaultValue (), length * sizeof ( T ) );
 }
 
-template<typename T>
-podList<T>::podList ( const T& default_value, const uint n_prealloc )
-	: VMList<T> ()
-{
-	VMList<T>::setDefaultValue ( default_value );
-	VMList<T>::setPreAllocNumber ( n_prealloc );
-	VMList<T>::setCapacity ( n_prealloc );
-	VMList<T>::setMemCapacity ( n_prealloc * sizeof ( T ) );
-	VMList<T>::setData ( static_cast<T*> ( ::malloc ( VMList<T>::getMemCapacity () ) ) );
-	::memset ( VMList<T>::data (), default_value, VMList<T>::getMemCapacity () );
-}
-
-template<typename T>
-const podList<T>& podList<T>::operator= ( const podList<T>& other )
-{
-	if ( this != &other ) {
-		this->clear ();
-		VMList<T>::setPreAllocNumber ( other.preallocNumber () );
-		VMList<T>::setCapacity ( other.getCapacity () );
-		VMList<T>::setMemCapacity ( other.getMemCapacity () );
-		VMList<T>::setDefaultValue ( other.defaultValue () );
-		VMList<T>::setNItems ( other.count () );
-		VMList<T>::setCurrent ( other.currentIndex () );
-
-		VMList<T>::setData ( static_cast<T*> ( ::malloc ( VMList<T>::getMemCapacity () ) ) );
-		::memcpy ( VMList<T>::data (), other.data (), VMList<T>::getMemCapacity () );
-	}
-	return *this;
-}
-
 template <typename T>
 uint podList<T>::realloc ( const uint newsize )
 {
@@ -940,7 +986,8 @@ uint podList<T>::realloc ( const uint newsize )
 							 ::realloc ( static_cast<void*>( VMList<T>::data () ), newMemCapacity ) ) );
 	if ( newsize < VMList<T>::count () )
 		VMList<T>::setNItems ( newsize );
-	else {
+	else
+	{
 		const uint i ( VMList<T>::getCapacity () );
 		::memset ( ( VMList<T>::data () + i ), VMList<T>::defaultValue (), newsize - i );
 	}
@@ -965,7 +1012,8 @@ void podList<T>::reserve ( const uint length )
 template <typename T>
 void podList<T>::clear ( const bool )
 {
-	if ( VMList<T>::data () != nullptr ) {
+	if ( VMList<T>::data () != nullptr )
+	{
 		::free ( static_cast<void*>( VMList<T>::data () ) );
 		VMList<T>::setData ( nullptr );
 		VMList<T>::setMemCapacity ( 0 );
@@ -977,9 +1025,9 @@ void podList<T>::clear ( const bool )
 template <typename T>
 void podList<T>::clearButKeepMemory ( const bool )
 {
-	if ( VMList<T>::data () != nullptr ) {
+	if ( VMList<T>::data () != nullptr )
+	{
 		::memset ( VMList<T>::data (), VMList<T>::defaultValue (), VMList<T>::getMemCapacity () );
-		//VMList<T>::setData ( nullptr );
 	}
 	VMList<T>::setNItems ( 0 );
 	VMList<T>::setCurrent ( -1 );
@@ -992,12 +1040,17 @@ class PointersList : public VMList<T>
 {
 
 public:
-	explicit PointersList ( const uint n_prealloc = 100 );
-	explicit inline PointersList ( const PointersList<T>& other )
-		: VMList<T> () {
-		operator= ( other );
-	}
+	PointersList ();
+	explicit PointersList ( const uint n_prealloc );
+	PointersList ( const PointersList<T>& other );
 
+	const PointersList<T>& operator= ( const PointersList<T>& other );
+	
+	inline PointersList<T> ( PointersList<T>&& other ) : PointersList<T> ()
+	{
+		VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>&>( other ) );
+	}
+	
 	virtual inline ~PointersList () { this->clear (); }
 
 	uint
@@ -1012,9 +1065,6 @@ public:
 		moveItems ( const uint to, const uint from, const uint amount ),
 		copyItems ( T* dest, const T* src, const uint amount ),
 		reserve ( const uint );
-
-	const PointersList<T>&
-			operator= ( const PointersList<T>& other );
 
 private:
 	typename VMList<T>::template IsPointer<T>::Result r;
@@ -1037,6 +1087,47 @@ inline void PointersList<T>::moveItems ( const uint to, const uint from, const u
 	}
 }
 
+template<typename T>
+inline PointersList<T>::PointersList ()
+	: VMList<T> ()
+{
+	VMList<T>::setDefaultValue ( nullptr );
+	VMList<T>::setPreAllocNumber ( 100 );
+}
+
+template<typename T>
+PointersList<T>::PointersList ( const uint n_prealloc )
+	: PointersList<T> ()
+{
+	VMList<T>::setPreAllocNumber ( n_prealloc );
+	VMList<T>::setCapacity ( n_prealloc );
+	VMList<T>::setMemCapacity ( n_prealloc * sizeof ( T ) );
+	VMList<T>::setData ( static_cast<T*>( ::malloc ( VMList<T>::getMemCapacity () ) ) );
+	::memset ( VMList<T>::data (), 0, VMList<T>::getMemCapacity () );
+}
+
+template<typename T>
+PointersList<T>::PointersList ( const PointersList<T>& other )
+	: PointersList<T> ()
+{
+	VMList<T>::setDefaultValue ( other.defaultValue () );
+	VMList<T>::setPreAllocNumber ( other.preallocNumber () );
+	VMList<T>::setCapacity ( other.getCapacity () );
+	VMList<T>::setMemCapacity ( other.getMemCapacity () );
+	VMList<T>::setNItems ( other.count () );
+	VMList<T>::setCurrent ( other.currentIndex () );
+	VMList<T>::setData ( static_cast<T*>( ::malloc ( VMList<T>::getMemCapacity () ) ) );
+	::memcpy ( VMList<T>::data (), other.data (), VMList<T>::getMemCapacity () );
+}
+
+template<typename T>
+const PointersList<T>& PointersList<T>::operator= ( const PointersList<T>& other )
+{
+	PointersList<T> temp ( other );
+	VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>&>( temp ) );
+	return *this;	
+}
+
 template <typename T>
 inline void PointersList<T>::copyItems ( T* dest, const T* src, const uint amount )
 {
@@ -1048,7 +1139,8 @@ void PointersList<T>::resetMemory ( const T&, uint length )
 {
 	if ( length == 0 )
 		length = VMList<T>::getCapacity ();
-	else if ( length > VMList<T>::getCapacity () ) {
+	else if ( length > VMList<T>::getCapacity () )
+	{
 		/*
 		 * cheat: this function is called many times after the declaration of the list object.
 		 * By setting the capacity to 0, reserve () will actually reset all items, from 0 to length, to de default value
@@ -1060,37 +1152,6 @@ void PointersList<T>::resetMemory ( const T&, uint length )
 	}
 
 	::memset ( static_cast<void*>( VMList<T>::data () ), 0, length * sizeof ( T ) );
-}
-
-template<typename T>
-PointersList<T>::PointersList ( const uint n_prealloc )
-	: VMList<T> ()
-{
-	VMList<T>::setPreAllocNumber ( n_prealloc );
-	VMList<T>::setCapacity ( n_prealloc );
-	VMList<T>::setMemCapacity ( n_prealloc * sizeof ( T ) );
-	VMList<T>::setDefaultValue ( nullptr );
-	VMList<T>::setData ( static_cast<T*> ( ::malloc ( VMList<T>::getMemCapacity () ) ) );
-	::memset ( VMList<T>::data (), 0, VMList<T>::getMemCapacity () );
-}
-
-template<typename T>
-const PointersList<T>& PointersList<T>::operator= ( const PointersList<T>& other )
-{
-	if ( this != &other )
-	{
-		this->clear ();
-		VMList<T>::setPreAllocNumber ( other.preallocNumber () );
-		VMList<T>::setCapacity ( other.getCapacity () );
-		VMList<T>::setMemCapacity ( other.getMemCapacity () );
-		VMList<T>::setDefaultValue ( nullptr );
-		VMList<T>::setNItems ( other.count () );
-		VMList<T>::setCurrent ( other.currentIndex () );
-
-		VMList<T>::setData ( static_cast<T*> ( ::malloc ( VMList<T>::getMemCapacity () ) ) );
-		::memcpy ( VMList<T>::data (), other.data (), VMList<T>::getMemCapacity () );
-	}
-	return *this;
 }
 
 template <typename T>
@@ -1105,7 +1166,8 @@ uint PointersList<T>::realloc ( const uint newsize )
 							 ::realloc ( static_cast<void*>( VMList<T>::data () ), newMemCapacity ) ) );
 	if ( newsize < VMList<T>::count () )
 		VMList<T>::setNItems ( newsize );
-	else {
+	else
+	{
 		const uint i ( VMList<T>::getCapacity () );
 		::memset ( ( VMList<T>::data () + i ), 0, newsize - i );
 	}
@@ -1130,8 +1192,10 @@ void PointersList<T>::reserve ( const uint length )
 template <typename T>
 void PointersList<T>::clear ( const bool delete_items )
 {
-	if ( VMList<T>::data () != nullptr ) {
-		if ( delete_items || VMList<T>::mb_autodel ) {
+	if ( VMList<T>::data () != nullptr )
+	{
+		if ( delete_items || VMList<T>::mb_autodel )
+		{
 			for ( uint pos ( 0 ); pos < VMList<T>::count (); ++pos )
 				this->deletePointer ( &r, pos );
 		}
@@ -1146,8 +1210,10 @@ void PointersList<T>::clear ( const bool delete_items )
 template <typename T>
 void PointersList<T>::clearButKeepMemory ( const bool delete_items )
 {
-	if ( VMList<T>::data () != nullptr ) {
-		if ( delete_items || VMList<T>::mb_autodel ) {
+	if ( VMList<T>::data () != nullptr )
+	{
+		if ( delete_items || VMList<T>::mb_autodel )
+		{
 			for ( uint pos ( 0 ); pos < VMList<T>::count (); ++pos )
 				this->deletePointer ( &r, pos );
 		}

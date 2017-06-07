@@ -7,12 +7,40 @@
 
 #include <QVBoxLayout>
 
-vmWidget::vmWidget ( const int type, const int subtype, const int id )
+void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 )
+{
+	using std::swap;
+	
+	swap ( widget1.keypressed_func, widget2.keypressed_func );
+	swap ( widget1.contextmenu_func, widget2.contextmenu_func );
+	swap ( widget1.contentsAltered_func, widget2.contentsAltered_func );
+	swap ( widget1.m_type, widget2.m_type );
+	swap ( widget1.m_subtype, widget2.m_subtype );
+	swap ( widget1.m_id, widget2.m_id );
+	swap ( widget1.mb_editable, widget2.mb_editable );
+	swap ( widget1.m_data, widget2.m_data );
+	swap ( widget1.mWidgetPtr, widget2.mWidgetPtr );
+	swap ( widget1.mParent, widget2.mParent );
+	swap ( widget1.m_sheetItem, widget2.m_sheetItem );
+	swap ( widget1.m_LayoutUtilities, widget2.m_LayoutUtilities );
+	PointersList<QWidget*>::vmlist_swap ( widget1.m_UtilityWidgetsList, widget2.m_UtilityWidgetsList );
+	swap ( widget1.mTextType, widget2.mTextType );
+}
+
+vmWidget::vmWidget ()
 	: keypressed_func ( nullptr ), contextmenu_func ( nullptr ), contentsAltered_func ( nullptr ),
-	  m_type ( type ), m_subtype ( subtype ), m_id ( id ), mb_editable ( false ),
+	  m_type ( WT_WIDGET_UNKNOWN ), m_subtype ( WT_WIDGET_UNKNOWN ), m_id ( -1 ), mb_editable ( false ),
 	  mWidgetPtr ( nullptr ), mParent ( nullptr ), m_sheetItem ( nullptr ), m_LayoutUtilities ( nullptr ), 
 	  m_UtilityWidgetsList ( 2 ), mTextType ( TT_TEXT )
 {}
+
+vmWidget::vmWidget ( const int type, const int subtype, const int id )
+	: vmWidget ()
+{
+	m_type = type;
+	m_subtype = subtype;
+	m_id = id;
+}
 
 vmWidget::~vmWidget () {}
 

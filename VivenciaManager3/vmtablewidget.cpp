@@ -95,11 +95,11 @@ void vmTableWidget::initTable ( const uint rows )
 	vmTableItem* sheet_item ( nullptr );
 	QString col_header;
 
-	mTotalsRow = static_cast<int>(rows);
-	m_nVisibleRows = rows + static_cast<uint>(!mbPlainTable);
-	setRowCount ( static_cast<int>(m_nVisibleRows) );
+	mTotalsRow = static_cast<int>( rows );
+	m_nVisibleRows = rows + static_cast<uint>( !mbPlainTable );
+	setRowCount ( static_cast<int>( m_nVisibleRows ) );
 
-	if ( !mbTableIsList )
+	if ( !isList () )
 	{
 		QFont titleFont ( font () );
 		titleFont.setBold ( true );
@@ -114,47 +114,51 @@ void vmTableWidget::initTable ( const uint rows )
 	do
 	{
 		column = &mCols[i_col];
-		insertColumn ( static_cast<int>(i_col) );
+		insertColumn ( static_cast<int>( i_col ) );
 
 		if ( !column->editable )
-			setBit ( readOnlyColumnsMask, static_cast<uchar>(i_col) ); // bit is set? read only cell : cell can be cleared or other actions
+			setBit ( readOnlyColumnsMask, static_cast<uchar>( i_col ) ); // bit is set? read only cell : cell can be cleared or other actions
 
-		for ( i_row = 0; i_row < m_nVisibleRows; ++i_row )
+		if ( !isList () )
 		{
-			if ( !mbPlainTable && i_row != static_cast<uint>(totalsRow ()) ) // last row, read-only, displays formulas like "sum" for the previous rows
-				sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
-			else if ( !mbTableIsList )
-				sheet_item = new vmTableItem ( WT_LINEEDIT, i_col != 0 ? column->text_type : vmWidget::TT_TEXT, emptyString, this );
-			
-			setItem ( static_cast<int>(i_row), static_cast<int>(i_col), sheet_item );
-			sheet_item->setButtonType ( column->button_type );
-			sheet_item->setCompleterType ( column->completer_type );
-			setCellWidget ( sheet_item );
-			sheet_item->setEditable ( false );
-			if ( i_row == static_cast<uint>(totalsRow ()) && !mbPlainTable )
+			for ( i_row = 0; i_row < m_nVisibleRows; ++i_row )
 			{
-				if ( i_col == 0 )
-					sheet_item->setText ( TR_FUNC ( "Total:" ), false, false );
+				if ( i_row != static_cast<uint>( totalsRow () ) )
+					sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
 				else
+					sheet_item = new vmTableItem ( WT_LINEEDIT, i_col != 0 ? column->text_type : vmWidget::TT_TEXT, emptyString, this );
+			
+				setItem ( static_cast<int>( i_row ), static_cast<int>( i_col ), sheet_item );
+				sheet_item->setButtonType ( column->button_type );
+				sheet_item->setCompleterType ( column->completer_type );
+				setCellWidget ( sheet_item );
+				sheet_item->setEditable ( false );
+				if ( !mbPlainTable )
 				{
-					if ( column->text_type >= vmLineEdit::TT_PRICE )
+					if ( i_row == static_cast<uint>( totalsRow () ) )
 					{
-						col_header = QChar ( 'A' + i_col );
-						sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header +
-												 CHR_ZERO + CHR_SPACE + col_header + QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
+						if ( i_col == 0 )
+							sheet_item->setText ( TR_FUNC ( "Total:" ), false, false );
+						else
+						{
+							if ( column->text_type >= vmLineEdit::TT_PRICE )
+							{
+								col_header = QChar ( 'A' + i_col );
+								sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header + CHR_ZERO + CHR_SPACE + col_header + 
+														 QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
+							}
+						}
+					}
+					else
+					{
+						if ( !column->formula.isEmpty () )
+							sheet_item->setFormula ( column->formula, QString::number ( i_row ) );
 					}
 				}
 			}
-			else
-			{ //i_row != mTotalsRow)
-				if ( !column->formula.isEmpty () )
-					sheet_item->setFormula ( column->formula, QString::number ( i_row ) );
-			}
+			setHorizontalHeaderItem ( static_cast<int>( i_col ), new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
 		}
-
-		if ( !mbTableIsList )
-			setHorizontalHeaderItem ( static_cast<int>(i_col), new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
-			
+		
 		uint colWidth ( column->width );
 		if ( colWidth == 0 )
 		{
@@ -174,7 +178,7 @@ void vmTableWidget::initTable ( const uint rows )
 				break;
 			}
 		}
-		setColumnWidth ( static_cast<int>(i_col), static_cast<int>(colWidth) );
+		setColumnWidth ( static_cast<int>( i_col ), static_cast<int>( colWidth ) );
 		++i_col;
 	}
 	while ( i_col < m_ncols );
@@ -700,10 +704,10 @@ void vmTableWidget::setRowData ( const spreadRow* s_row, const bool b_notify )
 
 void vmTableWidget::rowData ( const uint row, spreadRow* s_row ) const
 {
-	if ( static_cast<int>(row) < totalsRow () )
+	if ( static_cast<int>( row ) < totalsRow () )
 	{
 		uint i_col ( 0 );
-		s_row->row = static_cast<int>(row);
+		s_row->row = static_cast<int>( row );
 		s_row->field_value.clearButKeepMemory ();
 
 		for ( ; i_col < colCount (); ++i_col )
@@ -716,7 +720,7 @@ void vmTableWidget::cellContentChanged ( const vmTableItem* const item )
 	mTableChanged = true;
 	if ( mbKeepModRec )
 	{
-		const uint row ( static_cast<uint>(item->row ()) );
+		const uint row ( static_cast<uint>( item->row () ) );
 		uint insert_pos ( modifiedRows.count () ); // insert rows in crescent order
 		for ( int i ( static_cast<int>( modifiedRows.count () - 1 ) ); i >= 0; --i )
 		{
@@ -982,7 +986,7 @@ void vmTableWidget::setEditable ( const bool editable )
 
 	uint i_row ( 0 );
 	uint i_col ( 0 );
-	for ( ; static_cast<int>(i_row) < totalsRow (); ++i_row )
+	for ( ; static_cast<int>( i_row ) < totalsRow (); ++i_row )
 	{
 		for ( i_col = 0; i_col < colCount (); ++i_col )
 		{

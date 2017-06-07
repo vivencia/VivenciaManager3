@@ -18,14 +18,46 @@ static const TABLE_INFO generic_tinfo = {
 	#endif
 };
 
+DBRecord::st_Query& DBRecord::st_Query::operator= ( const st_Query& other )
+{
+	if ( this != &other )
+	{
+		search = other.search;
+		str_query = other.str_query;
+		field = other.field;
+		reset = other.reset;
+		forward = other.forward;
+		std::copy ( other.query, other.query, this->query );
+	}
+	return *this;
+}
+
 static inline int recordFieldsCompare_pod ( const RECORD_FIELD& rec1, const RECORD_FIELD& rec2 )
 {
 	return ::memcmp ( &rec1, &rec2, podBytes );
 }
 
-DBRecord::DBRecord ( const uint field_count )
+void db_rec_swap ( DBRecord& dbrec1, DBRecord& dbrec2 )
+{
+	using std::swap;
+	
+	swap ( dbrec1.t_info, dbrec2.t_info );
+	swap ( dbrec1.fld_count, dbrec2.fld_count );
+	swap ( dbrec1.mb_modified, dbrec2.mb_modified );
+	swap ( dbrec1.mb_synced, dbrec2.mb_synced );
+	swap ( dbrec1.mb_completerUpdated, dbrec2.mb_completerUpdated );
+	swap ( dbrec1.mListItem, dbrec2.mListItem );
+	swap ( dbrec1.stquery, dbrec2.stquery );
+	swap ( dbrec1.m_RECFIELDS, dbrec2.m_RECFIELDS );
+	swap ( dbrec1.helperFunction, dbrec2.helperFunction );
+	dbrec1.setAction ( dbrec2.action () );
+	dbrec2.setAction ( dbrec1.prevAction () );
+	swap ( dbrec1.m_prevaction, dbrec2.m_prevaction );
+}
+
+DBRecord::DBRecord ()
 	: t_info ( nullptr ), m_RECFIELDS ( nullptr ) , mListItem ( nullptr ), helperFunction ( nullptr ),
-	  fld_count ( field_count ), mb_modified ( false ), mb_synced ( true ),
+	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
 {
 	setAction ( ACTION_READ );
@@ -35,10 +67,21 @@ DBRecord::DBRecord ( const DBRecord& other )
 	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), mListItem ( nullptr ),helperFunction ( nullptr ),
 	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
-{
-	setAction ( ACTION_READ );
-	//if ( other != nullptr )
-		copy ( other );
+{	
+	t_info = other.t_info;
+	fld_count = other.fld_count;
+	mb_modified = other.mb_modified;
+	mb_synced = other.mb_synced;
+	mb_completerUpdated = other.mb_completerUpdated;
+	mListItem = other.mListItem;
+	stquery = other.stquery;
+	
+	std::copy ( other.m_RECFIELDS, other.m_RECFIELDS + fld_count, this->m_RECFIELDS );
+	std::copy ( other.helperFunction, other.helperFunction + fld_count, this->helperFunction );
+	
+	m_action = ACTION_NONE;
+	setAction ( other.m_action );
+	m_prevaction = other.m_prevaction;
 }
 
 DBRecord::~DBRecord () {}
@@ -61,37 +104,6 @@ bool DBRecord::operator== ( const DBRecord& other ) const
 		}
 	}
 	return false;
-}
-
-const DBRecord& DBRecord::operator= ( const DBRecord& other )
-{
-	if ( const_cast<DBRecord*>(this) != const_cast<DBRecord*>(&other) )
-	{
-		if ( t_info != other.t_info)
-			helperFunction = nullptr;
-		copy ( other );
-	}
-	return *this;
-}
-
-void DBRecord::copy ( const DBRecord& dbrec )
-{
-	t_info = dbrec.t_info;
-	fld_count = dbrec.fld_count;
-	mb_modified = dbrec.mb_modified;
-	mb_synced = dbrec.mb_synced;
-	mb_completerUpdated = dbrec.mb_completerUpdated;
-	m_action = dbrec.m_action;
-
-	for ( uint i ( 0 ); i < fld_count; ++i )
-	{
-		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_ACTUAL] = dbrec.m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_ACTUAL];
-		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_TEMP] = dbrec.m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_TEMP];
-		m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_ACTUAL] = dbrec.m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_ACTUAL];
-		m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_TEMP] = dbrec.m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_TEMP];
-		helperFunction[i] = dbrec.helperFunction[i];
-		m_RECFIELDS[i].modified = dbrec.m_RECFIELDS[i].modified;
-	}
 }
 
 void DBRecord::setHelperFunction ( const uint field, void ( *helperFunc ) ( const DBRecord* ) )

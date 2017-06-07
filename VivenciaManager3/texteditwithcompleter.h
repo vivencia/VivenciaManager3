@@ -47,7 +47,7 @@ public:
 	inline const QString& searchTerm () const { return mSearchTerm; }
 	
 	void replaceWord ( const int cursor_pos, const QString& word );
-	void selectFound ();
+	bool selectFound ( const int cursor_pos );
 	bool searchStart ( const QString& searchTerm );
 	void searchCancel ();
 	bool searchFirst ();
@@ -116,7 +116,7 @@ private:
 	vmLineEdit* searchField, *replaceField;
 
 	bool searchStart ();
-	void searchCancel ();
+	void searchCancel ( const bool b_reset_search );
 	bool searchNext ();
 	bool searchPrev ();
 

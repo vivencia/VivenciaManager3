@@ -120,7 +120,46 @@ static bool s_removeField ( QString& data, const uint field, uint& nfields, cons
 	return false;
 }
 
+void strrec_swap ( stringRecord& s_rec1, stringRecord& s_rec2 )
+{
+	using std::swap;
+	swap ( s_rec1.mData, s_rec2.mData );
+	swap ( s_rec1.mFields, s_rec2.mFields );
+	swap ( s_rec1.mFastIdx, s_rec2.mFastIdx );
+	swap ( s_rec1.mState, s_rec2.mState );
+	swap ( s_rec1.mCurValue, s_rec2.mCurValue );
+	swap ( s_rec1.record_sep, s_rec2.record_sep );
+}
+
+void strtable_swap ( stringTable& s_table1, stringTable& s_table2 )
+{
+	using std::swap;
+	swap ( s_table1.mRecords, s_table2.mRecords );
+	swap ( s_table1.nRecords, s_table2.nRecords );
+	swap ( s_table1.mFastIdx, s_table2.mFastIdx );
+	swap ( s_table1.mCurIdx, s_table2.mCurIdx );
+	swap ( s_table1.table_sep, s_table2.table_sep );
+	swap ( s_table1.tablesep_matcher, s_table2.tablesep_matcher );
+	strrec_swap ( s_table1.mRecord, s_table2.mRecord );
+	swap ( s_table1.mCurRecord, s_table2.mCurRecord );
+}
+
 //------------------------------------------------------RECORD-----------------------------------------------
+stringRecord::stringRecord ( const stringRecord& other )
+{
+	mData = other.mData;
+	mFields = other.mFields;
+	mFastIdx = other.mFastIdx;
+	mState = other.mState;
+	setFieldSeparationChar ( other.record_sep );
+}
+
+stringRecord::stringRecord ( const QString& str, const QChar& sep )
+{
+	setFieldSeparationChar ( sep );
+	fromString ( str );
+}
+
 bool stringRecord::isOK () const
 {
 	switch ( mState.state () )
@@ -420,6 +459,23 @@ bool stringRecord::moveToRec ( const uint rec ) const
 //------------------------------------------------------RECORD-----------------------------------------------
 
 //------------------------------------------------------TABLE------------------------------------------------
+stringTable::stringTable ( const stringTable& other )
+{
+	mRecords = other.mRecords;
+	nRecords = other.nRecords;
+	mFastIdx = other.mFastIdx;
+	mCurIdx = other.mCurIdx;
+	mRecord = other.mRecord;
+	mCurRecord = other.mCurRecord;
+	setRecordSeparationChar ( other.table_sep );
+}
+
+stringTable::stringTable ( const QString& str, const QChar& sep )
+{
+	setRecordSeparationChar ( sep );
+	fromString ( str );
+}
+
 bool stringTable::isOK () const
 {
 	return mRecords.endsWith ( table_sep );
@@ -427,13 +483,14 @@ bool stringTable::isOK () const
 
 void stringTable::fromString ( const QString& str )
 {
-	clear ();
 	if ( !str.isEmpty () )
 	{
 		mRecords = str;
 		if ( !mRecords.endsWith ( table_sep ) )
 			mRecords += table_sep;
-		nRecords = static_cast<uint>(mRecords.count ( table_sep ));
+		nRecords = static_cast<uint>( mRecords.count ( table_sep ) );
+		mFastIdx = -1;
+		mCurIdx = -1;
 	}
 }
 

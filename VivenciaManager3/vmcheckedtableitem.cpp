@@ -51,7 +51,8 @@ void vmCheckedTableItem::setCheckable ( const bool checkable )
 {
 	mbIsCheckable = checkable;
 	// repaint (), update (), qApp->flush (), qApp->processEvents () .. nothing works but this
-	parentWidget ()->resize ( parentWidget ()->width () + 1 , parentWidget ()->height () );
+	update ();
+	//parentWidget ()->resize ( parentWidget ()->width () + 1 , parentWidget ()->height () );
 }
 
 bool vmCheckedTableItem::isChecked ( const uint column ) const

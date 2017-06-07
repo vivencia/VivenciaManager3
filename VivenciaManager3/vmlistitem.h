@@ -43,10 +43,26 @@ class vmListItem : public vmTableItem
 
 friend class vmListWidget;
 
+friend void item_swap ( vmListItem& item1, vmListItem& item2 );
+
 public:
+	vmListItem ();
+	vmListItem ( const vmListItem& other );
 	explicit vmListItem ( const uint type_id, const uint nbadInputs = 0, bool* const badinputs_ptr = nullptr );
 	vmListItem ( const QString& label );
 	virtual ~vmListItem ();
+	
+	inline const vmListItem& operator= ( const vmListItem& item )
+	{
+		vmListItem temp ( item );
+		item_swap ( *this, temp );
+		return *this;
+	}
+	
+	inline vmListItem ( vmListItem&& other ) : vmListItem ()
+	{
+		item_swap ( *this, other );
+	}
 	
 	QString defaultStyleSheet () const override;
 	void highlight ( const VMColors vm_color, const QString& = QString::null ) override;
@@ -71,7 +87,7 @@ public:
 	void setAction ( const RECORD_ACTION action, const bool bSetDBRec = false, const bool bSelfOnly = false );
 	virtual void createDBRecord ();
 	virtual bool loadData ();
-	virtual void update ();
+	inline virtual void update () { setLabel ( text () ); }
 	virtual void relationActions ( vmListItem* = nullptr ) { ; }
 	void setRelatedItem ( const uint rel_idx, vmListItem* const item );
 	vmListItem* relatedItem ( const uint rel_idx ) const;
@@ -99,6 +115,7 @@ public:
 	inline void setLastRelation ( const uint relation ) { mLastRelation = static_cast<RELATED_LIST_ITEMS>(relation); }
 
 protected:
+	inline void setLabel ( const QString& text ) { setText ( text + actionSuffix[action()], false, false, false ); }
 	void changeAppearance ();
 	void deleteRelatedItem ( const uint rel_idx );
 
@@ -109,9 +126,7 @@ protected:
 	triStateType* searchFields;
 
 private:
-	vmListItem ( const vmListItem& );
 	vmListItem ( const QListWidgetItem& );
-	vmListItem& operator=( const vmListItem& );
 	vmListItem& operator=( const QListWidgetItem& );
 
 	vmListItem* item_related[20];
@@ -123,6 +138,8 @@ private:
 	int n_badInputs;
 	uint mTotal_badInputs;
 	bool mbSearchCreated, mbInit, mbSorted;
+	
+	static const QString actionSuffix[4];
 };
 
 class clientListItem : public vmListItem
@@ -211,6 +228,8 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
+	void updatePayCalendarItem ();
+	void updatePayExtraItems ( uint relation );
 	void relationActions ( vmListItem* subordinateItem = nullptr );
 
 private:
@@ -233,8 +252,8 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
-	void updateExtraItem ( const QString& bodyText );
-	void updateCalendarItem ();
+	void updateBuyExtraItem ( const QString& bodyText );
+	void updateBuyCalendarItem ();
 	void relationActions ( vmListItem* subordinateItem = nullptr );
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;

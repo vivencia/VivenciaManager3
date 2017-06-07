@@ -20,21 +20,21 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	btnSearchStart = new QToolButton;
 	btnSearchStart->setIcon ( ICON ( "search" ) );
 	btnSearchStart->setEnabled ( false );
-	connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } );
+	static_cast<void>( connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } ) );
 
 	btnSearchPrev = new QToolButton;
 	btnSearchPrev->setIcon ( ICON ( "arrow-left" ) );
 	btnSearchPrev->setEnabled ( false );
-	connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () { return searchPrev (); } );
+	static_cast<void>( connect ( btnSearchPrev, &QToolButton::clicked, this, [&] () { return searchPrev (); } ) );
 
 	btnSearchNext = new QToolButton;
 	btnSearchNext->setIcon ( ICON ( "arrow-right" ) );
 	btnSearchNext->setEnabled ( false );
-	connect ( btnSearchNext, &QToolButton::clicked, this, [&] () { return searchNext (); } );
+	static_cast<void>( connect ( btnSearchNext, &QToolButton::clicked, this, [&] () { return searchNext (); } ) );
 
 	btnSearchCancel = new QToolButton;
 	btnSearchCancel->setIcon ( ICON ( "cancel" ) );
-	connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return hide (); } );
+	static_cast<void>( connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return hide (); } ) );
 
 	QHBoxLayout* mLayout ( new QHBoxLayout );
 	mLayout->setSpacing( 2 );

@@ -26,12 +26,29 @@ class vmWidget
 {
 
 public:
+	
+	friend void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 );
+	
 	enum TEXT_TYPE { TT_TEXT = 0x1, TT_UPPERCASE = 0x2, TT_PHONE = 0x4, TT_NUMBER_PLUS_SYMBOL = 0x8,
 					 TT_PRICE = 0x10, TT_INTEGER = 0x20, TT_DOUBLE = 0x40
 				   };
 
+	vmWidget ();
+	vmWidget ( const vmWidget& other );
 	vmWidget ( const int type, const int subtype = -1, const int id = -1 );
-	//vmWidget ( QWidget* widget );
+	
+	inline vmWidget ( vmWidget&& other ) : vmWidget ()
+	{
+		vmwidget_swap ( *this, other );
+	}
+	
+	inline const vmWidget& operator= ( const vmWidget& t_item )
+	{
+		vmWidget temp ( t_item );
+		vmwidget_swap ( *this, temp );
+		return *this;
+	}
+	
 	virtual ~vmWidget ();
 
 	inline void setVmParent ( vmWidget* const parent ) { mParent = parent; }

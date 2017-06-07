@@ -1,9 +1,9 @@
 #ifndef DBSTATISTICS_H
 #define DBSTATISTICS_H
 
-#include "vivenciadb.h"
-
 #include <QObject>
+
+#include <functional>
 
 class textEditWithCompleter;
 class QVBoxLayout;
@@ -46,7 +46,7 @@ inline dbStatistics* DB_STATISTICS ()
 	return dbStatistics::s_instance;
 }
 
-class dbStatisticsWorker : public threadedDBOps
+class dbStatisticsWorker : public QObject
 {
 
 #ifdef USE_THREADS
@@ -75,6 +75,8 @@ private:
 	void clientsPerYear ( const bool b_start );
 	void activeClientsPerYear ();
 	void clientsPerCity ();
+	void countJobs ();
+	void jobPrices ();
 	
 #ifndef USE_THREADS
 	std::function<void( const QString& )> m_readyFunc;

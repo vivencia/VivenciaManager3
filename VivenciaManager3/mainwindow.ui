@@ -47,8 +47,8 @@
          <widget class="QToolButton" name="btnReportGenerator">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -67,8 +67,8 @@
          <widget class="QToolButton" name="btnBackupRestore">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -93,8 +93,8 @@
          <widget class="QToolButton" name="btnCalculator">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -119,8 +119,8 @@
          <widget class="QToolButton" name="btnServicesPrices">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -145,8 +145,8 @@
          <widget class="QToolButton" name="btnEstimates">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -168,8 +168,8 @@
          <widget class="QToolButton" name="btnCompanyPurchases">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -191,8 +191,8 @@
          <widget class="QToolButton" name="btnConfiguration">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -211,8 +211,8 @@
          <widget class="QToolButton" name="btnExitProgram">
           <property name="minimumSize">
            <size>
-            <width>0</width>
-            <height>0</height>
+            <width>24</width>
+            <height>24</height>
            </size>
           </property>
           <property name="toolTip">
@@ -560,7 +560,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>5</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -2595,6 +2595,12 @@ p, li { white-space: pre-wrap; }
              </item>
              <item row="6" column="0">
               <widget class="QLabel" name="lblClientPhones">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Telephones:</string>
                </property>
@@ -2602,6 +2608,12 @@ p, li { white-space: pre-wrap; }
              </item>
              <item row="6" column="1">
               <widget class="QLabel" name="lblClientEmail">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>30</height>
+                </size>
+               </property>
                <property name="text">
                 <string>e-mail/site:</string>
                </property>
@@ -3051,13 +3063,6 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0" colspan="6">
-                <widget class="vmLineEdit" name="txtJobProjectPath">
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
                <item row="6" column="0">
                 <widget class="vmLineEdit" name="txtJobPrice"/>
                </item>
@@ -3092,7 +3097,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="5" column="7">
+               <item row="5" column="6">
                 <widget class="QLabel" name="lblJobDateStart">
                  <property name="text">
                   <string>Begining:</string>
@@ -3135,32 +3140,10 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="6" column="7">
+               <item row="6" column="6">
                 <widget class="vmDateEdit" name="dteJobStart" native="true"/>
                </item>
-               <item row="1" column="11">
-                <widget class="vmLineEdit" name="txtJobID">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>0</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>60</width>
-                   <height>16777215</height>
-                  </size>
-                 </property>
-                 <property name="focusPolicy">
-                  <enum>Qt::ClickFocus</enum>
-                 </property>
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="11">
+               <item row="0" column="8">
                 <widget class="QLabel" name="lblJobID">
                  <property name="minimumSize">
                   <size>
@@ -3185,199 +3168,242 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="6" colspan="6">
-                <layout class="QHBoxLayout" name="horizontalLayout_11">
-                 <property name="spacing">
-                  <number>2</number>
-                 </property>
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <spacer name="horizontalSpacer_7">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="btnJobEditProjectPath">
-                   <property name="toolTip">
-                    <string>Edit project path</string>
-                   </property>
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                   <property name="icon">
-                    <iconset theme="fileopen">
-                     <normaloff>.</normaloff>.</iconset>
-                   </property>
-                   <property name="checkable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="Line" name="line_7">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="btnJobOpenFileFolder">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string>Open Job's folder with File Manager</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset theme="system-file-manager">
-                     <normaloff>.</normaloff>.</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="btnJobOpenDoc">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string>Open document for editing or viewing</string>
-                   </property>
-                   <property name="statusTip">
-                    <string>Abrir arquivo do projeto para edição - se existir</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset theme="x-office-document">
-                     <normaloff>.</normaloff>.</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="btnJobOpenXls">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string>Open Spreadsheet for editing or viewing</string>
-                   </property>
-                   <property name="statusTip">
-                    <string>Abrir arquivo de planilha do projeto - se houver</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset theme="x-office-spreadsheet">
-                     <normaloff>.</normaloff>.</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="btnJobOpenPdf">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
-                   <property name="toolTip">
-                    <string>View PDF</string>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset theme="okular">
-                     <normaloff>.</normaloff>.</iconset>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+               <item row="1" column="1" colspan="7">
+                <widget class="vmLineEdit" name="txtJobAddress"/>
                </item>
-               <item row="5" column="11">
+               <item row="3" column="8">
+                <widget class="QFrame" name="frame_9">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_18">
+                  <property name="spacing">
+                   <number>2</number>
+                  </property>
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_11">
+                    <property name="spacing">
+                     <number>2</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QToolButton" name="btnJobEditProjectPath">
+                      <property name="toolTip">
+                       <string>Edit project path</string>
+                      </property>
+                      <property name="text">
+                       <string>...</string>
+                      </property>
+                      <property name="icon">
+                       <iconset theme="fileopen">
+                        <normaloff>.</normaloff>.</iconset>
+                      </property>
+                      <property name="checkable">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="Line" name="line_7">
+                      <property name="orientation">
+                       <enum>Qt::Vertical</enum>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QToolButton" name="btnJobOpenFileFolder">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>Open Job's folder with File Manager</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset theme="system-file-manager">
+                        <normaloff>.</normaloff>.</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QToolButton" name="btnJobOpenDoc">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>Open document for editing or viewing</string>
+                      </property>
+                      <property name="statusTip">
+                       <string>Abrir arquivo do projeto para edição - se existir</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset theme="x-office-document">
+                        <normaloff>.</normaloff>.</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QToolButton" name="btnJobOpenXls">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>Open Spreadsheet for editing or viewing</string>
+                      </property>
+                      <property name="statusTip">
+                       <string>Abrir arquivo de planilha do projeto - se houver</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset theme="x-office-spreadsheet">
+                        <normaloff>.</normaloff>.</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QToolButton" name="btnJobOpenPdf">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>0</height>
+                       </size>
+                      </property>
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>16777215</height>
+                       </size>
+                      </property>
+                      <property name="toolTip">
+                       <string>View PDF</string>
+                      </property>
+                      <property name="text">
+                       <string/>
+                      </property>
+                      <property name="icon">
+                       <iconset theme="okular">
+                        <normaloff>.</normaloff>.</iconset>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item row="5" column="8">
                 <widget class="QLabel" name="lblJobDateEnd">
                  <property name="text">
                   <string>End:</string>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="11">
+               <item row="6" column="8">
                 <widget class="vmDateEdit" name="dteJobEnd" native="true"/>
                </item>
-               <item row="1" column="1" colspan="10">
-                <widget class="vmLineEdit" name="txtJobAddress"/>
+               <item row="3" column="0" colspan="8">
+                <widget class="vmLineEdit" name="txtJobProjectPath">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="8">
+                <widget class="vmLineEdit" name="txtJobID">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>80</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="focusPolicy">
+                  <enum>Qt::ClickFocus</enum>
+                 </property>
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
@@ -3446,7 +3472,7 @@ p, li { white-space: pre-wrap; }
           <property name="midLineWidth">
            <number>0</number>
           </property>
-          <layout class="QGridLayout" name="gLayoutJobExtraInfo" columnstretch="0,0,0,0,0,2">
+          <layout class="QGridLayout" name="gLayoutJobExtraInfo" columnstretch="0,0,0,1,0,0">
            <property name="leftMargin">
             <number>2</number>
            </property>
@@ -3462,6 +3488,285 @@ p, li { white-space: pre-wrap; }
            <property name="spacing">
             <number>2</number>
            </property>
+           <item row="6" column="0">
+            <widget class="QFrame" name="frmJobReportControls">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_13">
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>2</number>
+              </property>
+              <item>
+               <widget class="QToolButton" name="btnJobPrevDay">
+                <property name="toolTip">
+                 <string>Select previous day, if available</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-previous">
+                  <normaloff>.</normaloff>.</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="btnJobNextDay">
+                <property name="toolTip">
+                 <string>Select nect day, if available</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset theme="go-next">
+                  <normaloff>.</normaloff>.</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="vmDateEdit" name="dteJobAddDate" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="btnJobAddDay">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>Add another day to job. Set the desired date in the calendar beside this button</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources.qrc">
+                  <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="btnJobEditDay">
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="toolTip">
+                 <string>Change the current date for the selected day entry in the list. The date must not be in use by another day entry.</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources.qrc">
+                  <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="btnJobDelDay">
+                <property name="toolTip">
+                 <string>Remove the selected date from the list. While the change is not saved it is possible to undo this operation. Select the strikedthrough item from the list and press the button just next to this one.</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources.qrc">
+                  <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="btnJobCancelDelDay">
+                <property name="toolTip">
+                 <string>Deselect the strikedthrough item from the days list, canceling its removal. Only before saving the changes.</string>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+                <property name="icon">
+                 <iconset resource="resources.qrc">
+                  <normaloff>:/resources/cancel_remove.png</normaloff>:/resources/cancel_remove.png</iconset>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="vmLineEdit" name="txtJobWheather"/>
+           </item>
+           <item row="4" column="1">
+            <widget class="QGroupBox" name="grpJobTotalTime">
+             <property name="title">
+              <string>Total time:</string>
+             </property>
+             <property name="flat">
+              <bool>true</bool>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0" columnstretch="0,0">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetNoConstraint</enum>
+              </property>
+              <property name="leftMargin">
+               <number>2</number>
+              </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
+              <property name="rightMargin">
+               <number>2</number>
+              </property>
+              <property name="bottomMargin">
+               <number>2</number>
+              </property>
+              <property name="spacing">
+               <number>5</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="lblJobDayTime">
+                <property name="text">
+                 <string>Day:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="lblJobAllDaysTime">
+                <property name="text">
+                 <string>All days:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="vmLineEdit" name="txtJobTotalAllDaysTime">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="frame">
+                 <bool>false</bool>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="vmLineEdit" name="txtJobTotalDayTime">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="frame">
+                 <bool>false</bool>
+                </property>
+                <property name="readOnly">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="9" column="0" colspan="6">
+            <layout class="QHBoxLayout" name="hLayoutImgViewer" stretch="1,2,1">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="DB_Image" name="jobImageViewer">
+               <property name="minimumSize">
+                <size>
+                 <width>300</width>
+                 <height>300</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+               </property>
+               <property name="lineWidth">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item row="1" column="1">
+            <widget class="vmTimeEdit" name="timeJobStart"/>
+           </item>
            <item row="8" column="0" colspan="6">
             <widget class="QFrame" name="frmJobPicturesControls">
              <property name="frameShape">
@@ -3677,96 +3982,36 @@ p, li { white-space: pre-wrap; }
              </layout>
             </widget>
            </item>
-           <item row="4" column="1">
-            <widget class="QGroupBox" name="grpJobTotalTime">
-             <property name="title">
-              <string>Total time:</string>
+           <item row="0" column="4">
+            <widget class="QToolButton" name="btnJobMachines">
+             <property name="toolTip">
+              <string>Machines use</string>
              </property>
-             <property name="flat">
-              <bool>true</bool>
+             <property name="text">
+              <string>...</string>
              </property>
-             <layout class="QGridLayout" name="gridLayout_4" rowstretch="0,0,0" columnstretch="0,0">
-              <property name="sizeConstraint">
-               <enum>QLayout::SetNoConstraint</enum>
-              </property>
-              <property name="leftMargin">
-               <number>2</number>
-              </property>
-              <property name="topMargin">
-               <number>2</number>
-              </property>
-              <property name="rightMargin">
-               <number>2</number>
-              </property>
-              <property name="bottomMargin">
-               <number>2</number>
-              </property>
-              <property name="spacing">
-               <number>5</number>
-              </property>
-              <item row="0" column="0">
-               <widget class="QLabel" name="lblJobDayTime">
-                <property name="text">
-                 <string>Day:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="lblJobAllDaysTime">
-                <property name="text">
-                 <string>All days:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="vmLineEdit" name="txtJobTotalAllDaysTime">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>150</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="frame">
-                 <bool>false</bool>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="vmLineEdit" name="txtJobTotalDayTime">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>150</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="frame">
-                 <bool>false</bool>
-                </property>
-                <property name="readOnly">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <property name="icon">
+              <iconset resource="resources.qrc">
+               <normaloff>:/resources/job_machines.png</normaloff>:/resources/job_machines.png</iconset>
+             </property>
             </widget>
            </item>
-           <item row="5" column="1">
-            <widget class="QLabel" name="lblWeatherConditions">
+           <item row="7" column="1" colspan="5">
+            <widget class="vmLineEdit" name="txtJobPicturesPath">
+             <property name="frame">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="lblJobWorkDays">
+             <property name="text">
+              <string>Worked days list:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="lblJobStartTime">
              <property name="maximumSize">
               <size>
                <width>16777215</width>
@@ -3774,7 +4019,14 @@ p, li { white-space: pre-wrap; }
               </size>
              </property>
              <property name="text">
-              <string>Weather Conditions:</string>
+              <string>Start time:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="lblJobReport">
+             <property name="text">
+              <string>Report:</string>
              </property>
             </widget>
            </item>
@@ -3795,245 +4047,16 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="lblJobReport">
-             <property name="text">
-              <string>Report:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="1" colspan="5">
-            <widget class="vmLineEdit" name="txtJobPicturesPath">
-             <property name="frame">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="1">
-            <widget class="vmLineEdit" name="txtJobWheather"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="lblJobStartTime">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Start time:</string>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="1">
             <widget class="vmTimeEdit" name="timeJobEnd"/>
            </item>
-           <item row="9" column="0" colspan="6">
-            <layout class="QHBoxLayout" name="hLayoutImgViewer" stretch="1,2,1">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <spacer name="horizontalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="DB_Image" name="jobImageViewer">
-               <property name="minimumSize">
-                <size>
-                 <width>300</width>
-                 <height>300</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="lineWidth">
-                <number>2</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_4">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item row="6" column="0">
-            <widget class="QFrame" name="frmJobReportControls">
-             <property name="frameShape">
-              <enum>QFrame::NoFrame</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Plain</enum>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_13">
-              <property name="spacing">
-               <number>2</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>2</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>2</number>
-              </property>
-              <item>
-               <widget class="QToolButton" name="btnJobPrevDay">
-                <property name="toolTip">
-                 <string>Select previous day, if available</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset theme="go-previous">
-                  <normaloff>.</normaloff>.</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnJobNextDay">
-                <property name="toolTip">
-                 <string>Select nect day, if available</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset theme="go-next">
-                  <normaloff>.</normaloff>.</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="vmDateEdit" name="dteJobAddDate" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnJobAddDay">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Add another day to job. Set the desired date in the calendar beside this button</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/browse-controls/add.png</normaloff>:/resources/browse-controls/add.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnJobEditDay">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Change the current date for the selected day entry in the list. The date must not be in use by another day entry.</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/browse-controls/edit.png</normaloff>:/resources/browse-controls/edit.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnJobDelDay">
-                <property name="toolTip">
-                 <string>Remove the selected date from the list. While the change is not saved it is possible to undo this operation. Select the strikedthrough item from the list and press the button just next to this one.</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/browse-controls/remove.png</normaloff>:/resources/browse-controls/remove.png</iconset>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnJobCancelDelDay">
-                <property name="toolTip">
-                 <string>Deselect the strikedthrough item from the days list, canceling its removal. Only before saving the changes.</string>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/cancel_remove.png</normaloff>:/resources/cancel_remove.png</iconset>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="vmTimeEdit" name="timeJobStart"/>
-           </item>
-           <item row="7" column="0">
-            <widget class="QLabel" name="lblJobPictures">
-             <property name="text">
-              <string>Job pictures path:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="4">
-            <widget class="QToolButton" name="btnJobMachines">
-             <property name="toolTip">
-              <string>Machines use</string>
-             </property>
-             <property name="text">
-              <string>...</string>
-             </property>
-             <property name="icon">
-              <iconset resource="resources.qrc">
-               <normaloff>:/resources/job_machines.png</normaloff>:/resources/job_machines.png</iconset>
+           <item row="1" column="0" rowspan="5">
+            <widget class="vmListWidget" name="lstJobDayReport">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
              </property>
             </widget>
            </item>
@@ -4047,6 +4070,26 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="text">
               <string>End time:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="0">
+            <widget class="QLabel" name="lblJobPictures">
+             <property name="text">
+              <string>Job pictures path:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="1">
+            <widget class="QLabel" name="lblWeatherConditions">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Weather Conditions:</string>
              </property>
             </widget>
            </item>
@@ -4065,30 +4108,13 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>600</width>
+                 <width>300</width>
                  <height>0</height>
                 </size>
                </property>
               </widget>
              </item>
             </layout>
-           </item>
-           <item row="1" column="0" rowspan="5">
-            <widget class="vmListWidget" name="lstJobDayReport">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="lblJobWorkDays">
-             <property name="text">
-              <string>Worked days list:</string>
-             </property>
-            </widget>
            </item>
           </layout>
          </widget>
@@ -4926,8 +4952,11 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnJobDelDay</tabstop>
   <tabstop>btnJobCancelDelDay</tabstop>
   <tabstop>timeJobStart</tabstop>
+  <tabstop>timeJobEnd</tabstop>
   <tabstop>txtJobTotalDayTime</tabstop>
   <tabstop>txtJobTotalAllDaysTime</tabstop>
+  <tabstop>txtJobWheather</tabstop>
+  <tabstop>txtJobReport</tabstop>
   <tabstop>btnJobMachines</tabstop>
   <tabstop>btnJobSeparateReportWindow</tabstop>
   <tabstop>txtJobPicturesPath</tabstop>

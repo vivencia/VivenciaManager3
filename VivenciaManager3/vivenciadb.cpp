@@ -34,7 +34,14 @@
 #include <QtSql/QSqlResult>
 #include <QStringMatcher>
 #include <QTextStream>
+
+#ifdef USE_THREADS
 #include <QThread>
+
+#define PROCESS_EVENTS if ( ( row % 100 ) == 0 ) qApp->processEvents ();
+#else
+#define PROCESS_EVENTS
+#endif
 
 VivenciaDB* VivenciaDB::s_instance ( nullptr );
 
@@ -510,15 +517,19 @@ uint VivenciaDB::recordCount ( const TABLE_INFO* __restrict t_info ) const
 
 void VivenciaDB::populateTable ( const DBRecord* db_rec, vmTableWidget* table ) const
 {
-	QThread* workerThread ( new QThread );
-	threadedDBOps* worker ( new threadedDBOps );
+	threadedDBOps* worker ( new threadedDBOps () );
 	
+#ifdef USE_THREADS
+	QThread* workerThread ( new QThread );
 	worker->setCallbackForFinished ( [&] () { workerThread->quit (); return worker->deleteLater (); } );
 	worker->moveToThread ( workerThread );
 	worker->connect ( workerThread, &QThread::started, worker, [&,db_rec,table] () { return worker->populateTable ( db_rec, table ); } );
 	worker->connect ( workerThread, &QThread::finished, workerThread, [&] () { return workerThread->deleteLater(); } );
-	
-	workerThread->start ();
+	workerThread->start();
+#else
+	worker->populateTable ( db_rec, table );
+	delete worker;
+#endif
 }
 //-----------------------------------------CREATE-DESTROY-MODIFY-------------------------------------
 
@@ -1133,7 +1144,12 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename, Backup
 }
 //-----------------------------------------IMPORT-EXPORT--------------------------------------------
 
-threadedDBOps::threadedDBOps () : QObject ( nullptr ), m_finishedFunc ( nullptr ) {}
+threadedDBOps::threadedDBOps () : 
+#ifdef USE_THREADS
+	QObject (), 
+#endif
+	m_finishedFunc ( nullptr ) {}
+
 threadedDBOps::~threadedDBOps () {}
 
 void threadedDBOps::populateTable ( const DBRecord* db_rec, vmTableWidget* table )
@@ -1151,9 +1167,8 @@ void threadedDBOps::populateTable ( const DBRecord* db_rec, vmTableWidget* table
 		for ( uint col ( 0 ); col < db_rec->t_info->field_count; col++)
 			table->sheetItem ( row, col )->setText ( query.value ( static_cast<int>( col ) ).toString (), false, false );
 		if ( static_cast<int>( ++row ) >= table->totalsRow () )
-				table->appendRow ();
-		if ( ( row % 100 ) == 0 ) // process pending events every 100 rows
-			qApp->processEvents ();
+			table->appendRow ();
+		PROCESS_EVENTS // process pending events every 100 rows
 	} while ( query.next () );
 
 	if ( m_finishedFunc )

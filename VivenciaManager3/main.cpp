@@ -17,6 +17,12 @@ start = clock();
 finish = clock();
 qDebug() << ( (finish - start) );
 */
+
+stringRecord result ()
+{
+	return stringRecord ( "datenfeld1" + record_separator + "datenfeld2" + record_separator + "datenfeld3" + record_separator + "datenfeld4" + record_separator );
+}
+
 int main ( int argc, char *argv[] )
 {
 	QApplication app ( argc, argv );

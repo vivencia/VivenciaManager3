@@ -287,8 +287,11 @@ void suppliersDlg::contactsDel ( const int idx, const vmWidget* const sender )
 	}
 }
 
-void suppliersDlg::displaySupplier ( const QString& supName )
+void suppliersDlg::displaySupplier ( const QString& supName, const bool b_showdlg )
 {
+	if ( b_showdlg )
+		show ();
+
 	if  ( isVisible () )
 	{
 		if ( supName != txtSupName->text () )
@@ -368,15 +371,6 @@ void suppliersDlg::btnCopyAllToEditorClicked ()
 	}
 }
 
-void suppliersDlg::showDialog ()
-{
-	if ( !isVisible () )
-	{
-		retrieveInfo ();
-		show ();
-	}
-}
-
 void suppliersDlg::hideDialog ()
 {
 	if ( m_bEditing )
@@ -390,7 +384,7 @@ void suppliersDlg::showSearchResult ( vmListItem* item, const bool bshow )
 	{
 		if ( supRec->readRecord ( item->dbRecID () ) )
 		{
-			showDialog ();
+			displaySupplier ( recStrValue ( supRec, FLD_SUPPLIER_NAME ), true );
 		}
 	}
 	for ( uint i ( 0 ); i < SUPPLIER_FIELD_COUNT; ++i )

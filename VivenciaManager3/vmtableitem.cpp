@@ -6,6 +6,30 @@
 
 static const QString SUM ( QStringLiteral ( "sum" ) );
 
+void table_item_swap ( vmTableItem& t_item1, vmTableItem& t_item2 )
+{
+	vmwidget_swap ( static_cast<vmWidget&>( t_item1 ), static_cast<vmWidget&>( t_item2 ) );
+	
+	using std::swap;
+	swap ( t_item1.m_wtype, t_item2.m_wtype );
+	swap ( t_item1.m_btype, t_item2.m_btype );
+	swap ( t_item1.mcompleter_type, t_item2.mcompleter_type );
+	swap ( t_item1.mb_hasFormula, t_item2.mb_hasFormula );
+	swap ( t_item1.mb_formulaOverride, t_item2.mb_formulaOverride );
+	swap ( t_item1.mb_customFormula, t_item2.mb_customFormula );
+	swap ( t_item1.mb_CellAltered, t_item2.mb_CellAltered );
+	swap ( t_item1.mStr_Formula, t_item2.mStr_Formula );
+	swap ( t_item1.mStr_FormulaTemplate, t_item2.mStr_FormulaTemplate );
+	swap ( t_item1.mStrOp, t_item2.mStrOp );
+	swap ( t_item1.mDefaultValue, t_item2.mDefaultValue );
+	swap ( t_item1.mCache, t_item2.mCache );
+	swap ( t_item1.mprev_datacache, t_item2.mprev_datacache );
+	swap ( t_item1.mBackupData_cache, t_item2.mBackupData_cache );
+	swap ( t_item1.m_table, t_item2.m_table );
+	PointersList<vmTableItem*>::vmlist_swap ( t_item1.m_targets, t_item2.m_targets );
+	swap ( t_item1.m_widget, t_item2.m_widget );
+}
+
 static void decode_pos ( const QString& pos, int* const row, int* const col )
 {
 	if ( pos.isEmpty () )
@@ -20,20 +44,54 @@ static void decode_pos ( const QString& pos, int* const row, int* const col )
 	}
 }
 
-vmTableItem::vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
-						   const vmLineEdit::TEXT_TYPE ttype, const QString& text, const vmTableWidget* table )
-	: QTableWidgetItem ( text ), vmWidget ( WT_TABLE_ITEM ),
-	  m_wtype ( wtype ), m_texttype ( ttype ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ), mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
-	  mb_CellAltered ( false ), mDefaultValue ( text ), mCache ( text ), m_table ( const_cast<vmTableWidget*> ( table ) ),
+vmTableItem::vmTableItem ()
+	: QTableWidgetItem (), vmWidget ( WT_TABLE_ITEM ),
+	  m_wtype ( WT_WIDGET_UNKNOWN ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ), mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
+	  mb_CellAltered ( false ), mDefaultValue (), mCache (), m_table ( nullptr ),
 	  m_targets ( 4 ), m_widget ( nullptr )
 {}
 
+vmTableItem::vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
+						   const vmLineEdit::TEXT_TYPE ttype, const QString& text, const vmTableWidget* table )
+	: vmTableItem ()
+{
+	setWidgetType ( wtype );
+	setTextType ( ttype );
+	setDefaultValue ( text );
+	setText ( text, false, false, false );
+	//QTableWidgetItem::setText ( text );
+	m_table = const_cast<vmTableWidget*>( table );
+}
+
 vmTableItem::vmTableItem ( const QString& text )
-	: QTableWidgetItem ( text ), vmWidget ( WT_LISTITEM ),
-	  m_wtype ( WT_WIDGET_UNKNOWN ), m_texttype ( vmLineEdit::TT_TEXT ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ), mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
-	  mb_CellAltered ( false ), mDefaultValue ( text ), mCache ( text ), m_table ( nullptr ),
-	  m_targets ( 0 ), m_widget ( nullptr )
-{}
+	: vmTableItem ()
+{
+	setText	( text, false, false, false );
+	setDefaultValue ( text );
+	setTextType ( vmLineEdit::TT_TEXT );
+}
+
+vmTableItem::vmTableItem ( const vmTableItem& t_item )
+	: vmTableItem ()
+{
+	m_wtype = t_item.m_wtype;
+	m_btype = t_item.m_btype;
+	mcompleter_type = t_item.mcompleter_type;
+	mb_hasFormula = t_item.mb_hasFormula;
+	mb_formulaOverride = t_item.mb_formulaOverride;
+	mb_customFormula = t_item.mb_customFormula;
+	mb_CellAltered = t_item.mb_CellAltered;
+	mStr_Formula = t_item.mStr_Formula;
+	mStr_FormulaTemplate = t_item.mStr_FormulaTemplate;
+	mStrOp = t_item.mStrOp;
+	mDefaultValue = t_item.mDefaultValue;
+	mCache = t_item.mCache;
+	mprev_datacache = t_item.mprev_datacache;
+	mBackupData_cache = t_item.mBackupData_cache;
+	m_table = t_item.m_table;
+	m_targets = t_item.m_targets;
+	m_widget = t_item.m_widget;
+}
 
 vmTableItem::~vmTableItem () {}
 
@@ -117,7 +175,7 @@ static VM_NUMBER_TYPE textTypeToNbrType ( const vmLineEdit::TEXT_TYPE tt )
 
 vmNumber vmTableItem::number ( const bool bCurText ) const
 {
-	if ( m_texttype != vmLineEdit::TT_TEXT )
+	if ( textType () != vmLineEdit::TT_TEXT )
 		return vmNumber ( bCurText ? text () : originalText (), textTypeToNbrType ( textType () ), 1 );
 	return vmNumber::emptyNumber;
 }

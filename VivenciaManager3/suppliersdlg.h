@@ -22,9 +22,8 @@ friend class VivenciaDB;
 public:
 	virtual ~suppliersDlg ();
 
-	void displaySupplier ( const QString& supName );
+	void displaySupplier ( const QString& supName, const bool b_showdlg );
 	static void supplierInfo ( const QString& name, QString& info );
-	void showDialog ();
 	void hideDialog ();
 	void showSearchResult ( vmListItem* item, const bool bshow );
 

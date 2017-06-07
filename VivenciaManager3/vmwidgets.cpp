@@ -285,10 +285,10 @@ QString vmDateEdit::defaultStyleSheet () const
 
 void vmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 {
-		mDateEdit->setDate ( date, b_notify );
+	mDateEdit->setDate ( date, b_notify );
 }
 
-const QDate vmDateEdit::date() const
+const QDate vmDateEdit::date () const
 {
 	return mDateEdit->date ();
 }
@@ -302,10 +302,10 @@ void vmDateEdit::setEditable ( const bool editable )
 
 void vmDateEdit::contextMenuRequested ()
 {
-	disconnect ( menuDateButtons, nullptr, nullptr, nullptr );
+	static_cast<void>( disconnect ( menuDateButtons, nullptr, nullptr, nullptr ) );
 	mButton->setMenu ( menuDateButtons );
-		connect ( menuDateButtons, &QMenu::triggered, this, [&] ( QAction* action ) {
-				return execDateButtonsMenu ( static_cast<vmAction*> ( action ), this->mDateEdit ); } );
+	static_cast<void>( connect ( menuDateButtons, &QMenu::triggered, this, [&] ( QAction* action ) {
+		return execDateButtonsMenu ( static_cast<vmAction*> ( action ), this->mDateEdit ); } ) );
 	mButton->showMenu ();
 }
 
@@ -313,13 +313,13 @@ void vmDateEdit::setCallbackForContextMenu
 ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
 {
 	vmWidget::setCallbackForContextMenu ( func );
-	connect ( mDateEdit, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-			return showContextMenu ( pos ); } );
+	static_cast<void>( connect ( mDateEdit, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
+		return showContextMenu ( pos ); } ) );
 }
 
 void vmDateEdit::execDateButtonsMenu ( const vmAction* const action, pvmDateEdit* dte )
 {
-		dte->setDate ( vmNumber ( action->internalData ().toDate () ), true );
+	dte->setDate ( vmNumber ( action->internalData ().toDate () ), true );
 }
 
 void vmDateEdit::createDateButtonsMenu ( QWidget* parent )
@@ -328,17 +328,17 @@ void vmDateEdit::createDateButtonsMenu ( QWidget* parent )
 	vmAction* dateAction ( nullptr );
 
 	vmNumber date ( vmNumber::currentDate );
-		dateAction = new vmAction ( 0, TR_FUNC ( "Today" ), parent );
+	dateAction = new vmAction ( 0, TR_FUNC ( "Today" ), parent );
 	dateAction->setInternalData ( date.toQDate () );
 	menuDateButtons->addAction ( dateAction );
 
 	date.setDay ( -1, true );
-		dateAction = new vmAction ( 1, TR_FUNC ( "Yesterday" ), parent );
+	dateAction = new vmAction ( 1, TR_FUNC ( "Yesterday" ), parent );
 	dateAction->setInternalData ( date.toQDate () );
 	menuDateButtons->addAction ( dateAction );
 
 	date.setDay ( +2, true );
-		dateAction = new vmAction ( 1, TR_FUNC ( "Tomorrow" ), parent );
+	dateAction = new vmAction ( 1, TR_FUNC ( "Tomorrow" ), parent );
 	dateAction->setInternalData ( date.toQDate () );
 	menuDateButtons->addAction ( dateAction );
 
@@ -557,7 +557,7 @@ void vmLineEdit::setText ( const QString& text, const bool b_notify )
 		QLineEdit::setText ( text );
 
 	setToolTip ( isEditable () ? emptyString : QLineEdit::text () );
-		setCursorPosition ( isEditable () ? QLineEdit::text ().count () - 1 : 0 );
+	setCursorPosition ( isEditable () ? QLineEdit::text ().count () - 1 : 0 );
 	if ( text != mCurrentText )
 	{
 		if ( b_notify && contentsAltered_func )
@@ -639,7 +639,7 @@ void vmLineEdit::keyPressEvent ( QKeyEvent* e )
 			case Qt::Key_F3:
 			case Qt::Key_F4:
 			case Qt::Key_Tab:
-								if ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () )
+				if ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () )
 				{
 					e->ignore ();
 					return; // let the completer do its default behavior
@@ -993,7 +993,6 @@ void vmComboBox::setCallbackForContextMenu ( const std::function<void ( const QP
 
 void vmComboBox::keyPressEvent ( QKeyEvent *e )
 {
-	DBG_OUT ( "vmComboBox::keyPressEvent", true, true );
 	if ( vmWidget::isEditable () )
 	{
 		switch ( e->key () )
@@ -1002,14 +1001,10 @@ void vmComboBox::keyPressEvent ( QKeyEvent *e )
 			case Qt::Key_Return:
 				if ( !completer () || !completer ()->popup () || !completer ()->popup ()->isVisible () )
 				{
-										if ( !mbKeyEnterPressedOnce && keyEnter_func )
-					{
-												DBG_OUT ( "!mbKeyEnterPressedOnce", true, false )
+					if ( !mbKeyEnterPressedOnce && keyEnter_func )
 						keyEnter_func ();
-										}
 					else
 					{
-												DBG_OUT ( "mbKeyEnterPressedOnce", true, false )
 						if ( keypressed_func )
 							keypressed_func ( e, this );
 					}
@@ -1055,10 +1050,7 @@ void vmComboBox::focusInEvent ( QFocusEvent* e )
 void vmComboBox::focusOutEvent ( QFocusEvent* e )
 {
 	if ( vmWidget::isEditable () )
-	{
-		qDebug () << "combo focus out";
 		QComboBox::focusOutEvent ( e );
-	}
 	else
 		e->ignore ();
 }

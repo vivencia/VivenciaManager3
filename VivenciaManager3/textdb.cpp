@@ -501,46 +501,48 @@ void dataFile::insertRecord ( const int pos, const stringRecord& rec )
 {
 	if ( pos >= 0 )
 	{
-		recData.insertRecord ( static_cast<uint>(pos), rec );
-		if ( rec.toString ().count () > static_cast<int>(m_buffersize) )
-			m_buffersize = static_cast<uint>(rec.toString ().count () + 1);
+		recData.insertRecord ( static_cast<uint>( pos ), rec );
+		if ( rec.toString ().count () > static_cast<int>( m_buffersize ) )
+			m_buffersize = static_cast<uint>( rec.toString ().count () + 1 );
 		m_needsaving = true;
 	}
 }
 
 void dataFile::changeRecord ( const int pos, const stringRecord& rec )
 {
-	if ( pos >= 0 && pos < static_cast<int>(recData.countRecords ()) )
+	if ( pos >= 0 && pos < static_cast<int>( recData.countRecords () ) )
 	{
-		recData.changeRecord ( static_cast<uint>(pos), rec );
+		recData.changeRecord ( static_cast<uint>( pos ), rec );
 		if ( rec.toString ().count () > static_cast<int>(m_buffersize) )
-			m_buffersize = static_cast<uint>(rec.toString ().count () + 1);
+			m_buffersize = static_cast<uint>( rec.toString ().count () + 1 );
 		m_needsaving = true;
 	}
 }
 
-void dataFile::deleteRecord ( const int pos )
+bool dataFile::deleteRecord( const int pos )
 {
-	if ( pos >= 0 && static_cast<uint>(pos) < recData.countRecords () )
+	if ( pos >= 0 && static_cast<uint>( pos ) < recData.countRecords () )
 	{
 		recData.removeRecord ( static_cast<uint>(pos) );
 		m_needsaving = true;
+		return true;
 	}
+	return false;
 }
 
 void dataFile::appendRecord ( const stringRecord& rec )
 {
 	recData.fastAppendRecord ( rec );
-	if ( rec.toString ().count () > static_cast<int>(m_buffersize) )
-		m_buffersize = static_cast<uint>(rec.toString ().count () + 1);
+	if ( rec.toString ().count () > static_cast<int>( m_buffersize ) )
+		m_buffersize = static_cast<uint>( rec.toString ().count () + 1 );
 	m_needsaving = true;
 }
 
 bool dataFile::getRecord ( stringRecord& rec, const int pos ) const
 {
-	if ( pos >= 0 && static_cast<uint>(pos) < recData.countRecords () )
+	if ( pos >= 0 && static_cast<uint>( pos ) < recData.countRecords () )
 	{
-		rec = recData.readRecord ( static_cast<uint>(pos) );
+		rec = recData.readRecord ( static_cast<uint>( pos ) );
 		return true;
 	}
 	return false;
@@ -551,7 +553,7 @@ bool dataFile::getRecord ( stringRecord& rec, const QString& value, const uint f
 	const int row ( recData.findRecordRowByFieldValue ( value, field ) );
 	if ( row >= 0 )
 	{
-		rec = recData.readRecord ( static_cast<uint>(row) );
+		rec = recData.readRecord ( static_cast<uint>( row ) );
 		return rec.isOK ();
 	}
 	else
@@ -580,7 +582,7 @@ bool dataFile::writeData ()
 	if ( recData.isOK () )
 	{
 		const QByteArray data ( recData.toString ().toUtf8() );
-		written = m_file.write ( data, data.size () );
+		written = m_file.write ( data, static_cast<qint64>( data.size () ) );
 	}
 	return ( written > 0 );
 }

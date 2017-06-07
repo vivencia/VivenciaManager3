@@ -17,11 +17,29 @@ class vmTableItem : public QTableWidgetItem, public vmWidget
 {
 
 public:
+	friend void table_item_swap ( vmTableItem& t_item1, vmTableItem& t_item2 );
+
+	vmTableItem ();
+	
 	explicit vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
 						   const vmLineEdit::TEXT_TYPE ttype,
 						   const QString& text, const vmTableWidget* table );
 
-	vmTableItem ( const QString& text = QString::null ); // Simple item. No widgets. Not editable.
+	vmTableItem ( const QString& text ); // Simple item. No widgets. Not editable.
+	vmTableItem ( const vmTableItem& t_item );
+	
+	inline vmTableItem ( vmTableItem&& other ) : vmTableItem ()
+	{
+		table_item_swap ( *this, other );
+	}
+	
+	inline const vmTableItem& operator= ( const vmTableItem& t_item )
+	{
+		vmTableItem temp ( t_item );
+		table_item_swap ( *this, temp );
+		return *this;
+	}
+	
 	virtual ~vmTableItem ();
 	
 	inline vmTableWidget* table () const { return m_table; }
@@ -82,9 +100,6 @@ public:
 	inline void setWidgetType ( const PREDEFINED_WIDGET_TYPES wtype ) { m_wtype = wtype; }
 	inline PREDEFINED_WIDGET_TYPES widgetType () const { return m_wtype; }
 
-	inline void setTextType ( const vmWidget::TEXT_TYPE ttype ) { m_texttype = ttype; }
-	inline vmWidget::TEXT_TYPE textType () const { return m_texttype; }
-
 	inline void setButtonType ( const vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE btype ) { m_btype = btype; }
 	inline vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE buttonType () const { return m_btype; }
 
@@ -92,7 +107,6 @@ public:
 	
 private:
 	PREDEFINED_WIDGET_TYPES m_wtype;
-	vmWidget::TEXT_TYPE m_texttype;
 	vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE m_btype;
 	vmCompleters::COMPLETER_CATEGORIES mcompleter_type;
 

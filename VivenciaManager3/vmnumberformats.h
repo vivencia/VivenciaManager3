@@ -29,7 +29,10 @@ class vmNumber
 		VM_IDX_TENS = 0, VM_IDX_CENTS = 1, VM_IDX_STRFORMAT = 4
 	};
 
+	friend void vm_swap ( vmNumber& n1, vmNumber& n2 );
+	
 public:
+	
 	inline vmNumber () : m_type ( VMNT_UNSET ), mb_cached ( false ), mb_valid ( false ) {
 		for ( unsigned int i ( 0 ); i < 5; ++i ) nbr_part[i] = nbr_upart[i] = 0;
 	}
@@ -48,11 +51,23 @@ public:
 	inline explicit vmNumber ( const QTime& time ) {
 		fromQTime ( time );
 	}
-	inline vmNumber ( const vmNumber& vmnumber ) {
-		copy ( *this, vmnumber );
+	
+	vmNumber ( const QString& str_number, const VM_NUMBER_TYPE type, const int format = -1 );
+	vmNumber ( const vmNumber& other );
+
+	inline const vmNumber& operator= ( const vmNumber& vmnumber )
+	{
+		vmNumber temp ( vmnumber );
+		vm_swap ( *this, temp );
+		return *this;
+	}
+	
+	inline vmNumber ( vmNumber&& other ) : vmNumber ()
+	{
+		vm_swap ( *this, other );
 	}
 
-	vmNumber ( const QString& str_number, const VM_NUMBER_TYPE type, const int format = -1 );
+	inline ~vmNumber () {}
 
 	void clear ( const bool b_unset_type = true );
 	inline VM_NUMBER_TYPE type () const {
@@ -240,7 +255,6 @@ public:
 	//operators are added as needed//
 
 	// These functions may change the type of the number
-	const vmNumber& operator= ( const vmNumber& vmnumber );
 	vmNumber& operator= ( const QDate& date );
 	vmNumber& operator= ( const int n );
 	vmNumber& operator= ( const unsigned int n );
@@ -274,7 +288,6 @@ public:
 
 private:
 	QString useCalc ( const vmNumber& n1, const vmNumber& res, const QString& op ) const;
-	static void copy ( vmNumber& dest, const vmNumber& src );
 	void fixDate ();
 	bool isDate ( const QString& str );
 	void makeCachedStringForPhone () const;

@@ -32,7 +32,7 @@ static bool bEnableStatus[4] = { false };
 companyPurchasesUI::companyPurchasesUI ( QWidget* parent )
 	: QDialog ( parent ), ui ( new Ui::companyPurchasesUI () ),
 	  mbSearchIsOn ( false ), cp_rec ( new companyPurchases ( true ) ), widgetList ( INVENTORY_FIELD_COUNT + 1 ),
-	  mFoundFields ( 5 )
+	  mFoundFields ( 0, 5 )
 {
 	ui->setupUi ( this );
 	setupUI ();
@@ -161,7 +161,7 @@ void companyPurchasesUI::setupUI ()
 	ui->tableItems->setCallbackForRowRemoved ( [&] ( const uint row ) {
 			return tableRowRemoved ( row ); } );
 
-	static_cast<void>( vmTableWidget::createPayHistoryTable ( ui->tablePayments ) );
+	static_cast<void>( vmTableWidget::createPayHistoryTable ( ui->tablePayments, this, PHR_METHOD ) );
 	saveWidget ( ui->tablePayments, FLD_CP_PAY_REPORT );
 	ui->tablePayments->setParentLayout ( ui->layoutCPTable );
 	ui->tablePayments->setCallbackForMonitoredCellChanged ( [&] ( const vmTableItem* const item ) {
@@ -562,18 +562,18 @@ void companyPurchasesUI::relevantKeyPressed ( const QKeyEvent* ke )
 
 void companyPurchasesUI::txtCP_textAltered ( const vmWidget* const sender )
 {
-	setRecValue ( cp_rec, static_cast<uint>(sender->id ()), sender->text () );
+	setRecValue ( cp_rec, static_cast<uint>( sender->id () ), sender->text () );
 }
 
 void companyPurchasesUI::dteCP_dateAltered ( const vmWidget* const sender )
 {
-	setRecValue ( cp_rec, static_cast<uint>(sender->id ()), static_cast<const vmDateEdit* const>(sender)->date ().toString ( DATE_FORMAT_DB ) );
+	setRecValue ( cp_rec, static_cast<uint>( sender->id () ), static_cast<const vmDateEdit* const>( sender )->date ().toString ( DATE_FORMAT_DB ) );
 }
 
 void companyPurchasesUI::btnCPShowSupplier_clicked ( const bool checked )
 {
 	if ( checked )
-		SUPPLIERS ()->showDialog ();
+		SUPPLIERS ()->displaySupplier ( recStrValue ( cp_rec, FLD_CP_SUPPLIER ), true );
 	else
 		SUPPLIERS ()->hideDialog ();
 }

@@ -162,6 +162,7 @@ public:
 	void updateText ();
 	
 	inline const QString& textBeforeChange () const { return mCurrentText; }
+	inline void setCurrentText ( const QString& text ) { mCurrentText = text; }
 
 protected:
 	void keyPressEvent ( QKeyEvent* ) override;
