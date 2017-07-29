@@ -8,7 +8,7 @@
 
 const unsigned int TABLE_VERSION ( 'A' );
 
-const uint SUPPLIES_FIELDS_TYPE[SUPPLIES_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE SUPPLIES_FIELDS_TYPE[SUPPLIES_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_SHORTTEXT, DBTYPE_LIST, DBTYPE_DATE, DBTYPE_PRICE, 
 	DBTYPE_LIST, DBTYPE_SHORTTEXT
@@ -86,6 +86,7 @@ dbSupplies::dbSupplies ( const bool connect_helper_funcs )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( dbSupplies::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = SUPPLIES_FIELDS_TYPE;
 
 	if ( connect_helper_funcs )
 	{

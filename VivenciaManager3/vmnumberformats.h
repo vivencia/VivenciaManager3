@@ -55,10 +55,10 @@ public:
 	vmNumber ( const QString& str_number, const VM_NUMBER_TYPE type, const int format = -1 );
 	vmNumber ( const vmNumber& other );
 
-	inline const vmNumber& operator= ( const vmNumber& vmnumber )
+	inline const vmNumber& operator= ( vmNumber vmnumber )
 	{
-		vmNumber temp ( vmnumber );
-		vm_swap ( *this, temp );
+		//vmNumber temp ( vmnumber );
+		vm_swap ( *this, vmnumber );
 		return *this;
 	}
 	

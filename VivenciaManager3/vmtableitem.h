@@ -33,10 +33,9 @@ public:
 		table_item_swap ( *this, other );
 	}
 	
-	inline const vmTableItem& operator= ( const vmTableItem& t_item )
+	inline const vmTableItem& operator= ( vmTableItem t_item )
 	{
-		vmTableItem temp ( t_item );
-		table_item_swap ( *this, temp );
+		table_item_swap ( *this, t_item );
 		return *this;
 	}
 	
@@ -65,12 +64,8 @@ public:
 		mb_CellAltered = false;
 	}
 
-	inline void setText ( const QString& text = QString::null, const bool = false ) override {
-		vmTableItem::setText ( text, false, false, false ); }
-	void setText ( const QString& text, const bool b_from_cell_itself = false,
-				   const bool force_notify = false, const bool b_formulaResult = false );
-	inline void setTextToDefault ( const bool force_notify = false ) {
-			setText ( mDefaultValue, false, force_notify ); }
+	void setText (const QString& text, const bool b_notify, const bool b_from_cell_itself = false, const bool b_formulaResult = false ) override;
+	inline void setTextToDefault ( const bool force_notify = false ) { setText ( mDefaultValue, false, force_notify ); }
 
 	void setDate ( const vmNumber& date );
 	vmNumber date ( const bool bCurText = true ) const;
@@ -102,8 +97,6 @@ public:
 
 	inline void setButtonType ( const vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE btype ) { m_btype = btype; }
 	inline vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE buttonType () const { return m_btype; }
-
-	QString spreadItemToString () const;
 	
 private:
 	PREDEFINED_WIDGET_TYPES m_wtype;

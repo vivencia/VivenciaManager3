@@ -75,7 +75,10 @@ public:
 	bool renameColumn ( const QString& old_column_name, const uint col_idx, const TABLE_INFO* t_info );
 	bool changeColumnProperties ( const uint column, const TABLE_INFO* t_info );
 	uint recordCount ( const TABLE_INFO* t_info ) const;
-	void populateTable ( const DBRecord* db_rec, vmTableWidget* table ) const;
+	void populateTable ( const TABLE_INFO* t_info, vmTableWidget* table ) const;
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const bool b_only_new ) const;
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const uint id ) const;
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const podList<uint>& ids ) const;
 
 	//-----------------------------------------COMMOM-DBRECORD-------------------------------------------
 	bool insertRecord ( const DBRecord* db_rec ) const;
@@ -166,7 +169,11 @@ public:
 #endif
 	
 	explicit threadedDBOps ();
-	void populateTable ( const DBRecord* db_rec, vmTableWidget* table );
+	void populateTable ( const TABLE_INFO* t_info, vmTableWidget* table );
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const QString& cmd, uint startrow = 0 );
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const bool b_only_new );
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const uint id );
+	void updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const podList<uint>& ids );
 	inline void setCallbackForFinished ( const std::function<void ()>& func ) { m_finishedFunc = func; }
 	
 protected:

@@ -21,6 +21,9 @@ public:
 	void fillForms ();
 
 private:
+	void getAppSchemes ();
+	void setAppScheme ( const QString& style );
+	
 	void on_btnCfgChooseConfigFile_clicked ();
 	void on_btnCfgUseDefaultConfigFile_clicked ();
 	void on_btnCfgChooseDataFolder_clicked ();
@@ -40,8 +43,12 @@ private:
 	void on_btnCfgUseDefaultXlsEditor_clicked ();
 	void on_btnCfgChooseBaseDir_clicked ();
 	void on_btnCfgUseDefaultBaseDir_clicked ();
+	void on_btnCfgChooseESTIMATEDir_clicked ();
 	void on_btnCfgUseDefaultESTIMATEDir_clicked ();
+	void on_btnCfgChooseReportsDir_clicked ();
 	void on_btnCfgUseDefaultReportsDir_clicked ();
+	void on_btnCfgChooseDropBoxDir_clicked ();
+	void on_btnCfgUseDefaultDropBoxDir_clicked ();
 
 private:
 	Ui::configDialog* ui;

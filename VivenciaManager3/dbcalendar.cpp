@@ -7,7 +7,7 @@
 
 const unsigned int TABLE_VERSION ( 'A' );
 
-const uint CALENDAR_FIELDS_TYPE[CALENDAR_FIELD_COUNT] = {
+constexpr DB_FIELD_TYPE CALENDAR_FIELDS_TYPE[CALENDAR_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_DATE, DBTYPE_NUMBER, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
@@ -50,6 +50,7 @@ inline void DBWeekNumberToDate ( const uint dbweek, vmNumber& date )
 	date.setDate ( ( static_cast<int>(DBWeekNumberToWeekNumber ( dbweek ) * 7) ) - 2, 1, static_cast<int>(year + 2009) );
 }
 
+#define TABLE_UPDATE_AVAILABLE
 #ifdef TABLE_UPDATE_AVAILABLE
 #include "vivenciadb.h"
 #include "calculator.h"
@@ -143,6 +144,7 @@ dbCalendar::dbCalendar ()
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( dbCalendar::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = CALENDAR_FIELDS_TYPE;
 	DBRecord::helperFunction = this->helperFunction;
 }
 
@@ -164,9 +166,9 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		{					// The prevAction for those DBRecords that have just been created/read is ACTION_NONE
 			for ( uint i ( 0 ); i < n_days ; ++i )
 			{
-				dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
+				dayRecord = const_cast<stringRecord*>( &jobReport.readRecord ( i ) );
 				date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-				addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
+				addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>( i + 1 ) );
 				if ( !pricePerDay.isNull () )
 					addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
 			}
@@ -176,9 +178,9 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 		{
 			for ( uint i ( 0 ); i < n_days ; ++i )
 			{
-				dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
+				dayRecord = const_cast<stringRecord*>( &jobReport.readRecord ( i ) );
 				date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
+				addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, static_cast<int>( i + 1 ) );
 				if ( !pricePerDay.isNull () )
 					addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, pricePerDay );
 			}
@@ -194,18 +196,18 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 			{	
 				for ( uint i ( 0 ); i < old_n_days ; ++i )
 				{
-					dayRecord = const_cast<stringRecord*>(&oldJobReport.readRecord ( i ));
+					dayRecord = const_cast<stringRecord*>( &oldJobReport.readRecord ( i ) );
 					date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-					addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
+					addCalendarExchangeRule ( ce_list, CEAO_DEL_DATE1, date, vmNumber::emptyNumber, static_cast<int>( i + 1 ) );
 					if ( !oldPricePerDay.isNull () )
 						addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE1, date, pricePerDay );
 				}
 				
 				for ( uint i ( 0 ); i < n_days ; ++i )
 				{
-					dayRecord = const_cast<stringRecord*>(&oldJobReport.readRecord ( i ));
+					dayRecord = const_cast<stringRecord*>( &oldJobReport.readRecord ( i ) );
 					date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
-					addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
+					addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>( i + 1 ) );
 					if ( !pricePerDay.isNull () )
 						addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE1, date, pricePerDay );
 				}
@@ -216,7 +218,7 @@ void dbCalendar::updateCalendarWithJobInfo ( const Job* const job )
 				{
 					for ( uint i ( 0 ); i < n_days ; ++i )
 					{
-						dayRecord = const_cast<stringRecord*>(&jobReport.readRecord ( i ));
+						dayRecord = const_cast<stringRecord*>( &jobReport.readRecord ( i ) );
 						date.fromTrustedStrDate ( dayRecord->fieldValue ( Job::JRF_DATE ), vmNumber::VDF_DB_DATE );
 						addCalendarExchangeRule ( ce_list, CEAO_EDIT_PRICE_DATE1, date, pricePerDay );
 						ce_list[ce_list.currentIndex()]->price2 = oldPricePerDay;
@@ -255,11 +257,11 @@ void dbCalendar::updateCalendarWithPayInfo ( const Payment* const pay )
 						payRecord = const_cast<stringRecord*>( &payInfo.readRecord ( i ) );
 						price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
 						date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
-						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
+						addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE1, date, vmNumber::emptyNumber, static_cast<int>( i + 1 ) );
 						if ( payRecord->fieldValue ( PHR_PAID ) == CHR_ONE )
 						{
 							date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_USE_DATE ), vmNumber::VDF_DB_DATE );
-							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, static_cast<int>(i + 1) );
+							addCalendarExchangeRule ( ce_list, CEAO_ADD_DATE2, date, vmNumber::emptyNumber, static_cast<int>( i + 1 ) );
 							addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
 						}
 					}
@@ -410,7 +412,7 @@ void dbCalendar::updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersLi
 					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ) );
 					addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
 				}
-				rec = const_cast<stringRecord*>(&newTable.next ());
+				rec = const_cast<stringRecord*>( &newTable.next () );
 			}
 		}
 		break;
@@ -427,7 +429,7 @@ void dbCalendar::updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersLi
 					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ) );
 					addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, date, price );
 				}
-				rec = const_cast<stringRecord*>(&newTable.next ());
+				rec = const_cast<stringRecord*>( &newTable.next () );
 			}
 		}
 		break;
@@ -445,7 +447,7 @@ void dbCalendar::updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersLi
 					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ) );
 					addCalendarExchangeRule ( ce_list, CEAO_DEL_PRICE_DATE2, date, price );
 				}
-				rec = const_cast<stringRecord*>(&oldTable.next ());
+				rec = const_cast<stringRecord*>( &oldTable.next () );
 			}
 			
 			rec = const_cast<stringRecord*>( &newTable.first () );
@@ -458,7 +460,7 @@ void dbCalendar::updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersLi
 					price.fromTrustedStrPrice ( rec->fieldValue ( PHR_VALUE ) );
 					addCalendarExchangeRule ( ce_list, CEAO_ADD_PRICE_DATE2, date, price );
 				}
-				rec = const_cast<stringRecord*>(&newTable.next ());
+				rec = const_cast<stringRecord*>( &newTable.next () );
 			}
 		} //case ACTION_EDIT
 		break;

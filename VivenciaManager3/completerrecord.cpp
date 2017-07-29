@@ -18,7 +18,7 @@
 
 const unsigned int TABLE_VERSION ( 'A' );
 
-const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE CR_FIELDS_TYPE[CR_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
@@ -28,8 +28,8 @@ const uint CR_FIELDS_TYPE[CR_FIELD_COUNT] =
 bool updateCompleterRecordTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
-	VDB ()->optimizeTable ( &completerRecord::t_info );
-	return true;
+	//VDB ()->optimizeTable ( &completerRecord::t_info );
+	//return true;
 	vmNotify* pBox ( nullptr );
 	uint step ( 0 );
 	const uint max_steps ( 9 );
@@ -50,16 +50,16 @@ bool updateCompleterRecordTable ()
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for brands" ) );
 	cr.runQuery ( results, &Inventory::t_info, FLD_INVENTORY_BRAND, true );
 	cr.runQuery ( results, &dbSupplies::t_info, FLD_SUPPLIES_BRAND, true );
-	cr.updateCompleterInternal ( FLD_CR_BRAND, results );
+	cr.batchUpdateTable ( vmCompleters::BRAND, results );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for inventory type" ) );
 	cr.runQuery ( results, &Inventory::t_info, FLD_INVENTORY_TYPE, true );
-	cr.updateCompleterInternal ( FLD_CR_STOCK_TYPE, results );
+	cr.batchUpdateTable ( vmCompleters::STOCK_TYPE, results );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for inventory and supplies place" ) );
 	cr.runQuery ( results, &Inventory::t_info, FLD_INVENTORY_PLACE, true );
 	cr.runQuery ( results, &dbSupplies::t_info, FLD_SUPPLIES_PLACE, true );
-	cr.updateCompleterInternal ( FLD_CR_STOCK_PLACE, results );
+	cr.batchUpdateTable ( vmCompleters::STOCK_PLACE, results );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for addresses" ) );
 	cr.runQuery ( results, &Client::t_info, FLD_CLIENT_STREET, true );
@@ -68,20 +68,23 @@ bool updateCompleterRecordTable ()
 	cr.runQuery ( results, &supplierRecord::t_info, FLD_SUPPLIER_STREET, true );
 	cr.runQuery ( results, &supplierRecord::t_info, FLD_SUPPLIER_CITY, true );
 	cr.runQuery ( results, &supplierRecord::t_info, FLD_SUPPLIER_DISTRICT, true );
-	cr.updateCompleterInternal ( FLD_CR_ADDRESS, results );
+	cr.batchUpdateTable ( vmCompleters::ADDRESS, results );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for delivery method" ) );
 	cr.runQuery ( results, &Buy::t_info, FLD_BUY_DELIVERMETHOD, true );
-	cr.updateCompleterInternal ( FLD_CR_DELIVERY_METHOD, results );
+	cr.batchUpdateTable ( vmCompleters::DELIVERY_METHOD, results );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for payment methods" ) );
 	cr.runQuery ( results, &Buy::t_info, FLD_BUY_PAYINFO, true );
 	if ( !results.isEmpty () ) {
-		for ( i = 0; i < results.count (); ++i ) {
+		for ( i = 0; i < results.count (); ++i )
+		{
 			payinfo.fromString ( results.at ( i ) );
-			if ( payinfo.isOK () ) {
+			if ( payinfo.isOK () )
+			{
 				rec = payinfo.first ();
-				if ( !rec.isNull () ) {
+				if ( !rec.isNull () )
+				{
 					str_temp = rec.fieldValue ( PHR_METHOD );
 					if ( !str_temp.isEmpty () && !results_2.contains ( str_temp ) )
 						results_2.append ( str_temp );
@@ -93,34 +96,38 @@ bool updateCompleterRecordTable ()
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for accounts" ) );
 	cr.runQuery ( results, &Payment::t_info, FLD_PAY_INFO, true );
-	if ( !results.isEmpty () ) {
-		for ( i = 0; i < results.count (); ++i ) {
+	if ( !results.isEmpty () )
+	{
+		for ( i = 0; i < results.count (); ++i )
+		{
 			payinfo.fromString ( results.at ( i ) );
-			if ( payinfo.isOK () ) {
+			if ( payinfo.isOK () )
+			{
 				rec = payinfo.first ();
-				if ( !rec.isNull () ) {
+				if ( !rec.isNull () )
+				{
 					str_temp = rec.fieldValue ( PHR_METHOD );
 					if ( !str_temp.isEmpty () && !results_2.contains ( str_temp ) )
 						results_2.append ( str_temp );
 					str_temp = rec.fieldValue ( PHR_ACCOUNT );
 					if ( !str_temp.isEmpty () && !results_3.contains ( str_temp ) )
 						results_3.append ( str_temp );
-
 				}
 			}
 		}
 		results.clear ();
 	}
-	cr.updateCompleterInternal ( FLD_CR_PAYMENT_METHOD, results_2 );
-	cr.updateCompleterInternal ( FLD_CR_ACCOUNT, results_3 );
+	cr.batchUpdateTable ( vmCompleters::PAYMENT_METHOD, results_2 );
+	cr.batchUpdateTable ( vmCompleters::ACCOUNT, results_3 );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for job types" ) );
 	cr.runQuery ( results, &Job::t_info, FLD_JOB_TYPE, true );
-	cr.updateCompleterInternal ( FLD_CR_JOB_TYPE, results );
+	cr.batchUpdateTable ( vmCompleters::JOB_TYPE, results );
 
 	pBox = vmNotify::progressBox ( pBox, nullptr, max_steps, step++, QString::null, QStringLiteral( "Creating completer records for supply item strings" ) );
 	dbSupplies db_sup;
-	if ( db_sup.readFirstRecord () ) {
+	if ( db_sup.readFirstRecord () )
+	{
 		stringRecord info;
 		QString compositItemName;
 		results_2.clear ();
@@ -131,12 +138,12 @@ bool updateCompleterRecordTable ()
 							   db_sup.isrValue ( ISR_BRAND );
 			results_2.append ( compositItemName );
 			for ( uint fld ( 0 ); fld <= 8; ++fld )
-				info.fastAppendValue ( db_sup.isrValue ( static_cast<ITEMS_AND_SERVICE_RECORD> ( fld ) ) );
+				info.fastAppendValue ( db_sup.isrValue ( static_cast<ITEMS_AND_SERVICE_RECORD>( fld ) ) );
 			results_3.append ( info.toString () );
 			info.clear ();
 		} while ( db_sup.readNextRecord () );
-		cr.updateCompleterInternal ( FLD_CR_PRODUCT_OR_SERVICE_1, results_2 );
-		cr.updateCompleterInternal ( FLD_CR_PRODUCT_OR_SERVICE_2, results_3 );
+		cr.batchUpdateTable ( vmCompleters::ALL_CATEGORIES, results_2 );
+		cr.batchUpdateTable ( vmCompleters::PRODUCT_OR_SERVICE, results_3 );
 	}
 	VDB ()->optimizeTable( &completerRecord::t_info );
 	return true;
@@ -170,6 +177,7 @@ completerRecord::completerRecord ()
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( completerRecord::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = CR_FIELDS_TYPE;
 	DBRecord::helperFunction = this->helperFunction;
 }
 
@@ -177,72 +185,69 @@ completerRecord::~completerRecord () {}
 
 static inline uint translateCategory ( const vmCompleters::COMPLETER_CATEGORIES category )
 {
-	return static_cast<uint>( category <= vmCompleters::ADDRESS ? category : category - 2 );
-}
-
-void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str )
-{
+	uint field ( 0 );
 	switch ( category )
 	{
-		case vmCompleters::CLIENT_NAME:
-		case vmCompleters::SUPPLIER:
-		case vmCompleters::ITEM_NAMES:
-			return;
-
-		default:
-		{
-			bool b_needadd ( true );
-			const uint field ( translateCategory ( category ) );
-			if ( readFirstRecord () )
-			{
-				do
-				{
-					if ( recStrValue ( this, field ).isEmpty () )
-					{
-						b_needadd = false;
-						break;
-					}
-				} while ( readNextRecord () );
-			}
-			setAction ( b_needadd ? ACTION_ADD : ACTION_EDIT );
-			setRecValue ( this, field, str );
-			saveRecord ();
-		}
+		case vmCompleters::NONE:														break;
+		case vmCompleters::ALL_CATEGORIES:		field = FLD_CR_PRODUCT_OR_SERVICE_1;	break;
+		case vmCompleters::PRODUCT_OR_SERVICE:	field = FLD_CR_PRODUCT_OR_SERVICE_2;	break;
+		case vmCompleters::SUPPLIER:													break;
+		case vmCompleters::BRAND:				field = FLD_CR_BRAND;					break;
+		case vmCompleters::STOCK_TYPE:			field = FLD_CR_STOCK_TYPE;				break;
+		case vmCompleters::STOCK_PLACE:			field = FLD_CR_STOCK_PLACE;				break;
+		case vmCompleters::PAYMENT_METHOD:		field = FLD_CR_PAYMENT_METHOD;			break;
+		case vmCompleters::ADDRESS:				field = FLD_CR_ADDRESS;					break;
+		case vmCompleters::ITEM_NAMES:													break;
+		case vmCompleters::CLIENT_NAME:													break;
+		case vmCompleters::DELIVERY_METHOD:		field = FLD_CR_DELIVERY_METHOD;			break;
+		case vmCompleters::ACCOUNT:				field = FLD_CR_ACCOUNT;					break;
+		case vmCompleters::JOB_TYPE:			field = FLD_CR_JOB_TYPE;				break;
+		case vmCompleters::MACHINE_NAME:		field = FLD_CR_MACHINE_NAME;			break;
+		case vmCompleters::MACHINE_EVENT:		field = FLD_CR_MACHINE_EVENT;			break;
 	}
+	return field;
 }
 
-void completerRecord::updateCompleterInternal ( const uint field, const QStringList& str_list )
+// This method does not check the value of str. It assumes it is new because vmCompleters did not find it in their lists
+// Because of that, only vmCompleters can safely call it here
+void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str, const bool b_reset_search )
 {
-	if ( str_list.isEmpty () || field > vmCompleters::MACHINE_EVENT )
+	const uint field ( translateCategory ( category ) );
+	if ( field  == 0 )
 		return;
+	
+	bool b_needadd ( true );
+	clearAll ( !b_reset_search );
+	
+	// When we are instructed to continue from the last used recored ( !b_reset_search ) the first moment must be a reading from the first
+	// record, and only the subsequent readings will continue from the current index
+	if ( b_reset_search ? readFirstRecord () : readNextRecord () )
+	{
+		do
+		{
+			if ( recStrValue ( this, field ).isEmpty () )
+			{
+				b_needadd = false;
+				break;
+			}
+		} while ( readNextRecord () );
+	}
+	setAction ( b_needadd ? ACTION_ADD : ACTION_EDIT );
+	setRecValue ( this, field, str );
+	saveRecord ();
+}
 
-#ifdef TABLE_UPDATE_AVAILABLE
-	return;
+void completerRecord::batchUpdateTable ( vmCompleters::COMPLETER_CATEGORIES category, const QStringList& str_list )
+{
 	QStringList::const_iterator itr ( str_list.constBegin () );
 	const QStringList::const_iterator itr_end ( str_list.constEnd () );
-	bool bFromStart ( true );
-	for ( ; itr != itr_end; ++itr ) {
-		if ( bFromStart ? readFirstRecord () : readNextRecord () ) {
-			do {
-				if ( recStrValue ( this, field ).isEmpty () ) {
-					setAction ( ACTION_EDIT );
-					bFromStart = false;
-					break;
-				}
-			} while ( readNextRecord () );
-		}
-		if ( action () == ACTION_READ )
-		{
-			clearAll ();
-			setAction ( ACTION_ADD );
-		}
-
-		setRecValue ( this, field, static_cast<QString> ( *itr ) );
-		saveRecord ();
-		setAction ( ACTION_READ ); // if saveRecord was unsuccessfull action () will be in a - possibly - wrong state
+	if ( itr != itr_end )
+	{
+		updateTable ( category, *itr++ ); // the first reading, reset the index
+		for ( ; itr != itr_end; ++itr )
+			updateTable ( category, *itr, false ); // subsequent writes, continue from the last
 	}
 	const_cast<QStringList*>( &str_list )->clear ();
-#endif
 }
 
 void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates )

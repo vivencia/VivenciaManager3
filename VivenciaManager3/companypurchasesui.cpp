@@ -133,11 +133,11 @@ void companyPurchasesUI::saveWidget ( vmWidget* widget, const int id )
 
 void companyPurchasesUI::setupUI ()
 {
-	static_cast<void>( ui->btnCPAdd->connect ( ui->btnCPAdd, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
+	static_cast<void>( ui->btnCPAdd->connect ( ui->btnCPAdd, static_cast<void (QPushButton::*)( const bool )>( &QPushButton::clicked ),
 			this, [&] ( const bool checked ) { return btnCPAdd_clicked ( checked ); } ) );
-	static_cast<void>( ui->btnCPEdit->connect ( ui->btnCPEdit, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
+	static_cast<void>( ui->btnCPEdit->connect ( ui->btnCPEdit, static_cast<void (QPushButton::*)( const bool )>( &QPushButton::clicked ),
 			this, [&] ( const bool checked ) { return btnCPEdit_clicked ( checked ); } ) );
-	static_cast<void>( ui->btnCPSearch->connect ( ui->btnCPSearch, static_cast<void (QPushButton::*)( const bool )> ( &QPushButton::clicked ),
+	static_cast<void>( ui->btnCPSearch->connect ( ui->btnCPSearch, static_cast<void (QPushButton::*)( const bool )>( &QPushButton::clicked ),
 			this, [&] ( const bool checked ) { return btnCPSearch_clicked ( checked ); } ) );
 	static_cast<void>( ui->btnCPShowSupplier->connect ( ui->btnCPShowSupplier, static_cast<void (QToolButton::*)( const bool )>( &QToolButton::clicked ),
 			this, [&] ( const bool checked ) { return btnCPShowSupplier_clicked ( checked ); } ) );
@@ -283,8 +283,14 @@ void companyPurchasesUI::saveInfo ()
 {
 	if ( cp_rec->saveRecord () )
 	{
-		vmTableWidget::exchangePurchaseTablesInfo (
-						ui->tableItems, INVENTORY ()->table (), cp_rec, INVENTORY ()->inventory_rec );
+		cp_rec->exportToInventory ();
+		if ( INVENTORY () )
+		{
+			if ( cp_rec->prevAction () == ACTION_ADD )
+				VDB ()->updateTable ( &Inventory::t_info, INVENTORY ()->table (), true );
+			else
+				VDB ()->updateTable ( &Inventory::t_info, INVENTORY ()->table (), static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) );
+		}
 	}
 	controlForms ();
 }
@@ -515,12 +521,12 @@ void companyPurchasesUI::btnCPRemove_clicked ()
 						cp_rec->readRecord ( 1 );
 				}
 				fillForms ();
-				ui->btnCPFirst->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getLowestID ( TABLE_CP_ORDER )) );
-				ui->btnCPPrev->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getLowestID ( TABLE_CP_ORDER )) );
-				ui->btnCPNext->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) );
-				ui->btnCPLast->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) );
-				ui->btnCPSearch->setEnabled ( static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) > 0 );
-				ui->txtCPSearch->setEditable ( static_cast<int>(VDB ()->getHighestID ( TABLE_CP_ORDER )) > 0 );
+				ui->btnCPFirst->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>( VDB ()->getLowestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPPrev->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>( VDB ()->getLowestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPNext->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPLast->setEnabled ( cp_rec->actualRecordInt ( FLD_CP_ID ) != static_cast<int>( VDB ()->getHighestID ( TABLE_CP_ORDER ) ) );
+				ui->btnCPSearch->setEnabled ( VDB ()->getHighestID ( TABLE_CP_ORDER  ) > 0 );
+				ui->txtCPSearch->setEditable ( VDB ()->getHighestID ( TABLE_CP_ORDER ) > 0 );
 			}
 		}
 	}

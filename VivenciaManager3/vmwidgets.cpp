@@ -34,7 +34,7 @@ vmActionLabel::vmActionLabel ( vmAction* action, QWidget* parent )
 	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION ), labelActivated_func ( nullptr )
 {
 	init ();
-	setDefaultAction ( static_cast<QAction*> ( action ) );
+	setDefaultAction ( static_cast<QAction*>( action ) );
 }
 
 vmActionLabel::~vmActionLabel ()
@@ -42,7 +42,7 @@ vmActionLabel::~vmActionLabel ()
 
 void vmActionLabel::init ( const bool b_action )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	setToolButtonStyle ( Qt::ToolButtonTextBesideIcon );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
 	
@@ -56,7 +56,7 @@ void vmActionLabel::init ( const bool b_action )
 void vmActionLabel::setCallbackForLabelActivated ( const std::function<void ()>& func )
 {
 	labelActivated_func = func;
-	static_cast<void>(connect ( this, &QToolButton::clicked, this, [&] () { return labelActivated_func (); } ));
+	static_cast<void>( connect ( this, &QToolButton::clicked, this, [&] () { return labelActivated_func (); } ) );
 }
 
 QSize vmActionLabel::sizeHint () const
@@ -174,7 +174,16 @@ void pvmDateEdit::setDate ( const vmNumber& date, const bool b_notify )
 {
 	const triStateType mEmitSignalOriginal ( mEmitSignal );
 	mEmitSignal = b_notify && date.isDate ();
-	QDateEdit::setDate ( date.toQDate () );
+	if ( mEmitSignal.isOn () )
+	{
+		// set date programmatically. Disable Qt's signal
+		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
+		QDateEdit::setDate ( date.toQDate () );
+		vmDateChanged ( date.toQDate () );
+		static_cast<void>( connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) { return vmDateChanged ( date ); } ) );
+	}
+	else
+		QDateEdit::setDate ( date.toQDate () );
 	mEmitSignal = mEmitSignalOriginal;
 }
 
@@ -182,11 +191,11 @@ void pvmDateEdit::setEditable ( const bool editable )
 {
 	if ( editable )
 	{
-		connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) { return vmDateChanged ( date ); } );
+		static_cast<void>( connect ( this, &QDateEdit::dateChanged, this, [&] ( const QDate& date ) { return vmDateChanged ( date ); } ) );
 		mDateBeforeFocus = date ();
 	}
 	else
-		disconnect ( this, nullptr, nullptr, nullptr );
+		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
 
 	setReadOnly ( !editable );
 	vmWidget::setEditable ( editable );
@@ -210,7 +219,7 @@ void pvmDateEdit::vmDateChanged ( const QDate& date )
 			{
 				vmDateEdit::updateRecentUsedDates ( vmNumber ( date ) );
 				mEmitSignal.setUndefined ();
-						if ( mOwner->contentsAltered_func != nullptr )
+				if ( mOwner->contentsAltered_func != nullptr )
 					mOwner->contentsAltered_func ( mOwner );
 			}
 		}
@@ -236,13 +245,16 @@ void pvmDateEdit::focusInEvent ( QFocusEvent* e )
 	{
 		mbHasFocus = true;
 		mDateBeforeFocus = date ();
-		QDateEdit::focusInEvent ( e );
 		if ( ownerItem () )
-		{	
-			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*> ( ownerItem () )->table ()) );
-			table->setCurrentItem ( const_cast<vmTableItem*>(ownerItem ()) );
+		{
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*>( ownerItem () )->table () ) );
+			table->setCurrentItem ( const_cast<vmTableItem*>( ownerItem () ) );
 		}
+		e->setAccepted ( true );
+		QDateEdit::focusInEvent ( e );
 	}
+	else
+		e->setAccepted ( false );
 }
 
 void pvmDateEdit::focusOutEvent ( QFocusEvent* e )
@@ -250,19 +262,22 @@ void pvmDateEdit::focusOutEvent ( QFocusEvent* e )
 	if ( isEditable () )
 	{
 		mbHasFocus = false;
+		vmDateChanged ( this->date () );
+		e->setAccepted ( true );
 		QDateEdit::focusOutEvent ( e );
-				vmDateChanged ( this->date () );
 	}
+	else
+		e->setAccepted ( false );
 }
 
 vmDateEdit::vmDateEdit ( QWidget* parent )
 	: QWidget ( parent ), vmWidget ( WT_DATEEDIT ), mDateEdit ( new pvmDateEdit ( this ) ),
 	  mButton ( new QToolButton )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	mButton = new QToolButton;
 	mButton->setIcon ( ICON ( "x-office-calendar" ) );
-	connect ( mButton, &QToolButton::clicked, this, [&] () { return contextMenuRequested (); } );
+	static_cast<void>( connect ( mButton, &QToolButton::clicked, this, [&] () { return contextMenuRequested (); } ) );
 
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );
@@ -309,8 +324,7 @@ void vmDateEdit::contextMenuRequested ()
 	mButton->showMenu ();
 }
 
-void vmDateEdit::setCallbackForContextMenu
-( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
+void vmDateEdit::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
 {
 	vmWidget::setCallbackForContextMenu ( func );
 	static_cast<void>( connect ( mDateEdit, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
@@ -349,11 +363,11 @@ void vmDateEdit::createDateButtonsMenu ( QWidget* parent )
 void vmDateEdit::updateDateButtonsMenu ()
 {
 	vmNumber date ( vmNumber::currentDate );
-	static_cast<vmAction*> ( menuDateButtons->actions ().at ( 0 ) )->setInternalData ( date.toQDate () );
+	static_cast<vmAction*>( menuDateButtons->actions ().at ( 0 ) )->setInternalData ( date.toQDate () );
 	date.setDay ( -1, true );
-	static_cast<vmAction*> ( menuDateButtons->actions ().at ( 1 ) )->setInternalData ( date.toQDate () );
+	static_cast<vmAction*>( menuDateButtons->actions ().at ( 1 ) )->setInternalData ( date.toQDate () );
 	date.setDay ( +2, true );
-	static_cast<vmAction*> ( menuDateButtons->actions ().at ( 2 ) )->setInternalData ( date.toQDate () );
+	static_cast<vmAction*>( menuDateButtons->actions ().at ( 2 ) )->setInternalData ( date.toQDate () );
 }
 
 void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
@@ -368,9 +382,9 @@ void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 	
 	for ( ; i < n_actions; ++i )
 	{
-		if ( i != 3 )
-		{ //separator index
-			if ( date.toQDate () == static_cast<vmAction*>(menuDateButtons->actions ().at ( static_cast<int>(i) ))->internalData ().toDate () )
+		if ( i != 3 ) //separator index
+		{
+			if ( date.toQDate () == static_cast<vmAction*>( menuDateButtons->actions ().at ( static_cast<int>( i ) ) )->internalData ().toDate () )
 				return;
 		}
 	}
@@ -386,7 +400,7 @@ void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 	else
 	{
 		static int ins_pos ( N_DATES_MENU_STATIC_ENTRIES );
-		action = static_cast<vmAction*> ( menuDateButtons->actions ().at ( ins_pos ) );
+		action = static_cast<vmAction*>( menuDateButtons->actions ().at ( ins_pos ) );
 		action->setInternalData ( date.toQDate () );
 		action->QAction::setText ( date.toDate ( vmNumber::VDF_HUMAN_DATE ) );
 		if ( ++ins_pos == ( N_DATES_MENU_STATIC_ENTRIES + MAX_RECENT_USE_DATES ) )
@@ -433,8 +447,7 @@ void vmTimeEdit::setTime ( const vmNumber& time, const bool b_notify )
 		contentsAltered_func ( this );
 }
 
-void vmTimeEdit::setCallbackForContextMenu
-( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
+void vmTimeEdit::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
 {
 	vmWidget::setCallbackForContextMenu ( func );
 	static_cast<void>( connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) { return showContextMenu ( pos ); } ) );
@@ -459,14 +472,16 @@ void vmTimeEdit::focusInEvent ( QFocusEvent* e )
 	if ( isEditable () )
 	{
 		mTimeBeforeFocus = time ();
-		QTimeEdit::focusInEvent ( e );
 		if ( ownerItem () )
 		{	
 			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );
 			table->setCurrentItem ( const_cast<vmTableItem*> ( ownerItem () ) );
 		}
+		e->setAccepted ( true );
+		QTimeEdit::focusInEvent ( e );
 	}
-	e->setAccepted ( true );
+	else
+		e->setAccepted ( false );
 }
 
 void vmTimeEdit::focusOutEvent ( QFocusEvent* e )
@@ -475,9 +490,11 @@ void vmTimeEdit::focusOutEvent ( QFocusEvent* e )
 	{
 		if ( ( mTimeBeforeFocus != time () ) && contentsAltered_func )
 			contentsAltered_func ( this );
+		e->setAccepted ( true );
 		QTimeEdit::focusOutEvent ( e );
 	}
-	e->setAccepted ( true );
+	else
+		e->setAccepted ( false );
 }
 //------------------------------------------------VM-TIME-EDIT------------------------------------------------
 
@@ -487,7 +504,7 @@ vmLineEdit::vmLineEdit ( QWidget* parent, QWidget* ownerWindow )
 	  b_widgetCannotGetFocus ( false ), mbTrack ( false ),
 	  mouseClicked_func ( nullptr )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	if  ( ownerWindow != nullptr )
 	{
 		if ( ( ownerWindow->windowFlags () & Qt::Drawer ) == Qt::Drawer )
@@ -576,7 +593,7 @@ void vmLineEdit::setEditable ( const bool editable )
 	setReadOnly ( !editable );
 	setClearButtonEnabled ( editable );
 	vmWidget::setEditable ( editable );
-		setCursorPosition ( editable ? QLineEdit::text ().count () - 1 : 0 );
+	setCursorPosition ( editable ? QLineEdit::text ().count () - 1 : 0 );
 }
 
 void vmLineEdit::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
@@ -774,10 +791,8 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 			if ( completer ()->widget () == nullptr )
 			{
 				completer ()->setWidget ( this );
-				connect ( completer (), static_cast<void (QCompleter::*)(const QString&)>( &QCompleter::activated ),
-					this, [&] ( const QString& value ) {
-						return completerClickReceived ( value );
-				} );
+				static_cast<void>( connect ( completer (), static_cast<void (QCompleter::*)(const QString&)>( &QCompleter::activated ),
+					this, [&] ( const QString& value ) { return completerClickReceived ( value ); } ) );
 			}
 		}
 		mbButtonClicked = false;
@@ -792,17 +807,20 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 		e->setAccepted ( true );
 		QLineEdit::focusInEvent ( e );
 	}
-	else
+	else // not editable
 	{
 		if ( ownerItem () )
 		{	
-			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*>(ownerItem () )->table ()) );
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*>( ownerItem () )->table () ) );
 			if ( table->isPlainTable () && ownerItem ()->row () != table->currentRow () )
 			{
-				table->setCurrentItem ( const_cast<vmTableItem*>(ownerItem ()) );
+				table->setCurrentItem ( const_cast<vmTableItem*>( ownerItem () ) );
 				table->callRowActivated_func ( ownerItem ()->row () );
+				e->setAccepted ( true );
+				return;
 			}
 		}
+		e->setAccepted ( false );
 	}
 }
 
@@ -811,10 +829,11 @@ void vmLineEdit::focusOutEvent ( QFocusEvent* e )
 	if ( isEditable () && ( mCurrentText != text () ) )
 	{
 		updateText ();
-		if ( mbButtonClicked )
-			e->setAccepted ( true );
+		e->setAccepted ( true );
+		QLineEdit::focusOutEvent ( e );
 	}
-	QLineEdit::focusOutEvent ( e );
+	else
+		e->setAccepted ( false );
 }
 //------------------------------------------------LINE-EDIT-LINK----------------------------------------------
 
@@ -1042,17 +1061,23 @@ void vmComboBox::keyPressEvent ( QKeyEvent *e )
 void vmComboBox::focusInEvent ( QFocusEvent* e )
 {
 	if ( vmWidget::isEditable () )
+	{
+		e->setAccepted ( true );
 		QComboBox::focusInEvent ( e );
+	}
 	else
-		e->ignore ();
+		e->setAccepted ( false );
 }
 
 void vmComboBox::focusOutEvent ( QFocusEvent* e )
 {
 	if ( vmWidget::isEditable () )
+	{
+		e->setAccepted ( true );
 		QComboBox::focusOutEvent ( e );
+	}
 	else
-		e->ignore ();
+		e->setAccepted ( false );
 }
 
 void vmComboBox::wheelEvent ( QWheelEvent *e )
@@ -1061,10 +1086,11 @@ void vmComboBox::wheelEvent ( QWheelEvent *e )
 	{
 		if ( mbIgnoreChanges || ( completer () && completer ()->popup () && completer ()->popup ()->isVisible () ) )
 		{
-			e->ignore ();
+			e->setAccepted ( false );
 			return;
 		}
 	}
+	e->setAccepted ( true );
 	QComboBox::wheelEvent ( e );
 }
 //------------------------------------------------VM-COMBO-BOX------------------------------------------------

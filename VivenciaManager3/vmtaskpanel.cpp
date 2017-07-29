@@ -2,13 +2,14 @@
 #include "vmactiongroup.h"
 #include "actionpanelscheme.h"
 #include "vmwidgets.h"
+#include "configops.h"
 
 vmTaskPanel::vmTaskPanel ( const QString& title, QWidget* parent )
-	: QFrame ( parent ), mTitle ( nullptr )
+	: QFrame ( parent ), mScheme ( nullptr ), mTitle ( nullptr ), mGroups ( 8 )
 {
 	setProperty ( "class", QStringLiteral ( "panel" ) );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
-	setScheme ( ActionPanelScheme::defaultScheme () );
+	setScheme ( CONFIG ()->appScheme () );
 
 	mLayout = new QVBoxLayout;
 	mLayout->setMargin ( 5 );
@@ -36,23 +37,18 @@ void vmTaskPanel::setTitle ( const QString& new_title )
 		mTitle->setText ( new_title );
 }
 
-void vmTaskPanel::setScheme ( ActionPanelScheme* scheme )
+void vmTaskPanel::setScheme ( const QString& style )
 {
+	ActionPanelScheme* scheme ( ActionPanelScheme::newScheme ( style ) );
 	if ( scheme )
 	{
+		setStyleSheet ( scheme->actionStyle );
+		for ( uint i ( 0 ); i < mGroups.count (); ++i )
+			mGroups.at ( i )->setScheme ( scheme );
+		
+		if ( mScheme != nullptr )
+			delete mScheme;
 		mScheme = scheme;
-		setStyleSheet ( mScheme->actionStyle );
-
-		// set scheme for children
-		QObjectList list ( children () );
-		foreach ( QObject *obj, list )
-		{
-			if ( obj != nullptr )
-			{
-				dynamic_cast<vmActionGroup*>(obj)->setScheme ( scheme );
-				continue;
-			}
-		}
 		update ();
 	}
 }
@@ -73,6 +69,7 @@ vmActionGroup* vmTaskPanel::createGroup (const QString& title, const bool expand
 {
 	vmActionGroup* box ( new vmActionGroup ( title, expandable, stretchContents, closable, this ) );
 	addWidget ( box );
+	mGroups.append ( box );
 	return box;
 }
 
@@ -81,6 +78,7 @@ vmActionGroup* vmTaskPanel::createGroup ( const QIcon& icon, const QString& titl
 {
 	vmActionGroup* box ( new vmActionGroup ( icon, title, expandable, stretchContents, closable, this ) );
 	addWidget ( box );
+	mGroups.append ( box );
 	return box;
 }
 
@@ -89,8 +87,7 @@ void vmTaskPanel::removeGroup ( vmActionGroup* group, const bool bDelete )
 	if ( group )
 	{
 		mLayout->removeWidget ( group );
-		if ( bDelete )
-			delete group;
+		mGroups.removeOne ( group, 0, bDelete );
 	}
 }
 

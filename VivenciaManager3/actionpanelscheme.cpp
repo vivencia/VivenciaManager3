@@ -1,6 +1,16 @@
 #include "actionpanelscheme.h"
 #include "global.h"
 
+const QString ActionPanelScheme::PanelStyleStr[6] =
+{
+	QStringLiteral ( "PANEL_NONE" ),
+	QStringLiteral ( "PANEL_DEFAULT" ),
+	QStringLiteral ( "PANEL_DEFAULT_2" ),
+	QStringLiteral ( "PANEL_VISTA" ),
+	QStringLiteral ( "PANEL_XP_1" ),
+	QStringLiteral ( "PANEL_XP_2" )
+};
+
 const char* const ActionPanelNoStyle ( "" );
 
 const char* const ActionPanelDefaultStyle (
@@ -364,4 +374,23 @@ ActionPanelScheme* ActionPanelScheme::defaultScheme ()
 {
 	static ActionPanelScheme scheme ( PANEL_NONE );
 	return &scheme;
+}
+
+// No pointer management here. Must be inplementes somewhere else
+ActionPanelScheme* ActionPanelScheme::newScheme ( const QString& scheme_name )
+{
+	if ( scheme_name == PanelStyleStr[PANEL_NONE] )
+		return new ActionPanelScheme ( PANEL_NONE );
+	if ( scheme_name == PanelStyleStr[PANEL_DEFAULT] )
+		return new ActionPanelScheme ( PANEL_DEFAULT );
+	if ( scheme_name == PanelStyleStr[PANEL_DEFAULT_2] )
+		return new ActionPanelScheme ( PANEL_DEFAULT_2 );
+	if ( scheme_name == PanelStyleStr[PANEL_VISTA] )
+		return new ActionPanelScheme ( PANEL_VISTA );
+	if ( scheme_name == PanelStyleStr[PANEL_XP_1] )
+		return new ActionPanelScheme ( PANEL_XP_1 );
+	if ( scheme_name == PanelStyleStr[PANEL_XP_2] )
+		return new ActionPanelScheme ( PANEL_XP_2 );
+	
+	return new ActionPanelScheme ( PANEL_NONE );
 }

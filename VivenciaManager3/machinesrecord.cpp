@@ -4,7 +4,7 @@
 
 static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT,
 	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
@@ -45,6 +45,7 @@ machinesRecord::machinesRecord ()
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = MACHINES_FIELDS_TYPE;
 	DBRecord::helperFunction = this->helperFunction;
 }
 

@@ -28,12 +28,16 @@ public:
 		PANEL_XP_1, PANEL_XP_2
 	};
 
+	static const QString PanelStyleStr[6];
+	
 	explicit ActionPanelScheme ( const PanelStyle style = PANEL_DEFAULT );
 
 	/** Returns a pointer to the default scheme object.
 	Must be reimplemented in the own schemes.
 	*/
 	static ActionPanelScheme* defaultScheme ();
+	
+	static ActionPanelScheme* newScheme ( const QString& scheme_name );
 
 	/// Height of the header in pixels.
 	int headerSize;

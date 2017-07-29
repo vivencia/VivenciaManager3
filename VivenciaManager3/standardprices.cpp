@@ -3,7 +3,7 @@
 
 static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint SERVICES_FIELDS_TYPE[SERVICES_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE SERVICES_FIELDS_TYPES[SERVICES_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_PRICE, DBTYPE_DATE, DBTYPE_TIME,
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
@@ -30,7 +30,7 @@ const TABLE_INFO servicesOffered::t_info =
 	QStringLiteral ( " int(9) NOT NULL, | varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar(10) DEFAULT NULL, | varchar(20) DEFAULT NULL, |"
 	" varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Service type|Basic unit|Price per unit|Last update|Execution average time|Discount from (units)|Discount factor|" ),
-	SERVICES_FIELDS_TYPE, TABLE_VERSION, SERVICES_FIELD_COUNT, TABLE_SERVICES_ORDER, &updateServicesOffered
+	SERVICES_FIELDS_TYPES, TABLE_VERSION, SERVICES_FIELD_COUNT, TABLE_SERVICES_ORDER, &updateServicesOffered
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif
@@ -42,6 +42,7 @@ servicesOffered::servicesOffered ()
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( servicesOffered::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = SERVICES_FIELDS_TYPES;
 	DBRecord::helperFunction = this->helperFunction;
 }
 

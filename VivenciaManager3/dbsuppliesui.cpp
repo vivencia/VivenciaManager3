@@ -140,7 +140,7 @@ void dbSuppliesUI::createTable ()
 	m_table->setColumnHidden ( FLD_SUPPLIES_PLACE, true );
 
 	m_table->setSelectionMode ( QAbstractItemView::SingleSelection );
-	VDB ()->populateTable ( supplies_rec, m_table );
+	VDB ()->populateTable ( &dbSupplies::t_info, m_table );
 
 	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) { return tableChanged ( item ); } );
 	m_table->setCallbackForCellNavigation ( [&] ( const uint row, const uint col, const uint prev_row, const uint ) { return readRowData ( row, col, prev_row ); } );

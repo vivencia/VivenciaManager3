@@ -42,10 +42,9 @@ public:
 		vmwidget_swap ( *this, other );
 	}
 	
-	inline const vmWidget& operator= ( const vmWidget& t_item )
+	inline const vmWidget& operator= ( vmWidget widget )
 	{
-		vmWidget temp ( t_item );
-		vmwidget_swap ( *this, temp );
+		vmwidget_swap ( *this, widget );
 		return *this;
 	}
 	
@@ -56,7 +55,9 @@ public:
 
 	inline void setWidgetPtr ( QWidget* ptr ) { mWidgetPtr = ptr; }
 	inline QWidget* toQWidget () const { return mWidgetPtr; }
-	inline virtual void setText ( const QString& = QString::null, const bool = false ) {}
+	inline virtual void setText ( const QString& /*text*/, const bool /*b_notify*/ ) {}
+	inline virtual void setText ( const QString& /*text*/, const bool /*b_notify*/, const bool /*extra_param_1*/ ) {}
+	inline virtual void setText ( const QString& /*text*/, const bool /*b_notify*/, const bool /*extra_param_1*/, const bool /*extra_param_2*/ ) {}
 	inline virtual QString text () const { return emptyString; }
 	inline virtual QLatin1String qtClassName () const { return QLatin1String ( "" ); }
 	inline virtual QString defaultStyleSheet () const { return emptyString; }

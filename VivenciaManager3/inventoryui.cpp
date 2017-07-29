@@ -170,7 +170,7 @@ void InventoryUI::createTable ()
 	}
 	m_table->setKeepModificationRecords ( false );
 	m_table->initTable ( VDB ()->getHighestID ( TABLE_INVENTORY_ORDER ) );
-	VDB ()->populateTable ( inventory_rec, m_table );
+	VDB ()->populateTable ( &Inventory::t_info, m_table );
 }
 
 void InventoryUI::btnInventoryEditTable_clicked ( const bool checked )

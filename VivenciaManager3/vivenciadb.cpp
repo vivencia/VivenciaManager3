@@ -242,19 +242,25 @@ void VivenciaDB::doPreliminaryWork ()
 	if ( !mNewDB )
 	{
 		generalTable gen_rec;
+		bool b_version_mismatch ( false );
 		for ( uint i ( 1 ); i <= TABLES_IN_DB; ++i )
 		{
 			if ( gen_rec.readRecord ( i ) )
 			{
 				const QString& version ( recStrValue ( &gen_rec, FLD_GENERAL_TABLEVERSION ) );
 				if ( !version.isEmpty () )
-				{
-					if ( table_info[i-1]->version == static_cast<unsigned char>( version.at ( 0 ).toLatin1 () ) )
-						continue;
-				}
+					b_version_mismatch = table_info[i-1]->version != static_cast<unsigned char>( version.at ( 0 ).toLatin1 () );
+				else
+					b_version_mismatch = true;
 			}
-			if ( ( *table_info[i-1]->update_func ) () )
+			else
+				b_version_mismatch = true;
+			
+			if ( b_version_mismatch )
+			{
+				static_cast<void>( ( *table_info[i-1]->update_func ) () );
 				gen_rec.insertOrUpdate ( table_info[i-1] );
+			}
 		}
 	}
 }
@@ -515,7 +521,7 @@ uint VivenciaDB::recordCount ( const TABLE_INFO* __restrict t_info ) const
 	return 0;
 }
 
-void VivenciaDB::populateTable ( const DBRecord* db_rec, vmTableWidget* table ) const
+void VivenciaDB::populateTable ( const TABLE_INFO* t_info, vmTableWidget* table ) const
 {
 	threadedDBOps* worker ( new threadedDBOps () );
 	
@@ -527,9 +533,32 @@ void VivenciaDB::populateTable ( const DBRecord* db_rec, vmTableWidget* table ) 
 	worker->connect ( workerThread, &QThread::finished, workerThread, [&] () { return workerThread->deleteLater(); } );
 	workerThread->start();
 #else
-	worker->populateTable ( db_rec, table );
+	worker->populateTable ( t_info, table );
 	delete worker;
 #endif
+}
+
+void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const bool b_only_new ) const
+{
+	threadedDBOps* worker ( new threadedDBOps () );
+	//TODO threads
+	worker->updateTable ( t_info, table, b_only_new );
+	delete worker;
+}
+
+void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const uint id ) const
+{
+	threadedDBOps* worker ( new threadedDBOps () );
+	//TODO threads
+	worker->updateTable ( t_info, table, id );
+	delete worker;
+}
+void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const podList<uint>& ids ) const
+{
+	threadedDBOps* worker ( new threadedDBOps () );
+	//TODO threads
+	worker->updateTable ( t_info, table, ids );
+	delete worker;
 }
 //-----------------------------------------CREATE-DESTROY-MODIFY-------------------------------------
 
@@ -626,9 +655,9 @@ bool VivenciaDB::insertDBRecord ( DBRecord* db_rec )
 {
 	const uint table_order ( db_rec->t_info->table_order );
 	const bool bOutOfOrder ( db_rec->recordInt ( 0 ) >= 1 );
-	const uint new_id ( bOutOfOrder ? static_cast<uint>(db_rec->recordInt ( 0 )) : getNextID ( table_order ) );
+	const uint new_id ( bOutOfOrder ? static_cast<uint>( db_rec->recordInt ( 0 ) ) : getNextID ( table_order ) );
 
-	db_rec->setIntValue ( 0, static_cast<int>(new_id) );
+	db_rec->setIntValue ( 0, static_cast<int>( new_id ) );
 	db_rec->setValue ( 0, QString::number ( new_id ) );
 	const bool ret ( insertRecord ( db_rec ) );
 	if ( ret )
@@ -661,12 +690,16 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, const uint field, const bool lo
 			 * Save all the initial id fields. Fast table lookup and fast item lookup, that's
 			 * the goal of this part of the code
 			*/
-			uint i ( 0 );
-			while ( db_rec->fieldType ( i ) == DBTYPE_ID )
+			
+			uint i ( 0 ); // save first id fields. Useful for subsequent queries or finding related vmListItems
+			do
 			{
-				db_rec->setIntValue ( i, query.value ( static_cast<int>(i) ).toInt () );
-				i++;
-			}
+				if ( db_rec->fieldType ( i ) == DBTYPE_ID )
+					db_rec->setIntValue ( i, query.value ( static_cast<int>( i ) ).toInt () );
+				else
+					break;
+			} while ( ++i < db_rec->fieldCount () );
+			setRecValue ( db_rec, 0, query.value ( 0 ).toString () );
 			return true;
 		}
 	}
@@ -732,7 +765,7 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, co
 			do
 			{
 				if ( db_rec->fieldType ( i ) == DBTYPE_ID )
-					db_rec->setIntValue ( i, stquery.query->value ( static_cast<int>(i) ).toInt () );
+					db_rec->setIntValue ( i, stquery.query->value ( static_cast<int>( i ) ).toInt () );
 				else
 					break;
 			} while ( ++i < db_rec->fieldCount () );
@@ -1152,9 +1185,9 @@ threadedDBOps::threadedDBOps () :
 
 threadedDBOps::~threadedDBOps () {}
 
-void threadedDBOps::populateTable ( const DBRecord* db_rec, vmTableWidget* table )
+void threadedDBOps::populateTable ( const TABLE_INFO* t_info, vmTableWidget* table )
 {
-	const QString cmd ( QLatin1String ( "SELECT * FROM " ) + db_rec->t_info->table_name );
+	const QString cmd ( QLatin1String ( "SELECT * FROM " ) + t_info->table_name );
 
 	QSqlQuery query ( *( VDB ()->database () ) );
 	query.setForwardOnly ( true );
@@ -1164,7 +1197,7 @@ void threadedDBOps::populateTable ( const DBRecord* db_rec, vmTableWidget* table
 	uint row ( 0 );
 	do
 	{
-		for ( uint col ( 0 ); col < db_rec->t_info->field_count; col++)
+		for ( uint col ( 0 ); col < t_info->field_count; col++)
 			table->sheetItem ( row, col )->setText ( query.value ( static_cast<int>( col ) ).toString (), false, false );
 		if ( static_cast<int>( ++row ) >= table->totalsRow () )
 			table->appendRow ();
@@ -1173,4 +1206,65 @@ void threadedDBOps::populateTable ( const DBRecord* db_rec, vmTableWidget* table
 
 	if ( m_finishedFunc )
 		m_finishedFunc ();
+}
+
+//TODO test test test - only companyPurchases' new or save item so far gets to call here
+void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const QString& cmd, uint startrow )
+{
+	QSqlQuery query ( *( VDB ()->database () ) );
+	query.setForwardOnly ( true );
+	query.exec ( cmd );
+	if ( !query.first () ) return;
+
+	if ( static_cast<int>( startrow ) >= table->totalsRow () )
+		table->appendRow ();
+
+	do
+	{
+		for ( uint col ( 0 ); col < t_info->field_count; col++)
+			table->sheetItem ( startrow, col )->setText ( query.value ( static_cast<int>( col ) ).toString (), false, false );
+		if ( static_cast<int>( ++startrow ) >= table->totalsRow () )
+			table->appendRow ();
+		PROCESS_EVENTS // process pending events every 100 rows
+	} while ( query.next () );
+
+	if ( m_finishedFunc )
+		m_finishedFunc ();
+}
+
+void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const bool b_only_new )
+{
+	QString cmd;
+	if ( b_only_new )
+		cmd = QLatin1String ( "SELECT * FROM " ) + t_info->table_name + 
+				QLatin1String ( "WHERE ID>" ) + table->sheetItem ( static_cast<uint>( table->lastUsedRow () ), 0 )->text ();
+	else
+		cmd = QLatin1String ( "SELECT * FROM " ) + t_info->table_name;
+	updateTable ( t_info, table, cmd, b_only_new ? static_cast<uint>( table->lastUsedRow () ) + 1 : 0 );
+}
+
+void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const uint id )
+{
+	updateTable ( t_info, table, 
+				  QLatin1String ( "SELECT * FROM " ) + t_info->table_name + QLatin1String ( "WHERE ID=" ) + QString::number ( id ),
+				  /*Tables should be in order. A casual out of order record is OK, but more must be investigated the reason. The -10 is extrapollating*/
+				  static_cast<uint>( qMax ( static_cast<int>( id - 10 ), static_cast<int>( 0 ) ) ) );
+}
+
+void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const podList<uint>& ids )
+{
+	if ( !ids.isEmpty () )
+	{
+		QString id_string ( QString::number ( ids.first () ) );
+		uint id ( 0 );
+		do {
+			id = ids.next ();
+			if ( id > 0 )
+				id_string += CHR_COMMA + QString::number ( id );
+			else
+				break;
+		} while ( true );
+		updateTable ( t_info, table, 
+					  QLatin1String ( "SELECT * FROM " ) + t_info->table_name + QLatin1String ( "WHERE ID=" ) + id_string );
+	}
 }

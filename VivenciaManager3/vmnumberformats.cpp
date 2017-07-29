@@ -2058,14 +2058,14 @@ bool vmNumber::operator> ( const vmNumber& vmnumber ) const
 			switch ( vmnumber.m_type )
 			{
 				case VMNT_INT:
-					ret = nbr_part[0] < vmnumber.nbr_part[0];
+					ret = nbr_part[0] > vmnumber.nbr_part[0];
 				break;
 				case VMNT_PHONE:
 				case VMNT_DATE:
-					if ( nbr_part[0] == static_cast<int>(vmnumber.nbr_upart[0]) )
-						ret = nbr_part[1] > static_cast<int>(vmnumber.nbr_upart[1]);
+					if ( nbr_part[0] == static_cast<int>( vmnumber.nbr_upart[0] ) )
+						ret = nbr_part[1] > static_cast<int>( vmnumber.nbr_upart[1] );
 					else
-						ret = nbr_part[0] > static_cast<int>(vmnumber.nbr_upart[0]);
+						ret = nbr_part[0] > static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
@@ -2128,7 +2128,7 @@ vmNumber& vmNumber::operator-= ( const vmNumber& vmnumber )
 					nbr_part[0] -= vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					nbr_part[0] -= static_cast<int> ( vmnumber.nbr_upart[0] );
+					nbr_part[0] -= static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2143,7 +2143,7 @@ vmNumber& vmNumber::operator-= ( const vmNumber& vmnumber )
 					nbr_part[0] -= vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					nbr_part[0] -= static_cast<int> ( vmnumber.nbr_upart[0] );
+					nbr_part[0] -= static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
@@ -2174,7 +2174,7 @@ vmNumber& vmNumber::operator-= ( const vmNumber& vmnumber )
 					nbr_part[0] -= vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					nbr_part[0] -= static_cast<int> ( vmnumber.nbr_upart[0] );
+					nbr_part[0] -= static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
@@ -2204,8 +2204,8 @@ vmNumber& vmNumber::operator-= ( const vmNumber& vmnumber )
 		break;
 		case VMNT_DATE:
 			if ( vmnumber.m_type == VMNT_DATE )
-				setDate ( static_cast<int>(0 - vmnumber.nbr_upart[0]), static_cast<int>(0 - vmnumber.nbr_upart[1]),
-								static_cast<int>(0 - vmnumber.nbr_upart[2]), true );
+				setDate ( static_cast<int>( 0 - vmnumber.nbr_upart[0] ), static_cast<int>( 0 - vmnumber.nbr_upart[1] ),
+								static_cast<int>( 0 - vmnumber.nbr_upart[2] ), true );
 		break;
 		case VMNT_UNSET:
 		case VMNT_PHONE:
@@ -2236,7 +2236,7 @@ vmNumber& vmNumber::operator+= ( const vmNumber& vmnumber )
 					nbr_part[0] += vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					nbr_part[0] += static_cast<int> ( vmnumber.nbr_upart[0] );
+					nbr_part[0] += static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2251,7 +2251,7 @@ vmNumber& vmNumber::operator+= ( const vmNumber& vmnumber )
 					nbr_part[0] += vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					nbr_part[0] += static_cast<int> ( vmnumber.nbr_upart[0] );
+					nbr_part[0] += static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
@@ -2271,7 +2271,7 @@ vmNumber& vmNumber::operator+= ( const vmNumber& vmnumber )
 					nbr_part[0] += vmnumber.nbr_part[0];
 				break;
 				case VMNT_DATE:
-					nbr_part[0] += static_cast<int> ( vmnumber.nbr_upart[0] );
+					nbr_part[0] += static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
@@ -2301,8 +2301,8 @@ vmNumber& vmNumber::operator+= ( const vmNumber& vmnumber )
 		break;
 		case VMNT_DATE:
 			if ( vmnumber.m_type == VMNT_DATE )
-				setDate ( static_cast<int>(vmnumber.nbr_upart[0]), static_cast<int>(vmnumber.nbr_upart[1]),
-								static_cast<int>(vmnumber.nbr_upart[2]), true );
+				setDate ( static_cast<int>( vmnumber.nbr_upart[0] ), static_cast<int>( vmnumber.nbr_upart[1] ),
+								static_cast<int>( vmnumber.nbr_upart[2] ), true );
 		break;
 		case VMNT_UNSET:
 		case VMNT_PHONE:
@@ -2322,21 +2322,21 @@ vmNumber& vmNumber::operator+= ( const double number )
 	switch ( type () )
 	{
 		case VMNT_INT:
-			nbr_part[0] += static_cast<int> ( number );
+			nbr_part[0] += static_cast<int>( number );
 		break;
 		case VMNT_DOUBLE:
 		case VMNT_PRICE:
 		{
-			const int tens ( static_cast<int> ( number ) );
-			const double cents ( ( number - static_cast<double> ( number ) ) * 100.111 );
-			setPrice ( tens, static_cast<int> ( cents ), true );
+			const int tens ( static_cast<int>( number ) );
+			const double cents ( ( number - static_cast<double>( number ) ) * 100.111 );
+			setPrice ( tens, static_cast<int>( cents ), true );
 		}
 		break;
 		case VMNT_TIME:
-			setTime ( 10000, static_cast<int>(number), true );
+			setTime ( 10000, static_cast<int>( number ), true );
 		break;
 		case VMNT_DATE:
-			setDate ( static_cast<int>(number), 0, 0, true );
+			setDate ( static_cast<int>( number ), 0, 0, true );
 		break;
 		case VMNT_UNSET:
 		case VMNT_PHONE:
@@ -2396,8 +2396,8 @@ vmNumber& vmNumber::operator/= ( const vmNumber& vmnumber )
 				case VMNT_DATE:
 					if ( ( vmnumber.nbr_upart[0] ) != 0 && ( vmnumber.nbr_upart[1] != 0 ) )
 					{
-						nbr_part[0] /= static_cast<int> ( vmnumber.nbr_upart[0] );
-						nbr_part[1] /= static_cast<int> ( vmnumber.nbr_upart[1] );
+						nbr_part[0] /= static_cast<int>( vmnumber.nbr_upart[0] );
+						nbr_part[1] /= static_cast<int>( vmnumber.nbr_upart[1] );
 					}
 				break;
 				case VMNT_DOUBLE:

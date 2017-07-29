@@ -363,7 +363,7 @@ void clientListItem::update ()
 
 void clientListItem::createDBRecord ()
 {
-	setDBRec ( static_cast<DBRecord*> ( new Client ( true ) ) );
+	setDBRec ( static_cast<DBRecord*>( new Client ( true ) ) );
 	CLIENT_REC->setListItem ( this );
 }
 
@@ -543,13 +543,14 @@ void payListItem::updatePayCalendarItem ()
 	if ( !data ( Qt::UserRole + 1 ).isNull () )
 		label += QLatin1String ( "Pay use #: " ) + data ( Qt::UserRole + 1 ).toString ();
 	setLabel ( label );
+	setToolTip ( label );
 }
 
 void payListItem::updatePayExtraItems ( uint relation )
 {
 	if ( relation == PAY_ITEM_OVERDUE_ALL )
 	{
-		setLabel ( recStrValue ( static_cast<clientListItem*> (
+		setLabel ( recStrValue ( static_cast<clientListItem*>(
 			relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) +
 			CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
 			CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS );
@@ -567,7 +568,7 @@ void payListItem::relationActions ( vmListItem* ) {}
 
 void payListItem::createDBRecord ()
 {
-	setDBRec ( static_cast<DBRecord*> ( new Payment ( true ) ) );
+	setDBRec ( static_cast<DBRecord*>( new Payment ( true ) ) );
 	PAY_REC->setListItem ( this );
 }
 
@@ -576,7 +577,7 @@ bool payListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( PAY_REC->readRecord ( static_cast<uint>(id ()) ) );
+		return ( PAY_REC->readRecord ( static_cast<uint>( id () ) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -649,9 +650,9 @@ void buyListItem::update ()
 	}
 }
 
-void buyListItem::updateBuyExtraItem ( const QString& bodyText )
+void buyListItem::updateBuyExtraItem ( const QString& label )
 {
-	setLabel ( bodyText +
+	setLabel ( label +
 			  recStrValue ( static_cast<clientListItem*>( relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) + 
 			  CHR_R_PARENTHESIS );
 }
@@ -661,34 +662,29 @@ void buyListItem::updateBuyCalendarItem ()
 	static const QString purchaseDateStr ( TR_FUNC ( " (%1 at %2 - purchase date)" ) );
 	static const QString payDateStr ( TR_FUNC ( " (%1 at %2 - payment #%3)" ) );
 	
-	QString bodyText ( recStrValue ( static_cast<clientListItem*>(relatedItem ( RLI_CLIENTPARENT ))->clientRecord (), FLD_CLIENT_NAME ) +
+	QString label ( recStrValue ( static_cast<clientListItem*>( relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) +
 					   QLatin1String ( " - " ) + recStrValue ( buyRecord (), FLD_BUY_SUPPLIER ) );
 	
 	if ( data ( Qt::UserRole + 1 ).toBool () == true )
 	{
-		bodyText += purchaseDateStr.arg ( recStrValue ( buyRecord (), FLD_BUY_PRICE ), recStrValue ( buyRecord (), FLD_BUY_DATE ) );
+		label += purchaseDateStr.arg ( recStrValue ( buyRecord (), FLD_BUY_PRICE ), recStrValue ( buyRecord (), FLD_BUY_DATE ) );
 	}
 	
 	if ( data ( Qt::UserRole + 2 ).toBool () == true )
 	{
 		const uint paynumber ( data ( Qt::UserRole ).toUInt () );
-		const stringRecord payRecord ( stringTable ( recStrValue ( buyRecord (), FLD_BUY_PAYINFO ) ).readRecord ( paynumber - 1 ) );
-		//QString paynumber_str;
-		
-		//if ( bodyText.contains ( "#" ) )
-		//	paynumber_str = bodyText.right ( bodyText.length () - bodyText.indexOf ( "#" ) + 1 ) + CHR_COMMA;
-		//paynumber_str += QString::number ( paynumber );
-		
-		bodyText += payDateStr.arg ( payRecord.fieldValue ( PHR_VALUE ), payRecord.fieldValue ( PHR_DATE ), QString::number ( paynumber ) );
+		const stringRecord payRecord ( stringTable ( recStrValue ( buyRecord (), FLD_BUY_PAYINFO ) ).readRecord ( paynumber - 1 ) );		
+		label += payDateStr.arg ( payRecord.fieldValue ( PHR_VALUE ), payRecord.fieldValue ( PHR_DATE ), QString::number ( paynumber ) );
 	}
-	setLabel ( bodyText );
+	setLabel ( label );
+	setToolTip ( label );
 }
 
 void buyListItem::relationActions ( vmListItem* ) {}
 
 void buyListItem::createDBRecord ()
 {
-	setDBRec ( static_cast<DBRecord*> ( new Buy ( true ) ) );
+	setDBRec ( static_cast<DBRecord*>( new Buy ( true ) ) );
 	BUY_REC->setListItem ( this );
 }
 
@@ -697,7 +693,7 @@ bool buyListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( BUY_REC->readRecord ( static_cast<uint>(id ()) ) );
+		return ( BUY_REC->readRecord ( static_cast<uint>( id () ) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 

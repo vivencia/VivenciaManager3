@@ -10,6 +10,11 @@
 
 static const unsigned int TABLE_VERSION ( 'A' );
 
+constexpr DB_FIELD_TYPE JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
+	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_TIME,
+	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD
+};
+
 bool updateJobTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
@@ -51,7 +56,8 @@ Job::Job ( const bool connect_helper_funcs )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
-
+	DBRecord::mFieldsTypes = JOBS_FIELDS_TYPE;
+	
 	if ( connect_helper_funcs )
 	{
 		DBRecord::helperFunction = this->helperFunction;
@@ -111,7 +117,7 @@ const QString Job::jobAddress ( const Job* const job, Client* client )
 
 	if ( job != nullptr )
 	{
-		if ( !client->readRecord ( recStrValue ( job, FLD_JOB_CLIENTID ).toInt () ) )
+		if ( !client->readRecord ( recStrValue ( job, FLD_JOB_CLIENTID ).toUInt () ) )
 			return emptyString;
 	}
 	return	recStrValue ( client, FLD_CLIENT_STREET ) + CHR_COMMA + CHR_SPACE +
@@ -125,7 +131,7 @@ QString Job::jobSummary ( const QString& jobid )
 	if ( !jobid.isEmpty () )
 	{
 		Job job;
-		if ( job.readRecord ( jobid.toInt () ) )
+		if ( job.readRecord ( jobid.toUInt () ) )
 		{
 			const QLatin1String str_sep ( " - " );
 			return ( recStrValue ( &job, FLD_JOB_TYPE ) + str_sep +
@@ -137,32 +143,34 @@ QString Job::jobSummary ( const QString& jobid )
 	return QStringLiteral ( "No job" );
 }
 
-QString Job::concatenateJobInfo ( const Job& job )
+QString Job::concatenateJobInfo ( const Job& job , const bool b_skip_report )
 {
 	QString info;
 
-	info = QStringLiteral ( "Serviço " ) + recStrValue ( &job, FLD_JOB_PROJECT_ID ) + CHR_NEWLINE;
-	info += QLatin1String ( "Cliente: " ) + recStrValue ( &job, FLD_JOB_CLIENTID ) + CHR_NEWLINE;
+	info = APP_TR_FUNC ( "Serviço " ) + recStrValue ( &job, FLD_JOB_PROJECT_ID ) + CHR_NEWLINE;
+	info += QLatin1String ( "Cliente: " ) + Client::clientName ( recStrValue ( &job, FLD_JOB_CLIENTID ).toUInt () ) + CHR_NEWLINE;
 	info += QLatin1String ( "Catetoria: " ) + recStrValue ( &job, FLD_JOB_TYPE ) + CHR_NEWLINE;
 
-	info += QStringLiteral ( "Período de execução: " ) +
+	info += APP_TR_FUNC ( "Preço do serviço: " ) + recStrValue ( &job, FLD_JOB_PRICE ) + CHR_NEWLINE;
+			
+	info += APP_TR_FUNC ( "Período de execução: " ) +
 			job.date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_LONG_DATE ) + QLatin1String ( " a " ) +
 			job.date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_LONG_DATE ) + CHR_NEWLINE;
 
-	info += QStringLiteral ( "Duração do serviço: " ) + job.time ( FLD_JOB_TIME ).toTime ( vmNumber::VTF_FANCY ) + CHR_NEWLINE;
+	info += APP_TR_FUNC ( "Duração do serviço: " ) + job.time ( FLD_JOB_TIME ).toTime ( vmNumber::VTF_FANCY ) + CHR_NEWLINE;
 
 	if ( !recStrValue ( &job, FLD_JOB_PROJECT_ID ).isEmpty () )
 		info += QLatin1String ( "Projeto #: " ) + recStrValue ( &job, FLD_JOB_PROJECT_ID ) + CHR_NEWLINE;
 
-	if ( !recStrValue ( &job, FLD_JOB_REPORT ).isEmpty () )
+	if ( !b_skip_report && !recStrValue ( &job, FLD_JOB_REPORT ).isEmpty () )
 	{
-		info += QStringLiteral ( "Relatório de execução:" ) + CHR_NEWLINE;
+		info += APP_TR_FUNC ( "Relatório de execução:" ) + CHR_NEWLINE;
 		const stringTable jobReport ( recStrValue ( &job, FLD_JOB_REPORT ) );
 		if ( jobReport.firstStr () ) {
 			stringRecord jobDay;
 			do
 			{
-				jobDay.fromString ( jobReport.curRecord ().toString () );
+				jobDay.fromString ( jobReport.curRecordStr () );
 				info += CHR_NEWLINE + jobDay.fieldValue ( JRF_DATE ) + QLatin1String ( " - " ) +
 						jobDay.fieldValue ( JRF_WHEATHER ) + QLatin1String ( ": " ) +
 						jobDay.fieldValue ( JRF_REPORT ) + CHR_NEWLINE;

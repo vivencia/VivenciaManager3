@@ -376,22 +376,23 @@ void textEditWithCompleter::focusInEvent ( QFocusEvent* e )
 	{
 		if  ( mCompleter )
 			mCompleter->setWidget ( this );
+		e->setAccepted ( true ); // do not propagate
 		QTextEdit::focusInEvent ( e );
 	}
-	e->setAccepted ( true ); // do not propagate
+	else
+		e->setAccepted ( false );
 }
 
 void textEditWithCompleter::focusOutEvent ( QFocusEvent* e )
 {
-	if ( e != nullptr )
+	if ( !isReadOnly () )
 	{
-		if ( !isReadOnly () )
-		{
-			saveContents ( false );
-			QTextEdit::focusOutEvent ( e );
-		}
+		saveContents ( false );
 		e->setAccepted ( true ); // do not propagate
+		QTextEdit::focusOutEvent ( e );
 	}
+	else
+		e->setAccepted ( false );
 }
 
 void textEditWithCompleter::mousePressEvent ( QMouseEvent* e )

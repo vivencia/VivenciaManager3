@@ -65,6 +65,8 @@ static const QString chkPayOverdueToolTip_overdue[3] = {
 
 static const QString jobPicturesSubDir ( QStringLiteral ( "Pictures/" ) );
 
+auto processEvents=[]()->void { QApplication::sendPostedEvents (); QApplication::processEvents (); };
+
 void deleteMainWindowInstance ()
 {
 	heap_del ( MainWindow::s_instance );
@@ -404,12 +406,12 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 					ui->clientsList->setCurrentItem ( client_item, false );
 				mClientCurItem = client_item;
 				fillAllLists ( client_item );
-				if ( !job_item )
-					job_item = client_item->jobs->last ();
-				displayJob ( job_item, true, buy_item );
-				if ( ui->tabPaysLists->currentIndex () == 1 )
-					loadClientOverduesList ();
 			}
+			if ( !job_item )
+				job_item = client_item->jobs->last ();
+			displayJob ( job_item, true, buy_item );
+			if ( ui->tabPaysLists->currentIndex () == 1 )
+				loadClientOverduesList ();
 		}
 	}
 	saveView ();
@@ -608,7 +610,7 @@ void MainWindow::showJobSearchResult ( vmListItem* item, const bool bshow )
 					{
 						if ( job_item->searchSubFields ()->at ( day ) != job_item->searchSubFields ()->defaultValue () )
 						{
-							static_cast<vmListItem*> ( ui->lstJobDayReport->item ( static_cast<int>(day) ) )->highlight ( bshow ? vmBlue : vmDefault_Color );
+							static_cast<vmListItem*>( ui->lstJobDayReport->item( static_cast<int>(day) ) )->highlight ( bshow ? vmBlue : vmDefault_Color );
 							jobWidgetList.at ( FLD_JOB_REPORT + job_item->searchSubFields ()->at ( day ) )->highlight ( bshow ? vmBlue : vmDefault_Color, SEARCH_UI ()->searchTerm () );
 						}
 					}
@@ -632,11 +634,9 @@ void MainWindow::setupJobPanel ()
 			  this, [&] ( const bool checked ) { ui->txtJobProjectPath->setEditable ( checked ); if ( checked ) ui->txtJobProjectPath->setFocus (); } ) );
 
 	ui->jobsList->setUtilitiesPlaceLayout ( ui->layoutJobsListUtility );
-	ui->jobsList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) {
-		return jobsListWidget_currentItemChanged ( item ); } );
+	ui->jobsList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return jobsListWidget_currentItemChanged ( item ); } );
 	ui->lstJobDayReport->setParentLayout ( ui->gLayoutJobExtraInfo );
-	ui->lstJobDayReport->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) {
-		return jobDayReportListWidget_currentItemChanged ( item ); } );
+	ui->lstJobDayReport->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return lstJobDayReport_currentItemChanged ( item ); } );
 
 	saveJobWidget ( ui->txtJobID, FLD_JOB_ID );
 	saveJobWidget ( ui->cboJobType, FLD_JOB_TYPE );
@@ -903,7 +903,7 @@ void MainWindow::jobKeyPressedSelector ( const QKeyEvent* ke )
 			}
 		break;
 		case Qt::Key_Escape:
-			static_cast<void>(cancelJob ( mJobCurItem ));
+			static_cast<void>( cancelJob ( mJobCurItem ) );
 		break;
 	}
 }
@@ -911,20 +911,22 @@ void MainWindow::jobKeyPressedSelector ( const QKeyEvent* ke )
 void MainWindow::jobsListWidget_currentItemChanged ( vmListItem* item )
 {
 	insertNavItem ( item );
-	displayJob ( static_cast<jobListItem*> ( item ) );
+	displayJob ( static_cast<jobListItem*>( item ) );
 }
 
-void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item )
+void MainWindow::lstJobDayReport_currentItemChanged ( vmListItem* item )
 {
 	if ( item && !item->data ( JILUR_REMOVED ).toBool () )
 	{
-		// Sometimes, we do not receive, in time, Qt's notification that there was a FocusOut event for the txtTextEditWithCompler.
-		// The control loses focus to the lstJobDayReport but its text content is lost if we don't force its synchronization
-		const triStateType editing_action ( mJobCurItem ? static_cast<TRI_STATE>(mJobCurItem->action () >= ACTION_ADD) : TRI_UNDEF );
-		if ( editing_action.isOn () )
+		const bool b_isediting ( item->data ( JILUR_ADDED ).toBool () || item->data ( JILUR_EDITED ).toBool () );
+		
+		if ( b_isediting )
 		{
-			ui->txtJobReport->saveContents ( true, true );
+			processEvents ();
+			ui->txtJobReport->saveContents ();
+			updateJobInfo ( ui->txtJobReport->currentText (), JILUR_REPORT, ui->lstJobDayReport->prevItem () );
 		}
+		//ui->dteJobAddDate->setEditable ( b_isediting );
 		
 		const vmNumber time1 ( item->data ( JILUR_START_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
 		ui->timeJobStart->setTime ( time1 );
@@ -937,6 +939,18 @@ void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item )
 		showDayPictures ( timeAndDate );
 		ui->txtJobWheather->setText ( item->data ( JILUR_WHEATHER ).toString () );
 		ui->txtJobReport->textEditWithCompleter::setText ( item->data ( JILUR_REPORT ).toString () );
+		
+		const triStateType editing_action ( mJobCurItem ? static_cast<TRI_STATE>( mJobCurItem->action () != ACTION_READ ) : TRI_UNDEF );
+		const bool b_hasDays ( ( ui->lstJobDayReport->count () > 0 ) && editing_action.isOn () );
+		
+		ui->btnJobAddDay->setEnabled ( editing_action.isOn () );
+		ui->btnJobEditDay->setEnabled ( b_hasDays && !item->data ( JILUR_EDITED ).toBool () );
+		ui->btnJobDelDay->setEnabled ( b_hasDays );
+		ui->btnJobCancelDelDay->setEnabled ( b_hasDays ? ui->lstJobDayReport->currentItem ()->data ( JILUR_REMOVED ).toBool () : false );
+		//if ( b_hasDays )
+		//	dteJobAddDate_dateAltered ();
+		//else
+			controlJobDayForms ( b_hasDays ? b_isediting : false );
 	}
 	else
 	{
@@ -945,8 +959,8 @@ void MainWindow::jobDayReportListWidget_currentItemChanged ( vmListItem* item )
 		ui->txtJobTotalDayTime->setText ( emptyString );
 		ui->txtJobWheather->setText ( emptyString );
 		ui->txtJobReport->textEditWithCompleter::setText ( item ? TR_FUNC ( " - THIS DAY WAS REMOVED - " ) : emptyString );
-		ui->btnJobDelDay->setEnabled ( false );
-		ui->btnJobCancelDelDay->setEnabled ( false );
+		ui->btnJobCancelDelDay->setEnabled ( item ? item->data ( JILUR_REMOVED ).toBool () : false );
+		controlJobDayForms ( false );
 	}
 	ui->btnJobNextDay->setEnabled ( ui->lstJobDayReport->currentRow () < (ui->lstJobDayReport->count () - 1) );
 	ui->btnJobPrevDay->setEnabled ( ui->lstJobDayReport->currentRow () >= 1 );
@@ -964,7 +978,6 @@ void MainWindow::controlJobForms ( const jobListItem* const job_item )
 	ui->txtJobPicturesPath->setEditable ( editing_action.isOn () );
 	ui->dteJobStart->setEditable ( editing_action.isOn () );
 	ui->dteJobEnd->setEditable ( editing_action.isOn () );
-	ui->dteJobAddDate->setEditable ( editing_action.isOn () );
 
 	ui->btnJobSave->setEnabled ( editing_action.isOn () ? job_item->isGoodToSave () : false );
 	ui->btnJobEdit->setEnabled ( editing_action.isOff () );
@@ -983,35 +996,33 @@ void MainWindow::controlJobForms ( const jobListItem* const job_item )
 		jobsPicturesMenuAction->setChecked ( true );
 	}
 	ui->btnQuickProject->setEnabled ( editing_action.isOff () ? true : ( editing_action.isOn () ? job_item->fieldInputStatus ( FLD_JOB_STARTDATE ) : false ) );
-	controlJobDayForms ( job_item );
+	controlJobDaySection ( job_item );
 	controlJobPictureControls ();
 }
 
-void MainWindow::controlJobDayForms ( const jobListItem* const job_item )
+void MainWindow::controlJobDaySection ( const jobListItem* const job_item )
 {
-	const triStateType editing_action ( job_item ? static_cast<TRI_STATE> ( job_item->action () != ACTION_READ ) : TRI_UNDEF );
+	const triStateType editing_action ( job_item ? static_cast<TRI_STATE>( job_item->action () != ACTION_READ ) : TRI_UNDEF );
 	const bool b_hasDays ( ( ui->lstJobDayReport->count () > 0 ) && editing_action.isOn () );
-	ui->timeJobStart->setEditable ( b_hasDays );
-	ui->timeJobEnd->setEditable ( b_hasDays );
-	ui->txtJobWheather->setEditable ( b_hasDays );
-	ui->txtJobTotalDayTime->setEditable ( b_hasDays );
-	ui->txtJobReport->setEditable ( b_hasDays );
-
-	if ( editing_action.isOn () )
-	{
-		dteJobAddDate_dateAltered ();
-	}
-	else
-	{
-		ui->btnJobAddDay->setEnabled ( false );
-		ui->btnJobEditDay->setEnabled ( b_hasDays );	
-	}
+	
+	ui->btnJobAddDay->setEnabled ( editing_action.isOn () );
+	ui->btnJobEditDay->setEnabled ( b_hasDays );
 	ui->btnJobDelDay->setEnabled ( b_hasDays );
 	ui->btnJobCancelDelDay->setEnabled ( b_hasDays ? ui->lstJobDayReport->currentItem ()->data ( JILUR_REMOVED ).toBool () : false );
 	ui->btnJobSeparateReportWindow->setEnabled ( job_item != nullptr );
 	
 	ui->btnJobPrevDay->setEnabled ( ui->lstJobDayReport-> currentRow () >= 1 );
 	ui->btnJobNextDay->setEnabled ( ui->lstJobDayReport->currentRow () < ( ui->lstJobDayReport->count () - 1 ) );
+	lstJobDayReport_currentItemChanged ( ui->lstJobDayReport->currentItem () );
+}
+
+void MainWindow::controlJobDayForms ( const bool b_editable )
+{
+	ui->timeJobStart->setEditable ( b_editable );
+	ui->timeJobEnd->setEditable ( b_editable);
+	ui->txtJobWheather->setEditable ( b_editable );
+	ui->txtJobTotalDayTime->setEditable ( b_editable );
+	ui->txtJobReport->setEditable ( b_editable );
 }
 
 void MainWindow::controlJobPictureControls ()
@@ -1034,6 +1045,7 @@ bool MainWindow::saveJob ( jobListItem* job_item )
 {
 	if ( job_item )
 	{
+		processEvents ();
 		ui->txtJobReport->saveContents ( true ); // force committing the newest text to the buffers. Avoid depending on Qt's signals, which might occur later than when reaching here
 		Job* job ( job_item->jobRecord () );
 		if ( job->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
@@ -1165,13 +1177,13 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 				mJobCurItem = job_item;
 				displayPay ( job_item->payItem (), true );
 				fillJobBuyList ( job_item );
-				if ( !buy_item )
-				{
-					if ( !job_item->buys->isEmpty () )
-						buy_item = static_cast<buyListItem*>( job_item->buys->last ()->relatedItem ( RLI_CLIENTITEM ) );
-				}
-				displayBuy ( buy_item, true );
 			}
+			if ( !buy_item )
+			{
+				if ( !job_item->buys->isEmpty () )
+					buy_item = static_cast<buyListItem*>( job_item->buys->last ()->relatedItem ( RLI_CLIENTITEM ) );
+			}
+			displayBuy ( buy_item, true );
 		}
 	}
 	else
@@ -1186,7 +1198,6 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 
 void MainWindow::loadJobInfo ( const Job* const job )
 {
-	decodeJobReportInfo ( job );
 	if ( job )
 	{
 		ui->txtJobID->setText ( recStrValue ( job, FLD_JOB_ID ) );
@@ -1219,6 +1230,7 @@ void MainWindow::loadJobInfo ( const Job* const job )
 	}
 	scanJobImages ();
 	setUpJobButtons ( ui->txtJobProjectPath->text () );
+	decodeJobReportInfo ( job );
 }
 
 jobListItem* MainWindow::getJobItem ( const clientListItem* const parent_client, const uint id ) const
@@ -1226,7 +1238,7 @@ jobListItem* MainWindow::getJobItem ( const clientListItem* const parent_client,
 	if ( id >= 1 && parent_client )
 	{
 		int i ( 0 );
-		while ( i < static_cast<int> ( parent_client->jobs->count () ) )
+		while ( i < static_cast<int>( parent_client->jobs->count () ) )
 		{
 			if ( parent_client->jobs->at ( i )->dbRecID () == id )
 				return parent_client->jobs->at ( i );
@@ -1317,6 +1329,7 @@ void MainWindow::decodeJobReportInfo ( const Job* const job )
 						}
 						day_entry->setData ( JILUR_ADDED, false );
 						day_entry->setData ( JILUR_REMOVED, false );
+						day_entry->setData ( JILUR_EDITED, false );
 						ui->lstJobDayReport->addItem ( day_entry );
 						job->jobItem ()->daysList->append ( day_entry );
 					}
@@ -1340,7 +1353,7 @@ void MainWindow::fixJobDaysList ( jobListItem* const job_item )
 	vmListItem* day_item ( daysList->last () );
 	if ( day_item != nullptr )
 	{
-		int day (day_item->row ());
+		int day ( day_item->row () );
 		do
 		{
 			if ( day_item->data ( JILUR_ADDED ).toBool () )
@@ -1364,12 +1377,14 @@ void MainWindow::revertDayItem ( vmListItem* day_item )
 	day_item->setData ( JILUR_REMOVED, false );
 }
 
+
 void MainWindow::updateJobInfo ( const QString& text, const uint user_role, vmListItem* const item )
 {
 	vmListItem* const day_entry ( item ? item : ui->lstJobDayReport->currentItem () );
 	if ( day_entry )
 	{
 		const uint cur_row ( static_cast<uint>( day_entry->row () ) );
+		processEvents ();
 		day_entry->setData ( static_cast<int>( user_role ), text );
 		stringTable job_report ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_REPORT ) );
 		stringRecord rec ( job_report.readRecord ( cur_row ) );
@@ -1390,7 +1405,7 @@ void MainWindow::addJobPayment ( jobListItem* const job_item )
 	pay_item->setAction ( ACTION_ADD, true );
 	pay_item->addToList ( ui->paysList );
 	pay_item->setDBRecID ( static_cast<uint>( recIntValue ( pay_item->payRecord (), FLD_PAY_ID ) ) );
-	static_cast<clientListItem*>(job_item->relatedItem ( RLI_CLIENTPARENT ))->pays->append ( pay_item );
+	static_cast<clientListItem*>( job_item->relatedItem ( RLI_CLIENTPARENT ) )->pays->append ( pay_item );
 	job_item->setPayItem ( pay_item );
 	insertEditItem ( static_cast<vmListItem*>( mPayCurItem ) );
 	mPayCurItem = pay_item;
@@ -1513,7 +1528,7 @@ void MainWindow::rescanJobDaysList ( jobListItem *const job_item )
 	for ( int i ( 0 ); i < ui->lstJobDayReport->count (); )
 	{
 		day_entry = ui->lstJobDayReport->item ( i );
-		if ( day_entry->data ( JILUR_REMOVED ).toBool () == true )
+		if ( day_entry->data ( JILUR_REMOVED ).toBool () )
 		{
 			ui->lstJobDayReport->removeRow_list ( static_cast<uint>( i ) ); // Let the jobListItem handle the item deletion
 			job_item->daysList->remove ( i, true );
@@ -1523,8 +1538,10 @@ void MainWindow::rescanJobDaysList ( jobListItem *const job_item )
 		}
 		else
 		{
-			if ( day_entry->data ( JILUR_ADDED ).toBool () == true )
+			if ( day_entry->data ( JILUR_ADDED ).toBool () )
 				day_entry->setData ( JILUR_ADDED, false );
+			if ( day_entry->data ( JILUR_EDITED ).toBool () )
+				day_entry->setData ( JILUR_EDITED, false );
 			if ( b_reorder )
 			{
 				itemText = day_entry->data ( Qt::DisplayRole ).toString (); //QListWidgetItem::text () is an inline function that calls data ()
@@ -1597,6 +1614,7 @@ void MainWindow::fillCalendarJobsList ( const stringTable& jobids, vmListWidget*
 							curLabel.insert ( curLabel.count () - 1, CHR_COMMA + day );
 							job_item->setText ( curLabel, false, false, false );
 						}
+						job_item->setToolTip ( job_item->text () );
 					}
 				}
 				str_rec = &jobids.next ();
@@ -1624,7 +1642,8 @@ void MainWindow::selectJob ()
 
 void MainWindow::btnJobSelect_clicked ()
 {
-	if ( selJob_callback && mJobCurItem ) {
+	if ( selJob_callback && mJobCurItem )
+	{
 		selJob_callback ( mJobCurItem->dbRecID () );
 		selJob_callback = nullptr;
 		controlFormsForJobSelection ( false );
@@ -1633,44 +1652,26 @@ void MainWindow::btnJobSelect_clicked ()
 
 void MainWindow::btnJobAddDay_clicked ()
 {
-	const vmNumber vmdate ( ui->dteJobAddDate->date () );
-	jobDayReportListWidget_currentItemChanged ( nullptr ); // clear forms
-
+	lstJobDayReport_currentItemChanged ( nullptr ); // clear forms
+	ui->dteJobAddDate->setEditable ( true );
+	
 	const int n_days ( ui->lstJobDayReport->count () + 1 );
-	vmListItem* new_item ( new vmListItem ( QString::number ( n_days ) + lstJobReportItemPrefix + vmdate.toDate ( vmNumber::VDF_HUMAN_DATE ) ) );
+	vmListItem* new_item ( new vmListItem ( QString::number ( n_days ) + lstJobReportItemPrefix ) );
 	new_item->setData ( JILUR_ADDED, true );
 	new_item->setData ( JILUR_REMOVED, false );
-	new_item->addToList ( ui->lstJobDayReport );
-	updateJobInfo ( vmdate.toDate ( vmNumber::VDF_DB_DATE ), JILUR_DATE, new_item );
-	
-	if ( n_days == 1 )
-	{
-		ui->dteJobStart->setDate ( vmdate, true );
-		controlJobDayForms ( mJobCurItem );
-	}
-	ui->dteJobEnd->setDate ( vmdate, true );
-	ui->btnJobPrevDay->setEnabled ( n_days > 1 );
-	ui->btnJobNextDay->setEnabled ( false );
-	ui->btnJobDelDay->setEnabled ( true );
-	ui->btnJobCancelDelDay->setEnabled ( false );
-	ui->btnJobEditDay->setEnabled ( true );
-	ui->btnJobAddDay->setEnabled( false );
+	new_item->setData ( JILUR_EDITED, false );
 	mJobCurItem->daysList->append ( new_item );
-	//ui->lstJobDayReport->setIgnoreChanges ( false );
+	new_item->addToList ( ui->lstJobDayReport );
+	
+	ui->dteJobAddDate->setFocus ();
 }
 
 void MainWindow::btnJobEditDay_clicked ()
 {
-	const vmNumber vmdate ( ui->dteJobAddDate->date () );
-	ui->lstJobDayReport->setIgnoreChanges ( true );
-	vmListItem* day_entry ( static_cast<vmListItem*>( ui->lstJobDayReport->currentItem () ) );
-	day_entry->setText ( QString::number ( ui->lstJobDayReport->currentRow () + 1 ) + lstJobReportItemPrefix + vmdate.toDate ( vmNumber::VDF_HUMAN_DATE ), false, false, false );
-	updateJobInfo ( vmdate.toDate ( vmNumber::VDF_DB_DATE ), JILUR_DATE, day_entry );
-
-	if ( ui->lstJobDayReport->currentRow () == 0 ) // first day
-		ui->dteJobStart->setDate ( vmdate, true );
-	else if ( ui->lstJobDayReport->currentRow () == (ui->lstJobDayReport->count () - 1) ) // last day
-		ui->dteJobEnd->setDate ( vmdate, true );
+	static_cast<vmListItem*>( ui->lstJobDayReport->currentItem () )->setData ( JILUR_EDITED, true );
+	ui->dteJobAddDate->setEditable ( true );
+	controlJobDayForms ( true );
+	ui->dteJobAddDate->setFocus ();
 }
 
 void MainWindow::btnJobDelDay_clicked ()
@@ -1684,10 +1685,13 @@ void MainWindow::btnJobDelDay_clicked ()
 		item->setBackground ( QBrush ( Qt::red ) );
 		item->setData ( JILUR_REMOVED, true );
 		ui->btnJobCancelDelDay->setEnabled ( true );
-		jobDayReportListWidget_currentItemChanged ( item ); // visual feedback
-		if ( (item->row () == ui->lstJobDayReport->rowCount () - 1) && (item->row () > 0) )
+		lstJobDayReport_currentItemChanged ( item ); // visual feedback
+		if ( ui->lstJobDayReport->count () > 1 )
 		{
-			ui->dteJobEnd->setDate ( vmNumber ( ui->lstJobDayReport->item ( item->row () - 1 )->data ( JILUR_DATE ).toString (), VMNT_DATE, vmNumber::VDF_DB_DATE ), true );
+			if ( item->row () == 0 && ui->lstJobDayReport->count () > 1 )
+				ui->dteJobStart->setDate ( vmNumber ( ui->lstJobDayReport->item ( 1 )->data ( JILUR_DATE ).toString (), VMNT_DATE, vmNumber::VDF_DB_DATE ), true );
+			if ( item->row () == ui->lstJobDayReport->rowCount () - 1 )
+				ui->dteJobEnd->setDate ( vmNumber ( ui->lstJobDayReport->item ( item->row () - 1 )->data ( JILUR_DATE ).toString (), VMNT_DATE, vmNumber::VDF_DB_DATE ), true );
 		}
 		// Remove this day's time from total time
 		ui->timeJobStart->setTime ( vmNumber::emptyNumber, false );
@@ -1704,7 +1708,7 @@ void MainWindow::btnJobCancelDelDay_clicked ()
 	if ( item && item->data ( JILUR_REMOVED ).toBool () == true )
 	{
 		revertDayItem ( item );
-		jobDayReportListWidget_currentItemChanged ( item ); // visual feedback
+		lstJobDayReport_currentItemChanged ( item ); // visual feedback
 		calcJobTime (); // uptate job total time
 	}
 }
@@ -1724,7 +1728,7 @@ void MainWindow::btnJobPrevDay_clicked ()
 void MainWindow::btnJobNextDay_clicked ()
 {
 	int current_row ( ui->lstJobDayReport->currentRow () );
-	if ( current_row < signed( ui->lstJobDayReport->count () - 1 ) )
+	if ( current_row < ui->lstJobDayReport->count () - 1 )
 	{
 		ui->lstJobDayReport->setCurrentRow ( ++current_row, true );
 		ui->btnJobPrevDay->setEnabled ( true );
@@ -1859,9 +1863,29 @@ void MainWindow::dteJob_dateAltered ( const vmWidget* const sender )
 void MainWindow::dteJobAddDate_dateAltered ()
 {
 	const vmNumber vmdate ( ui->dteJobAddDate->date () );
-	const triStateType res ( dateIsInDaysList ( vmdate.toDate ( vmNumber::VDF_DB_DATE ) ) );
-	ui->btnJobAddDay->setEnabled ( !res.isTrue () );
-	ui->btnJobEditDay->setEnabled ( res.isOff () );
+	if ( vmdate.isDateWithinRange ( vmNumber::currentDate, 0, 1 ) )
+	{
+		const triStateType date_is_in_list ( dateIsInDaysList ( vmdate.toDate ( vmNumber::VDF_DB_DATE ) ) );
+		controlJobDayForms ( date_is_in_list.isOff () );
+	
+		if ( date_is_in_list.isOff () )
+		{
+			vmListItem* day_entry ( static_cast<vmListItem*>( ui->lstJobDayReport->currentItem () ) );
+			if ( day_entry != nullptr )
+			{
+				ui->btnJobEditDay->setEnabled ( !day_entry->data ( JILUR_EDITED ).toBool () && !day_entry->data ( JILUR_ADDED ).toBool () );
+				day_entry->setText ( QString::number ( ui->lstJobDayReport->currentRow () + 1 ) + lstJobReportItemPrefix + vmdate.toDate ( vmNumber::VDF_HUMAN_DATE ), false, false, false );
+				updateJobInfo ( vmdate.toDate ( vmNumber::VDF_DB_DATE ), JILUR_DATE, day_entry );
+
+				if ( day_entry->row () == 0 ) // first day
+					ui->dteJobStart->setDate ( vmdate, true );
+				if ( day_entry->row () == ui->lstJobDayReport->count () - 1 )
+					ui->dteJobEnd->setDate ( vmdate, true );
+				
+				ui->timeJobStart->setFocus ();
+			}
+		}
+	}
 }
 //-----------------------------------EDITING-FINISHED-JOB----------------------------------------------------
 
@@ -1874,10 +1898,10 @@ void MainWindow::savePayWidget ( vmWidget* widget, const int id )
 
 void MainWindow::showPaySearchResult ( vmListItem* item, const bool bshow )
 {
-	payListItem* pay_item ( static_cast<payListItem*> ( item ) );
+	payListItem* pay_item ( static_cast<payListItem*>( item ) );
 	if ( bshow ) {
-		displayClient ( static_cast<clientListItem*> ( item->relatedItem ( RLI_CLIENTPARENT ) ), true,
-						static_cast<jobListItem*> ( item->relatedItem ( RLI_JOBPARENT ) ) );
+		displayClient ( static_cast<clientListItem*>( item->relatedItem ( RLI_CLIENTPARENT ) ), true,
+						static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT ) ) );
 		displayPay ( pay_item, true );
 	}
 	for ( uint i ( 0 ); i < PAY_FIELD_COUNT; ++i )
@@ -1977,7 +2001,7 @@ void MainWindow::paysListWidget_currentItemChanged ( vmListItem* item )
 	{
 		insertNavItem ( item );
 		if ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT )) != mJobCurItem )
-			displayJob ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT )), true );
+			displayJob ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT ) ), true );
 	}
 }
 
@@ -1985,14 +2009,14 @@ void MainWindow::paysOverdueListWidget_currentItemChanged ( vmListItem* item )
 {
 	if ( item->relatedItem ( RLI_CLIENTITEM ) != mPayCurItem )
 	{
-		payListItem* pay_item ( static_cast<payListItem*> ( item ) );
+		payListItem* pay_item ( static_cast<payListItem*>( item ) );
 		/* displayClient will ignore a chunk of calls if pay_item->client_parent == mClientCurItem, which it is and supposed to.
 		* Force reselection of current client
 		*/
 		mClientCurItem = nullptr;
 		insertNavItem ( item->relatedItem ( RLI_CLIENTITEM ) );
-		displayClient ( static_cast<clientListItem*> ( pay_item->relatedItem ( RLI_CLIENTPARENT ) ), true,
-			static_cast<jobListItem*> ( pay_item->relatedItem ( RLI_JOBPARENT ) ) );
+		displayClient ( static_cast<clientListItem*>( pay_item->relatedItem ( RLI_CLIENTPARENT ) ), true,
+			static_cast<jobListItem*>( pay_item->relatedItem ( RLI_JOBPARENT ) ) );
 	}
 }
 
@@ -2001,7 +2025,7 @@ void MainWindow::paysOverdueClientListWidget_currentItemChanged ( vmListItem* it
 	if ( item->relatedItem ( RLI_CLIENTITEM ) != mPayCurItem )
 	{
 		insertNavItem ( item->relatedItem ( RLI_CLIENTITEM ) );
-		displayJob ( static_cast<jobListItem*>(item->relatedItem ( RLI_JOBPARENT )), true );
+		displayJob ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT ) ), true );
 	}
 }
 
@@ -2360,15 +2384,35 @@ void MainWindow::fillCalendarPaysList ( const stringTable& payids, vmListWidget*
 						
 						const int role ( use_date ? Qt::UserRole + 1 : Qt::UserRole );
 						QString role_str ( pay_item->data ( role ).toString () );
+						
 						if ( !role_str.isEmpty () )
-							role_str += QLatin1String ( "," ) + paynumber;
+						{
+							/* Do not add the same pay number info. This might happen in case of an error in the database or,
+							 * more likely, in the ui->lstCalPaysDay when the pay day date differs from the pay use date and the
+							 * user clicks on those dates alternately. In such cases, the same pay number would be accreting to the role string
+							 */
+							const stringRecord pays_roles ( role_str, CHR_COMMA );
+							if ( pays_roles.field ( paynumber, -1, true ) == -1 )
+								role_str += CHR_COMMA + paynumber;	
+						}
 						else
 							role_str = paynumber;
 						
 						if ( pay_item->listWidget () != list )
 						{
-							pay_item->setData ( role, emptyString );
+							//pay_item->setData ( role, emptyString );
 							pay_item->addToList ( list );
+						}
+						if ( list == ui->lstCalPaysDay )
+						{
+							/* This is the list for the one day only. An item in it cannot accumulate information from other days.
+							 * If on that day there were a pay day and a pay use, then, display both information. If there was either of them,
+							 * clear the other role info so that info is not displayed. For the week and month lists, this is not done because
+							 * we need all the information we can get
+							 */
+							const stringRecord pay_info ( stringTable ( recStrValue ( &pay, FLD_PAY_INFO ) ).readRecord ( paynumber.toUInt () ) );
+							if ( pay_info.fieldValue ( PHR_DATE ) == pay_info.fieldValue ( PHR_USE_DATE ) )
+								pay_item->setData ( use_date ? Qt::UserRole : Qt::UserRole + 1, emptyString );
 						}
 						pay_item->setData ( role, role_str );
 						pay_item->update ();
@@ -2460,7 +2504,7 @@ void MainWindow::loadAllOverduesList ()
 void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 {
 	const uint row ( static_cast<uint>( item->row () ) );
-	if ( static_cast<int>(row) == ui->tablePayments->totalsRow () )
+	if ( static_cast<int>( row ) == ui->tablePayments->totalsRow () )
 		return;
 
 	const uint col ( static_cast<uint>( item->column () ) );
@@ -2524,8 +2568,9 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 		if ( strMethod == QStringLiteral ( "TED" ) || strMethod == QStringLiteral ( "DOC" ) || 
 			 strMethod.contains ( QStringLiteral ( "Transferência" ), Qt::CaseInsensitive ) )
 		{
-			 ui->tablePayments->sheetItem ( row, PHR_USE_DATE )->setDate ( 
+			 ui->tablePayments->sheetItem ( row, PHR_USE_DATE )->setDate (
 								ui->tablePayments->sheetItem ( row, PHR_DATE )->date () );
+			 ui->tablePayments->sheetItem ( row, PHR_ACCOUNT )->setText ( QStringLiteral ( "BB - CC" ), false, true, false );
 		}
 	}
 	
@@ -3720,8 +3765,8 @@ void MainWindow::updateCalendarView ( const uint year, const uint month )
 				jobid =  str_rec->fieldValue ( 0 ).toUInt ();
 				if ( job.readRecord ( jobid ) )
 				{
-					date.fromTrustedStrDate( str_rec->fieldValue ( 3 ), vmNumber::VDF_DB_DATE );
-					day = str_rec->fieldValue( 2 );
+					date.fromTrustedStrDate ( str_rec->fieldValue ( 3 ), vmNumber::VDF_DB_DATE );
+					day = str_rec->fieldValue ( 2 );
 					dateChrFormat = ui->calMain->dateTextFormat ( date.toQDate () );
 					tooltip = dateChrFormat.toolTip ();
 					tooltip +=  QLatin1String ( "<br>Job ID: " ) + recStrValue ( &job, FLD_JOB_ID ) +

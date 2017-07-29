@@ -4,7 +4,7 @@
 
 static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_PRICE,
 	DBTYPE_PRICE, DBTYPE_NUMBER, DBTYPE_PRICE, DBTYPE_PRICE, DBTYPE_PRICE
@@ -45,6 +45,7 @@ quickProject::quickProject ()
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( quickProject::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = QP_FIELDS_TYPE;
 	DBRecord::helperFunction = this->helperFunction;
 }
 

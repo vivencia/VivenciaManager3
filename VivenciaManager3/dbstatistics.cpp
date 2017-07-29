@@ -114,6 +114,8 @@ void dbStatisticsWorker::startWorks ()
 	PROCESS_EVENTS
 	jobPrices ();
 	PROCESS_EVENTS
+	biggestJobs ();
+	PROCESS_EVENTS
 	
 #ifdef USE_THREADS
 	emit finished ();
@@ -221,8 +223,8 @@ void dbStatisticsWorker::clientsPerCity ()
 		do
 		{
 			city = queryRes.value ( 0 ).toString ();
-			QMap<QString, uint>::const_iterator i = city_count.find ( city );
-			if ( i != city_count.end () )
+			QMap<QString, uint>::const_iterator i ( city_count.constFind ( city ) );
+			if ( i != city_count.constEnd () )
 			{
 				count = i.value ();
 			}
@@ -328,6 +330,48 @@ void dbStatisticsWorker::jobPrices ()
 										  HTML_BOLD_ITALIC_UNDERLINE_11.arg ( count_price.at ( year-2009 ).toPrice () ),
 										  HTML_BOLD_ITALIC_UNDERLINE_11.arg ( count_jobs.at ( year-2009 ) ) ) );
 			++year;
+		}
+	}
+}
+
+void dbStatisticsWorker::biggestJobs ()
+{
+	QSqlQuery queryRes;
+	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT ID,PRICE,TIME FROM JOBS" ), queryRes ) )
+	{
+		vmNumber price ( 0.0 ), highest_price ( 0.0 ), n_days ( 0 ), n_days_max ( 0 );
+		uint jobid_most_value ( 0 ), jobid_longest ( 0 );
+		
+		do
+		{
+			price = vmNumber ( queryRes.value ( 1 ).toString (), VMNT_PRICE, 1 );
+			if ( price > highest_price )
+			{
+				highest_price = price;
+				jobid_most_value = queryRes.value ( 0 ).toUInt ();
+			}
+			
+			n_days = vmNumber ( queryRes.value ( 2 ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
+			if ( n_days > n_days_max )
+			{
+				n_days_max = n_days;
+				jobid_longest = queryRes.value ( 0 ).toUInt ();
+			}
+		} while ( queryRes.next () );
+		
+		EMIT_INFO ( "" );
+		Job job;
+		if ( job.readRecord ( jobid_most_value ) )
+		{
+			EMIT_INFO ( TR_FUNC ( "Highest income job:\n" ) );
+			EMIT_INFO ( Job::concatenateJobInfo ( job, true ) );
+			EMIT_INFO ( "" );
+		}
+		if ( job.readRecord ( jobid_longest ) )
+		{
+			EMIT_INFO ( TR_FUNC ( "Longest job:\n" ) );
+			EMIT_INFO ( Job::concatenateJobInfo ( job, true ) );
+			EMIT_INFO ( "" );
 		}
 	}
 }

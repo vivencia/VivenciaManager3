@@ -45,7 +45,7 @@ struct TABLE_INFO //compile-time set
 	const QString field_names;
 	const QString field_flags;
 	const QString field_labels;
-	const unsigned int* field_types;
+	const DB_FIELD_TYPE* field_types;
 	const unsigned char version;
 	uint field_count;
 	const unsigned int table_order;

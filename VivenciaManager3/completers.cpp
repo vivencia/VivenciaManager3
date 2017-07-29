@@ -91,18 +91,21 @@ void vmCompleters::setCompleter ( vmLineEdit* line, const COMPLETER_CATEGORIES t
 // type must be >= SUPPLIER. Rely on caller to reduce number of checks
 void vmCompleters::updateCompleter ( const QString& str, const COMPLETER_CATEGORIES type )
 {
-	if ( str.isEmpty () || str == QStringLiteral ( "N/A" ) || type == COMPLETER_CATEGORIES::NONE )
-		return;
-
-	if ( inList ( str, type ) == -1 )
+	if ( type >= COMPLETER_CATEGORIES::SUPPLIER )
 	{
-		const QCompleter* completer ( completersList.at ( static_cast<int>( type ) ) );
-		QStandardItemModel* item_model ( static_cast<QStandardItemModel*>(completer->model ()) );
+		if ( str.isEmpty () || str == QStringLiteral ( "N/A" ) )
+			return;
 		
-		item_model->appendRow ( new QStandardItem ( str ) );
-		QStandardItemModel* model_all ( static_cast<QStandardItemModel*>( completersList.at ( ALL_CATEGORIES )->model () ) );
-		model_all->appendRow ( new QStandardItem ( str ) );
-		cr_rec->updateTable ( type, str );
+		if ( inList ( str, type ) == -1 )
+		{
+			const QCompleter* completer ( completersList.at ( static_cast<int>( type ) ) );
+			QStandardItemModel* item_model ( static_cast<QStandardItemModel*>(completer->model ()) );
+		
+			item_model->appendRow ( new QStandardItem ( str ) );
+			QStandardItemModel* model_all ( static_cast<QStandardItemModel*>( completersList.at ( ALL_CATEGORIES )->model () ) );
+			model_all->appendRow ( new QStandardItem ( str ) );
+			cr_rec->updateTable ( type, str );
+		}
 	}
 }
 

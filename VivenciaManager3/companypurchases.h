@@ -14,6 +14,7 @@ friend class companyPurchasesUI;
 public:
 	explicit companyPurchases ( const bool connect_helper_funcs = false );
 	virtual ~companyPurchases ();
+	void exportToInventory ();
 
 private:
 	static const TABLE_INFO t_info;

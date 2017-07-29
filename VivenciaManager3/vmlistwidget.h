@@ -18,6 +18,7 @@ public:
 	inline void setCurrentItem ( const vmListItem* const item, const bool b_makecall ) { setCurrentRow ( item ? item->row () : -1, b_makecall ); }
 	void setCurrentRow ( int row, const bool b_makecall );
 	inline vmListItem* currentItem () const { return mCurrentItem; }
+	inline vmListItem* prevItem () const { return mPrevItem; }
 	void addItem ( vmListItem* item, const bool b_makecall = true );
 	inline void removeItem ( vmListItem* item, const bool bDel = false ) { if ( item ) removeRow_list ( static_cast<uint>(item->row ()), 1, bDel ); }
 	void insertRow ( const uint row, const uint n = 1 ) override;
@@ -46,13 +47,14 @@ public:
 
 protected:
 	void resizeEvent ( QResizeEvent* e ) override;
+	inline void setCurrentItem ( vmListItem* new_current_item ) { mPrevItem = mCurrentItem; mCurrentItem = new_current_item; }
 	
 private:
 	void rowSelected ( const int row, const int prev_row );
 	
 	bool mbIgnore, mbDestroyDelete, mbForceEmit;
 	int mPrevRow;
-	vmListItem* mCurrentItem;
+	vmListItem* mCurrentItem, *mPrevItem;
 	std::function<void( vmListItem* current )> mCurrentItemChangedFunc;
 };
 

@@ -12,11 +12,6 @@ class QListWidgetItem;
 const uint JOB_FIELD_COUNT ( 12 );
 const uint JOB_REPORT_FIELDS_COUNT ( 5 );
 
-static const uint JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
-	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_TIME,
-	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD
-};
-
 class Job : public DBRecord
 {
 
@@ -36,9 +31,6 @@ public:
 	explicit Job ( const bool connect_helper_funcs = false );
 	virtual ~Job ();
 
-	inline DB_FIELD_TYPE fieldType ( const uint field ) const {
-		return static_cast<DB_FIELD_TYPE> ( JOBS_FIELDS_TYPE[field] ); }
-
 	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
 	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
 
@@ -51,7 +43,7 @@ public:
 	inline const QString jobSummary () const { return jobSummary ( recStrValue ( this, FLD_JOB_ID ) ); }
 	static const QString jobAddress ( const Job* const job = nullptr, Client* client = nullptr );
 	static QString jobSummary ( const QString& jobid );
-	static QString concatenateJobInfo ( const Job& job );
+	static QString concatenateJobInfo ( const Job& job, const bool b_skip_report );
 	static inline const QString jobTypeWithDate ( const int id ) {
 		return ( id > 0 ) ? jobTypeWithDate ( QString::number ( id ) ) : emptyString;
 	}

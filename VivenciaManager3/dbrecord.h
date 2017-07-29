@@ -63,18 +63,16 @@ public:
 	explicit DBRecord ( const DBRecord& other );
 	inline DBRecord ( DBRecord&& other ) : DBRecord () { db_rec_swap ( *this, other ); }
 	
-	inline const DBRecord& operator= ( const DBRecord& other )
+	inline const DBRecord& operator= ( DBRecord other )
 	{
-		DBRecord temp ( other );
-		db_rec_swap ( *this, temp );
+		db_rec_swap ( *this, other );
 		return *this;
 	}
 	
 	virtual ~DBRecord (); // if a class has virtual functions, if should have a virtual destructor
 
 	bool operator== ( const DBRecord& other ) const;
-	inline bool operator!= ( const DBRecord& other ) const {
-		return !( this->operator == ( other ) ); }
+	inline bool operator!= ( const DBRecord& other ) const { return !( this->operator == ( other ) ); }
 
 	inline void callHelperFunction ( const uint field )
 	{
@@ -141,7 +139,7 @@ public:
 	inline virtual QString isrValue ( const ITEMS_AND_SERVICE_RECORD, const int = -1 ) const { return QString (); }
 	inline virtual uint isrRecordField ( const ITEMS_AND_SERVICE_RECORD ) const { return 0; }
 	virtual int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
-	inline virtual DB_FIELD_TYPE fieldType ( const uint /*field*/ ) const { return DBTYPE_SHORTTEXT; }
+	inline DB_FIELD_TYPE fieldType ( const uint field ) const { return mFieldsTypes[field]; }
 	
 	// subrec's mFastIdx must be at the right position, i.e. the start of the sub string record for this to work
 	// Therefore, this method must be called in a loop where subrec is being iterated with next ()/prev (), etc.
@@ -162,7 +160,10 @@ public:
 	void setModified ( const uint field, const bool modified );
 	void setAllModified ( const bool modified );
 	void changeWasModifiedFlag ( const bool modified, const int field = -1 );
-	void clearAll ();
+	
+	// b_preserve_id makes it possible to reuse the same object in searches, iterations and whatnot, while erasing all other fields so that no trash lingers between operations
+	// the default behavior is currently to erase the indexes because it has been so for too long, and untill I can sort out whether this behaviour will cause trouble or not, I play it safe
+	void clearAll ( const bool b_preserve_id = false );
 
 	inline RECORD_ACTION action () const { return m_action; }
 	inline RECORD_ACTION prevAction () const { return m_prevaction; }
@@ -249,6 +250,7 @@ protected:
 	
 	const TABLE_INFO* t_info;
 	RECORD_FIELD* m_RECFIELDS;
+	const DB_FIELD_TYPE* mFieldsTypes;
 	vmListItem* mListItem;
 
 	typedef void ( **HelperFunction ) ( const DBRecord* );

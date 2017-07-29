@@ -77,6 +77,7 @@ private:
 	void clientsPerCity ();
 	void countJobs ();
 	void jobPrices ();
+	void biggestJobs ();
 	
 #ifndef USE_THREADS
 	std::function<void( const QString& )> m_readyFunc;

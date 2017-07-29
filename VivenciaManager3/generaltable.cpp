@@ -3,7 +3,7 @@
 
 static const unsigned char GENERAL_FIELD_TABLE_VERSION ( 'A' );
 
-static const uint GENERAL_FIELDS_TYPE[GENERAL_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE GENERAL_FIELDS_TYPE[GENERAL_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_NUMBER, DBTYPE_FILE, DBTYPE_SHORTTEXT
 };
@@ -44,6 +44,7 @@ generalTable::generalTable ()
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( generalTable::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = GENERAL_FIELDS_TYPE;
 	DBRecord::helperFunction = this->helperFunction;
 }
 

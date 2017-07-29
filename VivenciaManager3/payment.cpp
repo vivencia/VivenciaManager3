@@ -6,6 +6,11 @@
 
 static const unsigned int TABLE_VERSION ( 'A' );
 
+constexpr DB_FIELD_TYPE PAYS_FIELDS_TYPE[PAY_FIELD_COUNT] = {
+	DBTYPE_ID, DBTYPE_ID, DBTYPE_ID, DBTYPE_PRICE, DBTYPE_NUMBER, DBTYPE_PRICE,
+	DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD, DBTYPE_YESNO, DBTYPE_PRICE
+};
+
 bool updatePaymentTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
@@ -40,6 +45,7 @@ Payment::Payment ( const bool )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = PAYS_FIELDS_TYPE;
 }
 
 Payment::~Payment () {}

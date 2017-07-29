@@ -4,12 +4,13 @@
 #include "completers.h"
 #include "supplierrecord.h"
 #include "vivenciadb.h"
+#include "inventory.h"
 
 #include <QCoreApplication>
 
 const unsigned int TABLE_VERSION ( 'A' );
 
-constexpr uint CP_FIELDS_TYPE[COMPANY_PURCHASES_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE CP_FIELDS_TYPE[COMPANY_PURCHASES_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_PRICE,
 	DBTYPE_PRICE, DBTYPE_LIST, DBTYPE_LIST
@@ -67,7 +68,8 @@ companyPurchases::companyPurchases ( const bool connect_helper_funcs )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
-
+	DBRecord::mFieldsTypes = CP_FIELDS_TYPE;
+	
 	if ( connect_helper_funcs )
 	{
 		DBRecord::helperFunction = this->helperFunction;
@@ -78,3 +80,28 @@ companyPurchases::companyPurchases ( const bool connect_helper_funcs )
 }
 
 companyPurchases::~companyPurchases () {}
+
+void companyPurchases::exportToInventory ()
+{
+	Inventory inv_rec;
+	stringTable cp_itemreport ( recStrValue ( this, FLD_CP_ITEMS_REPORT ) );
+	stringRecord* item_report ( nullptr );
+	if ( ( item_report = const_cast<stringRecord*>( &cp_itemreport.first () ) ) )
+	{
+		do {
+			inv_rec.setAction ( ACTION_ADD );
+			setRecValue ( &inv_rec, FLD_INVENTORY_ITEM, item_report->fieldValue ( ISR_NAME ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_BRAND, item_report->fieldValue ( ISR_BRAND ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_QUANTITY, item_report->fieldValue ( ISR_QUANTITY ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_UNIT, item_report->fieldValue ( ISR_UNIT ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_TYPE, APP_TR_FUNC ( "Company purchased item" ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_DATE_IN, recStrValue ( this, FLD_CP_DATE ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_PRICE, item_report->fieldValue ( ISR_UNIT_PRICE ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_SUPPLIER, recStrValue ( this, FLD_CP_SUPPLIER ) );
+			setRecValue ( &inv_rec, FLD_INVENTORY_PLACE, APP_TR_FUNC ( "Company purchases storage room" ) );
+			item_report = const_cast<stringRecord*>( &cp_itemreport.next () );
+			inv_rec.saveRecord ();
+			inv_rec.clearAll ();
+		} while ( item_report->isOK () );
+	}
+}

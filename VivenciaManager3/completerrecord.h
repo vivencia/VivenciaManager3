@@ -21,7 +21,8 @@ public:
 
 	void loadCompleterStrings ( QStringList& completer_strings, const vmCompleters::COMPLETER_CATEGORIES );
 	void loadCompleterStringsForProductsAndServices ( QStringList& completer_strings, QStringList& completer_strings_2 );
-	void updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str );
+	void updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str, const bool b_reset_search = true );
+	void batchUpdateTable ( vmCompleters::COMPLETER_CATEGORIES category, const QStringList& str_list );
 
 protected:
 	friend bool updateCompleterRecordTable ();
@@ -33,7 +34,6 @@ protected:
 private:
 	QSqlQuery query;
 	void runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates = false );
-	void updateCompleterInternal ( const uint field, const QStringList& str_list );
 };
 
 #endif // COMPLETERRECORD_H

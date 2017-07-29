@@ -47,7 +47,7 @@ public:
 	VMList ();
 	explicit VMList ( const T& default_value, const uint n_prealloc = 10 );
 	VMList ( const VMList<T>& other );	
-	const VMList<T>& operator= ( const VMList<T>& other );
+	const VMList<T>& operator= ( VMList<T> other );
 
 	inline VMList<T> ( VMList<T>&& other ) : VMList<T> ()
 	{
@@ -585,10 +585,9 @@ VMList<T>::VMList ( const VMList<T>& other )
 }
 
 template<typename T>
-inline const VMList<T>& VMList<T>::operator= ( const VMList<T>& other )
+inline const VMList<T>& VMList<T>::operator= ( VMList<T> other )
 {
-	VMList<T> temp ( other );
-	vmlist_swap ( *this, temp );
+	vmlist_swap ( *this, other );
 	return *this;
 }
 
@@ -864,7 +863,7 @@ public:
 	explicit podList ( const T& default_value, const uint n_prealloc );
 	podList ( const podList<T>& other );
 
-	const podList<T>& operator= ( const podList<T>& other );
+	const podList<T>& operator= ( podList<T> other );
 	
 	inline podList<T> ( podList<T>&& other ) : podList<T> ()
 	{
@@ -922,10 +921,9 @@ podList<T>::podList ( const podList<T>& other )
 }
 
 template<typename T>
-const podList<T>& podList<T>::operator= ( const podList<T>& other )
+const podList<T>& podList<T>::operator= ( podList<T> other )
 {
-	podList<T> temp ( other );
-	VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>&>( temp ) );
+	VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>>( other ) );
 	return *this;	
 }
 
@@ -1044,7 +1042,7 @@ public:
 	explicit PointersList ( const uint n_prealloc );
 	PointersList ( const PointersList<T>& other );
 
-	const PointersList<T>& operator= ( const PointersList<T>& other );
+	const PointersList<T>& operator= ( PointersList<T> other );
 	
 	inline PointersList<T> ( PointersList<T>&& other ) : PointersList<T> ()
 	{
@@ -1121,10 +1119,9 @@ PointersList<T>::PointersList ( const PointersList<T>& other )
 }
 
 template<typename T>
-const PointersList<T>& PointersList<T>::operator= ( const PointersList<T>& other )
+const PointersList<T>& PointersList<T>::operator= ( PointersList<T> other )
 {
-	PointersList<T> temp ( other );
-	VMList<T>::vmlist_swap ( static_cast<VMList<T>&>( *this ), static_cast<VMList<T>&>( temp ) );
+	VMList<T>::vmlist_swap ( *this, other );
 	return *this;	
 }
 

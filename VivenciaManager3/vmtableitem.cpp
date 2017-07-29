@@ -59,7 +59,6 @@ vmTableItem::vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
 	setTextType ( ttype );
 	setDefaultValue ( text );
 	setText ( text, false, false, false );
-	//QTableWidgetItem::setText ( text );
 	m_table = const_cast<vmTableWidget*>( table );
 }
 
@@ -102,8 +101,7 @@ void vmTableItem::setEditable ( const bool editable )
 	vmWidget::setEditable ( editable );
 }
 
-void vmTableItem::setText ( const QString& text, const bool b_from_cell_itself,
-							const bool force_notify, const bool b_formulaResult )
+void vmTableItem::setText ( const QString& text, const bool b_notify, const bool b_from_cell_itself, const bool b_formulaResult )
 {
 	if ( b_formulaResult )
 	{
@@ -138,13 +136,13 @@ void vmTableItem::setText ( const QString& text, const bool b_from_cell_itself,
 	// take the item's text (if so they wish) when there is a signal call by the widget, and get
 	// the updated value, instead of the old one
 	if ( !b_from_cell_itself && m_widget )
-		m_widget->setText ( text, force_notify );
+		m_widget->setText ( text, b_notify );
 }
 
 void vmTableItem::setDate ( const vmNumber& date )
 {
 	if ( m_widget->type () == WT_DATEEDIT )
-		static_cast<vmDateEdit*> ( m_widget )->setDate ( date, isEditable () );
+		static_cast<vmDateEdit*>( m_widget )->setDate ( date, isEditable () );
 }
 
 vmNumber vmTableItem::date ( const bool bCurText ) const
@@ -175,7 +173,7 @@ static VM_NUMBER_TYPE textTypeToNbrType ( const vmLineEdit::TEXT_TYPE tt )
 
 vmNumber vmTableItem::number ( const bool bCurText ) const
 {
-	if ( textType () != vmLineEdit::TT_TEXT )
+	if ( textType () >= vmLineEdit::TT_PHONE ) // ignore the text types (TT_TEXT and TT_UPPERCASE, so far)
 		return vmNumber ( bCurText ? text () : originalText (), textTypeToNbrType ( textType () ), 1 );
 	return vmNumber::emptyNumber;
 }
@@ -224,7 +222,7 @@ void vmTableItem::targetsFromFormula ()
 			{
 				for ( int c ( firstCol ); c <= secondCol; ++c )
 				{
-					sheet_item = m_table->sheetItem ( static_cast<uint>(r), static_cast<uint>(c) );
+					sheet_item = m_table->sheetItem ( static_cast<uint>( r ), static_cast<uint>( c ) );
 					if ( sheet_item )
 					{
 						if ( textType () >= vmLineEdit::TT_PRICE )
@@ -248,14 +246,14 @@ void vmTableItem::targetsFromFormula ()
 		}
 		else
 		{
-			sheet_item = m_table->sheetItem ( static_cast<uint>(firstRow), static_cast<uint>(firstCol) );
+			sheet_item = m_table->sheetItem ( static_cast<uint>( firstRow ), static_cast<uint>( firstCol ) );
 			if ( sheet_item )
 			{
 				if ( sheet_item->m_targets.contains ( this ) == -1 )
 					sheet_item->m_targets.append ( this );
 				if ( secondRow != -1 )
 				{
-					sheet_item = m_table->sheetItem ( static_cast<uint>(secondRow), static_cast<uint>(secondCol) );
+					sheet_item = m_table->sheetItem ( static_cast<uint>( secondRow ), static_cast<uint>( secondCol ) );
 					if ( sheet_item )
 					{
 						if ( sheet_item->m_targets.contains ( this ) == -1 )
@@ -312,7 +310,7 @@ void vmTableItem::computeFormula ()
 		{
 			for ( int c ( firstCol ); c <= secondCol; ++c )
 			{
-				tableItem = m_table->sheetItem ( static_cast<uint>(r), static_cast<uint>(c) );
+				tableItem = m_table->sheetItem ( static_cast<uint>( r ), static_cast<uint>( c ) );
 				if ( tableItem )
 				{
 					if ( textType () >= vmLineEdit::TT_PRICE )
@@ -323,10 +321,10 @@ void vmTableItem::computeFormula ()
 	}
 	else
 	{
-		vmNumber firstVal ( m_table->sheetItem ( static_cast<uint>(firstRow), static_cast<uint>(firstCol) )->number () );
+		vmNumber firstVal ( m_table->sheetItem ( static_cast<uint>( firstRow ), static_cast<uint>( firstCol ) )->number () );
 		vmNumber secondVal;
 		if ( secondRow != -1 )
-			secondVal = m_table->sheetItem ( static_cast<uint>(secondRow), static_cast<uint>(secondCol) )->number ();
+			secondVal = m_table->sheetItem ( static_cast<uint>( secondRow ), static_cast<uint>( secondCol ) )->number ();
 
 		switch ( mStrOp.constData ()->toLatin1 () )
 		{
@@ -352,14 +350,4 @@ void vmTableItem::computeFormula ()
 	 * state for an accurate position on the editing status.
 	 */
 	setText ( res.toString (), false, m_table->isEditable (), true );
-}
-
-QString vmTableItem::spreadItemToString () const
-{
-	stringRecord strItem;
-	strItem.fastAppendValue ( QStringLiteral ( "##&&" ) );
-	strItem.fastAppendValue ( QString::number ( widgetType () ) );
-	strItem.fastAppendValue ( formula () );
-	strItem.fastAppendValue ( mCache.toString () );
-	return strItem.toString ();
 }

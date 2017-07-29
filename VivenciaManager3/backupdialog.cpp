@@ -169,7 +169,7 @@ void BackupDialog::fillTable ()
 			disconnect ( ui->tablesList, nullptr, nullptr, nullptr );
 		}
 
-		QListWidgetItem* widgetitem = new QListWidgetItem ( ui->tablesList );
+		QListWidgetItem* widgetitem ( new QListWidgetItem ( ui->tablesList ) );
 		widgetitem->setText ( TR_FUNC ( "Select all " ) );
 		widgetitem->setFlags ( Qt::ItemIsEnabled|Qt::ItemIsTristate|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable );
 		widgetitem->setCheckState ( Qt::Checked );

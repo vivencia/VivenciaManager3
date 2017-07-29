@@ -12,7 +12,7 @@
 #include <QTextStream>
 #include <QStandardPaths>
 
-constexpr const int CFG_CATEGORIES ( 20 );
+constexpr const int CFG_CATEGORIES ( 21 );
 static const QString CFG_FILE_FIELDS_STR[CFG_CATEGORIES] =
 {
 	QStringLiteral ( "MAINWINDOW_GEOMETRY" ), QStringLiteral ( "HOME_DIR" ), QStringLiteral ( "LAST_VIEWED_RECORDS" ),
@@ -21,7 +21,7 @@ static const QString CFG_FILE_FIELDS_STR[CFG_CATEGORIES] =
 	QStringLiteral ( "EMAIL_CLIENT" ), QStringLiteral ( "DOC_VIEWER" ), QStringLiteral ( "DOC_EDITOR" ),
 	QStringLiteral ( "XLS_EDITOR" ), QStringLiteral ( "BASE_PROJECT_DIR" ), QStringLiteral ( "ESTIMATE_DIR" ),
 	QStringLiteral ( "REPORT_DIR" ), QStringLiteral ( "BACKUP_DIR" ), QStringLiteral ( "HTML_DIR" ), 
-	QStringLiteral ( "DROPBOX_DIR" ), QStringLiteral ( "EMAIL_ADDRESS" )
+	QStringLiteral ( "DROPBOX_DIR" ), QStringLiteral ( "APP_SCHEME" ), QStringLiteral ( "EMAIL_ADDRESS" )
 };
 
 static const QString HOME_DIR_DIR ( QLatin1String ( ::getenv ( "HOME" ) ) + CHR_F_SLASH );
@@ -51,6 +51,7 @@ static const QString DEFAULT_OPTS[CFG_CATEGORIES] = {
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/VMDB/" ) ), // BACKUP_DIR
 	( QStandardPaths::standardLocations ( QStandardPaths::DocumentsLocation ).at ( 0 ) + QLatin1String ( "/Vivencia/HTML/" ) ), // HTML_DIR
 	( HOME_DIR_DIR ) + QLatin1String ( "Dropbox/" ), // DROPBOX_DIR
+	QStringLiteral ( "PANEL_NONE" ), // APP_SCHEME
 	( QStringLiteral ( "vivencia@gmail.com" ) ) // DEFAULT_EMAIL
 };
 

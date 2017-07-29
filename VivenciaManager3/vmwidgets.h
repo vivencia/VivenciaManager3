@@ -201,7 +201,7 @@ public:
 	inline QString defaultStyleSheet () const override { return mLineEdit->defaultStyleSheet () ; }
 	inline void highlight ( const VMColors wm_color, const QString& str = QString::null ) override { mLineEdit->highlight ( wm_color, str ); }
 	void setEditable ( const bool editable ) override;
-	inline void setText ( const QString& text , const bool b_notify = false ) override { mLineEdit->setText ( text, b_notify ); }
+	inline void setText ( const QString& text, const bool b_notify = false ) override { mLineEdit->setText ( text, b_notify ); }
 	inline QString text () const override { return mLineEdit->QLineEdit::text (); }
 
 	void setButtonType ( const LINE_EDIT_BUTTON_TYPE type );

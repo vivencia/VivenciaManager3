@@ -5,7 +5,7 @@
 
 static const unsigned int TABLE_VERSION ( 'A' );
 
-static const uint SUPPLIER_FIELDS_TYPE[SUPPLIER_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE SUPPLIER_FIELDS_TYPE[SUPPLIER_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_NUMBER, DBTYPE_SHORTTEXT,
 	DBTYPE_SHORTTEXT, DBTYPE_PHONE, DBTYPE_SHORTTEXT
@@ -66,6 +66,7 @@ supplierRecord::supplierRecord ( const bool connect_helper_funcs )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = SUPPLIER_FIELDS_TYPE;
 
 	if ( connect_helper_funcs )
 	{

@@ -28,10 +28,9 @@ public:
 	stringRecord ( const stringRecord& other );
 	stringRecord ( const QString& str, const QChar& sep = record_separator );
 	
-	inline const stringRecord& operator= ( const stringRecord& other )
+	inline const stringRecord& operator= ( stringRecord other )
 	{
-		stringRecord temp ( other );
-		strrec_swap ( *this, temp );
+		strrec_swap ( *this, other );
 		return *this;
 	}
 
@@ -161,10 +160,9 @@ public:
 		strtable_swap ( *this, other );
 	}
 
-	inline const stringTable& operator= ( const stringTable& other )
+	inline const stringTable& operator= ( stringTable other )
 	{
-		stringTable temp ( other );
-		strtable_swap ( *this, temp );
+		strtable_swap ( *this, other );
 		return *this;
 	}
 	
@@ -228,6 +226,10 @@ public:
 	inline const stringRecord& curRecord () const {
 		return mRecord;
 	}
+	inline const QString& curRecordStr () const {
+		return mCurRecord;
+	}
+	
 	inline int currentIndex () const {
 		return mCurIdx;
 	}

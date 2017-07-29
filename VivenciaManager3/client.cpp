@@ -7,6 +7,12 @@
 
 const unsigned char TABLE_VERSION ( 'A' );
 
+constexpr DB_FIELD_TYPE CLIENTS_FIELDS_TYPE[CLIENT_FIELD_COUNT] = {
+	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_LIST, DBTYPE_LIST,
+	DBTYPE_NUMBER, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_DATE, DBTYPE_DATE,
+	DBTYPE_YESNO
+};
+
 bool updateClientTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
@@ -77,7 +83,8 @@ Client::Client ( const bool connect_helper_funcs )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = &( this->t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
-
+	DBRecord::mFieldsTypes = CLIENTS_FIELDS_TYPE;
+	
 	if ( connect_helper_funcs )
 	{
 		DBRecord::helperFunction = this->helperFunction;

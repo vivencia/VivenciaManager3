@@ -5,17 +5,34 @@
 
 #include <QCoreApplication>
 
-static const unsigned int TABLE_VERSION ( 'A' );
+static const unsigned int TABLE_VERSION ( 'B' );
 
-const uint INVENTORY_FIELDS_TYPE[INVENTORY_FIELD_COUNT] =
+constexpr DB_FIELD_TYPE INVENTORY_FIELDS_TYPE[INVENTORY_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_SHORTTEXT, DBTYPE_LIST, DBTYPE_DATE, DBTYPE_PRICE, 
 	DBTYPE_LIST, DBTYPE_SHORTTEXT
 };
 
+#undef TABLE_UPDATE_AVAILABLE
+
+#ifdef TABLE_UPDATE_AVAILABLE
+#include "companypurchases.h"
+#endif
+
 bool updateInvetory ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->deleteTable ( "INVENTORY" );
+	VDB ()->createTable ( &Inventory::t_info );
+	companyPurchases cp_rec;
+	
+	if ( cp_rec.readFirstRecord ( true ) )
+	{
+		do 
+		{
+			cp_rec.exportToInventory ();
+		} while ( cp_rec.readNextRecord () );
+	}
 	VDB ()->optimizeTable ( &Inventory::t_info );
 	return true;
 #else
@@ -23,6 +40,7 @@ bool updateInvetory ()
 	return false;
 #endif //TABLE_UPDATE_AVAILABLE
 }
+
 
 const TABLE_INFO Inventory::t_info =
 {
@@ -85,6 +103,7 @@ Inventory::Inventory ( const bool connect_helper_funcs )
 	::memset ( this->helperFunction, 0, sizeof ( this->helperFunction ) );
 	DBRecord::t_info = & ( Inventory::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
+	DBRecord::mFieldsTypes = INVENTORY_FIELDS_TYPE;
 
 	if ( connect_helper_funcs )
 	{

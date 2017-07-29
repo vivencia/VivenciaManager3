@@ -52,10 +52,11 @@ public:
 	vmListItem ( const QString& label );
 	virtual ~vmListItem ();
 	
-	inline const vmListItem& operator= ( const vmListItem& item )
+	inline const vmListItem& operator= ( vmListItem item )
 	{
-		vmListItem temp ( item );
-		item_swap ( *this, temp );
+		//vmListItem temp ( item );
+		//item_swap ( *this, temp );
+		item_swap ( *this, item );
 		return *this;
 	}
 	
@@ -252,7 +253,7 @@ public:
 	void createDBRecord ();
 	bool loadData ();
 	void update ();
-	void updateBuyExtraItem ( const QString& bodyText );
+	void updateBuyExtraItem ( const QString& label );
 	void updateBuyCalendarItem ();
 	void relationActions ( vmListItem* subordinateItem = nullptr );
 

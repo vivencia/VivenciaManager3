@@ -2,7 +2,8 @@
 #include "vivenciadb.h"
 
 static const unsigned char USERS_FIELD_TABLE_VERSION ( 'A' );
-static const uint USERS_FIELDS_TYPE[USERS_FIELD_COUNT] =
+
+constexpr DB_FIELD_TYPE USERS_FIELDS_TYPE[USERS_FIELD_COUNT] =
 {
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
@@ -14,9 +15,10 @@ bool updateUsersTable ()
 	//VDB ()->createTable ( &userRecord::t_info );
 	VDB ()->optimizeTable ( &userRecord::t_info );
 	return true;
-#endif
+#else
 	VDB ()->optimizeTable ( &userRecord::t_info );
 	return false;
+#endif
 }
 
 const TABLE_INFO userRecord::t_info =
@@ -42,6 +44,7 @@ userRecord::userRecord ()
 	DBRecord::t_info = &( userRecord::t_info );
 	DBRecord::m_RECFIELDS = this->m_RECFIELDS;
 	DBRecord::helperFunction = this->helperFunction;
+	DBRecord::mFieldsTypes = USERS_FIELDS_TYPE;
 }
 
 userRecord::~userRecord () {}

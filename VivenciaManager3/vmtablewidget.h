@@ -77,6 +77,7 @@ public:
 	bool searchNext ();
 	bool searchLast ();
 	inline const QString& searchTerm () const { return mSearchTerm; }
+	int getRow ( const QString& cellText, const Qt::CaseSensitivity cs = Qt::CaseSensitive, const uint startrow = 0, uint nth_find = 0 );
 
 	// Convenient functions that are called by more than one module in the program. Put here to reduce code and binary size
 	static vmTableWidget* createPurchasesTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr );
@@ -141,7 +142,7 @@ public:
 	void setEditable ( const bool editable ) override;
 
 	inline bool isEmpty () const {
-		return static_cast<bool> ( m_lastUsedRow == 0 ); }
+		return static_cast<bool>( m_lastUsedRow < 0 ); }
 
 	inline vmTableItem* sheetItem ( const uint row, const uint col ) const {
 		return static_cast<vmTableItem*> ( this->item ( static_cast<int>(row), static_cast<int>(col) ) ); }

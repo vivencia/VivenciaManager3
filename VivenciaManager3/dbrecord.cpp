@@ -49,6 +49,7 @@ void db_rec_swap ( DBRecord& dbrec1, DBRecord& dbrec2 )
 	swap ( dbrec1.mListItem, dbrec2.mListItem );
 	swap ( dbrec1.stquery, dbrec2.stquery );
 	swap ( dbrec1.m_RECFIELDS, dbrec2.m_RECFIELDS );
+	swap ( dbrec1.mFieldsTypes, dbrec2.mFieldsTypes );
 	swap ( dbrec1.helperFunction, dbrec2.helperFunction );
 	dbrec1.setAction ( dbrec2.action () );
 	dbrec2.setAction ( dbrec1.prevAction () );
@@ -56,7 +57,7 @@ void db_rec_swap ( DBRecord& dbrec1, DBRecord& dbrec2 )
 }
 
 DBRecord::DBRecord ()
-	: t_info ( nullptr ), m_RECFIELDS ( nullptr ) , mListItem ( nullptr ), helperFunction ( nullptr ),
+	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), mFieldsTypes ( nullptr ), mListItem ( nullptr ), helperFunction ( nullptr ),
 	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
 	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
 {
@@ -64,10 +65,8 @@ DBRecord::DBRecord ()
 }
 
 DBRecord::DBRecord ( const DBRecord& other )
-	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), mListItem ( nullptr ),helperFunction ( nullptr ),
-	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
-	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
-{	
+	: DBRecord ()
+{
 	t_info = other.t_info;
 	fld_count = other.fld_count;
 	mb_modified = other.mb_modified;
@@ -75,6 +74,7 @@ DBRecord::DBRecord ( const DBRecord& other )
 	mb_completerUpdated = other.mb_completerUpdated;
 	mListItem = other.mListItem;
 	stquery = other.stquery;
+	mFieldsTypes = other.mFieldsTypes;
 	
 	std::copy ( other.m_RECFIELDS, other.m_RECFIELDS + fld_count, this->m_RECFIELDS );
 	std::copy ( other.helperFunction, other.helperFunction + fld_count, this->helperFunction );
@@ -198,13 +198,13 @@ bool DBRecord::readNextRecord ( const bool follow_search, const bool load_data )
 	if ( !follow_search )
 	{
 		const uint last_id ( VDB ()->getHighestID ( t_info->table_order ) );
-		if ( last_id >= 1 && static_cast<uint>(actualRecordInt ( 0 )) < last_id )
+		if ( last_id >= 1 && static_cast<uint>( actualRecordInt ( 0 ) ) < last_id )
 		{
 			do
 			{
-				if ( readRecord ( static_cast<uint>(actualRecordInt ( 0 )) + 1, load_data ) )
+				if ( readRecord ( static_cast<uint>( actualRecordInt ( 0 ) ) + 1, load_data ) )
 					return true;
-			} while ( static_cast<uint>(actualRecordInt ( 0 )) <= last_id );
+			} while ( static_cast<uint>( actualRecordInt ( 0 ) ) <= last_id );
 		}
 	}
 	else
@@ -303,13 +303,15 @@ void DBRecord::setAllModified ( const bool modified )
 	mb_modified = modified;
 }
 
-void DBRecord::clearAll ()
+void DBRecord::clearAll ( const bool b_preserve_id )
 {
-	uint i ( 0 );
+	uint i ( b_preserve_id ? 1 : 0 );
 	do
 	{
 		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_ACTUAL].clear ();
 		m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_ACTUAL] = 0;
+		m_RECFIELDS[i].str_field[RECORD_FIELD::IDX_TEMP].clear ();
+		m_RECFIELDS[i].i_field[RECORD_FIELD::IDX_TEMP] = 0;
 		m_RECFIELDS[i].modified = false;
 		m_RECFIELDS[i].was_modified = false;
 	} while  ( ++i < fld_count );
@@ -376,7 +378,7 @@ void DBRecord::createTemporaryRecord ( DBRecord* dbrec )
 	dbrec->setValue ( 0, str_id );
 	dbrec->setBackupValue ( 0, str_id );
 	if ( dbrec->mListItem != nullptr )
-		dbrec->mListItem->setDBRecID ( static_cast<int>(new_id) );
+		dbrec->mListItem->setDBRecID ( new_id );
 }
 
 void DBRecord::sync ( const int src_index, const bool b_force )

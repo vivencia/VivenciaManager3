@@ -9,12 +9,12 @@
 #include "purchases.h"
 #include "vmnotify.h"
 #include "ui_mainwindow.h"
+#include "vmtaskpanel.h"
 
 #include <QMainWindow>
 #include <QDialog>
 #include <QSystemTrayIcon>
 
-class vmTaskPanel;
 class vmAction;
 class vmListItem;
 class clientListItem;
@@ -71,7 +71,8 @@ public:
 		JILUR_REPORT = Qt::UserRole + Job::JRF_REPORT,
 		JILUR_ADDED = JILUR_REPORT + 1,
 		JILUR_REMOVED = JILUR_REPORT + 2,
-		JILUR_DAY_TIME = JILUR_REPORT + 3
+		JILUR_EDITED = JILUR_REPORT + 3,
+		JILUR_DAY_TIME = JILUR_REPORT + 4
 	};
 
 	explicit MainWindow ();
@@ -124,9 +125,10 @@ public:
 	void displayJobFromCalendar ( vmListItem* cal_item );
 	void jobKeyPressedSelector ( const QKeyEvent* ke );
 	void jobsListWidget_currentItemChanged ( vmListItem* item );
-	void jobDayReportListWidget_currentItemChanged ( vmListItem* item );
+	void lstJobDayReport_currentItemChanged ( vmListItem* item );
 	void controlJobForms ( const jobListItem* const job_item );
-	void controlJobDayForms ( const jobListItem* const job_item );
+	void controlJobDaySection ( const jobListItem* const job_item );
+	void controlJobDayForms ( const bool b_editable );
 	void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
 	bool saveJob ( jobListItem* job_item );
 	jobListItem* addJob ( clientListItem* parent_client );
@@ -255,6 +257,7 @@ public:
 	void searchCallbackSelector ( const QKeyEvent* ke );
 	void reOrderTabSequence ();
 	void setupWorkFlow ();
+	inline void changeSchemeStyle ( const QString& style ) { mainTaskPanel->setScheme ( style ); }
 	void setupTabNavigationButtons ();
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 

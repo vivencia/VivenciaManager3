@@ -99,9 +99,9 @@ static const QString emptyString;
 constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
-#define VERSION_MINOR 2
-#define VERSION_REVISION 5
-constexpr const QLatin1String VERSION_APPEND ( "Laying low", 10 );
+#define VERSION_MINOR 3
+#define VERSION_REVISION 0
+constexpr const QLatin1String VERSION_APPEND ( "The Festival Approaches", 23 );
 constexpr const QLatin1String VERSION_DATE ( "2017-05-07", 10 );
 
 static const QString PROGRAM_VERSION (

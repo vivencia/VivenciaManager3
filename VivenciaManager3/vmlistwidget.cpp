@@ -5,10 +5,11 @@
 #include <QHeaderView>
 
 vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
-	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mbForceEmit ( false ), mPrevRow ( -2 ), mCurrentItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
+	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mbForceEmit ( false ), 
+	  mPrevRow ( -2 ), mCurrentItem ( nullptr ), mPrevItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
 {
 	setIsList ();
-	(void) ( createColumns ( 2 ) );
+	static_cast<void>( createColumns ( 2 ) );
 	initTable ( nRows );
 	setIgnoreChanges ( false );
 	setHorizontalScrollMode ( QAbstractItemView::ScrollPerPixel );
@@ -42,7 +43,7 @@ void vmListWidget::setCurrentRow ( int row, const bool b_makecall )
 			if ( mCurrentItem != nullptr )
 				mPrevRow = mCurrentItem->row ();
 		}
-		mCurrentItem = item ( row );
+		setCurrentItem ( item ( row ) );
 		if ( !isIgnoringChanges () && mCurrentItem )
 		{
 			scrollToItem ( mCurrentItem );
@@ -74,7 +75,7 @@ void vmListWidget::addItem ( vmListItem* item, const bool b_makecall )
 		setItem ( static_cast<int>(row), 0, item );
 		if ( !isIgnoringChanges () )
 		{
-			mCurrentItem = item;
+			setCurrentItem ( item );
 			scrollToItem ( mCurrentItem );
 			setCurrentCell ( item->row (), 0, QItemSelectionModel::ClearAndSelect );
 			if ( b_makecall && mCurrentItemChangedFunc )
@@ -159,15 +160,15 @@ void vmListWidget::setAlwaysEmitCurrentItemChanged ( const bool b_emit )
 {
 	if ( b_emit )
 	{
-		connect ( this, &QTableWidget::cellActivated, this, [&] ( const int row, const int )
-			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } );
-		connect ( this, &QTableWidget::cellClicked, this, [&] ( const int row, const int )
-			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } );
+		static_cast<void>( connect ( this, &QTableWidget::cellActivated, this, [&] ( const int row, const int )
+			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } ) );
+		static_cast<void>( connect ( this, &QTableWidget::cellClicked, this, [&] ( const int row, const int )
+			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } ) );
 	}
 	else
 	{
-		disconnect ( this, &QTableWidget::cellClicked, nullptr, nullptr );
-		disconnect ( this, &QTableWidget::cellActivated, nullptr, nullptr );
+		static_cast<void>( disconnect ( this, &QTableWidget::cellClicked, nullptr, nullptr ) );
+		static_cast<void>( disconnect ( this, &QTableWidget::cellActivated, nullptr, nullptr ) );
 	}
 	if ( !isIgnoringChanges () )
 		mbForceEmit = b_emit ;
@@ -184,7 +185,7 @@ void vmListWidget::rowSelected ( const int row, const int prev_row )
 	else
 		mPrevRow = -2;	
 	
-	mCurrentItem = item ( row );
+	setCurrentItem ( item ( row ) );
 	if ( !isIgnoringChanges () )
 	{
 		if ( mCurrentItemChangedFunc )

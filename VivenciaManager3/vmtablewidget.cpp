@@ -138,7 +138,7 @@ void vmTableWidget::initTable ( const uint rows )
 					if ( i_row == static_cast<uint>( totalsRow () ) )
 					{
 						if ( i_col == 0 )
-							sheet_item->setText ( TR_FUNC ( "Total:" ), false, false );
+							sheet_item->setText ( TR_FUNC ( "Total:" ), false );
 						else
 						{
 							if ( column->text_type >= vmLineEdit::TT_PRICE )
@@ -265,6 +265,25 @@ bool vmTableWidget::searchLast ()
 	return selectFound ( mSearchList.last () );
 }
 
+int vmTableWidget::getRow ( const QString& cellText, const Qt::CaseSensitivity cs, const uint startrow, uint nth_find )
+{
+	if ( isEmpty () ) return -1;
+	
+	for ( uint row ( startrow ); row <= static_cast<uint>( lastUsedRow () ); ++row )
+	{
+		for ( uint col ( 0 ); col < colCount (); ++col )
+		{
+			if ( cellText.compare ( sheetItem ( row, col )->text (), cs ) )
+			{
+				if ( nth_find == 0 )
+					return static_cast<int>( row );
+				--nth_find;
+			}
+		}
+	}
+	return -1;
+}
+
 vmTableWidget* vmTableWidget::createPurchasesTable ( vmTableWidget* table, QWidget* parent )
 {
 	vmTableColumn* cols ( table->createColumns ( PURCHASES_TABLE_COLS ) );
@@ -347,7 +366,7 @@ void vmTableWidget::exchangePurchaseTablesInfo (
 	s_row->field_value[s_row->column[4]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_SUPPLIER ) );
 	s_row->field_value[s_row->column[5]] = recStrValue ( src_dbrec, src_dbrec->isrRecordField ( ISR_DATE ) );
 
-	for ( uint i_row ( 0 ); i_row <= static_cast<uint>(src_table->lastUsedRow ()); ++i_row )
+	for ( uint i_row ( 0 ); i_row <= static_cast<uint>( src_table->lastUsedRow () ); ++i_row )
 	{
 		if ( src_table->sheetItem ( i_row, PURCHASES_TABLE_REG_COL )->text () == CHR_ZERO ) // item is not marked to be exported
 			continue;
@@ -683,9 +702,9 @@ void vmTableWidget::setCellValue ( const QString& value, const uint row, const u
 {
 	if ( col < colCount () )
 	{
-		if ( static_cast<int>(row) >= totalsRow () )
+		if ( static_cast<int>( row ) >= totalsRow () )
 			appendRow ();
-		sheetItem ( row, col )->setText ( value, false, false );
+		sheetItem ( row, col )->setText ( value, false );
 	}
 }
 
@@ -698,7 +717,7 @@ void vmTableWidget::setRowData ( const spreadRow* s_row, const bool b_notify )
 		if ( s_row->row >= totalsRow () )
 			appendRow ();
 		for ( uint i_col ( 0 ), used_col ( s_row->column.at ( 0 ) ); i_col < s_row->column.count (); used_col = s_row->column.at ( ++i_col ) )
-			sheetItem ( static_cast<uint>(s_row->row), used_col )->setText ( s_row->field_value.at ( used_col ), false, b_notify );
+			sheetItem ( static_cast<uint>(s_row->row), used_col )->setText ( s_row->field_value.at ( used_col ), b_notify, false );
 	}
 }
 
@@ -1473,15 +1492,15 @@ void vmTableWidget::interceptCompleterActivated ( const QModelIndex& index, cons
 			setCurrentCell ( 0, 0, QItemSelectionModel::ClearAndSelect );
 		if ( currentRow () >= 0 )
 		{
-			const uint current_row ( static_cast<uint>(currentRow ()) );
+			const uint current_row ( static_cast<uint>( currentRow () ) );
 			if ( record.first () )
 			{
 				uint i_col ( 0 );
 				do
 				{
-					sheetItem ( current_row, i_col++ )->setText ( record.curValue (), false, true );
+					sheetItem ( current_row, i_col++ )->setText ( record.curValue (), true );
 				} while ( i_col < ISR_TOTAL_PRICE && record.next () );
-				setCurrentCell ( static_cast<int>(current_row), ISR_QUANTITY, QItemSelectionModel::ClearAndSelect );
+				setCurrentCell ( static_cast<int>( current_row ), ISR_QUANTITY, QItemSelectionModel::ClearAndSelect );
 			}
 		}
 	}
@@ -1492,13 +1511,11 @@ void vmTableWidget::undoChange ()
 {
 	if ( isEditable () )
 	{
-		vmTableItem* item ( nullptr );
-		if ( mContextMenuCell )
-			item = mContextMenuCell;
-		else
-			item = static_cast<vmTableItem*> ( currentItem () );
+		vmTableItem* item ( mContextMenuCell ? mContextMenuCell : static_cast<vmTableItem*>( currentItem () ) );
 		if ( item && item->cellIsAltered () )
-			item->setText ( item->prevText (), false, true );
+			//TODO teste both these lines: the first was the original
+			//item->setText ( item->prevText (), true, true );
+			item->setText ( item->prevText (), true );
 	}
 }
 
@@ -1661,8 +1678,8 @@ void vmTableWidget::headerItemToggled ( const uint col, const bool checked )
 
 void vmTableWidget::textWidgetChanged ( const vmWidget* const sender )
 {
-	vmTableItem* const item ( const_cast<vmTableItem*> ( sender->ownerItem () ) );
-	item->setText ( sender->text (), true, false );
+	vmTableItem* const item ( const_cast<vmTableItem*>( sender->ownerItem () ) );
+	item->setText ( sender->text (), false, true );
 	if ( !mbDoNotUpdateCompleters ) {
 		// Update the runtime completers to make the entered text available for the current session, if not already in the model
 		// The runtime completer will, in turn, update the database. TODO: not only for the completers table, but all tables: a
@@ -1674,21 +1691,21 @@ void vmTableWidget::textWidgetChanged ( const vmWidget* const sender )
 
 void vmTableWidget::dateWidgetChanged ( const vmWidget* const sender )
 {
-	const_cast<vmTableItem*> ( sender->ownerItem () )->setText (
-		static_cast<const vmDateEdit* const>( sender )->date ().toString ( DATE_FORMAT_DB ), true, false );
+	const_cast<vmTableItem*>( sender->ownerItem () )->setText (
+		static_cast<const vmDateEdit* const>( sender )->date ().toString ( DATE_FORMAT_DB ), false, true  );
 	cellContentChanged ( sender->ownerItem () );
 }
 
 void vmTableWidget::timeWidgetChanged ( const vmWidget* const sender )
 {
-	const_cast<vmTableItem*> ( sender->ownerItem () )->setText (
-		static_cast<const vmTimeEdit* const>( sender )->time ().toString ( TIME_FORMAT_DEFAULT ), true, false );
+	const_cast<vmTableItem*>( sender->ownerItem () )->setText (
+		static_cast<const vmTimeEdit* const>( sender )->time ().toString ( TIME_FORMAT_DEFAULT ), false, true );
 	cellContentChanged ( sender->ownerItem () );
 }
 
 void vmTableWidget::checkBoxToggled ( const vmWidget* const sender )
 {
-	const_cast<vmTableItem*> ( sender->ownerItem () )->setText ( sender->text (), true, false );
+	const_cast<vmTableItem*>( sender->ownerItem () )->setText ( sender->text (), false, true );
 	cellContentChanged ( sender->ownerItem () );
 }
 
@@ -1696,7 +1713,7 @@ void vmTableWidget::displayContextMenuForCell ( const QPoint& pos, const vmWidge
 {
 	if ( cellWidget->ownerItem () )
 	{
-		mContextMenuCell = const_cast<vmTableItem*> ( cellWidget->ownerItem () );
+		mContextMenuCell = const_cast<vmTableItem*>( cellWidget->ownerItem () );
 		setCurrentItem ( mContextMenuCell, QItemSelectionModel::ClearAndSelect );
 		enableOrDisableActionsForCell ( mContextMenuCell );
 		Data::execMenuWithinWidget ( mContextMenu, cellWidget->toQWidget (), pos );
@@ -1711,10 +1728,10 @@ void vmTableWidget::cellWidgetRelevantKeyPressed ( const QKeyEvent* const ke, co
 		/* The text is different from the original, canceling (pressing the ESC key) should return
 		 * the widget's text to the original
 		 */
-		vmTableItem* item ( const_cast<vmTableItem*> ( widget->ownerItem () ) );
+		vmTableItem* item ( const_cast<vmTableItem*>( widget->ownerItem () ) );
 		if ( item->text () != item->originalText () )
 		{
-			item->setText ( item->originalText (), false, false );
+			item->setText ( item->originalText (), false );
 			item->setCellIsAltered ( false );
 		}
 		/* If text is the same the item had when it went from non-editable to editable,

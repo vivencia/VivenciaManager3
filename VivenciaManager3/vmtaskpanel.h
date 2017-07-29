@@ -1,6 +1,8 @@
 #ifndef VMTASKPANEL_H
 #define VMTASKPANEL_H
 
+#include "vmlist.h"
+
 #include <QFrame>
 
 class ActionPanelScheme;
@@ -54,7 +56,7 @@ public:
 
 		By default, vmTaskPanelScheme::defaultScheme() is used.
 	  */
-	void setScheme ( ActionPanelScheme* scheme );
+	void setScheme ( const QString& style );
 
 	QSize minimumSizeHint () const;
 
@@ -62,6 +64,9 @@ protected:
 	ActionPanelScheme* mScheme;
 	vmActionLabel* mTitle;
 	QVBoxLayout* mLayout;
+	
+private:
+	PointersList<vmActionGroup*> mGroups;
 };
 
 #endif // VMTASKPANEL_H
