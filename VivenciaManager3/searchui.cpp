@@ -5,7 +5,6 @@
 #include "vmlistitem.h"
 #include "inventory.h"
 #include "dbsupplies.h"
-#include "dbsuppliesui.h"
 #include "supplierrecord.h"
 #include "suppliersdlg.h"
 #include "companypurchasesui.h"
@@ -529,10 +528,6 @@ void searchUI::listRowSelected ( const int row )
 			case INVENTORY_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
 						return COMPANY_PURCHASES ()->showSearchResult ( item, bshow ); };
-			break;
-			case SUPPLIES_TABLE:
-				displayFunc = [&] ( vmListItem* item, const bool bshow ) {
-						return SUPPLIES ()->showSearchResult ( item, bshow ); };
 			break;
 			case SUPPLIER_TABLE:
 				displayFunc = [&] ( vmListItem* item, const bool bshow ) {

@@ -62,28 +62,28 @@ vmListItem::vmListItem ( const uint type_id, const uint nbadInputs, bool* const 
 {
 	mTotal_badInputs = nbadInputs;
 	badInputs_ptr = badinputs_ptr;
-	setSubType ( static_cast<int>(type_id) );
+	setSubType ( static_cast<int>( type_id ) );
 }
 
-vmListItem::vmListItem ( const vmListItem& other )
-	: vmListItem ()
+void vmListItem::copy ( const vmListItem& src_item )
 {
-	setCrashID ( other.crashID () );
-	setRelation ( other.relation () );
-	setLastRelation ( other.lastRelation () );
-	std::copy ( other.item_related, other.item_related + 20, item_related );
-	n_badInputs = other.n_badInputs;
-	mTotal_badInputs = other.mTotal_badInputs;
-	std::copy ( other.badInputs_ptr, other.badInputs_ptr + other.n_badInputs, badInputs_ptr );
-	mbSearchCreated = other.mbSearchCreated;
-	mbInit = other.mbInit;
-	mbSorted = other.mbSorted;
-	std::copy ( other.searchFields, other.searchFields + other.m_dbrec->fieldCount (), searchFields );
-	setDBRec ( other.dbRec (), true );
-	setDBRecID ( other.dbRecID () );
-	setAction ( other.action () );
-	setText ( other.text (), false, false, false );
-	addToList ( other.listWidget (), false );
+	this->vmTableItem::copy ( src_item );
+	setCrashID ( src_item.crashID () );
+	setRelation ( src_item.relation () );
+	setLastRelation ( src_item.lastRelation () );
+	std::copy ( src_item.item_related, src_item.item_related + 20, item_related );
+	n_badInputs = src_item.n_badInputs;
+	mTotal_badInputs = src_item.mTotal_badInputs;
+	std::copy ( src_item.badInputs_ptr, src_item.badInputs_ptr + src_item.n_badInputs, badInputs_ptr );
+	mbSearchCreated = src_item.mbSearchCreated;
+	mbInit = src_item.mbInit;
+	mbSorted = src_item.mbSorted;
+	std::copy ( src_item.searchFields, src_item.searchFields + src_item.m_dbrec->fieldCount (), searchFields );
+	setDBRec ( src_item.dbRec (), true );
+	setDBRecID ( src_item.dbRecID () );
+	setAction ( src_item.action () );
+	setText ( src_item.text (), false, false, false );
+	addToList ( src_item.listWidget (), false );
 }
 
 vmListItem::vmListItem ( const QString& label )
@@ -98,29 +98,6 @@ vmListItem::~vmListItem ()
 		disconnectRelation ( static_cast<int>( RLI_CLIENTITEM ), this );
 	if ( mbSearchCreated )
 		delete[] searchFields;
-}
-
-QString vmListItem::defaultStyleSheet () const
-{
-	QString colorstr;
-	if ( !listWidget () )
-		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
-	else
-	{
-		listWidget ()->setIgnoreChanges ( true );
-		vmListItem* item ( new vmListItem ( 1000 ) );
-		item->addToList ( listWidget () );
-		colorstr = item->backgroundColor ().name ();
-		listWidget ()->removeItem ( item, true );
-		listWidget ()->setIgnoreChanges ( false );
-	}
-	return ( colorstr );
-}
-
-void vmListItem::highlight ( const VMColors vm_color, const QString& )
-{
-	setBackground ( QBrush ( vm_color == vmDefault_Color ? QColor ( defaultStyleSheet () ) : 
-			QColor ( vmColorToQt[Data::vmColorIndex ( vm_color )] ) ) );
 }
 
 void vmListItem::setRelation ( const uint relation )

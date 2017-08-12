@@ -9,7 +9,6 @@ class Inventory : public DBRecord
 {
 
 friend class VivenciaDB;
-friend class InventoryUI;
 
 public:
 	explicit Inventory ( const bool connect_helper_funcs = false );

@@ -113,11 +113,14 @@ public:
 	}
 
 	void rowActivatedConnection ( const bool b_activate );
+	void enableQtListenerToSimpleTableItemEdition ( const bool b_enable );
 	void setCellValue ( const QString& value, const uint row, const uint col );
+	void setSimpleCellText ( vmTableItem* const item );
+	void setSimpleCellTextWithoutNotification ( vmTableItem* const item, const QString& text );
 	void setRowData ( const spreadRow* s_row, const bool b_notify = false );
 	void rowData ( const uint row, spreadRow* ) const;
 	void cellContentChanged ( const vmTableItem* const item );
-	void cellModified ( const vmTableItem* const item );
+	void cellModified ( vmTableItem* const item );
 
 	void renameAction ( const contextMenuDefaultActions action, const QString& new_text );
 	void addContextMenuAction ( vmAction* );
@@ -134,7 +137,7 @@ public:
 
 	void setIsList ();
 	inline bool isList () const { return mbTableIsList; }
-	void setIsPlainTable ();
+	void setIsPlainTable ( const bool b_usewidgets = true );
 	inline bool isPlainTable () const { return mbPlainTable; }
 	
 	inline void setKeepModificationRecords ( const bool bkeeprec ) { mbKeepModRec = bkeeprec; }
@@ -145,7 +148,7 @@ public:
 		return static_cast<bool>( m_lastUsedRow < 0 ); }
 
 	inline vmTableItem* sheetItem ( const uint row, const uint col ) const {
-		return static_cast<vmTableItem*> ( this->item ( static_cast<int>(row), static_cast<int>(col) ) ); }
+		return static_cast<vmTableItem*>( this->item ( static_cast<int>( row ), static_cast<int>( col ) ) ); }
 
 	inline uint colCount () const { return m_ncols; }
 	inline int totalsRow () const { return mTotalsRow; }
@@ -173,6 +176,9 @@ public:
 	void setCellColor ( const uint row, const uint col, const Qt::GlobalColor color );
 	void highlight ( const VMColors color, const QString& text ) override;
 
+	inline bool autoResizeColumns () const { return mbColumnAutoResize; }
+	inline void setColumnsAutoResize ( const bool b_autoresize ) { mbColumnAutoResize = b_autoresize; }
+	void resizeColumn ( const uint col, const QString& text );
 	bool isColumnSelectedForSearch ( const uint column ) const;
 	void setColumnSearchStatus ( const uint column, const bool bsearch );
 	void reHilightItems ( vmTableItem* next, vmTableItem* prev );
@@ -200,6 +206,7 @@ protected:
 	inline void setVisibleRows ( const uint n ) { m_nVisibleRows = n; }
 
 private:
+	inline void resetLastUsedRow () { m_lastUsedRow = -1; }
 	void enableOrDisableActionsForCell ( const vmTableItem* sheetItem );
 	void sharedContructorsCode ();
 	void fixTotalsRow ();
@@ -240,9 +247,11 @@ private:
 	 */
 	bool mbKeepModRec;
 	bool mbPlainTable;
+	bool mbUseWidgets;
 	bool mbTableIsList;
 	bool mIsPurchaseTable;
 	bool mbDoNotUpdateCompleters;
+	bool mbColumnAutoResize;
 
 	// Because of the mask, the maximum number of columns is limited to 32
 	uint readOnlyColumnsMask; // columns set here do not receive user input

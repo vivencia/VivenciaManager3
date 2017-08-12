@@ -4,6 +4,10 @@
 #include "vmwidgets.h"
 #include "heapmanager.h"
 
+auto vmColorToQt = [] ( const VMColors color ) -> Qt::GlobalColor
+	{	switch ( color ) { case	vmGray: return Qt::gray; case vmRed: return Qt::red; case vmYellow: return Qt::yellow;
+			case vmGreen: return Qt::green; case vmBlue: return Qt::blue; case vmWhite: case vmDefault_Color: return Qt::white; } };
+
 static const QString SUM ( QStringLiteral ( "sum" ) );
 
 void table_item_swap ( vmTableItem& t_item1, vmTableItem& t_item2 )
@@ -55,49 +59,71 @@ vmTableItem::vmTableItem ( const PREDEFINED_WIDGET_TYPES wtype,
 						   const vmLineEdit::TEXT_TYPE ttype, const QString& text, const vmTableWidget* table )
 	: vmTableItem ()
 {
+	m_table = const_cast<vmTableWidget*>( table );
 	setWidgetType ( wtype );
 	setTextType ( ttype );
 	setDefaultValue ( text );
 	setText ( text, false, false, false );
-	m_table = const_cast<vmTableWidget*>( table );
 }
 
-vmTableItem::vmTableItem ( const QString& text )
+vmTableItem::vmTableItem (const QString& text , const vmTableWidget *table )
 	: vmTableItem ()
 {
+	m_table = const_cast<vmTableWidget*>( table );
 	setText	( text, false, false, false );
 	setDefaultValue ( text );
 	setTextType ( vmLineEdit::TT_TEXT );
 }
 
-vmTableItem::vmTableItem ( const vmTableItem& t_item )
-	: vmTableItem ()
+void vmTableItem::copy ( const vmTableItem& src_item )
 {
-	m_wtype = t_item.m_wtype;
-	m_btype = t_item.m_btype;
-	mcompleter_type = t_item.mcompleter_type;
-	mb_hasFormula = t_item.mb_hasFormula;
-	mb_formulaOverride = t_item.mb_formulaOverride;
-	mb_customFormula = t_item.mb_customFormula;
-	mb_CellAltered = t_item.mb_CellAltered;
-	mStr_Formula = t_item.mStr_Formula;
-	mStr_FormulaTemplate = t_item.mStr_FormulaTemplate;
-	mStrOp = t_item.mStrOp;
-	mDefaultValue = t_item.mDefaultValue;
-	mCache = t_item.mCache;
-	mprev_datacache = t_item.mprev_datacache;
-	mBackupData_cache = t_item.mBackupData_cache;
-	m_table = t_item.m_table;
-	m_targets = t_item.m_targets;
-	m_widget = t_item.m_widget;
+	m_wtype = src_item.m_wtype;
+	m_btype = src_item.m_btype;
+	mcompleter_type = src_item.mcompleter_type;
+	mb_hasFormula = src_item.mb_hasFormula;
+	mb_formulaOverride = src_item.mb_formulaOverride;
+	mb_customFormula = src_item.mb_customFormula;
+	mb_CellAltered = src_item.mb_CellAltered;
+	mStr_Formula = src_item.mStr_Formula;
+	mStr_FormulaTemplate = src_item.mStr_FormulaTemplate;
+	mStrOp = src_item.mStrOp;
+	mDefaultValue = src_item.mDefaultValue;
+	mCache = src_item.mCache;
+	mprev_datacache = src_item.mprev_datacache;
+	mBackupData_cache = src_item.mBackupData_cache;
+	m_table = src_item.m_table;
+	m_targets = src_item.m_targets;
+	m_widget = src_item.m_widget;
 }
 
 vmTableItem::~vmTableItem () {}
+
+QString vmTableItem::defaultStyleSheet () const
+{
+	QString colorstr;
+	if ( !table () )
+		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
+	else
+		colorstr = QLatin1String ( " ( " ) + table ()->palette ().color ( QPalette::Background ).name () + QLatin1String ( " ) }" );
+	return ( QLatin1String ( "QDateEdit { background-color: hex" ) + colorstr );
+}
 
 void vmTableItem::setEditable ( const bool editable )
 {
 	if ( m_widget )
 		m_widget->setEditable ( editable );
+	else
+	{
+		Qt::ItemFlags currentFlags ( flags () );
+		if ( editable )
+		{
+			currentFlags |= Qt::ItemIsEditable;
+		}
+		else
+			currentFlags ^= Qt::ItemIsEditable;
+		QTableWidgetItem::setFlags ( currentFlags );
+		
+	}
 	vmWidget::setEditable ( editable );
 }
 
@@ -126,17 +152,30 @@ void vmTableItem::setText ( const QString& text, const bool b_notify, const bool
 	}
 
 	mCache = text;
-	if ( m_table )
-		m_table->setLastUsedRow ( row () );
+	if ( table () )
+	{
+		table ()->setLastUsedRow ( row () );
+		table ()->resizeColumn ( static_cast<uint>( column () ), text );
+	}
 
-	for ( uint i ( 0 ); i < m_targets.count (); ++i )
-		m_targets.at ( i )->computeFormula ();
+	if ( m_widget )
+	{
+		for ( uint i ( 0 ); i < m_targets.count (); ++i )
+			m_targets.at ( i )->computeFormula ();
 
-	// The call to change the widget's text must be the last operation so that callbackers can
-	// take the item's text (if so they wish) when there is a signal call by the widget, and get
-	// the updated value, instead of the old one
-	if ( !b_from_cell_itself && m_widget )
-		m_widget->setText ( text, b_notify );
+		// The call to change the widget's text must be the last operation so that callbackers can
+		// take the item's text (if so they wish) when there is a signal call by the widget, and get
+		// the updated value, instead of the old one
+		if ( !b_from_cell_itself )
+			m_widget->setText ( text, b_notify );
+	}
+	else
+	{
+		if ( table () )
+			b_notify ? table ()->setSimpleCellText ( this ) : table ()->setSimpleCellTextWithoutNotification ( this, text );
+		else
+			QTableWidgetItem::setText ( text );
+	}
 }
 
 void vmTableItem::setDate ( const vmNumber& date )
@@ -180,7 +219,10 @@ vmNumber vmTableItem::number ( const bool bCurText ) const
 
 void vmTableItem::highlight ( const VMColors color, const QString& )
 {
-	m_widget->highlight ( color );
+	if ( m_widget )
+		m_widget->highlight ( color );
+	else
+		setBackground ( color == vmDefault_Color ? QColor ( defaultStyleSheet () ) : QColor ( vmColorToQt ( color ) ) );
 }
 
 QVariant vmTableItem::data ( const int role ) const
@@ -194,7 +236,6 @@ QVariant vmTableItem::data ( const int role ) const
 		
 		default:
 			return QTableWidgetItem::data ( role );
-		
 	}
 }
 
@@ -222,7 +263,7 @@ void vmTableItem::targetsFromFormula ()
 			{
 				for ( int c ( firstCol ); c <= secondCol; ++c )
 				{
-					sheet_item = m_table->sheetItem ( static_cast<uint>( r ), static_cast<uint>( c ) );
+					sheet_item = table ()->sheetItem ( static_cast<uint>( r ), static_cast<uint>( c ) );
 					if ( sheet_item )
 					{
 						if ( textType () >= vmLineEdit::TT_PRICE )
@@ -238,7 +279,7 @@ void vmTableItem::targetsFromFormula ()
 						 * at a later point, but never during the actual use of a table. All this
 						 * means it takes a little longer to show the table, but its operation is smoother
 						 */
-						m_table->reScanItem ( this );
+						table ()->reScanItem ( this );
 						return;
 					}
 				}
@@ -246,14 +287,14 @@ void vmTableItem::targetsFromFormula ()
 		}
 		else
 		{
-			sheet_item = m_table->sheetItem ( static_cast<uint>( firstRow ), static_cast<uint>( firstCol ) );
+			sheet_item = table ()->sheetItem ( static_cast<uint>( firstRow ), static_cast<uint>( firstCol ) );
 			if ( sheet_item )
 			{
 				if ( sheet_item->m_targets.contains ( this ) == -1 )
 					sheet_item->m_targets.append ( this );
 				if ( secondRow != -1 )
 				{
-					sheet_item = m_table->sheetItem ( static_cast<uint>( secondRow ), static_cast<uint>( secondCol ) );
+					sheet_item = table ()->sheetItem ( static_cast<uint>( secondRow ), static_cast<uint>( secondCol ) );
 					if ( sheet_item )
 					{
 						if ( sheet_item->m_targets.contains ( this ) == -1 )
@@ -263,7 +304,7 @@ void vmTableItem::targetsFromFormula ()
 			}
 			else
 			{
-				m_table->reScanItem ( this );
+				table ()->reScanItem ( this );
 				return;
 			}
 		}
@@ -310,7 +351,7 @@ void vmTableItem::computeFormula ()
 		{
 			for ( int c ( firstCol ); c <= secondCol; ++c )
 			{
-				tableItem = m_table->sheetItem ( static_cast<uint>( r ), static_cast<uint>( c ) );
+				tableItem = table ()->sheetItem ( static_cast<uint>( r ), static_cast<uint>( c ) );
 				if ( tableItem )
 				{
 					if ( textType () >= vmLineEdit::TT_PRICE )
@@ -321,10 +362,10 @@ void vmTableItem::computeFormula ()
 	}
 	else
 	{
-		vmNumber firstVal ( m_table->sheetItem ( static_cast<uint>( firstRow ), static_cast<uint>( firstCol ) )->number () );
+		vmNumber firstVal ( table ()->sheetItem ( static_cast<uint>( firstRow ), static_cast<uint>( firstCol ) )->number () );
 		vmNumber secondVal;
 		if ( secondRow != -1 )
-			secondVal = m_table->sheetItem ( static_cast<uint>( secondRow ), static_cast<uint>( secondCol ) )->number ();
+			secondVal = table ()->sheetItem ( static_cast<uint>( secondRow ), static_cast<uint>( secondCol ) )->number ();
 
 		switch ( mStrOp.constData ()->toLatin1 () )
 		{
@@ -349,5 +390,5 @@ void vmTableItem::computeFormula ()
 	 * be captured. Since most formula cells are read-only, we need to check the table's
 	 * state for an accurate position on the editing status.
 	 */
-	setText ( res.toString (), false, m_table->isEditable (), true );
+	setText ( res.toString (), table ()->isEditable (), false, true );
 }

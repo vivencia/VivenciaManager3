@@ -579,7 +579,7 @@ VMList<T>::VMList ( const VMList<T>& other )
 	ptr = other.ptr;
 	end_value = other.end_value;
 	mb_ispointer = other.mb_ispointer;
-	r = other.r;
+	::strcpy ( r, other.r );
 	_data = new T[this->capacity];
 	copyItems ( this->_data, other._data, this->capacity );
 }

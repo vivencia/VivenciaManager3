@@ -47,7 +47,8 @@ friend void item_swap ( vmListItem& item1, vmListItem& item2 );
 
 public:
 	vmListItem ();
-	vmListItem ( const vmListItem& other );
+	inline vmListItem ( const vmListItem& other ) : vmListItem () { copy ( other ); }
+	
 	explicit vmListItem ( const uint type_id, const uint nbadInputs = 0, bool* const badinputs_ptr = nullptr );
 	vmListItem ( const QString& label );
 	virtual ~vmListItem ();
@@ -64,9 +65,6 @@ public:
 	{
 		item_swap ( *this, other );
 	}
-	
-	QString defaultStyleSheet () const override;
-	void highlight ( const VMColors vm_color, const QString& = QString::null ) override;
 
 	inline RECORD_ACTION action () const { return m_action; }
 	void setRelation ( const uint relation  );
@@ -116,6 +114,8 @@ public:
 	inline void setLastRelation ( const uint relation ) { mLastRelation = static_cast<RELATED_LIST_ITEMS>(relation); }
 
 protected:
+	void copy ( const vmListItem& src_item );
+
 	inline void setLabel ( const QString& text ) { setText ( text + actionSuffix[action()], false, false, false ); }
 	void changeAppearance ();
 	void deleteRelatedItem ( const uint rel_idx );
@@ -153,7 +153,7 @@ public:
 
 	// Prevent Qt from deleting these objects
 	inline void operator delete ( void* )  { return; }
-	
+
 	inline Client* clientRecord () const { return static_cast<Client*> ( dbRec () ); }
 
 	void update ();

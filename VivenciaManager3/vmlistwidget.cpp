@@ -9,7 +9,7 @@ vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
 	  mPrevRow ( -2 ), mCurrentItem ( nullptr ), mPrevItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
 {
 	setIsList ();
-	static_cast<void>( createColumns ( 2 ) );
+	static_cast<void>( createColumns ( 1 ) );
 	initTable ( nRows );
 	setIgnoreChanges ( false );
 	setHorizontalScrollMode ( QAbstractItemView::ScrollPerPixel );
@@ -67,12 +67,14 @@ void vmListWidget::addItem ( vmListItem* item, const bool b_makecall )
 		}
 		else
 		{
-			row = static_cast<uint>(rowCount ());
+			row = static_cast<uint>( rowCount () );
 			appendRow ();
 		}
 		
+		setItem ( static_cast<int>( row ), 0, item );
+		item->setTable ( this );
 		item->update ();
-		setItem ( static_cast<int>(row), 0, item );
+		
 		if ( !isIgnoringChanges () )
 		{
 			setCurrentItem ( item );

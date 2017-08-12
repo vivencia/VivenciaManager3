@@ -25,8 +25,8 @@ public:
 						   const vmLineEdit::TEXT_TYPE ttype,
 						   const QString& text, const vmTableWidget* table );
 
-	vmTableItem ( const QString& text ); // Simple item. No widgets. Not editable.
-	vmTableItem ( const vmTableItem& t_item );
+	vmTableItem ( const QString& text, const vmTableWidget* table ); // Simple item. No widget
+	inline vmTableItem ( const vmTableItem& t_item ) : vmTableItem () { copy ( t_item ); }
 	
 	inline vmTableItem ( vmTableItem&& other ) : vmTableItem ()
 	{
@@ -41,8 +41,10 @@ public:
 	
 	virtual ~vmTableItem ();
 	
+	inline void setTable ( vmTableWidget* table ) { m_table = table; }
 	inline vmTableWidget* table () const { return m_table; }
 	
+	QString defaultStyleSheet () const override;
 	void setEditable ( const bool editable ) override;
 
 	inline vmWidget* widget () const { return m_widget; }
@@ -64,7 +66,7 @@ public:
 		mb_CellAltered = false;
 	}
 
-	void setText (const QString& text, const bool b_notify, const bool b_from_cell_itself = false, const bool b_formulaResult = false ) override;
+	void setText ( const QString& text, const bool b_notify, const bool b_from_cell_itself = false, const bool b_formulaResult = false ) override;
 	inline void setTextToDefault ( const bool force_notify = false ) { setText ( mDefaultValue, false, force_notify ); }
 
 	void setDate ( const vmNumber& date );
@@ -97,6 +99,9 @@ public:
 
 	inline void setButtonType ( const vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE btype ) { m_btype = btype; }
 	inline vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE buttonType () const { return m_btype; }
+	
+protected:
+	void copy ( const vmTableItem& src_item );
 	
 private:
 	PREDEFINED_WIDGET_TYPES m_wtype;

@@ -531,10 +531,10 @@ void vmNumber::fixDate ()
 	int d ( 0 ), days_in_month ( 0 );
 	if ( nbr_part[VM_IDX_DAY] > 0 )
 	{
-		d = static_cast<int>(nbr_upart[VM_IDX_DAY]) + static_cast<int>(::fabs ( static_cast<double>(nbr_part[VM_IDX_DAY]) ));
+		d = static_cast<int>( nbr_upart[VM_IDX_DAY] ) + static_cast<int>( ::fabs ( static_cast<double>( nbr_part[VM_IDX_DAY] ) ) );
 		do
 		{
-			days_in_month = static_cast<int>(daysInMonth ( static_cast<unsigned int>(m), static_cast<unsigned int>(y) ));
+			days_in_month = static_cast<int>( daysInMonth ( static_cast<unsigned int>( m ), static_cast<unsigned int>( y ) ) );
 			if ( d > days_in_month )
 			{
 				d -= days_in_month;
@@ -638,20 +638,28 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 {
 	if ( !date.isEmpty () )
 	{
-		int n ( date.indexOf ( CHR_F_SLASH ) );
-		if ( n != -1 ) //DB_DATE or HUMAN_DATE
+		QLatin1Char sep_chr ( CHR_F_SLASH );
+		int n ( date.indexOf ( sep_chr ) ); //DB_DATE or HUMAN_DATE
+		if ( n == -1 )
 		{
-			const int idx ( date.indexOf ( CHR_F_SLASH, n + 1 ) );
+			sep_chr = CHR_HYPHEN;
+			n = date.indexOf ( sep_chr ); // DROPBOX or MYSQL
+		}
+		
+		if ( n != -1 ) 
+		{
+			const int idx ( date.indexOf ( sep_chr, n + 1 ) );
 
 			if ( n == 4 ) // day starts with year
 			{
 				nbr_upart[VM_IDX_YEAR] = date.leftRef ( n ).toUInt ();
 				nbr_upart[VM_IDX_DAY] = date.rightRef ( date.length () - idx - 1 ).toUInt ();
+				nbr_upart[VM_IDX_STRFORMAT] = sep_chr == CHR_F_SLASH ? VDF_DB_DATE : VDF_DROPBOX_DATE;
 			}
 			else // date may start with day or a two digit year
 			{
 				nbr_upart[VM_IDX_DAY] = date.leftRef ( n ).toUInt ();
-				if ( nbr_upart[VM_IDX_DAY] > 31 ) // year
+				if ( nbr_upart[VM_IDX_DAY] > 31 ) // two-digit year
 				{
 					nbr_upart[VM_IDX_YEAR] = nbr_upart[VM_IDX_DAY];
 					nbr_upart[VM_IDX_DAY] = date.rightRef ( 2 ).toUInt ();
@@ -659,8 +667,10 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 				else
 				{
 					nbr_upart[VM_IDX_YEAR] = date.rightRef ( date.length () -
-														  date.lastIndexOf ( CHR_F_SLASH ) - 1 ).toUInt ();
+														  date.lastIndexOf ( sep_chr ) - 1 ).toUInt ();
 				}
+				// Most-most likely not a dropbox date. But we use it here as a fallback
+				nbr_upart[VM_IDX_STRFORMAT] = sep_chr == CHR_F_SLASH ? VDF_HUMAN_DATE : VDF_DROPBOX_DATE;
 			}
 			++n;
 			nbr_upart[VM_IDX_MONTH] = date.midRef ( n, idx - n ).toUInt ();
@@ -708,8 +718,10 @@ vmNumber& vmNumber::fromTrustedStrDate ( const QString& date, const VM_DATE_FORM
 				return dateFromLongString ( date, cache );
 			
 			case VDF_DROPBOX_DATE:
-				return dateFromDropboxDate( date, cache );
-			
+				return dateFromDropboxDate ( date, cache );
+				
+			case VDF_MYSQL_DATE:
+				return dateFromMySQLDate ( date, cache );
 		}
 	}
 	else
@@ -763,6 +775,14 @@ vmNumber& vmNumber::dateFromDropboxDate ( const QString& date, const bool cache 
 		setCached ( true );
 		cached_str = date;
 	}
+	return *this;
+}
+
+vmNumber& vmNumber::dateFromMySQLDate ( const QString& date, const bool cache )
+{
+	// Mysql and dropbox have both the same date format
+	static_cast<void>( dateFromDropboxDate ( date, cache ) );
+	nbr_upart[VM_IDX_STRFORMAT] = VDF_MYSQL_DATE;
 	return *this;
 }
 
@@ -947,6 +967,7 @@ const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 							 QLatin1String ( " de " ) + strYear;
 				break;
 				case VDF_DROPBOX_DATE:
+				case VDF_MYSQL_DATE:
 					cached_str = strYear + CHR_HYPHEN + strMonth + CHR_HYPHEN + strDay;
 				break;
 			}
@@ -1453,7 +1474,7 @@ const QString& vmNumber::toPrice () const
 //-------------------------------------PRICE-----------------------------------------
 
 //-------------------------------------TIME------------------------------------------
-static void numberToTime ( const unsigned int n, int &hours, unsigned int &minutes )
+static void numberToTime ( const unsigned int n, int& hours, int& minutes )
 {
 	unsigned int abs_hour ( 0 );
 
@@ -1477,43 +1498,70 @@ static void numberToTime ( const unsigned int n, int &hours, unsigned int &minut
 
 }*/
 
-void vmNumber::setTime ( const int hours, const int minutes, const bool update )
+void vmNumber::setTime ( const int hours, const int minutes, const int seconds )
 {
-	setType ( VMNT_TIME );
-	setCached ( false );
-	if ( !update )
+	nbr_part[VM_IDX_HOUR] = ( hours > -10000 && hours < 10000 ) ? hours : 0;
+	nbr_part[VM_IDX_MINUTE] = ( minutes >= 0 && minutes <= 59 ) ? minutes : 0;
+	nbr_part[VM_IDX_SECOND] = ( seconds >= 0 && seconds <= 59 ) ? seconds : 0;
+	fixTime ();
+}
+
+void vmNumber::setTime ( const int hours, const int minutes, const int seconds, const bool b_add , const bool b_reset_first  )
+{
+	if ( b_reset_first )
+		nbr_part[VM_IDX_HOUR ] = nbr_part[VM_IDX_MINUTE ] = nbr_part[VM_IDX_SECOND ] = 0;
+	if ( b_add )
 	{
-		nbr_part[VM_IDX_HOUR] = ( hours > -10000 && hours < 10000 ) ? hours : 0;
-		nbr_part[VM_IDX_MINUTE] = ( minutes >= 0 && minutes <= 59 ) ? minutes : 0;
+		nbr_part[VM_IDX_HOUR ] += hours;
+		nbr_part[VM_IDX_MINUTE ] += minutes;
+		nbr_part[VM_IDX_SECOND ] += seconds;
 	}
 	else
 	{
-		int n ( 0 );
-		nbr_part[VM_IDX_MINUTE] += minutes;
-		if ( nbr_part[VM_IDX_MINUTE] > 59 )
-		{
-			n = static_cast<int> ( nbr_part[VM_IDX_MINUTE] / 60 );
-			nbr_part[VM_IDX_HOUR] += n;
-			nbr_part[VM_IDX_MINUTE] -= ( n * 60 );
-		}
-		else if ( nbr_part[VM_IDX_MINUTE] < 0 )
-		{
-			n = static_cast<int>(::fabs ( static_cast<double>(nbr_part[VM_IDX_MINUTE] ) / 60)) + 1;
-			nbr_part[VM_IDX_HOUR] -= n;
-			nbr_part[VM_IDX_MINUTE] += ( n * 60 );
-		}
-
-		if ( hours >= 1 )
-		{
-			if ( ( nbr_part[VM_IDX_HOUR] + hours ) < 10000 )
-				nbr_part[VM_IDX_HOUR] += hours;
-		}
-		else if ( hours <= -1 )
-		{
-			if ( ( nbr_part[VM_IDX_HOUR] + hours ) > -10000 )
-				nbr_part[VM_IDX_HOUR] += hours;
-		}
+		nbr_part[VM_IDX_HOUR ] = hours;
+		nbr_part[VM_IDX_MINUTE ] = minutes;
+		nbr_part[VM_IDX_SECOND ] = seconds;
 	}
+	fixTime ();
+}
+
+void vmNumber::fixTime ()
+{
+	setType ( VMNT_TIME );
+	setCached ( false );
+	
+	int n ( 0 );
+	if ( nbr_part[VM_IDX_SECOND] > 59 )
+	{
+		n = static_cast<int>( nbr_part[VM_IDX_SECOND] / 60 );
+		nbr_part[VM_IDX_MINUTE] += n;
+		nbr_part[VM_IDX_SECOND] -= ( n * 60 );
+	}
+	else if ( nbr_part[VM_IDX_SECOND] < 0 )
+	{
+		n = static_cast<int>( ::fabs ( static_cast<double>( nbr_part[VM_IDX_SECOND] ) / 60) ) + 1;
+		nbr_part[VM_IDX_MINUTE] -= n;
+		nbr_part[VM_IDX_SECOND] += ( n * 60 );
+	}
+
+	if ( nbr_part[VM_IDX_MINUTE] > 59 )
+	{
+		n = static_cast<int>( nbr_part[VM_IDX_MINUTE] / 60 );
+		nbr_part[VM_IDX_HOUR] += n;
+		nbr_part[VM_IDX_MINUTE] -= ( n * 60 );
+	}
+	else if ( nbr_part[VM_IDX_MINUTE] < 0 )
+	{
+		n = static_cast<int>( ::fabs ( static_cast<double>( nbr_part[VM_IDX_MINUTE] ) / 60) ) + 1;
+		nbr_part[VM_IDX_HOUR] -= n;
+		nbr_part[VM_IDX_MINUTE] += ( n * 60 );
+	}
+
+	// Do we need these limits??
+	if ( ( nbr_part[VM_IDX_HOUR] ) > 10000 )
+		nbr_part[VM_IDX_HOUR] = 10000;
+	else if ( nbr_part[VM_IDX_HOUR] < -10000 )
+		nbr_part[VM_IDX_HOUR] = -10000;
 }
 
 vmNumber& vmNumber::fromStrTime ( const QString& time )
@@ -1521,8 +1569,8 @@ vmNumber& vmNumber::fromStrTime ( const QString& time )
 	if ( !time.isEmpty () )
 	{
 		bool is_negative ( false );
-		const int idx ( time.indexOf ( CHR_COLON ) );
-		int hours ( 0 ), mins ( 0 );
+		int hours ( 0 ), mins ( 0 ), secs ( 0 );
+		int idx ( time.indexOf ( CHR_COLON ) );
 		if ( idx != -1 )
 		{
 			QString temp_time ( time );
@@ -1533,15 +1581,31 @@ vmNumber& vmNumber::fromStrTime ( const QString& time )
 			}
 			hours = temp_time.leftRef ( idx ).toInt ();
 			mins = temp_time.midRef ( idx + 1, 2 ).toInt ();
-
+			
+			idx = time.indexOf ( CHR_COLON, idx + 1 );
+			if ( idx != -1 )
+				secs = temp_time.midRef ( idx + 1, 2 ).toInt ();
+			
 			nbr_part[VM_IDX_HOUR] = !is_negative ? hours : 0 - hours;
 			nbr_part[VM_IDX_MINUTE] = mins;
+			nbr_part[VM_IDX_SECOND] = secs;
+			
+			hours = static_cast<int>( ::fabs ( static_cast<double>( hours ) ) );
+			if ( hours == 24 && (( mins > 0 ) || ( secs > 0 )) )
+				nbr_part[VM_IDX_STRFORMAT] = VTF_DAYS;
+			if ( hours > 24 )
+				nbr_part[VM_IDX_STRFORMAT] = VTF_DAYS;
+			else
+				nbr_part[VM_IDX_STRFORMAT] = VTF_24_HOUR;
+			
 			setType ( VMNT_TIME );
 			setCached ( false );
 			return *this;
 		}
-		//else
-		//	getTimeFromFancyTimeString ( time, mQString, true );
+		else
+		{
+			//	getTimeFromFancyTimeString ( time, mQString, true );
+		}
 	}
 	clear ();
 	return *this;
@@ -1556,19 +1620,34 @@ vmNumber& vmNumber::fromTrustedStrTime ( const QString& time, const VM_TIME_FORM
 		{
 			case VTF_24_HOUR:
 				nbr_part[VM_IDX_HOUR] = time.leftRef ( 2 ).toInt ();
-				nbr_part[VM_IDX_MINUTE] = time.rightRef ( 2 ).toInt ();
+				if ( time.length () < 8 )
+					nbr_part[VM_IDX_MINUTE] = time.rightRef ( 2 ).toInt ();
+				else
+				{
+					nbr_part[VM_IDX_MINUTE] = time.midRef ( 3, 2 ).toInt ();
+					nbr_part[VM_IDX_SECOND] = time.rightRef ( 2 ).toInt ();
+				}
 			break;
+				
 			case VTF_DAYS:
 				nbr_part[VM_IDX_HOUR] = time.leftRef ( 4 ).toInt ();
-				nbr_part[VM_IDX_MINUTE] = time.rightRef ( 2 ).toInt ();
+				if ( time.length () < 10 )
+					nbr_part[VM_IDX_MINUTE] = time.rightRef ( 2 ).toInt ();
+				else
+				{
+					nbr_part[VM_IDX_MINUTE] = time.midRef ( 5, 2 ).toInt ();
+					nbr_part[VM_IDX_SECOND] = time.rightRef ( 2 ).toInt ();
+				}
 			break;
+				
 			case VTF_FANCY:
 				//getTimeFromFancyTimeString ( time, mQString );
 			break;
 		}
 		nbr_part[VM_IDX_STRFORMAT] = format;
 		setType ( VMNT_TIME );
-		if ( cache ) {
+		if ( cache )
+		{
 			setCached ( true );
 			cached_str = time;
 		}
@@ -1580,18 +1659,19 @@ void vmNumber::fromQTime ( const QTime &time )
 {
 	if ( !isTime () )
 	{
-		nbr_upart[VM_IDX_HOUR] = nbr_upart[VM_IDX_MINUTE] = 0;
+		nbr_part[VM_IDX_HOUR] = nbr_part[VM_IDX_MINUTE] = nbr_part[VM_IDX_SECOND] = 0;
 		setType ( VMNT_TIME );
 	}
 	nbr_part[VM_IDX_HOUR] = time.hour ();
 	nbr_part[VM_IDX_MINUTE] = time.minute ();
+	nbr_part[VM_IDX_SECOND] = time.second ();
 	setCached ( false );
 }
 
 const QString& vmNumber::toTime ( const VM_TIME_FORMAT format ) const
 {
 	int hours ( 0 );
-	unsigned int minutes ( 0 );
+	int minutes ( 0 );
 	switch ( type () )
 	{
 		case VMNT_PRICE: // will not even attempt to convert these
@@ -1610,34 +1690,42 @@ const QString& vmNumber::toTime ( const VM_TIME_FORMAT format ) const
 			const_cast<vmNumber*> ( this )->m_type = VMNT_TIME;
 			if ( !isCached () || format != nbr_part[VM_IDX_STRFORMAT] )
 			{
-				cached_str = formatTime ( nbr_part[VM_IDX_HOUR], static_cast<unsigned int>(nbr_part[VM_IDX_MINUTE]), format );
+				cached_str = formatTime ( this->hours (), this->minutes (), this->seconds (), format );
 				setCached ( true );
 				const_cast<vmNumber*> ( this )->nbr_part[VM_IDX_STRFORMAT] = format;
 			}
 			return cached_str;
 	}
-	return formatTime ( hours, minutes, format );
+	return formatTime ( hours, minutes, 0, format );
 }
 
 const QTime& vmNumber::toQTime () const
 {
 	if ( isTime () )
-		mQTime.setHMS ( hours (), minutes (), 0 );
+		mQTime.setHMS ( hours (), minutes (), seconds () );
 	else
 		mQTime.setHMS ( 0, 0, 0 );
 	return mQTime;
 }
 
-const QString& vmNumber::formatTime ( const int hour, const unsigned int min, const VM_TIME_FORMAT format ) const
+const QString& vmNumber::formatTime ( const int hour, const int min, const int sec, const VM_TIME_FORMAT format ) const
 {
-	unsigned int abs_hour ( static_cast<unsigned int>(::fabs ( static_cast<double>(hour) )) );
-	abs_hour += static_cast<unsigned int>(( min / 60 ));
+	unsigned int abs_hour ( static_cast<unsigned int>( ::fabs ( static_cast<double>( hour ) ) ) );
+	abs_hour += static_cast<unsigned int>( ( min / 60 ) );
 	const unsigned int abs_min ( min - ( min / 60 ) * 60 );
-	QString str_hour, str_min;
+	const unsigned int abs_sec ( sec - ( sec / 60 ) * 60 );
+	QString str_hour, str_min, str_sec;
 	str_hour.setNum ( abs_hour );
 	str_min.setNum ( abs_min );
-	if ( abs_min < 10 && format != VTF_FANCY )
-		str_min.prepend ( CHR_ZERO );
+	str_sec.setNum ( abs_sec );
+	
+	if ( format != VTF_FANCY )
+	{
+		if ( abs_min < 10  )
+			str_min.prepend ( CHR_ZERO );
+		if ( abs_sec < 10 )
+			str_sec.prepend ( CHR_ZERO );
+	}
 
 	switch ( format )
 	{
@@ -1655,7 +1743,7 @@ const QString& vmNumber::formatTime ( const int hour, const unsigned int min, co
 				str_hour.prepend ( QStringLiteral ( "00" ) );
 			else if ( abs_hour < 1000 )
 				str_hour.prepend ( CHR_ZERO );
-			mQString = str_hour + CHR_COLON + str_min;
+			mQString = str_hour + CHR_COLON + str_min + CHR_COLON + str_sec;
 		break;
 		case VTF_FANCY:
 			if ( abs_hour >= 24 )
@@ -1664,17 +1752,19 @@ const QString& vmNumber::formatTime ( const int hour, const unsigned int min, co
 				abs_hour %= 24;
 				str_hour.setNum ( abs_hour );
 				mQString.setNum ( abs_days );
-				mQString += QLatin1String ( " days, ") + str_hour + QLatin1String ( " hours, and ")
-						+ str_min + QLatin1String ( " minutes" );
+				mQString += QLatin1String ( " days, ") + str_hour + QLatin1String ( " hours, ")
+									+ str_min + QLatin1String ( " minutes, and " ) + str_sec + QLatin1String ( " seconds" );
 			}
 			else
 			{
-				mQString = str_hour + QLatin1String ( " hours, and ") + str_min + QLatin1String ( " minutes" );
+				mQString = str_hour + QLatin1String ( " hours, ") + str_min + QLatin1String ( " minutes, and " ) 
+									+ str_sec + QLatin1String ( " seconds" );
 			}
 		break;
 	}
 
-	if ( hour < 0 ) {
+	if ( hour < 0 )
+	{
 		if ( format != VTF_FANCY )
 			mQString.prepend ( CHR_HYPHEN );
 		else
@@ -1720,11 +1810,11 @@ bool vmNumber::operator== ( const vmNumber& vmnumber ) const
 			case VMNT_INT:
 				return nbr_part[0] == vmnumber.nbr_part[0];
 			case VMNT_DOUBLE:
-			case VMNT_TIME:
 			case VMNT_PRICE:
 				return ( nbr_part[0] == vmnumber.nbr_part[0] && nbr_part[1] == vmnumber.nbr_part[1] );
 			case VMNT_DATE:
 			case VMNT_PHONE:
+			case VMNT_TIME:
 				return ( nbr_upart[0] == vmnumber.nbr_upart[0] && nbr_upart[1] == vmnumber.nbr_upart[1]
 					 && nbr_upart[2] == vmnumber.nbr_upart[2] );
 		}
@@ -1745,9 +1835,11 @@ bool vmNumber::operator== ( const int number ) const
 			return nbr_part[0] == number;
 			
 		case VMNT_DOUBLE:
-		case VMNT_TIME:
 		case VMNT_PRICE:
 			return nbr_part[0] == number && nbr_part[1] == 0;
+			
+		case VMNT_TIME:
+			return ( (hours () + minutes () + seconds ()) == number );
 	}
 	return false;
 }
@@ -1796,11 +1888,27 @@ bool vmNumber::operator>= ( const vmNumber& vmnumber ) const
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
-				case VMNT_TIME:
 					if ( nbr_part[0] >= vmnumber.nbr_part[0] )
 					{
 						if ( nbr_part[0] == vmnumber.nbr_part[0] )
 							ret = nbr_part[1] >= vmnumber.nbr_part[1];
+						else
+							ret = true;
+					}
+				break;
+				case VMNT_TIME:
+					if ( hours () >= vmnumber.hours () )
+					{
+						if ( hours () == vmnumber.hours () )
+						{
+							if ( minutes () >= vmnumber.minutes () )
+							{
+								if ( minutes () == vmnumber.minutes () )
+									ret = seconds () >= vmnumber.seconds ();
+								else
+									ret = true;
+							}
+						}
 						else
 							ret = true;
 					}
@@ -1874,11 +1982,27 @@ bool vmNumber::operator<= ( const vmNumber& vmnumber ) const
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
-				case VMNT_TIME:
 					if ( nbr_part[0] <= vmnumber.nbr_part[0] )
 					{
 						if ( nbr_part[0] == vmnumber.nbr_part[0] )
 							ret = nbr_part[1] <= vmnumber.nbr_part[1];
+						else
+							ret = true;
+					}
+				break;
+				case VMNT_TIME:
+					if ( hours () <= vmnumber.hours () )
+					{
+						if ( hours () == vmnumber.hours () )
+						{
+							if ( minutes () <= vmnumber.minutes () )
+							{
+								if ( minutes () == vmnumber.minutes () )
+									ret = seconds () <= vmnumber.seconds ();
+								else
+									ret = true;
+							}
+						}
 						else
 							ret = true;
 					}
@@ -1946,18 +2070,34 @@ bool vmNumber::operator< ( const vmNumber& vmnumber ) const
 				break;
 				case VMNT_PHONE:
 				case VMNT_DATE:
-					if ( nbr_part[0] == static_cast<int>(vmnumber.nbr_upart[0]) )
-						ret = nbr_part[1] < static_cast<int>(vmnumber.nbr_upart[1]);
+					if ( nbr_part[0] == static_cast<int>( vmnumber.nbr_upart[0] ) )
+						ret = nbr_part[1] < static_cast<int>( vmnumber.nbr_upart[1] );
 					else
-						ret = nbr_part[0] < static_cast<int>(vmnumber.nbr_upart[0]);
+						ret = nbr_part[0] < static_cast<int>( vmnumber.nbr_upart[0] );
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
-				case VMNT_TIME:
 					if ( nbr_part[0] == vmnumber.nbr_part[0] )
 						ret = nbr_part[1] < vmnumber.nbr_part[1];
 					else
 						ret = nbr_part[0] < vmnumber.nbr_part[0];
+				break;
+				case VMNT_TIME:
+					if ( hours () <= vmnumber.hours () )
+					{
+						if ( hours () == vmnumber.hours () )
+						{
+							if ( minutes () <= vmnumber.minutes () )
+							{
+								if ( minutes () == vmnumber.minutes () )
+									ret = seconds () < vmnumber.seconds ();
+								else
+									ret = true;
+							}
+						}
+						else
+							ret = true;
+					}
 				break;
 				case VMNT_UNSET:
 				break;
@@ -2017,9 +2157,11 @@ bool vmNumber::operator> ( const int number ) const
 		case VMNT_PRICE:
 		case VMNT_DOUBLE:
 		case VMNT_INT:
-		case VMNT_TIME:
 			return nbr_part[0] > number;
 	
+		case VMNT_TIME:
+			return ( (hours () + minutes () + seconds ()) > number );
+		
 		case VMNT_PHONE:
 		case VMNT_DATE:
 			return static_cast<int>(nbr_upart[0]) > number;
@@ -2069,11 +2211,27 @@ bool vmNumber::operator> ( const vmNumber& vmnumber ) const
 				break;
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
-				case VMNT_TIME:
 					if ( nbr_part[0] == vmnumber.nbr_part[0] )
 						ret = nbr_part[1] > vmnumber.nbr_part[1];
 					else
 						ret = nbr_part[0] > vmnumber.nbr_part[0];
+				break;
+				case VMNT_TIME:
+					if ( hours () >= vmnumber.hours () )
+					{
+						if ( hours () == vmnumber.hours () )
+						{
+							if ( minutes () >= vmnumber.minutes () )
+							{
+								if ( minutes () == vmnumber.minutes () )
+									ret = seconds () > vmnumber.seconds ();
+								else
+									ret = true;
+							}
+						}
+						else
+							ret = true;
+					}
 				break;
 				case VMNT_UNSET:
 				break;
@@ -2191,10 +2349,10 @@ vmNumber& vmNumber::operator-= ( const vmNumber& vmnumber )
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
-					setTime ( 0 - vmnumber.nbr_part[VM_IDX_HOUR], -1, true );
+					setTime ( 0, 0, (hours () + minutes () + seconds ()) - vmnumber.nbr_part[0], false, true );
 				break;
 				case VMNT_TIME:
-					setTime ( 0 - vmnumber.nbr_part[VM_IDX_HOUR], 0 - vmnumber.nbr_part[VM_IDX_MINUTE], true );
+					setTime ( 0 - vmnumber.hours (), 0 - vmnumber.minutes (), 0 - vmnumber.seconds (), true, false );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2288,11 +2446,11 @@ vmNumber& vmNumber::operator+= ( const vmNumber& vmnumber )
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
-					setTime ( vmnumber.nbr_part[VM_IDX_HOUR], -1, true );
+					setTime ( 0, 0, (hours () + minutes () + seconds ()) + vmnumber.nbr_part[0], false, true );
 				break;
 				case VMNT_TIME:
 				case VMNT_DATE:
-					setTime ( vmnumber.nbr_part[VM_IDX_HOUR], vmnumber.nbr_part[VM_IDX_MINUTE], true );
+					setTime ( vmnumber.hours (), vmnumber.minutes (), vmnumber.seconds (), true, false );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2333,7 +2491,7 @@ vmNumber& vmNumber::operator+= ( const double number )
 		}
 		break;
 		case VMNT_TIME:
-			setTime ( 10000, static_cast<int>( number ), true );
+			setTime ( 0, 0, (hours () + minutes () + seconds ()) + static_cast<int>( number ), false, true );
 		break;
 		case VMNT_DATE:
 			setDate ( static_cast<int>( number ), 0, 0, true );
@@ -2419,9 +2577,10 @@ vmNumber& vmNumber::operator/= ( const vmNumber& vmnumber )
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
+					setTime ( 0, 0, (hours () + minutes () + seconds ()) / vmnumber.nbr_part[0], false, true );
+				break;
 				case VMNT_TIME:
-					setTime ( 10000, static_cast<int> (
-						  ( nbr_part[VM_IDX_HOUR] + nbr_part[VM_IDX_MINUTE] ) / ( vmnumber.nbr_part[VM_IDX_HOUR] + vmnumber.nbr_part[VM_IDX_MINUTE] ) ) );
+					setTime ( hours () / vmnumber.hours (), minutes () / vmnumber.minutes (), seconds () / vmnumber.seconds (), false, true );
 				break;
 				case VMNT_UNSET:
 				case VMNT_DATE:
@@ -2457,12 +2616,11 @@ vmNumber& vmNumber::operator/= ( const int number )
 			fromStrPrice ( useCalc ( vmNumber ( number ), *this, QLatin1String ( " / " ) ) );
 		break;
 		case VMNT_TIME:
-			setTime ( 10000, static_cast<int> (
-					  ( nbr_part[VM_IDX_HOUR] + nbr_part[VM_IDX_MINUTE] ) / number ) );
+			setTime ( 0, 0, (hours () + minutes () + seconds ()) / number, false, true );
 		break;
 		case VMNT_DATE:
-			setDate ( static_cast<int> ( nbr_part[VM_IDX_DAY] / number ),
-				  static_cast<int> ( nbr_part[VM_IDX_MONTH] / number ), static_cast<int> ( nbr_part[VM_IDX_YEAR] / number ) );
+			setDate ( static_cast<int>( nbr_part[VM_IDX_DAY] / number ),
+				  static_cast<int>( nbr_part[VM_IDX_MONTH] / number ), static_cast<int>( nbr_part[VM_IDX_YEAR] / number ) );
 		break;
 		case VMNT_UNSET:
 		case VMNT_PHONE:
@@ -2532,9 +2690,10 @@ vmNumber& vmNumber::operator*= ( const vmNumber& vmnumber )
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
+					setTime ( 0, 0, (hours () + minutes () + seconds ()) * vmnumber.nbr_part[0], false, true );
+				break;
 				case VMNT_TIME:
-					setTime ( 10000, static_cast<int> (
-						  ( nbr_part[VM_IDX_HOUR] * nbr_part[VM_IDX_MINUTE] ) + ( vmnumber.nbr_part[VM_IDX_HOUR] * vmnumber.nbr_part[VM_IDX_MINUTE] ) ) );
+					setTime ( hours () * vmnumber.hours (), minutes () * vmnumber.minutes (), seconds () * vmnumber.seconds (), false, true );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2571,7 +2730,7 @@ vmNumber& vmNumber::operator*= ( const int number )
 				  static_cast<int>(nbr_upart[VM_IDX_MONTH]) * number, static_cast<int>(nbr_upart[VM_IDX_YEAR]) * number );
 		break;
 		case VMNT_TIME:
-			setTime ( nbr_part[VM_IDX_HOUR] * number, nbr_part[VM_IDX_MINUTE] * number );
+			setTime ( 0, 0, (hours () + seconds () + minutes ()) * number, false, true );
 		break;
 		case VMNT_UNSET:
 		case VMNT_PHONE:
@@ -2631,14 +2790,14 @@ vmNumber vmNumber::operator- ( const vmNumber& vmnumber ) const
 					if ( ret.m_type == VMNT_DOUBLE )
 					{
 						ret.m_type = vmnumber.m_type;
-						ret.nbr_upart[0] = static_cast<unsigned int>(ret.nbr_part[0]) - vmnumber.nbr_upart[0];
-						ret.nbr_upart[1] = static_cast<unsigned int>(ret.nbr_part[1]) - vmnumber.nbr_upart[1];
+						ret.nbr_upart[0] = static_cast<unsigned int>( ret.nbr_part[0] ) - vmnumber.nbr_upart[0];
+						ret.nbr_upart[1] = static_cast<unsigned int>( ret.nbr_part[1] ) - vmnumber.nbr_upart[1];
 						ret.nbr_upart[2] = vmnumber.nbr_upart[2];
 					}
 					else
 					{
-						ret.nbr_part[0] -= static_cast<int>(vmnumber.nbr_upart[0]);
-						ret.nbr_part[1] -= static_cast<int>(vmnumber.nbr_upart[1]);
+						ret.nbr_part[0] -= static_cast<int>( vmnumber.nbr_upart[0] );
+						ret.nbr_part[1] -= static_cast<int>( vmnumber.nbr_upart[1] );
 					}
 				break;
 				case VMNT_PRICE:
@@ -2670,9 +2829,10 @@ vmNumber vmNumber::operator- ( const vmNumber& vmnumber ) const
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
+					ret.setTime ( 0, 0, (ret.hours () + ret.minutes () + ret.seconds ()) - vmnumber.nbr_part[0], false, true );
+				break;
 				case VMNT_TIME:
-					ret.setTime ( 10000, static_cast<int> (
-							  ( ret.nbr_part[VM_IDX_HOUR] - ret.nbr_part[VM_IDX_MINUTE] ) + ( vmnumber.nbr_part[VM_IDX_HOUR] - vmnumber.nbr_part[VM_IDX_MINUTE] ) ) );
+					ret.setTime ( 0 - vmnumber.hours (), 0 - vmnumber.minutes (), 0 - vmnumber.seconds (), true, false );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2757,9 +2917,10 @@ vmNumber vmNumber::operator+ ( const vmNumber& vmnumber ) const
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
+					ret.setTime ( 0, 0, (ret.hours () + ret.minutes () + ret.seconds ()) + vmnumber.nbr_part[0], false, true );
+				break;
 				case VMNT_TIME:
-					ret.setTime ( 10000, static_cast<int> (
-							  ( ret.nbr_part[VM_IDX_HOUR] + ret.nbr_part[VM_IDX_MINUTE] ) + ( vmnumber.nbr_part[VM_IDX_HOUR] + vmnumber.nbr_part[VM_IDX_MINUTE] ) ) );
+					ret.setTime ( vmnumber.hours (), vmnumber.minutes (), vmnumber.seconds (), true, false );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2854,9 +3015,10 @@ vmNumber vmNumber::operator/ ( const vmNumber& vmnumber ) const
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
+					ret.setTime ( 0, 0, (ret.hours() + ret.minutes () + ret.seconds ()) / vmnumber.nbr_part[0], false, true );
+				break;
 				case VMNT_TIME:
-					ret.setTime ( 10000, static_cast<int> (
-							  ( ret.nbr_part[VM_IDX_HOUR] + ret.nbr_part[VM_IDX_MINUTE] ) / ( vmnumber.nbr_part[VM_IDX_HOUR] + vmnumber.nbr_part[VM_IDX_MINUTE] ) ) );
+					ret.setTime ( ret.hours () / vmnumber.hours (), ret.minutes () / vmnumber.minutes (), ret.seconds () / vmnumber.seconds (), false, true );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2890,8 +3052,7 @@ vmNumber vmNumber::operator/ ( const int number ) const
 		case VMNT_DATE:
 		break;
 		case VMNT_TIME:
-			ret.setTime ( 10000, static_cast<int> (
-						  ( ret.nbr_part[VM_IDX_HOUR] + ret.nbr_part[VM_IDX_MINUTE] ) / number ) );
+			ret.setTime ( 0, 0, (ret.hours () + ret.minutes () + ret.seconds()) / number, false, true );
 		break;
 		case VMNT_UNSET:
 		break;
@@ -2975,9 +3136,10 @@ vmNumber vmNumber::operator* ( const vmNumber& vmnumber ) const
 				case VMNT_INT:
 				case VMNT_DOUBLE:
 				case VMNT_PRICE:
+					ret.setTime ( 0, 0, (ret.hours () + ret.minutes () + ret.seconds ()) * vmnumber.nbr_part[0], false, true );
+				break;
 				case VMNT_TIME:
-					ret.setTime ( 10000, static_cast<int> (
-							  ( ret.nbr_part[VM_IDX_HOUR] * ret.nbr_part[VM_IDX_MINUTE] ) + ( vmnumber.nbr_part[VM_IDX_HOUR] * vmnumber.nbr_part[VM_IDX_MINUTE] ) ) );
+					ret.setTime ( ret.hours () * vmnumber.hours (), ret.minutes () * vmnumber.minutes (), ret.seconds () * vmnumber.seconds (), false, true );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:

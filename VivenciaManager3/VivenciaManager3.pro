@@ -47,8 +47,6 @@ SOURCES += main.cpp \
 	companypurchasesui.cpp \
 	dbsupplies.cpp \
 	inventory.cpp \
-	inventoryui.cpp \
-	dbsuppliesui.cpp \
 	estimates.cpp \
 	generaltable.cpp \
 	userrecord.cpp \
@@ -85,7 +83,8 @@ SOURCES += main.cpp \
     keychain/kwallet_interface.cpp \
     keychain/passwordsessionmanager.cpp \
     htmldb.cpp \
-    dbstatistics.cpp
+    dbstatistics.cpp \
+    dbtableview.cpp
 
 HEADERS += dbrecord.h \
 	vmnumberformats.h \
@@ -99,9 +98,6 @@ HEADERS += dbrecord.h \
 	companypurchases.h \
 	companypurchasesui.h \
 	dbsupplies.h \
-	inventory.h \
-	inventoryui.h \
-	dbsuppliesui.h \
 	estimates.h \
 	generaltable.h \
 	userrecord.h \
@@ -170,7 +166,9 @@ HEADERS += dbrecord.h \
     keychain/kwallet_interface.h \
     keychain/passwordsessionmanager.h \
     htmldb.h \
-    dbstatistics.h
+    dbstatistics.h \
+    dbtableview.h \
+    inventory.h
 
 FORMS += mainwindow.ui \
 	backupdialog.ui \

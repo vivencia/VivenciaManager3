@@ -15,7 +15,6 @@
 #include "heapmanager.h"
 #include "vmwidgets.h"
 #include "companypurchasesui.h"
-#include "dbsuppliesui.h"
 #include "suppliersdlg.h"
 #include "fast_library_functions.h"
 #include "keychain/passwordsessionmanager.h"

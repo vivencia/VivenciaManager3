@@ -2,7 +2,6 @@
 #include "global.h"
 #include "simplecalculator.h"
 #include "mainwindow.h"
-#include "dbsuppliesui.h"
 #include "vivenciadb.h"
 #include "vmnotify.h"
 #include "stringrecord.h"

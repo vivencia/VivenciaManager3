@@ -8,7 +8,6 @@
 #include "completers.h"
 #include "vmnumberformats.h"
 #include "suppliersdlg.h"
-#include "inventoryui.h"
 #include "vivenciadb.h"
 #include "vmnotify.h"
 #include "vmlistitem.h"
@@ -282,16 +281,7 @@ void companyPurchasesUI::controlForms ()
 void companyPurchasesUI::saveInfo ()
 {
 	if ( cp_rec->saveRecord () )
-	{
 		cp_rec->exportToInventory ();
-		if ( INVENTORY () )
-		{
-			if ( cp_rec->prevAction () == ACTION_ADD )
-				VDB ()->updateTable ( &Inventory::t_info, INVENTORY ()->table (), true );
-			else
-				VDB ()->updateTable ( &Inventory::t_info, INVENTORY ()->table (), static_cast<uint>( recIntValue ( cp_rec, FLD_CP_ID ) ) );
-		}
-	}
 	controlForms ();
 }
 

@@ -24,7 +24,7 @@ class vmNumber
 
 	enum
 	{
-		VM_IDX_DAY = 0, VM_IDX_MONTH = 1, VM_IDX_YEAR = 2, VM_IDX_HOUR = 0, VM_IDX_MINUTE = 1,
+		VM_IDX_DAY = 0, VM_IDX_MONTH = 1, VM_IDX_YEAR = 2, VM_IDX_HOUR = 0, VM_IDX_MINUTE = 1, VM_IDX_SECOND = 2,
 		VM_IDX_PREFIX = 0, VM_IDX_PHONE1 = 1, VM_IDX_PHONE2 = 2,
 		VM_IDX_TENS = 0, VM_IDX_CENTS = 1, VM_IDX_STRFORMAT = 4
 	};
@@ -152,7 +152,7 @@ public:
 
 //-------------------------------------DATE------------------------------------------
 	enum VM_DATE_FORMAT {
-		VDF_HUMAN_DATE = 1, VDF_DB_DATE, VDF_LONG_DATE, VDF_FILE_DATE, VDF_DROPBOX_DATE
+		VDF_HUMAN_DATE = 1, VDF_DB_DATE, VDF_LONG_DATE, VDF_FILE_DATE, VDF_DROPBOX_DATE, VDF_MYSQL_DATE
 	};
 
 	inline bool isDate () const {
@@ -165,6 +165,7 @@ public:
 	vmNumber& dateFromHumanDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromDBDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromDropboxDate ( const QString& date, const bool cache = true );
+	vmNumber& dateFromMySQLDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromFilenameDate ( const QString& date, const bool cache = true );
 	vmNumber& dateFromLongString ( const QString& date, const bool cache = true );
 
@@ -228,7 +229,9 @@ public:
 	inline bool isTime () const {
 		return ( m_type == VMNT_TIME ) && isValid ();
 	}
-	void setTime ( const int hours = 10000, const int minutes = -1, const bool update = false );
+	
+	void setTime ( const int hours, const int minutes, const int seconds );
+	void setTime ( const int hours, const int minutes, const int seconds, const bool b_add = true, const bool b_reset_first = true );
 
 	vmNumber& fromStrTime ( const QString& time );
 	vmNumber& fromTrustedStrTime ( const QString& time, const VM_TIME_FORMAT format, const bool cache = true );
@@ -237,7 +240,7 @@ public:
 
 	const QString& toTime ( const VM_TIME_FORMAT format = VTF_DAYS ) const;
 	const QTime& toQTime () const;
-	const QString& formatTime ( const int hour, const unsigned int min, const VM_TIME_FORMAT format ) const;
+	const QString& formatTime ( const int hour, const int min, const int sec, const VM_TIME_FORMAT format ) const;
 
 	inline int hours () const {
 		return nbr_part[VM_IDX_HOUR];
@@ -245,9 +248,12 @@ public:
 	inline int minutes () const {
 		return nbr_part[VM_IDX_MINUTE];
 	}
-
+	inline int seconds () const {
+		return nbr_part[VM_IDX_SECOND];
+	}
+	
 	inline void addDaysToTime ( const unsigned int days ) {
-		setTime ( true, static_cast<int>(days * 24) );
+		setTime ( static_cast<int>( days * 24 ), 0, 0, true, false );
 	}
 //-------------------------------------TIME------------------------------------------
 
@@ -289,6 +295,7 @@ public:
 private:
 	QString useCalc ( const vmNumber& n1, const vmNumber& res, const QString& op ) const;
 	void fixDate ();
+	void fixTime ();
 	bool isDate ( const QString& str );
 	void makeCachedStringForPhone () const;
 

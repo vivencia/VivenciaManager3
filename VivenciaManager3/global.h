@@ -81,10 +81,6 @@ constexpr const QLatin1String colorsStr[6] = {
 	QLatin1String ( "255, 255, 255", 13 )		// white	- 5
 };
 
-constexpr const Qt::GlobalColor vmColorToQt[6] = {
-	Qt::gray, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::white
-};
-
 const QString CHR_ZERO ( QStringLiteral ( "0" ) );
 const QString CHR_ONE ( QStringLiteral ( "1" ) );
 const QString CHR_TWO ( QStringLiteral ( "2" ) );

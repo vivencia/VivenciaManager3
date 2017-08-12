@@ -800,12 +800,10 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 		
 		if ( ownerItem () )
 		{
-			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*>(ownerItem ())->table ()) );
-			table->setCurrentItem ( const_cast<vmTableItem*>(ownerItem ()) );
+			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*>( ownerItem () )->table ()) );
+			table->setCurrentItem ( const_cast<vmTableItem*>( ownerItem () ) );
 		}
-		
 		e->setAccepted ( true );
-		QLineEdit::focusInEvent ( e );
 	}
 	else // not editable
 	{
@@ -822,6 +820,7 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 		}
 		e->setAccepted ( false );
 	}
+	QLineEdit::focusInEvent ( e );
 }
 
 void vmLineEdit::focusOutEvent ( QFocusEvent* e )
@@ -830,10 +829,10 @@ void vmLineEdit::focusOutEvent ( QFocusEvent* e )
 	{
 		updateText ();
 		e->setAccepted ( true );
-		QLineEdit::focusOutEvent ( e );
 	}
 	else
 		e->setAccepted ( false );
+	QLineEdit::focusOutEvent ( e );
 }
 //------------------------------------------------LINE-EDIT-LINK----------------------------------------------
 
@@ -842,7 +841,7 @@ vmLineEditWithButton::vmLineEditWithButton ( QWidget* parent )
 	: QWidget ( parent ), vmWidget ( WT_LINEEDIT_WITH_BUTTON ), mLineEdit ( new vmLineEdit ),
 	  mButton ( new QToolButton )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	QHBoxLayout *mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );
 	mainLayout->setSpacing ( 1 );

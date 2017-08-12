@@ -11,8 +11,6 @@
 #include "quickproject.h"
 #include "quickprojectui.h"
 #include "companypurchasesui.h"
-#include "inventoryui.h"
-#include "dbsuppliesui.h"
 #include "dbsupplies.h"
 #include "vmlistitem.h"
 #include "vmwidgets.h"
@@ -36,6 +34,7 @@
 #include "cleanup.h"
 #include "configdialog.h"
 #include "dbstatistics.h"
+#include "dbtableview.h"
 #include "fast_library_functions.h"
 
 #include <QEvent>
@@ -64,8 +63,6 @@ static const QString chkPayOverdueToolTip_overdue[3] = {
 };
 
 static const QString jobPicturesSubDir ( QStringLiteral ( "Pictures/" ) );
-
-auto processEvents=[]()->void { QApplication::sendPostedEvents (); QApplication::processEvents (); };
 
 void deleteMainWindowInstance ()
 {
@@ -918,16 +915,17 @@ void MainWindow::lstJobDayReport_currentItemChanged ( vmListItem* item )
 {
 	if ( item && !item->data ( JILUR_REMOVED ).toBool () )
 	{
-		const bool b_isediting ( item->data ( JILUR_ADDED ).toBool () || item->data ( JILUR_EDITED ).toBool () );
-		
-		if ( b_isediting )
+		if ( ui->lstJobDayReport->prevItem () )
 		{
-			processEvents ();
-			ui->txtJobReport->saveContents ();
-			updateJobInfo ( ui->txtJobReport->currentText (), JILUR_REPORT, ui->lstJobDayReport->prevItem () );
+			vmListItem* prevItem ( ui->lstJobDayReport->prevItem () );
+			const bool b_prevdayisediting ( prevItem->data ( JILUR_ADDED ).toBool () || prevItem->data ( JILUR_EDITED ).toBool () );
+			if ( b_prevdayisediting )
+			{
+				ui->txtJobReport->saveContents ( true, false );
+				updateJobInfo ( ui->txtJobReport->currentText (), JILUR_REPORT, prevItem );
+			}
 		}
-		//ui->dteJobAddDate->setEditable ( b_isediting );
-		
+
 		const vmNumber time1 ( item->data ( JILUR_START_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
 		ui->timeJobStart->setTime ( time1 );
 		vmNumber timeAndDate ( item->data ( JILUR_END_TIME ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
@@ -938,19 +936,18 @@ void MainWindow::lstJobDayReport_currentItemChanged ( vmListItem* item )
 		ui->dteJobAddDate->setDate ( timeAndDate );
 		showDayPictures ( timeAndDate );
 		ui->txtJobWheather->setText ( item->data ( JILUR_WHEATHER ).toString () );
-		ui->txtJobReport->textEditWithCompleter::setText ( item->data ( JILUR_REPORT ).toString () );
-		
+		ui->txtJobReport->setText ( item->data ( JILUR_REPORT ).toString () );
+
 		const triStateType editing_action ( mJobCurItem ? static_cast<TRI_STATE>( mJobCurItem->action () != ACTION_READ ) : TRI_UNDEF );
 		const bool b_hasDays ( ( ui->lstJobDayReport->count () > 0 ) && editing_action.isOn () );
-		
+
 		ui->btnJobAddDay->setEnabled ( editing_action.isOn () );
 		ui->btnJobEditDay->setEnabled ( b_hasDays && !item->data ( JILUR_EDITED ).toBool () );
 		ui->btnJobDelDay->setEnabled ( b_hasDays );
 		ui->btnJobCancelDelDay->setEnabled ( b_hasDays ? ui->lstJobDayReport->currentItem ()->data ( JILUR_REMOVED ).toBool () : false );
-		//if ( b_hasDays )
-		//	dteJobAddDate_dateAltered ();
-		//else
-			controlJobDayForms ( b_hasDays ? b_isediting : false );
+		
+		const bool b_dayisediting ( item->data ( JILUR_ADDED ).toBool () || item->data ( JILUR_EDITED ).toBool () );
+		controlJobDayForms ( b_hasDays ? b_dayisediting : false );
 	}
 	else
 	{
@@ -1045,9 +1042,9 @@ bool MainWindow::saveJob ( jobListItem* job_item )
 {
 	if ( job_item )
 	{
-		processEvents ();
-		ui->txtJobReport->saveContents ( true ); // force committing the newest text to the buffers. Avoid depending on Qt's signals, which might occur later than when reaching here
+		ui->txtJobReport->saveContents ( true, true ); // force committing the newest text to the buffers. Avoid depending on Qt's signals, which might occur later than when reaching here
 		Job* job ( job_item->jobRecord () );
+		
 		if ( job->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
 		{
 			if ( job_item->action () == ACTION_ADD )
@@ -1274,7 +1271,6 @@ void MainWindow::decodeJobReportInfo ( const Job* const job )
 	ui->lstJobDayReport->clear ();
 	ui->dteJobAddDate->setDate ( vmNumber () );
 	ui->txtJobReport->clear ();
-	ui->txtJobTotalAllDaysTime->clear ();
 	ui->txtJobTotalDayTime->clear ();
 	ui->txtJobWheather->clear ();
 	ui->timeJobStart->setTime ( vmNumber () );
@@ -1384,7 +1380,6 @@ void MainWindow::updateJobInfo ( const QString& text, const uint user_role, vmLi
 	if ( day_entry )
 	{
 		const uint cur_row ( static_cast<uint>( day_entry->row () ) );
-		processEvents ();
 		day_entry->setData ( static_cast<int>( user_role ), text );
 		stringTable job_report ( recStrValue ( mJobCurItem->jobRecord (), FLD_JOB_REPORT ) );
 		stringRecord rec ( job_report.readRecord ( cur_row ) );
@@ -1628,8 +1623,8 @@ void MainWindow::controlFormsForJobSelection ( const bool bStartSelection )
 {
 	ui->btnJobSelectJob->setEnabled ( bStartSelection );
 	ui->tabMain->widget ( TI_CALENDAR )->setEnabled ( !bStartSelection );
-	ui->tabMain->widget ( TI_INVENTORY )->setEnabled ( !bStartSelection );
-	ui->tabMain->widget ( TI_SUPPLIES )->setEnabled ( !bStartSelection );
+	ui->tabMain->widget ( TI_STATISTICS )->setEnabled ( !bStartSelection );
+	ui->tabMain->widget ( TI_TABLEWIEW )->setEnabled ( !bStartSelection );
 }
 
 void MainWindow::selectJob ()
@@ -2941,7 +2936,8 @@ bool MainWindow::saveBuy ( buyListItem* buy_item )
 		{
 			mCal->updateCalendarWithBuyInfo ( buy );
 			buy_item->setAction ( ACTION_READ, true ); // now we can change indexes
-			vmTableWidget::exchangePurchaseTablesInfo ( ui->tableBuyItems, SUPPLIES ()->table (), buy, SUPPLIES ()->supplies_rec );
+			// TODO expurge any supplies' table references and uses
+			//vmTableWidget::exchangePurchaseTablesInfo ( ui->tableBuyItems, SUPPLIES ()->table (), buy, SUPPLIES ()->supplies_rec );
 			ui->tableBuyPayments->setTableUpdated ();
 			updateBuyTotalPriceWidgets ( buy_item );
 
@@ -3401,14 +3397,6 @@ void MainWindow::cboBuySuppliers_indexChanged ( const int idx )
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 void MainWindow::setupCustomControls ()
 {
-	// They are needed to fill vmCompleters::ALL_CATEGORIES, which is needed by textEditWithCompleter
-	dbSuppliesUI::init ();
-	//ui->tabSupplies->setEnabled ( DATA ()->reads[TABLE_SUPPLIES_ORDER] );
-
-	InventoryUI::init ();
-	//ui->tabInventory->setEnabled ( DATA ()->reads[TABLE_INVENTORY_ORDER] );
-	//ui->btnImportExport->setEnabled ( DATA ()->reads[TABLES_IN_DB] || DATA ()->writes[TABLES_IN_DB] );
-
 	APP_RESTORER ()->addRestoreInfo ( m_crash = new crashRestore ( QStringLiteral ( "vmmain" ) ) );
 	ui->txtSearch->setEditable ( true );
 	static_cast<void>(connect ( ui->txtSearch, &QLineEdit::textChanged, this, [&] ( const QString& text ) { return on_txtSearch_textEdited ( text ); } ));
@@ -3651,10 +3639,10 @@ void MainWindow::setupWorkFlow ()
 	ui->scrollWorkFlow->setWidget ( mainTaskPanel );
 
 	setupTabNavigationButtons ();
-	ui->tabMain->removeTab ( 8 );
 	ui->tabMain->removeTab ( 7 );
 	ui->tabMain->removeTab ( 6 );
 	ui->tabMain->removeTab ( 5 );
+	ui->tabMain->removeTab ( 4 );
 }
 
 void MainWindow::setupTabNavigationButtons ()
@@ -4207,19 +4195,13 @@ void MainWindow::tabMain_currentTabChanged ( const int tab_idx )
 			calMain_activated ( ui->calMain->selectedDate (), true );
 			updateCalendarView ( mCalendarDate.year (), mCalendarDate.month () );
 		break;
-		case TI_INVENTORY:
-			if ( INVENTORY ()->setupUI () )
-				ui->tabInventory->setLayout ( INVENTORY ()->layout () );
-			INVENTORY ()->table ()->setFocus ();
-		break;
-		case TI_SUPPLIES:
-			if ( SUPPLIES ()->setupUI () )
-				ui->tabSupplies->setLayout ( SUPPLIES ()->layout () );
-			SUPPLIES ()->table ()->setFocus ();
-		break;
 		case TI_STATISTICS:
 			ui->tabStatistics->setLayout ( DB_STATISTICS ()->layout () );
 			DB_STATISTICS ()->reload ();
+		break;
+		case TI_TABLEWIEW:
+			ui->tabTableView->setLayout ( DB_TABLE_VIEW ()->layout () );
+			DB_TABLE_VIEW ()->reload ();
 		break;
 		default:
 		break;
