@@ -560,6 +560,8 @@ const stringTable& dbCalendar::dateLog ( const vmNumber& date, const uint search
 				price = recStrValue ( this, requested_field_price );
 				mStrTable.fromString ( recStrValue ( this, requested_field ) );
 			}
+			else
+				clearAll ();
 		break;
 		case FLD_CALENDAR_WEEK_NUMBER:
 		case FLD_CALENDAR_MONTH:
@@ -580,6 +582,8 @@ const stringTable& dbCalendar::dateLog ( const vmNumber& date, const uint search
 				} while ( readNextRecord ( true ) );
 				price = total_price.toPrice ();
 			}
+			else
+				clearAll ();
 		break;
 		default:
 		break;

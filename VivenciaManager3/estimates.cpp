@@ -689,7 +689,7 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 	jobListItem* jobItem ( nullptr );
 	
 	const QString targetPath ( m_npdlg->projectPath () );
-	if ( !fileOps::exists ( targetPath ).isUndefined () )
+	if ( fileOps::exists ( targetPath ).isOn () )
 	{
 		f_info = new fileOps::st_fileInfo;
 		bProceed = fileOps::createDir ( targetPath ).isOn ();
@@ -703,7 +703,7 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 			f_info->is_dir = true;
 			f_info->is_file = false;
 			files.append ( f_info );
-			(void) fileOps::createDir ( targetPath + QLatin1String ( "Pictures" ) );
+			(void) fileOps::createDir ( targetPath + QLatin1String ( "Pictures/" ) );
 			jobItem = m_npdlg->jobItem ();
 		}
 	}
@@ -723,20 +723,16 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 	for ( uint i ( 1 ); i < files.count (); ++i )
 	{
 		auto final_name = [] ( const QString& source ) -> QString { return ( source.endsWith ( CONFIG ()->projectSpreadSheetExtension () ) ? QLatin1String ( "Planilhas-" ) : QLatin1String ( "Projeto-" ) ) + source; };
-		const QString target_file ( final_name ( files.at ( i )->filename ) );
-		static_cast<void> ( fileOps::copyFile ( targetPath + target_file, files.at ( i )->fullpath ) );
+		static_cast<void> ( fileOps::copyFile ( targetPath + final_name ( files.at ( i )->filename ), files.at ( i )->fullpath ) );
 	}
 
 	changeJobData ( jobItem, targetPath, m_npdlg->projectID () );
-	if ( MAINWINDOW ()->currentJob ()->dbRecID () == jobItem->dbRecID () ) //update view on main window if necessary
-		MAINWINDOW ()->displayJob ( jobItem );
-
-	addToTree ( files, Client::clientName ( static_cast<uint>(recIntValue ( jobItem->jobRecord (), FLD_JOB_CLIENTID )) ) );
+	
+	addToTree ( files, Client::clientName ( static_cast<uint>( recIntValue ( jobItem->jobRecord (), FLD_JOB_CLIENTID ) ) ) );
 	VM_NOTIFY ()->messageBox ( TR_FUNC ( "Success!" ), project_name + TR_FUNC ( " was converted!" ) );
 	if ( b_inItemSelectionMode )
 	{
 		cancelItemSelection ();
-		
 	}
 }
 
@@ -745,7 +741,7 @@ void estimateDlg::projectActions ( QAction *action )
 	QTreeWidgetItem* item ( treeView->selectedItems ().at ( 0 ) );
 	bool bAddDoc ( false ), bAddXls ( false ), bUseDialog ( false ), bProceed ( false ), bGetJobOnly ( false );
 	QString strProjectPath, strProjectID, msgTitle, msgBody[2];
-	switch ( static_cast<vmAction*> ( action )->id () )
+	switch ( static_cast<vmAction*>( action )->id () )
 	{
 		case PA_NEW_FULL:
 			bAddDoc = bAddXls = true;
@@ -823,7 +819,7 @@ void estimateDlg::projectActions ( QAction *action )
 					f_info->is_dir = true;
 					f_info->is_file = false;
 					files.append ( f_info );
-					static_cast<void>(fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) ));
+					static_cast<void>( fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) ) );
 					addFilesToDir ( bAddDoc, bAddXls, strProjectPath, strProjectID, files );
 					bAddDoc = bAddXls = false;
 				}
@@ -849,8 +845,6 @@ void estimateDlg::projectActions ( QAction *action )
 			}
 			else
 				changeJobData ( jobItem, strProjectPath, strProjectID );
-			if ( MAINWINDOW ()->currentJob ()->dbRecID () == jobItem->dbRecID () ) //update view on main window if necessary
-				MAINWINDOW ()->displayJob ( jobItem );
 			if ( !bGetJobOnly )
 				addToTree ( files, item->text ( 0 ) );
 		}
@@ -894,6 +888,7 @@ void estimateDlg::changeJobData ( jobListItem* const jobItem, const QString& str
 		setRecValue ( job, FLD_JOB_PROJECT_ID, strProjectID );
 		job->saveRecord ();
 		jobItem->setAction ( job->action () );
+		MAINWINDOW ()->jobExternalChange ( jobItem->dbRecID (), job->prevAction () );
 	}
 }
 
@@ -928,7 +923,7 @@ void estimateDlg::estimateActions ( QAction* action )
 			
 			if ( fileOps::exists ( basePath ).isOff () )
 			{
-				if ( !fileOps::createDir ( basePath ).isOn () ) //maybe first estimate for user, create dir
+				if ( !fileOps::createDir ( basePath ).isOn () ) //maybe first estimate for client, create dir
 					return;
 				f_info = new fileOps::st_fileInfo;
 				f_info->filename = CONFIG ()->estimatesDirSuffix ();

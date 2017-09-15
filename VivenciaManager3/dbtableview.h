@@ -10,11 +10,14 @@
 class vmListWidget;
 class vmTableWidget;
 class vmTableItem;
+class vmLineEdit;
 class tableViewWidget;
 		
 class QTabWidget;
 class QSplitter;
 class QVBoxLayout;
+class QToolButton;
+class QSqlQuery;
 
 class dbTableView : public QObject
 {
@@ -33,10 +36,14 @@ private:
 
 	void loadTablesIntoList ();
 	void showTable ( const QString& tablename );
+	void runPersonalQuery ();
+	void maybeRunQuery ( const QKeyEvent* const ke );
 	
 	vmListWidget* mTablesList;
 	QFrame* mLeftFrame;
 	QTabWidget* mTabView;
+	vmLineEdit* mTxtQuery;
+	QToolButton* mBtnRunQuery;
 	QSplitter* mMainLayoutSplitter;
 	QVBoxLayout* mMainLayout;
 };
@@ -53,6 +60,7 @@ class tableViewWidget : public QFrame
 
 public:
 	explicit tableViewWidget ( const QString& tablename );
+	tableViewWidget ( QSqlQuery* const query );
 	virtual ~tableViewWidget ();
 	
 	void showTable ();
@@ -67,12 +75,16 @@ private:
 	void getTableInfo ();
 	void getTableLastUpdate ( vmNumber& date , vmNumber& time );
 	void updateTable ( const vmTableItem* const item );
+	void rowInserted ( const uint row );
+	bool rowRemoved ( const uint row );
+	void tryToFindTableNameFromQuery ( const QString& querycmd );
 	
 	vmTableWidget* m_table;
 	VMList<QString> m_cols;
 	QString m_tablename;
 	QVBoxLayout* mLayout;
 	vmNumber m_updatedate, m_updatetime;
+	QSqlQuery* mQuery;
 	uint m_nrows;
 	bool mb_loaded;
 };

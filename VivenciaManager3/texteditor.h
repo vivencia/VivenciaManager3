@@ -121,6 +121,8 @@ public:
 	void setFontSizeFromComboBox ( const int index );
 	void insertImage ( const QString& imageFile, QTextFrameFormat::Position pos = QTextFrameFormat::InFlow );
 
+	void removeList ( const int indent = 0 );
+	
 private:
 	friend void initToolbarInstace ();
 	static void initToolbarInstace ();

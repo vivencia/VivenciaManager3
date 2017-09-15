@@ -40,7 +40,7 @@ vmTableWidget::vmTableWidget ( QWidget* parent )
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ), m_filterPanel ( nullptr ),
 	  mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
-	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr )
+	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowInserted_func ( nullptr ), rowActivated_func ( nullptr )
 {
 	sharedContructorsCode ();
 }
@@ -54,7 +54,7 @@ vmTableWidget::vmTableWidget ( const uint rows, QWidget* parent )
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ), m_filterPanel ( nullptr ),
 	  mContextMenuCell ( nullptr ), cellChanged_func ( nullptr ), cellNavigation_func ( nullptr ),
-	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowActivated_func ( nullptr )
+	  monitoredCellChanged_func ( nullptr ), rowRemoved_func ( nullptr ), rowInserted_func ( nullptr ), rowActivated_func ( nullptr )
 {
 	sharedContructorsCode ();
 	initTable ( rows );
@@ -280,7 +280,7 @@ int vmTableWidget::getRow ( const QString& cellText, const Qt::CaseSensitivity c
 	{
 		for ( uint col ( 0 ); col < colCount (); ++col )
 		{
-			if ( cellText.compare ( sheetItem ( row, col )->text (), cs ) )
+			if ( cellText.compare ( sheetItem ( row, col )->text (), cs ) == 0 )
 			{
 				if ( nth_find == 0 )
 					return static_cast<int>( row );
@@ -508,7 +508,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 		
 		mTotalsRow += n;
 		for ( ; i_row < n; ++i_row )
-		{ // Insert new rows accordingly, i.e., compute their formulas, if they have
+		{
 			QTableWidget::insertRow ( static_cast<int>( row + i_row ) );
 			for ( i_col = 0; i_col < colCount (); ++i_col )
 			{
@@ -530,6 +530,8 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 						new_SheetItem->setFormula ( mCols[i_col].formula, QString::number ( row + i_row ) );
 				}
 			}
+			if ( rowInserted_func )
+				rowInserted_func ( row + i_row );
 		}
 
 		if ( !mbPlainTable )
@@ -575,7 +577,16 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 		uint i_row ( 0 );
 		m_nVisibleRows -= n;
 		for ( ; i_row < n; ++i_row )
+		{
+			// Emit the signal before removing the row so that the slot(s) that catch the signal can retrieve information from the row
+			// (i.e. an ID, or name or anything to be used by the database ) before it disappears
+			if ( rowRemoved_func )
+			{
+				if ( !rowRemoved_func ( row ) )
+					continue;
+			}
 			QTableWidget::removeRow ( static_cast<int>( row ) );
+		}
 
 		if ( static_cast<int>( row + n ) >= lastUsedRow () )
 			setLastUsedRow ( static_cast<int>( row - 1 ) );
@@ -647,7 +658,10 @@ void vmTableWidget::clearRow ( const uint row, const uint n )
 			{
 				// Callback before removing so that its values might be used for something before they cannot be used anymore
 				if ( rowRemoved_func )
-					rowRemoved_func ( i_row );
+				{
+					if ( !rowRemoved_func ( i_row ) )
+						continue;
+				}
 				
 				for ( uint i_col ( 0 ); i_col <= ( colCount () - 1 ); ++i_col )
 				{
@@ -704,7 +718,7 @@ void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 			static_cast<void>( connect ( this, &QTableWidget::itemClicked, this, [&] ( QTableWidgetItem* current ) {
 				return rowActivated_func ( current->row () ); } ) );
 		else
-			static_cast<void>( disconnect ( this, &QTableWidget::itemActivated, nullptr, nullptr ) );
+			static_cast<void>( disconnect ( this, &QTableWidget::itemClicked, this, nullptr ) );
 	}
 }
 
@@ -1089,6 +1103,11 @@ void vmTableWidget::setEditable ( const bool editable )
 	vmWidget::setEditable ( editable );
 }
 
+void vmTableWidget::setPlainTableEditable ( const bool editable )
+{
+	vmWidget::mb_editable = editable;
+}
+
 void vmTableWidget::setLastUsedRow ( const int row )
 {
 	if ( row > m_lastUsedRow &&	row < ( isPlainTable () ? rowCount () : static_cast<int>( totalsRow () ) ) ) 
@@ -1368,12 +1387,12 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 				case Qt::Key_Return:
 					if ( keypressed_func )
 						keypressed_func ( k, this );
-				break;			
+				break;
 				case Qt::Key_I:
 					insertRow_slot ();
 				break;
 				case Qt::Key_O:
-					appendRow_slot ();
+					appendRow ();
 				break;
 				case Qt::Key_R:
 					removeRow_slot ();
@@ -1424,8 +1443,8 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 void vmTableWidget::enableOrDisableActionsForCell ( const vmTableItem* sheetItem )
 {
 	mUndoAction->setEnabled ( sheetItem->cellIsAltered () );
-	mCopyCellAction->setEnabled ( !isRowEmpty ( static_cast<uint>(sheetItem->row ()) ) );
-	mCopyRowContents->setEnabled ( !isRowEmpty ( static_cast<uint>(sheetItem->row ()) ) );
+	mCopyCellAction->setEnabled ( !isRowEmpty ( static_cast<uint>( sheetItem->row () ) ) );
+	mCopyRowContents->setEnabled ( !isRowEmpty ( static_cast<uint>( sheetItem->row () ) ) );
 	mAppendRowAction->setEnabled ( sheetItem->isEditable () );
 	mInsertRowAction->setEnabled ( sheetItem->isEditable () );
 	mDeleteRowAction->setEnabled ( sheetItem->isEditable () );
@@ -1483,7 +1502,7 @@ void vmTableWidget::sharedContructorsCode ()
 	static_cast<void>( connect ( mInsertRowAction, &vmAction::triggered, this, [&] () { return insertRow_slot (); } ) );
 
 	mAppendRowAction = new vmAction ( APPEND_ROW, TR_FUNC ( "Append line (CTRL+O)" ), this );
-	static_cast<void>( connect ( mAppendRowAction, &vmAction::triggered, this, [&] () { return appendRow_slot (); } ) );
+	static_cast<void>( connect ( mAppendRowAction, &vmAction::triggered, this, [&] () { return appendRow (); } ) );
 
 	mDeleteRowAction = new vmAction ( DEL_ROW, TR_FUNC ( "Remove this line (CTRL+R)" ), this );
 	static_cast<void>( connect ( mDeleteRowAction, &vmAction::triggered, this, [&] () { return removeRow_slot (); } ) );
@@ -1567,8 +1586,6 @@ void vmTableWidget::undoChange ()
 	{
 		vmTableItem* item ( mContextMenuCell ? mContextMenuCell : static_cast<vmTableItem*>( currentItem () ) );
 		if ( item && item->cellIsAltered () )
-			//TODO teste both these lines: the first was the original
-			//item->setText ( item->prevText (), true, true );
 			item->setText ( item->prevText (), true );
 	}
 }
@@ -1578,7 +1595,8 @@ void vmTableWidget::copyCellContents ()
 	QString cell_text;
 	if ( mContextMenuCell != nullptr )
 		cell_text = mContextMenuCell->text ();
-	else {
+	else
+	{
 		const QModelIndexList selIndexes ( selectedIndexes () );
 		if ( selIndexes.count () > 0 )
 		{
@@ -1586,12 +1604,11 @@ void vmTableWidget::copyCellContents ()
 			const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 			for ( ; itr != itr_end; ++itr )
 			{
-				cell_text.append ( sheetItem ( static_cast<uint>(static_cast<QModelIndex>(*itr).row ()),
-											   static_cast<uint>(static_cast<QModelIndex>(*itr).column ()) )->text () );
+				cell_text.append ( sheetItem ( static_cast<uint>( static_cast<QModelIndex>( *itr ).row () ),
+											   static_cast<uint>( static_cast<QModelIndex>( *itr ).column () ) )->text () );
 				cell_text.append ( CHR_NEWLINE );
 			}
-			//cell_text.truncate ( cell_text.length () - 1 ); // remove last newline character
-			cell_text.chop ( 1 );
+			cell_text.chop ( 1 ); // remove last newline character
 		}
 	}
 	Data::copyToClipboard ( cell_text );
@@ -1617,7 +1634,7 @@ void vmTableWidget::copyRowContents ()
 			for ( ; itr != itr_end; ++itr )
 			{
 				for ( i_col = 0; i_col < colCount (); ++i_col )
-					rowText += sheetItem ( static_cast<uint>(static_cast<QModelIndex>(*itr).row ()), i_col )->text () + QLatin1Char ( '\t' );
+					rowText += sheetItem ( static_cast<uint>( static_cast<QModelIndex>( *itr ).row () ), i_col )->text () + QLatin1Char ( '\t' );
 				rowText.chop ( 1 );
 				rowText += CHR_NEWLINE;
 			}
@@ -1632,7 +1649,7 @@ void vmTableWidget::copyRowContents ()
 void vmTableWidget::insertRow_slot ()
 {
 	if ( mContextMenuCell != nullptr )
-		insertRow ( static_cast<uint>(mContextMenuCell->row ()) );
+		insertRow ( static_cast<uint>( mContextMenuCell->row () ) );
 	else
 	{
 		const QModelIndexList selIndexes ( selectedIndexes () );
@@ -1641,22 +1658,16 @@ void vmTableWidget::insertRow_slot ()
 			QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
 			const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 			for ( ; itr != itr_end; ++itr )
-				insertRow ( static_cast<uint>(static_cast<QModelIndex>(*itr).row ()) + 1 );
+				insertRow ( static_cast<uint>( static_cast<QModelIndex>( *itr ).row () ) + 1 );
 		}
 	}
 }
 
-void vmTableWidget::appendRow_slot ()
-{
-	appendRow ();
-}
-
 void vmTableWidget::removeRow_slot ()
 {
-	if ( mContextMenuCell && rowRemoved_func )
+	if ( mContextMenuCell )
 	{
-		rowRemoved_func ( static_cast<uint>(mContextMenuCell->row ()) );
-		removeRow ( static_cast<uint>(mContextMenuCell->row ()) );
+		removeRow ( static_cast<uint>( mContextMenuCell->row () ) );
 	}
 	else
 	{
@@ -1668,11 +1679,7 @@ void vmTableWidget::removeRow_slot ()
 			const QModelIndexList::const_iterator itr_begin ( selIndexes.constBegin () );
 			for ( --itr; ; --itr )
 			{
-				// Emit the signal before removing the row so that the slot(s) that catch the signal can retrieve information from the row
-				// (i.e. an ID, or name or anything to be used by the database ) before it disappears
-				if ( rowRemoved_func )
-					rowRemoved_func ( static_cast<uint>(static_cast<QModelIndex>(*itr).row ()) );
-				removeRow ( static_cast<uint>(static_cast<QModelIndex>(*itr).row ()) );
+				removeRow ( static_cast<uint>( static_cast<QModelIndex>( *itr ).row () ) );
 				if ( itr == itr_begin )
 					break;
 			}
@@ -1685,7 +1692,7 @@ void vmTableWidget::clearRow_slot ()
 	if ( isEditable () )
 	{
 		if ( mContextMenuCell != nullptr )
-			clearRow ( static_cast<uint>(mContextMenuCell->row ()) );
+			clearRow ( static_cast<uint>( mContextMenuCell->row () ) );
 		else
 		{
 			const QModelIndexList selIndexes ( selectedIndexes () );
@@ -1694,7 +1701,7 @@ void vmTableWidget::clearRow_slot ()
 				QModelIndexList::const_iterator itr ( selIndexes.constBegin () );
 				const QModelIndexList::const_iterator itr_end ( selIndexes.constEnd () );
 				for ( ; itr != itr_end; ++itr )
-					clearRow ( static_cast<uint>(static_cast<QModelIndex>(*itr).row ()) );
+					clearRow ( static_cast<uint>( static_cast<QModelIndex>( *itr ).row () ) );
 			}
 		}
 	}

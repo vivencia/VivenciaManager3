@@ -6,7 +6,7 @@
 
 auto vmColorToQt = [] ( const VMColors color ) -> Qt::GlobalColor
 	{	switch ( color ) { case	vmGray: return Qt::gray; case vmRed: return Qt::red; case vmYellow: return Qt::yellow;
-			case vmGreen: return Qt::green; case vmBlue: return Qt::blue; case vmWhite: case vmDefault_Color: return Qt::white; } };
+			case vmGreen: return Qt::green; case vmBlue: return Qt::blue; case vmWhite: case vmDefault_Color: default: return Qt::white; } };
 
 static const QString SUM ( QStringLiteral ( "sum" ) );
 

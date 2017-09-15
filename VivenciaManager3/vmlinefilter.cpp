@@ -91,7 +91,8 @@ static ushort getCode ( const ushort base_code )
 vmLineFilter::vmLineFilter ( QWidget* parent, QWidget* ownerWindow )
 	: vmLineEdit ( parent, ownerWindow ), validkey_func ( nullptr )
 {
-	connect ( this, &QLineEdit::textChanged, this, [&] ( const QString& text ) { if ( text.isEmpty () ) return textCleared (); } );
+	static_cast<void>( connect ( this, &QLineEdit::textEdited, this, [&] ( const QString& text ) 
+		{ if ( text.isEmpty () ) return textCleared (); } ) );
 }
 
 vmLineFilter::~vmLineFilter () {}
@@ -149,7 +150,7 @@ bool vmLineFilter::matches ( const QString& haystack ) const
 		if ( iMatch == 0 && !bResetNeedle ) // Haystack ended without a match. There is no need to continue searching needle
 			break;
 	}
-	return ( iMatch == static_cast<uint>(mBuffer.count()) );
+	return ( iMatch == static_cast<uint>( mBuffer.count() ) );
 }
 
 void vmLineFilter::keyPressEvent ( QKeyEvent* const ke )

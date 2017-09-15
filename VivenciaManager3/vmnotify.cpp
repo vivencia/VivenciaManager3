@@ -292,11 +292,11 @@ QPoint vmNotify::displayPosition ( const QSize& widgetSize )
 
 	if ( m_parent == nullptr || m_parent == MAINWINDOW () )
 	{
-		parentGeometry = qApp->desktop ()->availableGeometry ();
+		const QDesktopWidget* desktop ( qApp->desktop () );
+		parentGeometry = desktop->availableGeometry ();
 
 		if ( mPos.isEmpty () )
 		{
-			const QDesktopWidget* desktop ( qApp->desktop () );
 			const QRect displayRect ( desktop->screenGeometry () );
 			const QRect availableRect ( desktop->availableGeometry () );
 
@@ -338,7 +338,8 @@ QPoint vmNotify::displayPosition ( const QSize& widgetSize )
 		p = parentGeometry.topRight ();
 	else if ( mPos == QStringLiteral ( "3" ) || mPos == QStringLiteral ( "TL" ) )
 		p = parentGeometry.topLeft ();
-	else if ( mPos == QStringLiteral ( "4" ) || mPos == QStringLiteral ( "C" ) ) {
+	else if ( mPos == QStringLiteral ( "4" ) || mPos == QStringLiteral ( "C" ) )
+	{
 		p = parentGeometry.bottomRight ();
 		p.setX ( p.x () / 2 + widgetSize.width () / 2 );
 		p.setY ( p.y () / 2 + widgetSize.height () / 2 );
@@ -421,7 +422,7 @@ void vmNotify::notifyMessage ( const QString& title, const QString& msg, const i
 	addMessage ( message );
 }
 
-void vmNotify::notifyMessage ( const QWidget* referenceWidget, const QString& title, const QString& msg, const int msecs, const bool b_critical )
+void vmNotify::notifyMessage ( QWidget* referenceWidget, const QString& title, const QString& msg, const int msecs, const bool b_critical )
 {
 	vmNotify* newNotify ( new vmNotify ( referenceWidget != nullptr ? QStringLiteral ( "C" ) : QString::null, referenceWidget ) );
 	newNotify->mbDeleteWhenStackIsEmpty = true;

@@ -192,7 +192,7 @@ class vmLineEditWithButton : public QWidget, public vmWidget
 
 public:
 
-	enum LINE_EDIT_BUTTON_TYPE { LEBT_NO_BUTTON = 0, LEBT_CALC_BUTTON = 0x20, LEBT_DIALOG_BUTTON = 0x40 };
+	enum LINE_EDIT_BUTTON_TYPE { LEBT_NO_BUTTON = 0, LEBT_CALC_BUTTON = 0x20, LEBT_DIALOG_BUTTON = 0x40, LEBT_CUSTOM_BUTTOM = 0x80 };
 
 	vmLineEditWithButton ( QWidget* parent = nullptr );
 	virtual ~vmLineEditWithButton ();
@@ -205,14 +205,19 @@ public:
 	inline QString text () const override { return mLineEdit->QLineEdit::text (); }
 
 	void setButtonType ( const LINE_EDIT_BUTTON_TYPE type );
+	void setButtonIcon ( const QIcon& icon ) { mButton->setIcon ( icon ); }
+	inline void setButtonTooltip ( const QString& str_tip ) { mButton->setToolTip ( str_tip ); }
 
 	inline vmLineEdit* lineControl () const { return mLineEdit; }
 	inline bool wasButtonClicked () const { return mLineEdit->mbButtonClicked; }
 
+	inline void setCallbackForButtonClicked ( const std::function<void()>& func ) { buttonclicked_func = func; }
+	
 private:
 	vmLineEdit* mLineEdit;
 	QToolButton* mButton;
 	LINE_EDIT_BUTTON_TYPE mBtnType;
+	std::function<void()> buttonclicked_func;
 
 	void execButtonAction ();
 };

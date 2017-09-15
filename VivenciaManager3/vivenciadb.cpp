@@ -630,11 +630,11 @@ bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
 								  QLatin1String ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK );
 		database ()->exec ( str_query );
 		
-		// The deletion of a temporary record must decrease the highest id for the table in orer to try to minimize
+		// The deletion of a temporary record must decrease the highest id for the table in order to try to minimize
 		// useless ids
 		const uint id ( static_cast<uint>( db_rec->actualRecordInt ( 0 ) ) );		
 		if ( id >= getHighestID ( db_rec->t_info->table_order ) )
-			const_cast<VivenciaDB*> ( this )->setHighestID ( db_rec->t_info->table_order, id - 1 );
+			const_cast<VivenciaDB*>( this )->setHighestID ( db_rec->t_info->table_order, id - 1 );
 
 		if ( database ()->lastError ().type () == QSqlError::NoError )
 		{

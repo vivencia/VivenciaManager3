@@ -9,7 +9,7 @@ class jobListItem;
 
 class QListWidgetItem;
 
-const uint JOB_FIELD_COUNT ( 12 );
+const uint JOB_FIELD_COUNT ( 13 );
 const uint JOB_REPORT_FIELDS_COUNT ( 5 );
 
 class Job : public DBRecord

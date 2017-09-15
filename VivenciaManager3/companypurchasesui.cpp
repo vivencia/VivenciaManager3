@@ -104,7 +104,7 @@ void companyPurchasesUI::tableItemsCellChanged ( const vmTableItem* const item )
 	}
 }
 
-void companyPurchasesUI::tableRowRemoved ( const uint row )
+bool companyPurchasesUI::tableRowRemoved ( const uint row )
 {
 	//TODO: maybe ask if user is certain about this action. Maybe, put the asking code under vmTableWidget::removeRow_slot ()
 	stringTable items ( recStrValue ( cp_rec, FLD_CP_ITEMS_REPORT ) );
@@ -112,6 +112,7 @@ void companyPurchasesUI::tableRowRemoved ( const uint row )
 	items.removeRecord ( row );
 	qDebug () << items.toString();
 	setRecValue ( cp_rec, FLD_CP_ITEMS_REPORT, items.toString () );
+	return true;
 }
 
 void companyPurchasesUI::tablePaymentsCellChanged ( const vmTableItem* const item )

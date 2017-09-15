@@ -80,7 +80,7 @@ public:
 	static void initNotify ();
 
 	void notifyMessage ( const QString& title, const QString& msg, const int msecs = 3000, const bool b_critical = false );
-	static void notifyMessage ( const QWidget* referenceWidget, const QString& title, const QString& msg, const int msecs = 3000, const bool b_critical = false );
+	static void notifyMessage ( QWidget* referenceWidget, const QString& title, const QString& msg, const int msecs = 3000, const bool b_critical = false );
 
 	void messageBox ( const QString& title, const QString& msg, const int msec = -1 );
 	static void messageBox ( const QWidget* referenceWidget, const QString& title, const QString& msg, const int msec = -1 );

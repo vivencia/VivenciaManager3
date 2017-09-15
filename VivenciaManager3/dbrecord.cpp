@@ -258,23 +258,27 @@ bool DBRecord::deleteRecord ()
 	return false;
 }
 
-bool DBRecord::saveRecord ( const bool b_changeAction )
+bool DBRecord::saveRecord ( const bool b_changeAction, const bool b_dbaction )
 {
 	bool ret ( false );
-	if ( m_action == ACTION_ADD )
-		ret = VDB ()->insertDBRecord ( this );
-	else
-		ret = VDB ()->updateRecord ( this );
-	// yes, the completer is updated by now, but the flag indicates that, upon next change to the record,
-	// the completer must be updated again. It is just faster and cleaner to do it here, just once, than
-	// anywhere else. The mb_completerUpdated flag is just used to speedup execution by not doing the same thing over for
-	// all the fields in the respective record that comprise the product´s completer for it
-	if ( ret )
+	if ( b_dbaction )
+	{
+		if ( m_action == ACTION_ADD )
+			ret = VDB ()->insertDBRecord ( this );
+		else
+			ret = VDB ()->updateRecord ( this );
+	}
+	if ( ret || !b_dbaction )
 	{
 		callHelperFunctions ();
 		if ( b_changeAction )
 			setAction ( ACTION_READ );
 		setAllModified ( false );
+		
+		// yes, the completer is updated by now, but the flag indicates that, upon next change to the record,
+		// the completer must be updated again. It is just faster and cleaner to do it here, just once, than
+		// anywhere else. The mb_completerUpdated flag is just used to speedup execution by not doing the same thing over for
+		// all the fields in the respective record that comprise the product´s completer for it
 		setCompleterUpdated ( false );
 	}
 	return ret;

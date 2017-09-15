@@ -56,7 +56,7 @@ private:
 	void cancelEdit ();
 	void btnCopyPurchasesLists_clicked ();
 	void closeClicked ();
-	void rowRemoved ( const uint row );
+	bool rowRemoved ( const uint row );
 
 	friend quickProjectUI* QUICK_PROJECT ();
 	friend void deleteQPInstance ();

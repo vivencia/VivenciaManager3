@@ -25,6 +25,8 @@ enum PREDEFINED_WIDGET_TYPES {
 class vmWidget
 {
 
+friend class vmTableWidget;
+
 public:
 	
 	friend void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 );

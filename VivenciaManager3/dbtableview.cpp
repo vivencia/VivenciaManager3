@@ -12,7 +12,11 @@
 #include <QVBoxLayout>
 #include <QTabWidget>
 #include <QLabel>
+#include <QKeyEvent>
 #include <QSqlQuery>
+#include <QSqlRecord>
+#include <QApplication>
+#include <QDesktopWidget>
 
 static const QString information_schema_tables[] = {
 	"TABLE_CATALOG", "TABLE_SCHEMA",
@@ -49,10 +53,25 @@ dbTableView::dbTableView ()
 	mMainLayoutSplitter = new QSplitter;
 	mMainLayoutSplitter->insertWidget ( 0, mLeftFrame );
 	mMainLayoutSplitter->insertWidget ( 1, mTabView );
-	mMainLayoutSplitter->setStretchFactor ( 0, 1 );
-	mMainLayoutSplitter->setStretchFactor ( 1, 4 );
+	
+	const int screen_width ( qApp->desktop ()->availableGeometry ().width () );
+	mMainLayoutSplitter->setSizes ( QList<int> () << static_cast<int>( screen_width / 5 ) << static_cast<int>( 4 * screen_width / 5 ) );
 
+	mTxtQuery = new vmLineEdit;
+	static_cast<void> ( connect ( mTxtQuery, &QLineEdit::textChanged, this, [&] ( const QString& text ) { mBtnRunQuery->setEnabled ( text.length () > 10 ); } ) );
+	mTxtQuery->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) { maybeRunQuery ( ke ); } );
+	mTxtQuery->setEditable ( true );
+	mBtnRunQuery = new QToolButton;
+	mBtnRunQuery->setIcon ( ICON ( "arrow-right.png" ) );
+	mBtnRunQuery->setEnabled ( false );
+	static_cast<void>( connect ( mBtnRunQuery, &QToolButton::clicked, this, [&] () { runPersonalQuery (); } ) );
+	QHBoxLayout* hLayout ( new QHBoxLayout );
+	hLayout->addWidget ( new QLabel ( TR_FUNC ( "Execute custom SQL query: " ) ), 1 );
+	hLayout->addWidget ( mTxtQuery, 5 );
+	hLayout->addWidget ( mBtnRunQuery, 0 );
+	
 	mMainLayout = new QVBoxLayout;
+	mMainLayout->addLayout ( hLayout, 0 );
 	mMainLayout->addWidget ( mMainLayoutSplitter, 2 );
 	addPostRoutine ( deleteDBTableViewInstance );
 }
@@ -120,8 +139,53 @@ void dbTableView::showTable ( const QString& tablename )
 	}
 }
 
+void dbTableView::runPersonalQuery ()
+{
+	QSqlQuery query;
+	if ( !VDB ()->runQuery ( mTxtQuery->text (), query ) )
+	{
+		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Error!" ),	TR_FUNC ( "There is an error in your query syntax" ) );
+		mTxtQuery->setFocus ();
+		return;
+	}
+	
+	if ( mTxtQuery->text ().startsWith ( QStringLiteral ( "SELECT " ), Qt::CaseInsensitive ) )
+	{
+		tableViewWidget* widget ( new tableViewWidget ( &query ) );
+		mTabView->setCurrentIndex ( mTabView->addTab ( widget, mTxtQuery->text () ) );
+		widget->setFocus ();
+	}
+	mTxtQuery->clear ();
+	mBtnRunQuery->setEnabled ( false );
+}
+
+void dbTableView::maybeRunQuery ( const QKeyEvent* const ke )
+{
+	if ( ke->key () == Qt::Key_Escape )
+	{
+		mTxtQuery->clear ();
+		mBtnRunQuery->setEnabled ( false );
+	}
+	else if ( ke->key () == Qt::Key_Enter || ke->key () == Qt::Key_Return )
+	{
+		if ( mTxtQuery->text ().length () > 10 )
+			runPersonalQuery ();
+	}
+}
+
 tableViewWidget::tableViewWidget ( const QString& tablename )
-	: QFrame ( nullptr ), m_table ( nullptr ), m_cols ( QString::null, 10 ), m_tablename ( tablename ), m_nrows ( 0 ), mb_loaded ( false )
+	: QFrame ( nullptr ), m_table ( nullptr ), m_cols ( QString::null, 10 ), m_tablename ( tablename ), 
+	  mQuery ( nullptr ), m_nrows ( 0 ), mb_loaded ( false )
+{
+	mLayout = new QVBoxLayout;
+	setLayout ( mLayout );
+	createTable ();
+	showTable ();
+}
+
+tableViewWidget::tableViewWidget ( QSqlQuery* const query )
+	: QFrame ( nullptr ), m_table ( nullptr ), m_cols ( QString::null, 10 ), m_tablename ( QString::null ), 
+	  mQuery ( query ), m_nrows ( 0 ), mb_loaded ( false )
 {
 	mLayout = new QVBoxLayout;
 	setLayout ( mLayout );
@@ -140,28 +204,34 @@ void tableViewWidget::showTable ()
 
 void tableViewWidget::load ()
 {
-	QString str_tables;
-	for ( uint i ( 0 ); i < m_cols.count (); ++i )
-		str_tables += m_cols.at ( i ) + CHR_COMMA;
-	str_tables.chop ( 1 );
-
-	QSqlQuery query;	
-	/* From the Qt's doc: Using SELECT * is not recommended because the order of the fields in the query is undefined.*/
-	if ( VDB ()->runQuery ( QLatin1String ( "SELECT " ) + str_tables + QLatin1String ( " FROM " ) + tableName (), query ) )
+	QSqlQuery query;
+	if ( mQuery == nullptr )
 	{
-		uint row ( 0 );
-		uint col ( 0 );
+		QString str_tables;
+		for ( uint i ( 0 ); i < m_cols.count (); ++i )
+			str_tables += m_cols.at ( i ) + CHR_COMMA;
+		str_tables.chop ( 1 );
 		
-		//m_table->enableQtListenerToSimpleTableItemEdition ( false );
-		do {
-			do {
-				m_table->sheetItem ( row, col )->setText ( query.value ( static_cast<int>( col ) ).toString (), false );
-			} while ( ++col < m_cols.count () );
-			col = 0;
-			++row;
-		} while ( query.next () );
-		m_table->enableQtListenerToSimpleTableItemEdition ( true );
+		/* From the Qt's doc: Using SELECT * is not recommended because the order of the fields in the query is undefined.*/
+		if ( !VDB ()->runQuery ( QLatin1String ( "SELECT " ) + str_tables + QLatin1String ( " FROM " ) + tableName (), query ) )
+			return;
 	}
+	else
+		query = *mQuery;
+
+	uint row ( 0 );
+	uint col ( 0 );
+		
+	m_table->enableQtListenerToSimpleTableItemEdition ( false );
+	do {
+		do {
+			m_table->sheetItem ( row, col )->setText ( query.value ( static_cast<int>( col ) ).toString (), false );
+		} while ( ++col < m_cols.count () );
+		col = 0;
+		++row;
+	} while ( query.next () );
+	m_table->enableQtListenerToSimpleTableItemEdition ( true );
+
 	getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
 	mb_loaded = true;
 }
@@ -228,6 +298,9 @@ void tableViewWidget::createTable ()
 	m_table->setMinimumWidth ( 800 );
 	m_table->setColumnsAutoResize ( true );
 	m_table->addToLayout ( mLayout, 3 );
+	m_table->setPlainTableEditable ( true );
+	m_table->setCallbackForRowInserted ( [&] ( const uint row ) { return rowInserted ( row ); } );
+	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) { return rowRemoved ( row ); } );
 	
 	vmAction* actionReload ( new vmAction ( 0 ) );
 	actionReload->setShortcut ( QKeySequence ( Qt::Key_F5 ) );
@@ -237,16 +310,33 @@ void tableViewWidget::createTable ()
 
 void tableViewWidget::getTableInfo ()
 {
-	QSqlQuery query;
-	if ( VDB ()->runQuery ( QLatin1String ( "DESCRIBE " ) + tableName (), query ) )
+	if ( mQuery == nullptr )
 	{
-		do {
-			m_cols.append ( query.value ( 0 ).toString () );
-		} while ( query.next () );
+		QSqlQuery query;
+		if ( VDB ()->runQuery ( QLatin1String ( "DESCRIBE " ) + tableName (), query ) )
+		{
+			do {
+				m_cols.append ( query.value ( 0 ).toString () );
+			} while ( query.next () );
+		}
+		query.clear ();
+		if ( VDB ()->runQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[7] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
+			m_nrows = query.value ( 0 ).toUInt ();
 	}
-	query.clear ();
-	if ( VDB ()->runQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[7] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
-		m_nrows = query.value ( 0 ).toUInt ();
+	else
+	{
+		if ( mQuery->size () > 0 )
+		{
+			const QSqlRecord rec ( mQuery->record () );
+		
+			const int nCols ( rec.count () );
+			for ( int i_col ( 0 ); i_col < nCols; ++i_col )
+				m_cols.append ( rec.fieldName ( i_col ) );
+		
+			m_nrows = static_cast<uint>( mQuery->size () );
+			tryToFindTableNameFromQuery ( mQuery->lastQuery () );
+		}
+	}
 }
 
 void tableViewWidget::getTableLastUpdate ( vmNumber& date, vmNumber& time )
@@ -275,5 +365,42 @@ void tableViewWidget::updateTable ( const vmTableItem* const item )
 		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Warning!! Table %1 updated" ).arg ( tableName () ), 
 									  TR_FUNC ( "The record id (%1) was updated from the old value (%2) to the new (%3)" ).arg ( 
 										  record_id, item->prevText (), item->text () ) );
+	}
+}
+
+void tableViewWidget::rowInserted ( const uint row )
+{
+	if ( row > 0 )
+	{
+		QSqlQuery query;
+		const QString new_id ( QString::number ( m_table->sheetItem ( row - 1, 0 )->text ().toUInt () + 1 ) );
+		
+		if ( VDB ()->runQuery ( QLatin1String ( "INSERT INTO " ) + tableName () + QLatin1String ( " VALUES ( " ) + new_id + QLatin1String ( " )" ), query ) )
+		{
+			 getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
+			 m_table->enableQtListenerToSimpleTableItemEdition ( false );
+			 m_table->sheetItem ( row, 0 )->setText ( new_id, false );
+			 m_table->enableQtListenerToSimpleTableItemEdition ( true );
+		}
+	}
+}
+
+bool tableViewWidget::rowRemoved ( const uint row )
+{
+	if ( VM_NOTIFY ()->questionBox ( TR_FUNC ( "Delete record?" ), TR_FUNC ( "Are you sure you want to remove the record " ) + QString::number ( row ) +
+																				QLatin1String ( "ID (" ) + m_table->sheetItem ( row, 0 )->text () + QLatin1String ( ") ?" ), this ) )
+	{
+		QSqlQuery query;
+		return VDB ()->runQuery ( QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + m_table->sheetItem ( row, 0 )->text () + CHR_CHRMARK, query );
+	}
+	return false;
+}
+
+void tableViewWidget::tryToFindTableNameFromQuery ( const QString& querycmd )
+{
+	const int idx ( querycmd.indexOf ( QStringLiteral ( "FROM " ), 8, Qt::CaseInsensitive ) );
+	if ( idx > 8 )
+	{
+		m_tablename = querycmd.mid ( idx + 5, querycmd.indexOf ( CHR_SPACE, idx + 6 ) );
 	}
 }

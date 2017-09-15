@@ -109,7 +109,7 @@ public:
 	inline void appendRow ()
 	{
 		// totalsRow cannot be < 0. If it is, initTable was not called, and therefore something wrong is abount to happen anyway
-		insertRow ( mbPlainTable ? static_cast<uint>(rowCount ()) : static_cast<uint>(totalsRow ()) );
+		insertRow ( mbPlainTable ? static_cast<uint>( rowCount () ) : static_cast<uint>( totalsRow () ) );
 	}
 
 	void rowActivatedConnection ( const bool b_activate );
@@ -143,6 +143,7 @@ public:
 	inline void setKeepModificationRecords ( const bool bkeeprec ) { mbKeepModRec = bkeeprec; }
 
 	void setEditable ( const bool editable ) override;
+	void setPlainTableEditable ( const bool editable );
 
 	inline bool isEmpty () const {
 		return static_cast<bool>( m_lastUsedRow < 0 ); }
@@ -194,8 +195,10 @@ public:
 		cellNavigation_func = func; }
 	inline void setCallbackForMonitoredCellChanged ( const std::function<void ( const vmTableItem* const item )>& func ) {
 		monitoredCellChanged_func = func; }
-	inline void setCallbackForRowRemoved ( const std::function<void ( const uint row )>& func ) {
+	inline void setCallbackForRowRemoved ( const std::function<bool ( const uint row )>& func ) {
 		rowRemoved_func = func; }
+	inline void setCallbackForRowInserted ( const std::function<void ( const uint row )>& func ) {
+		rowInserted_func = func; }
 	inline void setCallbackForRowActivated ( const std::function<void ( const int row )>& func ) {
 		rowActivated_func = func; }
 
@@ -204,9 +207,9 @@ public:
 protected:
 	void keyPressEvent ( QKeyEvent* k ) override;
 	inline void setVisibleRows ( const uint n ) { m_nVisibleRows = n; }
+	inline void resetLastUsedRow () { m_lastUsedRow = -1; }
 
 private:
-	inline void resetLastUsedRow () { m_lastUsedRow = -1; }
 	void enableOrDisableActionsForCell ( const vmTableItem* sheetItem );
 	void sharedContructorsCode ();
 	void fixTotalsRow ();
@@ -216,7 +219,6 @@ private:
 	void copyCellContents ();
 	void copyRowContents ();
 	void insertRow_slot ();
-	void appendRow_slot ();
 	void removeRow_slot ();
 	void clearRow_slot ();
 	void clearTable_slot ();
@@ -279,7 +281,8 @@ private:
 	std::function<void ( const vmTableItem* const item )> cellChanged_func;
 	std::function<void ( const uint row, const uint col, const uint prev_row, const uint prev_col )> cellNavigation_func;
 	std::function<void ( const vmTableItem* const item )> monitoredCellChanged_func;
-	std::function<void ( const uint row )> rowRemoved_func;
+	std::function<bool ( const uint row )> rowRemoved_func;
+	std::function<void ( const uint row )> rowInserted_func;
 	std::function<void ( const int row )> rowActivated_func;
 };
 

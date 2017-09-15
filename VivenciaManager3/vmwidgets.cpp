@@ -663,7 +663,7 @@ void vmLineEdit::keyPressEvent ( QKeyEvent* e )
 				}
 				else
 				{
-					if ( e->key () == Qt::Key_Enter )
+					if ( e->key () == Qt::Key_Enter || e->key () == Qt::Key_Return )
 						updateText ();
 					if ( keypressed_func )
 						keypressed_func ( e, this );
@@ -839,7 +839,7 @@ void vmLineEdit::focusOutEvent ( QFocusEvent* e )
 //------------------------------------------------VM-LINE-EDIT-BUTTON-----------------------------------------------
 vmLineEditWithButton::vmLineEditWithButton ( QWidget* parent )
 	: QWidget ( parent ), vmWidget ( WT_LINEEDIT_WITH_BUTTON ), mLineEdit ( new vmLineEdit ),
-	  mButton ( new QToolButton )
+	  mButton ( new QToolButton ), buttonclicked_func ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	QHBoxLayout *mainLayout ( new QHBoxLayout );
@@ -859,10 +859,22 @@ vmLineEditWithButton::~vmLineEditWithButton ()
 void vmLineEditWithButton::setButtonType ( const LINE_EDIT_BUTTON_TYPE type )
 {
 	mBtnType = type;
-	mButton->setIcon ( mBtnType == LEBT_CALC_BUTTON ? ICON ( "accessories-calculator" ) : ICON ( "folder-templates" ) );
-		mButton->setToolTip ( mBtnType == LEBT_CALC_BUTTON ? TR_FUNC ( "Use calculator" ) : TR_FUNC ( "Most used dates" ) );
-	connect ( mButton, &QToolButton::clicked, this, [&] () { return execButtonAction (); } );
-	mButton->setEnabled ( isEditable () );
+	switch ( mBtnType )
+	{
+		case LEBT_CALC_BUTTON: 
+			mButton->setIcon ( ICON ( "accessories-calculator" ) ); 
+			mButton->setToolTip ( TR_FUNC ( "Use calculator" ) );
+		break;
+		case LEBT_DIALOG_BUTTON: 
+			mButton->setIcon ( ICON ( "folder-templates" ) );
+			mButton->setToolTip ( TR_FUNC ( "Select File" ) );
+		break;
+		case LEBT_NO_BUTTON:
+		case LEBT_CUSTOM_BUTTOM:
+		break;
+	}
+	static_cast<void>( connect ( mButton, &QToolButton::clicked, this, [&] () { return execButtonAction (); } ) );
+	//mButton->setEnabled ( isEditable () );
 }
 
 void vmLineEditWithButton::setEditable ( const bool editable )
@@ -875,13 +887,27 @@ void vmLineEditWithButton::setEditable ( const bool editable )
 void vmLineEditWithButton::execButtonAction ()
 {
 	mLineEdit->mbButtonClicked = true;
-	if ( mBtnType == LEBT_CALC_BUTTON )
+	if ( buttonclicked_func != nullptr )
 	{
-		vmNumber price ( mLineEdit->text (), VMNT_DOUBLE );
-		CALCULATOR ()->showCalc ( price.toStrDouble (), mButton->mapToGlobal ( mButton->pos () ), mLineEdit, nullptr );
+		buttonclicked_func ();
+		return;
 	}
-	else // LEBT_DIALOG_BUTTON
-		mLineEdit->setText ( fileOps::getOpenFileName ( CONFIG ()->homeDir () , TR_FUNC ( "All Files ( * ) " ) ), true );
+	
+	switch ( mBtnType )
+	{
+		case LEBT_CALC_BUTTON:
+		{
+			vmNumber price ( mLineEdit->text (), VMNT_DOUBLE );
+			CALCULATOR ()->showCalc ( price.toStrDouble (), mButton->mapToGlobal ( mButton->pos () ), mLineEdit, nullptr );
+		}
+		break;
+		case LEBT_DIALOG_BUTTON:
+			mLineEdit->setText ( fileOps::getOpenFileName ( CONFIG ()->homeDir () , TR_FUNC ( "All Files ( * ) " ) ), true );
+		break;
+		case LEBT_CUSTOM_BUTTOM:
+		case LEBT_NO_BUTTON:
+		break;
+	}
 }
 //------------------------------------------------VM-LINE-EDIT-BUTTON------------------------------------------------
 

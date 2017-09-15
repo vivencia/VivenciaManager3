@@ -95,16 +95,17 @@ public:
 	void clientKeyPressedSelector ( const QKeyEvent* ke );
 	void clientsListWidget_currentItemChanged ( vmListItem* item );
 	void controlClientForms ( const clientListItem* const client_item );
-	bool saveClient ( clientListItem* client_item );
+	bool saveClient ( clientListItem* client_item, const bool b_dbsave = true );
 	clientListItem* addClient ();
 	bool editClient ( clientListItem* client_item, const bool b_dogui = true );
-	bool delClient ( clientListItem* client_item );
+	bool delClient ( clientListItem* client_item, const bool b_ask = true );
 	bool cancelClient ( clientListItem* client_item );
 	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
 	void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const uint id ) const;
 	void fillAllLists ( const clientListItem* client_item );
 	void alterClientEndDate ( const jobListItem* const job_item );
+	void clientExternalChange ( const uint id, const RECORD_ACTION action );
 //--------------------------------------------CLIENT------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-CLIENT-----------------------------------------------------------
@@ -130,16 +131,18 @@ public:
 	void controlJobDaySection ( const jobListItem* const job_item );
 	void controlJobDayForms ( const bool b_editable );
 	void controlJobPictureControls (); //must be called from within loadJobInfo or after because it relies on having read the database for info
-	bool saveJob ( jobListItem* job_item );
+	bool saveJob ( jobListItem* job_item, const bool b_dbsave = true );
+	void postSaveJobActions ( jobListItem* job_item );
 	jobListItem* addJob ( clientListItem* parent_client );
 	bool editJob ( jobListItem* job_item, const bool b_dogui = true );
-	bool delJob ( jobListItem* job_item );
+	bool delJob ( jobListItem* job_item, const bool b_ask = true );
 	bool cancelJob ( jobListItem* job_item );
 	void displayJob ( jobListItem* job_item, const bool b_select = false, buyListItem* buy_item = nullptr );
 	void loadJobInfo ( const Job* const job );
 	jobListItem* getJobItem ( const clientListItem* const parent_client, const uint id ) const;
 	void scanJobImages ();
 	void decodeJobReportInfo ( const Job* const job );
+	void fillJobKeyWordsList ( const Job* const job );
 	void fixJobDaysList ( jobListItem* const job_item );
 	void revertDayItem ( vmListItem* day_item );
 	void updateJobInfo ( const QString& text, const uint user_role, vmListItem* const item = nullptr );
@@ -147,6 +150,8 @@ public:
 	void saveJobPayment ( jobListItem* const job_item );
 	void removeJobPayment ( payListItem* pay_item );
 	void alterJobPayPrice ( jobListItem* const job_item );
+	bool jobRemoveKeyWord ( const uint row );
+	void jobAddKeyWord ( const QString& words );
 	void calcJobTime ();
 	void showJobTotalTime ( const vmNumber& time ) const;
 	triStateType dateIsInDaysList ( const QString& str_date );
@@ -164,7 +169,9 @@ public:
 	void btnJobMachines_clicked ();
 	void jobOpenProjectFile ( QAction* action );
 	void jobEMailProjectFile ( QAction* action );
-
+	void quickProjectClosed ();
+	void on_btnQuickProject_clicked ();
+	void jobExternalChange ( const uint id, const RECORD_ACTION action );
 	inline void setTempCallbackForJobSelect ( const std::function<void ( const uint )>& func ) { selJob_callback = func; }
 //--------------------------------------------JOB------------------------------------------------------------
 
@@ -207,6 +214,7 @@ public:
 	void updatePayTotalPaidValue ();
 	void payKeyPressedSelector ( const QKeyEvent* ke );
 	void tabPaysLists_currentChanged ( const int index );
+	void payExternalChange ( const uint id, const RECORD_ACTION action );
 //--------------------------------------------PAY------------------------------------------------------------
 
 //------------------------------------EDITING-FINISHED-PAY-----------------------------------------------------------
@@ -241,6 +249,7 @@ public:
 	void buyKeyPressedSelector ( const QKeyEvent* ke );
 	void getPurchasesForSuppliers ( const QString& supplier );
 	void setBuyPayValueToBuyPrice ( const QString& price );
+	void buyExternalChange ( const uint id, const RECORD_ACTION action );
 //--------------------------------------------BUY------------------------------------------------------------
 
 //--------------------------------------------EDITING-FINISHED-BUY-----------------------------------------------------------
@@ -270,6 +279,8 @@ public:
 	void tboxCalBuys_currentChanged ( const int index );
 	void changeCalendarToolBoxesText ( const vmNumber& date );
 //--------------------------------------------CALENDAR-----------------------------------------------------------
+
+//---------------------------------------------SESSION----------------------------------------------------------
 	void showTab ( const TAB_INDEXES ti );
 	void tabMain_currentTabChanged ( const int tab_idx );
 	void saveView ();
@@ -281,20 +292,24 @@ public:
 	void insertEditItem ( vmListItem* item );
 	void removeEditItem ( vmListItem* item );
 	void saveEditItems ();
-//--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
-	void createTrayIcon ( const bool b_setup = true );
-	inline QSystemTrayIcon* appTrayIcon () const { return trayIcon; }
-//--------------------------------------------TRAY-IMPORT-EXPORT---------------------------------
+//---------------------------------------------SESSION----------------------------------------------------------
 
-//--------------------------------------------SHARED-----------------------------------------------------------
+//-------------------------------------------ITEM-SHARED---------------------------------------------------------
+	void notifyExternalChange ( const uint id, const uint table_id, const RECORD_ACTION action );
+	
+	inline void notifyExternalChange ( const vmListItem* const changed_item )
+		{ notifyExternalChange ( changed_item->dbRec () ); }
+	
+	inline void notifyExternalChange ( const DBRecord* const dbrec )
+		{ notifyExternalChange ( static_cast<uint>( recIntValue ( dbrec, 0 ) ), dbrec->t_info->table_id, dbrec->prevAction () ); }
+	
 	void removeListItem ( vmListItem* item, const bool b_delete_item = true, const bool b_auto_select_another = true );
 	void postFieldAlterationActions ( vmListItem* item );
 	inline clientListItem* currentClient () const { return mClientCurItem; }
 	inline jobListItem* currentJob () const { return mJobCurItem; }
 	inline payListItem* currentPay () const { return mPayCurItem; }
 	inline buyListItem* currentBuy () const { return mBuyCurItem; }
-	
-//--------------------------------------------SHARED-----------------------------------------------------------
+//-------------------------------------------ITEM-SHARED---------------------------------------------------------
 
 protected:
 	void closeEvent ( QCloseEvent * ) override;
@@ -380,10 +395,7 @@ private:
 //----------------------------------------------CURRENT-DATE-BTNS-------------------------------------------
 
 //--------------------------------------------SLOTS---------------------------------------------------------
-	void quickProjectClosed ();
-	void on_btnQuickProject_clicked ();
 	void receiveWidgetBack ( QWidget* );
-
 	void btnReportGenerator_clicked ();
 	void btnBackupRestore_clicked ();
 	void btnCalculator_clicked ();
@@ -400,6 +412,8 @@ private:
 //--------------------------------------------SEARCH-----------------------------------------------------------
 
 //--------------------------------------------TRAY-----------------------------------------------------------
+	void createTrayIcon ( const bool b_setup = true );
+	inline QSystemTrayIcon* appTrayIcon () const { return trayIcon; }
 	void trayMenuTriggered ( QAction* );
 	void trayActivated ( QSystemTrayIcon::ActivationReason );
 //--------------------------------------------TRAY-----------------------------------------------------------

@@ -29,6 +29,7 @@ friend class VivenciaDB;
 friend class searchUI;
 friend class vmListItem;
 friend class threadedDBOps;
+friend class MainWindow;
 
 public:
 
@@ -126,7 +127,7 @@ public:
 	bool readNextRecord ( const bool follow_search = false, const bool load_data = true );
 	bool readPrevRecord ( const bool follow_search = false, const bool load_data = true );
 	bool deleteRecord ();
-	bool saveRecord ( const bool b_changeAction = true );
+	bool saveRecord ( const bool b_changeAction = true, const bool b_dbaction = true );
 	void contains ( const QString& value, podList<uint>& fields ) const;
 
 	inline bool isModified () const { return mb_modified; }

@@ -8,7 +8,7 @@
 #include "vmwidgets.h"
 #include "stringrecord.h"
 
-static const unsigned int TABLE_VERSION ( 'A' );
+static const unsigned int TABLE_VERSION ( 'B' );
 
 constexpr DB_FIELD_TYPE JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_TIME,
@@ -18,6 +18,7 @@ constexpr DB_FIELD_TYPE JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
 bool updateJobTable ()
 {
 #ifdef TABLE_UPDATE_AVAILABLE
+	VDB ()->insertColumn ( FLD_JOB_KEYWORDS, &Job::t_info );
 	VDB ()->optimizeTable ( &Job::t_info );
 	return true;
 #else
@@ -32,12 +33,12 @@ const TABLE_INFO Job::t_info =
 	QStringLiteral ( "JOBS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
 	QStringLiteral ( " PRIMARY KEY ( `ID` ) , UNIQUE KEY `id` ( `ID` ) " ),
-	QStringLiteral ( "`ID`|`CLIENTID`|`TYPE`|`STARTDATE`|`ENDDATE`|`TIME`|`PRICE`|`PROJECTPATH`|`PROJECTID`|`IMAGEPATH`|`JOB_ADDRESS`|`REPORT`|" ),
+	QStringLiteral ( "`ID`|`CLIENTID`|`TYPE`|`STARTDATE`|`ENDDATE`|`TIME`|`PRICE`|`PROJECTPATH`|`PROJECTID`|`IMAGEPATH`|`JOB_ADDRESS`|`KEYWORDS`|`REPORT`|" ),
 	QStringLiteral ( " int ( 9 ) NOT NULL, | int ( 9 ) NOT NULL, | varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, |"
 	" varchar ( 20 ) DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, | varchar ( 20 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, | varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
-	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | longtext COLLATE utf8_unicode_ci, |" ),
-	QStringLiteral ( "ID|Client ID|Type|Start date|Finish date|Worked hours|Price|Project path|Project ID|Image path|Job Address|Report|" ),
+	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | longtext COLLATE utf8_unicode_ci, |longtext COLLATE utf8_unicode_ci, |" ),
+	QStringLiteral ( "ID|Client ID|Type|Start date|Finish date|Worked hours|Price|Project path|Project ID|Image path|Job Address|Job Keywords|Report|" ),
 	JOBS_FIELDS_TYPE,
 	TABLE_VERSION, JOB_FIELD_COUNT, TABLE_JOB_ORDER, &updateJobTable
 	#ifdef TRANSITION_PERIOD
@@ -73,6 +74,7 @@ int Job::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
 	{
 		case SC_ID: return FLD_JOB_ID;
 		case SC_REPORT_1: return FLD_JOB_REPORT;
+		case SC_REPORT_2: return FLD_JOB_KEYWORDS;
 		case SC_ADDRESS_1: return FLD_JOB_PROJECT_PATH;
 		case SC_ADDRESS_2: return FLD_JOB_ADDRESS;
 		case SC_PRICE_1: return FLD_JOB_PRICE;

@@ -53,7 +53,7 @@ private:
 	void setTotalPriceAsItChanges ( const vmTableItem* const item );
 	void setPayValueAsItChanges ( const vmTableItem* const item );
 	void tableItemsCellChanged ( const vmTableItem* const item );
-	void tableRowRemoved ( const uint row );
+	bool tableRowRemoved ( const uint row );
 	void tablePaymentsCellChanged ( const vmTableItem* const item );
 
 	void relevantKeyPressed ( const QKeyEvent* ke );

@@ -51,15 +51,14 @@ textEditor::textEditor ( documentEditor* mdiParent )
 	mDocument = new textEditWithCompleter ( nullptr );
 	mCursor = mDocument->textCursor ();
 	mCursor.movePosition ( QTextCursor::Start );
-	static_cast<void>(connect ( mDocument->document (), &QTextDocument::contentsChanged, this, [&] () { return documentWasModified (); } ));
-	static_cast<void>(connect ( mDocument->document (), &QTextDocument::undoAvailable, this, [&] ( const bool undo ) { return documentWasModifiedByUndo ( undo ); } ));
-	static_cast<void>(connect ( mDocument->document (), &QTextDocument::redoAvailable, this, [&] ( const bool redo ) { return documentWasModifiedByRedo ( redo ); } ));
-	//mainLayout->addWidget ( mDocument, 0, 0, 1, 1 );
+	static_cast<void>( connect ( mDocument->document (), &QTextDocument::contentsChanged, this, [&] () { return documentWasModified (); } ) );
+	static_cast<void>( connect ( mDocument->document (), &QTextDocument::undoAvailable, this, [&] ( const bool undo ) { return documentWasModifiedByUndo ( undo ); } ) );
+	static_cast<void>( connect ( mDocument->document (), &QTextDocument::redoAvailable, this, [&] ( const bool redo ) { return documentWasModifiedByRedo ( redo ); } ) );
 	mainLayout->addWidget ( mDocument, 3 );
 	mDocument->setUtilitiesPlaceLayout ( mainLayout );
 
 	textEditorToolBar::initToolbarInstace ();
-	static_cast<void>(connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } ));
+	static_cast<void>( connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } ) );
 	TEXT_EDITOR_TOOLBAR ()->show ( mdiParent );
 	mDocument->setFocus ();
 }
@@ -888,15 +887,29 @@ void textEditorToolBar::setHighlight( const QColor &color )
 	mergeFormatOnWordOrSelection ( charFormat );
 }
 
+void textEditorToolBar::removeList ( const int indent )
+{
+	if ( mEditorWindow == nullptr ) return;
+
+	mEditorWindow->mCursor = mEditorWindow->mDocument->textCursor ();
+	QTextList* list ( mEditorWindow->mCursor.currentList () );
+	QTextBlock block ( mEditorWindow->mCursor.block () );
+	list->remove ( block );
+	QTextBlockFormat blockFormat ( mEditorWindow->mCursor.blockFormat () );
+	blockFormat.setIndent ( indent );
+	mEditorWindow->mCursor.setBlockFormat ( blockFormat );
+}
+
 void textEditorToolBar::createList ( const QTextListFormat::Style style )
 {
 	if ( mEditorWindow == nullptr ) return;
 
+	mEditorWindow->mCursor = mEditorWindow->mDocument->textCursor ();
+	
 	QTextListFormat listformat;
 	QTextList* list ( mEditorWindow->mCursor.currentList () );
-
 	listformat.setStyle ( style );
-	listformat.setIndent ( list ? list->format ().indent () + 1 : 1 );
+	
 	if ( list )
 		list->setFormat ( listformat );
 	else

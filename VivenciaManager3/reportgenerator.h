@@ -51,6 +51,7 @@ private:
 	void insertPaymentStubText ();
 	void getUnpaidPayments ( Payment * const pay );
 	void getPaidPayments ( const uint n_months_past = 12, const uint match_payid = 0, vmNumber* const total_paid_value = nullptr );
+	bool insertJobKeySentences ();
 	void insertReportsText ( const bool include_all_pays );
 	void printPayInfo ( const Payment* pay, const uint pay_number, vmNumber& paid_total );
 	void btnInsertHeader_clicked ( const uint c_id = 0 );

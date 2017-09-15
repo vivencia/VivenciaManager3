@@ -95,9 +95,8 @@ void contactsManagerWidget::setEditable ( const bool editable )
 
 void contactsManagerWidget::cbo_textAltered ( const QString& text )
 {
-	bool input_ok ( false );
-	QString new_text;
-	if ( m_contact_type == CMW_PHONES )
+	//QString new_text;
+	/*if ( m_contact_type == CMW_PHONES )
 	{
 		const vmNumber phone ( cboInfoData->text (), VMNT_PHONE );
 		input_ok = phone.isPhone ();
@@ -105,13 +104,15 @@ void contactsManagerWidget::cbo_textAltered ( const QString& text )
 			new_text = phone.toPhone ();
 	}
 	else
+	{*/
+	if ( m_contact_type == CMW_EMAIL )
 	{
-		input_ok = Data::isEmailAddress ( text );
-		if ( input_ok )
-			new_text = text.toLower ();
+		if ( Data::isEmailAddress ( text ) )
+			cboInfoData->setEditText ( text.toLower () );
+			//new_text = text.toLower ();
 	}
-	if ( input_ok )
-		cboInfoData->setEditText ( new_text );
+	//if ( input_ok )
+	//	cboInfoData->setEditText ( new_text );
 }
 
 void contactsManagerWidget::keyPressedSelector ( const QKeyEvent* const ke, const vmWidget* const )

@@ -15,8 +15,8 @@ public:
 
 	void setIgnoreChanges ( const bool b_ignore );
 	inline bool isIgnoringChanges () const { return mbIgnore; }
-	inline void setCurrentItem ( const vmListItem* const item, const bool b_makecall ) { setCurrentRow ( item ? item->row () : -1, b_makecall ); }
-	void setCurrentRow ( int row, const bool b_makecall );
+	inline void setCurrentItem ( const vmListItem* const item, const bool b_force, const bool b_makecall ) { setCurrentRow ( item ? item->row () : -1, b_force, b_makecall ); }
+	void setCurrentRow ( int row, const bool b_force, const bool b_makecall );
 	inline vmListItem* currentItem () const { return mCurrentItem; }
 	inline vmListItem* prevItem () const { return mPrevItem; }
 	void addItem ( vmListItem* item, const bool b_makecall = true );

@@ -1114,49 +1114,51 @@ void vmNumber::updateCurrentDate ()
 vmNumber& vmNumber::fromStrPhone ( const QString& phone )
 {
 	if ( !phone.isEmpty () )
-	{
+	{		
+		unsigned int idx ( VM_IDX_PREFIX );
+		unsigned int tens ( 10 );
 		unsigned int chr ( 0 );
-		QString phone_str;
-		phone_str.reserve ( 12 );
-		const unsigned int len ( static_cast<unsigned> ( phone.length () ) );
+		const unsigned int len ( static_cast<unsigned int>( phone.length () ) );
 		do
 		{
-			if ( phone.at ( static_cast<int>(chr) ).isDigit () )
-				phone_str += phone.at ( static_cast<int>(chr) );
-		} while ( ++chr < len );
-		const unsigned int new_len ( static_cast<unsigned int>(phone_str.length ()) );
-		if ( new_len >= 2 )
-		{
-			if ( new_len >= 10 )
+			if ( phone.at ( static_cast<int>( chr ) ).isDigit () )
 			{
-				nbr_upart[VM_IDX_PREFIX] = phone_str.leftRef ( 2 ).toUInt ();
-				nbr_upart[VM_IDX_PHONE1] = phone_str.midRef ( 2, new_len == 10 ? 4 : 5 ).toUInt ();
-				nbr_upart[VM_IDX_PHONE2] = phone_str.rightRef ( 4 ).toUInt ();
-			}
-			else
-			{
-				nbr_upart[VM_IDX_PREFIX] = 19; //default prefix
-				chr = 0;
-				unsigned int tens ( 1000 ), idx ( VM_IDX_PHONE1 );
-				do
+				nbr_upart[idx] += static_cast<unsigned int>( phone.at ( static_cast<int>( chr ) ).digitValue () ) * tens;
+				tens /= 10;
+			
+				switch ( idx )
 				{
-					if ( tens >= 1 )
-					{
-						nbr_upart[idx] +=static_cast<unsigned int>(phone.at ( static_cast<int>(chr) ).digitValue ()) * tens;
-						tens /= 10;
-						++chr;
-					}
-					else
-					{
-						tens = 1000;
-						idx = VM_IDX_PHONE2;
-					}
-				} while ( chr < new_len );
+					case VM_IDX_PREFIX:
+						if ( tens == 0 )
+						{
+							tens = 10000;
+							idx++;
+						}
+					break;
+					case VM_IDX_PHONE1:
+						if ( tens == 1000 )
+						{
+							 if ( nbr_upart[VM_IDX_PHONE1] < 50000 )
+							 {
+								tens = 100;
+								nbr_upart[VM_IDX_PHONE1] /= 10;
+							 }
+						}
+						else if ( tens == 0 )
+						{
+							tens = 1000;
+							idx++;
+						}
+					break;
+					case VM_IDX_PHONE2:
+					break;
+				}
 			}
-			setType ( VMNT_PHONE );
-			setCached ( false );
-			return *this;
-		}
+		} while ( ++chr < len );
+
+		setType ( VMNT_PHONE );
+		setCached ( false );
+		return *this;
 	}
 	clear ();
 	return *this;
@@ -1263,18 +1265,15 @@ void vmNumber::makePhone ( const QString& prefix, const QString& body, const boo
 
 const QString vmNumber::makePhoneBody () const
 {
-	if ( nbr_upart[VM_IDX_PHONE1] < 1000 )
-		mQString = CHR_ZERO;
-	else if ( nbr_upart[VM_IDX_PHONE1] >= 5000 && nbr_upart[VM_IDX_PHONE1] < 10000 )
-		mQString = QStringLiteral ( "9" );
-	else
-		mQString.clear ();
+	if ( nbr_upart[VM_IDX_PHONE1] > 0 )
+	{
+		if ( nbr_upart[VM_IDX_PHONE1] >= 5000 && nbr_upart[VM_IDX_PHONE1] < 10000 )
+			mQString = QStringLiteral ( "9" );
+		mQString += QString::number ( nbr_upart[VM_IDX_PHONE1] ) + CHR_HYPHEN;
+	}
 
-	mQString += QString::number ( nbr_upart[VM_IDX_PHONE1] ) + CHR_HYPHEN;
-
-	if ( nbr_upart[VM_IDX_PHONE2] < 1000 )
-		mQString += CHR_ZERO;
-	mQString += QString::number ( nbr_upart[VM_IDX_PHONE2] );
+	if ( nbr_upart[VM_IDX_PHONE2] > 0 )
+		mQString += QString::number ( nbr_upart[VM_IDX_PHONE2] );
 
 	return mQString;
 }

@@ -59,9 +59,9 @@ void BackupDialog::setupConnections ()
 	connect ( ui->btnApply, &QPushButton::clicked, this, [&] () { return btnApply_clicked (); } );
 	connect ( ui->btnClose, &QPushButton::clicked, this, [&] () { return btnClose_clicked (); } );
 
-	connect ( ui->txtBackupFilename, &QLineEdit::textChanged, this, [&] ( const QString& text ) { return ui->btnApply->setEnabled ( text.length () > 3 ); } );
-	connect ( ui->txtExportPrefix, &QLineEdit::textChanged, this, [&] ( const QString& text ) { return ui->btnApply->setEnabled ( text.length () > 3 ); } );
-	connect ( ui->txtExportFolder, &QLineEdit::textChanged, this, [&] ( const QString& text ) { return ui->btnApply->setEnabled ( fileOps::exists ( text ).isOn () ); } );
+	connect ( ui->txtBackupFilename, &QLineEdit::textEdited, this, [&] ( const QString& text ) { return ui->btnApply->setEnabled ( text.length () > 3 ); } );
+	connect ( ui->txtExportPrefix, &QLineEdit::textEdited, this, [&] ( const QString& text ) { return ui->btnApply->setEnabled ( text.length () > 3 ); } );
+	connect ( ui->txtExportFolder, &QLineEdit::textEdited, this, [&] ( const QString& text ) { return ui->btnApply->setEnabled ( fileOps::exists ( text ).isOn () ); } );
 	ui->txtRestoreFileName->setCallbackForContentsAltered ( [&] ( const vmWidget* ) {
 		return ui->btnApply->setEnabled ( checkFile ( ui->txtRestoreFileName->text () ) ); } );
 

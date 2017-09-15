@@ -128,7 +128,7 @@ void newProjectDialog::loadJobsList ( const uint clientid )
 		}
 	}
 	lstJobTypes->setIgnoreChanges ( false );
-	lstJobTypes->setCurrentItem ( mJobItem, true );
+	lstJobTypes->setCurrentItem ( mJobItem, true, true );
 }
 
 void newProjectDialog::jobTypeItemSelected ( vmListItem* item )

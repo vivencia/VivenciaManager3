@@ -240,7 +240,7 @@ void quickProjectUI::cellModified ( const vmTableItem* const item )
 	}
 }
 
-void quickProjectUI::rowRemoved ( const uint row )
+bool quickProjectUI::rowRemoved ( const uint row )
 {
 	stringRecord rowRec;
 	for ( uint i ( 0 ); i < m_table->colCount (); ++i )
@@ -251,6 +251,7 @@ void quickProjectUI::rowRemoved ( const uint row )
 	}
 	//mbQPChanged |= qp_rec->saveRecord ();
 	mbQPChanged = true;
+	return true;
 }
 
 void quickProjectUI::enableControls ( const bool enable )

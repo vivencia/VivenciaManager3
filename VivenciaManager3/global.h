@@ -34,7 +34,7 @@
 
 #ifndef TABLE_UPDATE_AVAILABLE
 // Uncomment when there is a table update. This compiler switch is used - generally - within the updateXXXTable functions
-#define TABLE_UPDATE_AVAILABLE
+//#define TABLE_UPDATE_AVAILABLE
 #endif
 
 #ifdef TRANSLATION_ENABLED
@@ -96,9 +96,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 3
-#define VERSION_REVISION 0
-constexpr const QLatin1String VERSION_APPEND ( "The Festival Approaches", 23 );
-constexpr const QLatin1String VERSION_DATE ( "2017-05-07", 10 );
+#define VERSION_REVISION 90
+constexpr const QLatin1String VERSION_APPEND ( "The Festival -Really- Approaches", 32 );
+constexpr const QLatin1String VERSION_DATE ( "2017-08-28", 10 );
 
 static const QString PROGRAM_VERSION (
 	QUOTEME(VERSION_MAJOR) + CHR_DOT +
