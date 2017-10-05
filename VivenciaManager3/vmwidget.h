@@ -12,6 +12,7 @@ class vmTableItem;
 
 class QKeyEvent;
 class QVBoxLayout;
+class QMenu;
 
 enum PREDEFINED_WIDGET_TYPES {
 	WT_WIDGET_ERROR = -1, WT_WIDGET_UNKNOWN = 0,
@@ -65,6 +66,7 @@ public:
 	inline virtual QString defaultStyleSheet () const { return emptyString; }
 	virtual QString widgetToString () const;
 	virtual void highlight ( const VMColors vm_color, const QString& str = QString::null );
+	inline virtual QMenu* standardContextMenu () const { return nullptr; }
 
 	// Can be implemented downstream to produce specific widgets with their particularities.
 	// On success, a new object is created on the heap and should be managed by the caller.
@@ -88,11 +90,6 @@ public:
 			( const std::function<void ( const QKeyEvent* const, const vmWidget* const )>& func ) { keypressed_func = func; }
 	inline virtual void setCallbackForContentsAltered ( const std::function<void ( const vmWidget* const )>& func ) { contentsAltered_func = func; }
 
-	// assumes a derivative of a real QWidget
-	void setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const )>& func );
-	
-	void showContextMenu ( const QPoint& pos );
-
 	inline const vmTableItem* ownerItem () const { return m_sheetItem; }
 	void setOwnerItem ( vmTableItem* const item );
 
@@ -111,7 +108,6 @@ public:
 
 protected:
 	std::function<void ( const QKeyEvent* const ke, const vmWidget* const widget )> keypressed_func;
-	std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )> contextmenu_func;
 	std::function<void ( const vmWidget* const )> contentsAltered_func;
 
 private:

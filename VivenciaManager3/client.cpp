@@ -159,7 +159,7 @@ void Client::copySubRecord ( const uint subrec_field, const stringRecord& subrec
 QString Client::clientName ( const QString& id )
 {
 	QSqlQuery query;
-	if ( VDB ()->runQuery ( QLatin1String ( "SELECT NAME FROM CLIENTS WHERE ID='" ) + id + CHR_CHRMARK, query ) )
+	if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT NAME FROM CLIENTS WHERE ID='" ) + id + CHR_CHRMARK, query ) )
 		return query.value ( 0 ).toString ();
 	return emptyString;
 }
@@ -167,7 +167,7 @@ QString Client::clientName ( const QString& id )
 uint Client::clientID ( const QString& name )
 {
 	QSqlQuery query;
-	if ( VDB ()->runQuery ( QLatin1String (	"SELECT ID FROM CLIENTS WHERE NAME='" ) + name + CHR_CHRMARK, query ) )
+	if ( VDB ()->runSelectLikeQuery ( QLatin1String (	"SELECT ID FROM CLIENTS WHERE NAME='" ) + name + CHR_CHRMARK, query ) )
 		return query.value ( 0 ).toUInt ();
 	return 0;
 }

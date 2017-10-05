@@ -3965,6 +3965,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item>
                <widget class="QToolButton" name="btnJobReloadPictures">
+                <property name="toolTip">
+                 <string>Rescan the job's image path and update the images</string>
+                </property>
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -4000,6 +4003,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item>
                <widget class="QToolButton" name="btnJobOpenPictureEditor">
+                <property name="toolTip">
+                 <string>Opens the current image up on the system's default image editor or the user selected one in the settings dialog</string>
+                </property>
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -4011,6 +4017,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item>
                <widget class="QToolButton" name="btnJobOpenPictureFolder">
+                <property name="toolTip">
+                 <string>Opens the image path on the system's default filemanager or the user selected one in the settings dialog</string>
+                </property>
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -4022,6 +4031,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item>
                <widget class="QToolButton" name="btnJobOpenPictureViewer">
+                <property name="toolTip">
+                 <string>Opens the current image up on the system's default image viewer or the user selected one in the settings dialog</string>
+                </property>
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -4040,6 +4052,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item>
                <widget class="QToolButton" name="btnJobClientsYearPictures">
+                <property name="toolTip">
+                 <string>Show the user images saved in folders reflecting the year they were taken, not tied to any particular job</string>
+                </property>
                 <property name="text">
                  <string>...</string>
                 </property>

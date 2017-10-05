@@ -173,6 +173,7 @@ public:
 
 	inline bool inSync () const { return mb_synced; }
 	void sync ( const int src_index, const bool b_force );
+	inline void setRefreshFromDatabase ( const bool b_refresh ) { mb_refresh = b_refresh; };
 
 	void fastCopy ( const DBRecord* dbrec );
 
@@ -261,6 +262,7 @@ protected:
 	bool mb_modified;
 	bool mb_synced;
 	bool mb_completerUpdated;
+	bool mb_refresh;
 	RECORD_ACTION m_action, m_prevaction;
 
 	st_Query stquery;

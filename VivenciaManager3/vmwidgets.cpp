@@ -107,12 +107,17 @@ QSize vmActionLabel::minimumSizeHint () const
 class pvmDateEdit : public QDateEdit, public vmWidget
 {
 
-	friend class vmDateEdit;
+friend class vmDateEdit;
 
 public:
 	pvmDateEdit ( vmDateEdit* owner );
 	virtual ~pvmDateEdit ();
 
+	inline void setID ( const int id ) {
+		mLineEdit->setID ( id );
+		vmWidget::setID ( id );
+	}
+	
 	inline QLatin1String qtClassName () const {
 		return QLatin1String ( "QDateEdit" );
 	}
@@ -120,14 +125,17 @@ public:
 
 	void setDate ( const vmNumber& date, const bool b_notify = false );
 	void setEditable ( const bool editable );
+	inline QMenu* standardContextMenu () const { return mLineEdit->standardContextMenu (); }
 
 protected:
 	void keyPressEvent ( QKeyEvent* );
 	void focusInEvent ( QFocusEvent* );
 	void focusOutEvent ( QFocusEvent* );
+	void contextMenuEvent ( QContextMenuEvent* );
 
 private:
 	vmDateEdit* mOwner;
+	vmLineEdit* mLineEdit;
 	QDate mDateBeforeFocus;
 	bool mbHasFocus;
 	triStateType mEmitSignal;
@@ -146,9 +154,11 @@ void deleteMenuDateButtons ()
 
 pvmDateEdit::pvmDateEdit ( vmDateEdit* owner )
 		: QDateEdit ( QDate ( 2000, 1, 1 ) ), vmWidget ( WT_DATEEDIT ), mOwner ( owner ),
-		  mDateBeforeFocus ( 2000, 1, 1 ), mbHasFocus ( false ), mEmitSignal ( TRI_UNDEF )
+		  mLineEdit ( new vmLineEdit ), mDateBeforeFocus ( 2000, 1, 1 ), mbHasFocus ( false ), mEmitSignal ( TRI_UNDEF )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
+	setLineEdit ( mLineEdit );
+	mLineEdit->setVmParent ( this );
 	setCalendarPopup ( true );
 	setDisplayFormat ( DATE_FORMAT_HUMAN );
 }
@@ -197,6 +207,7 @@ void pvmDateEdit::setEditable ( const bool editable )
 	else
 		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
 
+	mLineEdit->setEditable ( editable );
 	setReadOnly ( !editable );
 	vmWidget::setEditable ( editable );
 }
@@ -270,6 +281,20 @@ void pvmDateEdit::focusOutEvent ( QFocusEvent* e )
 		e->setAccepted ( false );
 }
 
+void pvmDateEdit::contextMenuEvent ( QContextMenuEvent* e )
+{
+	if ( isEditable () )
+	{
+		if ( mOwner->ownerItem () == nullptr )
+		{
+			QDateEdit::contextMenuEvent ( e );
+			return;
+		}
+	}
+	// ignore the context menu for QDateEdit->QAbstractSpinBox. The widget that will receive the event is our mLineEdit
+	e->ignore ();
+}
+
 vmDateEdit::vmDateEdit ( QWidget* parent )
 	: QWidget ( parent ), vmWidget ( WT_DATEEDIT ), mDateEdit ( new pvmDateEdit ( this ) ),
 	  mButton ( new QToolButton )
@@ -277,7 +302,7 @@ vmDateEdit::vmDateEdit ( QWidget* parent )
 	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	mButton = new QToolButton;
 	mButton->setIcon ( ICON ( "x-office-calendar" ) );
-	static_cast<void>( connect ( mButton, &QToolButton::clicked, this, [&] () { return contextMenuRequested (); } ) );
+	static_cast<void>( connect ( mButton, &QToolButton::clicked, this, [&] () { return datesButtonMenuRequested (); } ) );
 
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );
@@ -291,6 +316,12 @@ vmDateEdit::~vmDateEdit ()
 {
 	heap_del ( mDateEdit );
 	heap_del ( mButton );
+}
+
+void vmDateEdit::setID ( const int id )
+{
+	mDateEdit->setID ( id );
+	vmWidget::setID ( id );
 }
 
 QString vmDateEdit::defaultStyleSheet () const
@@ -315,20 +346,13 @@ void vmDateEdit::setEditable ( const bool editable )
 	vmWidget::setEditable ( editable );
 }
 
-void vmDateEdit::contextMenuRequested ()
+void vmDateEdit::datesButtonMenuRequested ()
 {
 	static_cast<void>( disconnect ( menuDateButtons, nullptr, nullptr, nullptr ) );
 	mButton->setMenu ( menuDateButtons );
 	static_cast<void>( connect ( menuDateButtons, &QMenu::triggered, this, [&] ( QAction* action ) {
 		return execDateButtonsMenu ( static_cast<vmAction*> ( action ), this->mDateEdit ); } ) );
 	mButton->showMenu ();
-}
-
-void vmDateEdit::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
-{
-	vmWidget::setCallbackForContextMenu ( func );
-	static_cast<void>( connect ( mDateEdit, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos ); } ) );
 }
 
 void vmDateEdit::execDateButtonsMenu ( const vmAction* const action, pvmDateEdit* dte )
@@ -408,6 +432,11 @@ void vmDateEdit::updateRecentUsedDates ( const vmNumber& date )
 	}
 }
 
+QMenu* vmDateEdit::standardContextMenu () const
+{ 
+	return mDateEdit->standardContextMenu ();
+}
+
 void vmDateEdit::setTabOrder ( QWidget* formOwner, QWidget* prevWidget, QWidget* nextWidget )
 {
 	formOwner->setTabOrder ( prevWidget, mDateEdit );
@@ -445,12 +474,6 @@ void vmTimeEdit::setTime ( const vmNumber& time, const bool b_notify )
 	QTimeEdit::setTime ( time.toQTime () );
 	if ( b_notify && contentsAltered_func )
 		contentsAltered_func ( this );
-}
-
-void vmTimeEdit::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
-{
-	vmWidget::setCallbackForContextMenu ( func );
-	static_cast<void>( connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) { return showContextMenu ( pos ); } ) );
 }
 
 void vmTimeEdit::keyPressEvent ( QKeyEvent* e )
@@ -596,11 +619,15 @@ void vmLineEdit::setEditable ( const bool editable )
 	setCursorPosition ( editable ? QLineEdit::text ().count () - 1 : 0 );
 }
 
-void vmLineEdit::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
+QMenu* vmLineEdit::standardContextMenu () const
 {
-	vmWidget::setCallbackForContextMenu ( func );
-	static_cast<void>(connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos ); } ));
+	QMenu* menu ( const_cast<vmLineEdit*>( this )->createStandardContextMenu () );
+	if ( isEditable () )
+	{
+		menu->addSeparator();
+		menu->addAction ( TR_FUNC ( "Clear" ), this, SLOT ( clear () ) );
+	}
+	return menu;
 }
 
 void vmLineEdit::completerClickReceived ( const QString& value )
@@ -721,21 +748,6 @@ void vmLineEdit::mouseMoveEvent ( QMouseEvent* e )
 	e->ignore ();
 }
 
-void vmLineEdit::mousePressEvent ( QMouseEvent *e )
-{
-	if ( e->button () & Qt::RightButton )
-	{
-		if ( ownerItem () )
-		{
-			vmTableWidget* table ( static_cast<vmTableWidget*>( const_cast<vmTableItem*> ( ownerItem () )->table () ) );	
-			table->displayContextMenuForCell ( e->pos (), this );
-			e->ignore ();
-			return;
-		}
-	}
-	QLineEdit::mousePressEvent ( e );
-}
-
 void vmLineEdit::mouseReleaseEvent ( QMouseEvent* e )
 {
 	if ( mbTrack )
@@ -760,7 +772,7 @@ void vmLineEdit::contextMenuEvent ( QContextMenuEvent* e )
 	{
 		mbButtonClicked = false;
 		QMenu* menu ( createStandardContextMenu () );
-		if ( !isEditable () )
+		if ( isEditable () )
 		{
 			menu->addSeparator();
 			menu->addAction ( TR_FUNC ( "Clear" ), this, SLOT ( clear () ) );
@@ -1028,13 +1040,6 @@ void vmComboBox::insertItem ( const QString& text, const int idx, const bool b_c
 	setEditable ( b_editable );
 }
 
-void vmComboBox::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
-{
-	vmWidget::setCallbackForContextMenu ( func );
-	static_cast<void>(connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos ); } ));
-}
-
 void vmComboBox::keyPressEvent ( QKeyEvent *e )
 {
 	if ( vmWidget::isEditable () )
@@ -1150,11 +1155,16 @@ QString vmCheckBox::defaultStyleSheet () const
 	return ( QLatin1String ( "QCheckBox { background-color: hex" ) + colorstr );
 }
 
-void vmCheckBox::setChecked ( const bool checked, const bool b_notify )
+void vmCheckBox::setText ( const QString& text, const bool b_notify )
 {
-	QCheckBox::setChecked ( checked );
-	if ( b_notify && contentsAltered_func )
-		contentsAltered_func ( this );
+	if ( text.length () <= 1 )
+	{	
+		QCheckBox::setChecked ( text == CHR_ONE );
+		if ( b_notify && contentsAltered_func )
+			contentsAltered_func ( this );
+	}
+	else
+		QCheckBox::setText ( text );	
 }
 
 void vmCheckBox::setEditable ( const bool editable )
@@ -1166,13 +1176,5 @@ void vmCheckBox::setEditable ( const bool editable )
 		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
 	setEnabled ( editable );
 	vmWidget::setEditable ( editable );
-}
-
-void vmCheckBox::setCallbackForContextMenu
-( const std::function<void ( const QPoint& pos, const vmWidget* const vm_widget )>& func )
-{
-	vmWidget::setCallbackForContextMenu ( func );
-	static_cast<void>( connect ( this, &QWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) {
-		return showContextMenu ( pos ); }  ) );
 }
 //------------------------------------------------VM-CHECK-BOX------------------------------------------------

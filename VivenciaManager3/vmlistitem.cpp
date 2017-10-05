@@ -220,7 +220,7 @@ void vmListItem::createDBRecord ()
 	 * when it creates it, and will (must) not attempt to destroy a pointer created in a
 	 * derived class
 	 */
-	setDBRec (static_cast<DBRecord*> ( new DBRecord ( static_cast<uint>(0) ) ));
+	setDBRec ( static_cast<DBRecord*>( new DBRecord ( static_cast<uint>( 0 ) ) ) );
 }
 
 bool vmListItem::loadData ()
@@ -233,7 +233,7 @@ bool vmListItem::loadData ()
 	if ( dbRec () )
 	{
 		if ( action () == ACTION_READ )
-			return ( m_dbrec->readRecord ( static_cast<uint>(id ()) ) );
+			return ( m_dbrec->readRecord ( static_cast<uint>( id () ) ) );
 		return true; // when adding or editing, do not read from the database, but use current user input
 	}
 	return false;
@@ -334,7 +334,11 @@ void clientListItem::update ()
 	if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
 	{
 		if ( loadData () )
+		{
 			setLabel ( recStrValue ( CLIENT_REC, FLD_CLIENT_NAME ) );
+			if ( listWidget () )
+				listWidget ()->update ();
+		}
 	}
 }
 
@@ -349,7 +353,7 @@ bool clientListItem::loadData ()
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( CLIENT_REC->readRecord ( static_cast<uint>(id ()) ) );
+		return ( CLIENT_REC->readRecord ( static_cast<uint>( id () ) ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -427,7 +431,11 @@ void jobListItem::update ()
 	if ( loadData () )
 	{
 		if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
+		{
 			setLabel ( recStrValue ( JOB_REC, FLD_JOB_TYPE ) + QLatin1String ( " - " ) + recStrValue ( JOB_REC, FLD_JOB_STARTDATE ) );
+			if ( listWidget () )
+				listWidget ()->update ();
+		}
 	}
 }
 
@@ -482,18 +490,19 @@ void payListItem::update ()
 		if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
 		{
 			if ( action () == ACTION_ADD )
-				relatedItem ( RLI_CLIENTITEM )->setText ( APP_TR_FUNC ( "Automatically generated payment info - edit it after saving job" ), false, false, false );
+				setText ( APP_TR_FUNC ( "Automatically generated payment info - edit it after saving job" ), false, false, false );
 			else
 			{
-				payListItem* pay_item ( static_cast<payListItem*>( relatedItem ( RLI_CLIENTITEM ) ) );
 				if ( !recStrValue ( PAY_REC, FLD_PAY_PRICE ).isEmpty () )
 				{
-					pay_item->setLabel ( PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
+					setLabel ( PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + CHR_SPACE + CHR_L_PARENTHESIS +
 						PAY_REC->price ( FLD_PAY_TOTALPAID ).toPrice () + CHR_R_PARENTHESIS );
 				}
 				else
-					pay_item->setLabel ( APP_TR_FUNC ( "No payment yet for job" ) );
+					setLabel ( APP_TR_FUNC ( "No payment yet for job" ) );
 			}
+			if ( listWidget () )
+				listWidget ()->update ();
 
 			if ( relatedItem ( PAY_ITEM_OVERDUE_ALL ) != nullptr )
 				static_cast<payListItem*>( relatedItem ( PAY_ITEM_OVERDUE_ALL ) )->updatePayExtraItems ( PAY_ITEM_OVERDUE_ALL );
@@ -521,6 +530,8 @@ void payListItem::updatePayCalendarItem ()
 		label += QLatin1String ( "Pay use #: " ) + data ( Qt::UserRole + 1 ).toString ();
 	setLabel ( label );
 	setToolTip ( label );
+	if ( listWidget () )
+		listWidget ()->update ();
 }
 
 void payListItem::updatePayExtraItems ( uint relation )
@@ -539,6 +550,8 @@ void payListItem::updatePayExtraItems ( uint relation )
 			CHR_SPACE + CHR_HYPHEN + CHR_SPACE + PAY_REC->price ( FLD_PAY_PRICE ).toPrice () + 
 			CHR_SPACE + CHR_L_PARENTHESIS + PAY_REC->price ( FLD_PAY_OVERDUE_VALUE ).toPrice () + CHR_R_PARENTHESIS );
 	}
+	if ( listWidget () )
+		listWidget ()->update ();
 }
 
 void payListItem::relationActions ( vmListItem* ) {}
@@ -608,14 +621,20 @@ void buyListItem::update ()
 	
 		if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
 		{
-			buyListItem* buy_item ( static_cast<buyListItem*>( relatedItem ( RLI_CLIENTITEM ) ) );
-			buy_item->setLabel ( strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS );
+			setLabel ( strBodyText + recStrValue ( BUY_REC, FLD_BUY_SUPPLIER ) + CHR_R_PARENTHESIS );
 			if ( relatedItem ( RLI_JOBITEM ) != nullptr )
-				relatedItem ( RLI_JOBITEM )->setText ( buy_item->text () , false, false, false );
+			{
+				relatedItem ( RLI_JOBITEM )->setText ( text () , false, false, false );
+				if ( relatedItem ( RLI_JOBITEM )->listWidget () )
+					relatedItem ( RLI_JOBITEM )->listWidget ()->update ();
+			}
 			if ( relatedItem ( RLI_EXTRAITEMS ) != nullptr )
 				static_cast<buyListItem*>( relatedItem ( RLI_EXTRAITEMS ) )->updateBuyExtraItem ( strBodyText );
 			if ( relatedItem ( RLI_CALENDARITEM ) != nullptr )
 				static_cast<buyListItem*>( relatedItem ( RLI_CALENDARITEM ) )->updateBuyCalendarItem ();
+			
+			if ( listWidget () )
+				listWidget ()->update ();
 		}
 		else
 		{
@@ -632,6 +651,8 @@ void buyListItem::updateBuyExtraItem ( const QString& label )
 	setLabel ( label +
 			  recStrValue ( static_cast<clientListItem*>( relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) + 
 			  CHR_R_PARENTHESIS );
+	if ( listWidget () )
+		listWidget ()->update ();
 }
 
 void buyListItem::updateBuyCalendarItem ()
@@ -655,6 +676,8 @@ void buyListItem::updateBuyCalendarItem ()
 	}
 	setLabel ( label );
 	setToolTip ( label );
+	if ( listWidget () )
+		listWidget ()->update ();
 }
 
 void buyListItem::relationActions ( vmListItem* ) {}

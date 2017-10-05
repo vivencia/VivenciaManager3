@@ -84,7 +84,7 @@ companyPurchases::~companyPurchases () {}
 void companyPurchases::exportToInventory ()
 {
 	Inventory inv_rec;
-	stringTable cp_itemreport ( recStrValue ( this, FLD_CP_ITEMS_REPORT ) );
+	const stringTable& cp_itemreport ( recStrValue ( this, FLD_CP_ITEMS_REPORT ) );
 	stringRecord* item_report ( nullptr );
 	if ( ( item_report = const_cast<stringRecord*>( &cp_itemreport.first () ) ) )
 	{

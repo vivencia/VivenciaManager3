@@ -233,10 +233,10 @@ public:
 	void buySuppliersListWidget_currentItemChanged ( vmListItem* item );
 	void updateBuyTotalPriceWidgets ( const buyListItem* const buy_item );
 	void controlBuyForms ( const buyListItem* const buy_item );
-	bool saveBuy ( buyListItem* buy_item );
+	bool saveBuy ( buyListItem* buy_item, const bool b_dbsave = true );
 	buyListItem* addBuy ( clientListItem* client_parent, jobListItem* job_parent );
 	bool editBuy ( buyListItem* buy_item, const bool b_dogui = true );
-	bool delBuy ( buyListItem* buy_item );
+	bool delBuy ( buyListItem* buy_item, const bool b_ask = true );
 	bool cancelBuy ( buyListItem* buy_item );
 	void displayBuy ( buyListItem* buy_item, const bool b_select = false );
 	void loadBuyInfo ( const Buy* const buy );

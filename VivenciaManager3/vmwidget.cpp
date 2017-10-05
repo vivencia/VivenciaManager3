@@ -12,7 +12,6 @@ void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 )
 	using std::swap;
 	
 	swap ( widget1.keypressed_func, widget2.keypressed_func );
-	swap ( widget1.contextmenu_func, widget2.contextmenu_func );
 	swap ( widget1.contentsAltered_func, widget2.contentsAltered_func );
 	swap ( widget1.m_type, widget2.m_type );
 	swap ( widget1.m_subtype, widget2.m_subtype );
@@ -28,7 +27,7 @@ void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 )
 }
 
 vmWidget::vmWidget ()
-	: keypressed_func ( nullptr ), contextmenu_func ( nullptr ), contentsAltered_func ( nullptr ),
+	: keypressed_func ( nullptr ), contentsAltered_func ( nullptr ),
 	  m_type ( WT_WIDGET_UNKNOWN ), m_subtype ( WT_WIDGET_UNKNOWN ), m_id ( -1 ), mb_editable ( false ),
 	  mWidgetPtr ( nullptr ), mParent ( nullptr ), m_sheetItem ( nullptr ), m_LayoutUtilities ( nullptr ), 
 	  m_UtilityWidgetsList ( 2 ), mTextType ( TT_TEXT )
@@ -147,18 +146,6 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 			widget->setInputMethodHints ( imh );
 		}
 	}
-}
-
-void vmWidget::setCallbackForContextMenu ( const std::function<void ( const QPoint& pos, const vmWidget* const )>& func )
-{
-	toQWidget ()->setContextMenuPolicy ( Qt::CustomContextMenu );
-	contextmenu_func = func;
-}
-
-void vmWidget::showContextMenu ( const QPoint& pos )
-{
-	if ( contextmenu_func )
-		contextmenu_func ( pos, this );
 }
 
 /* Compost widgets have a problem when setting/getting properties. Depending from whence they are called sub widgets might be referenced

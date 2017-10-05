@@ -48,6 +48,7 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QScrollBar>
+#include <QScopedPointer>
 
 MainWindow* MainWindow::s_instance ( nullptr );
 
@@ -318,11 +319,11 @@ clientListItem* MainWindow::addClient ()
 	clientListItem* client_item ( new clientListItem );
 	client_item->setRelation ( RLI_CLIENTITEM );
 	client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
-	static_cast<void>(client_item->loadData ());
+	static_cast<void>( client_item->loadData () );
 	client_item->setAction ( ACTION_ADD, true );
 	client_item->addToList ( ui->clientsList );
 	insertEditItem ( static_cast<vmListItem*>( client_item ) );
-	client_item->setDBRecID ( static_cast<uint>(recIntValue ( client_item->clientRecord (), FLD_CLIENT_ID )) );
+	client_item->setDBRecID ( static_cast<uint>( recIntValue ( client_item->clientRecord (), FLD_CLIENT_ID ) ) );
 	ui->txtClientName->setFocus ();
 	return client_item;
 }
@@ -375,7 +376,7 @@ bool MainWindow::cancelClient ( clientListItem* client_item )
 				removeListItem ( client_item );
 			break;
 			case ACTION_EDIT:
-				removeEditItem ( static_cast<vmListItem*>(client_item) );
+				removeEditItem ( static_cast<vmListItem*>( client_item ) );
 				client_item->setAction ( ACTION_REVERT, true );
 				displayClient ( client_item );
 			break;
@@ -393,7 +394,7 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 {
 	// This function is called by user interaction and programatically. When called programatically, item may be nullptr
 	if ( client_item )
-	{
+	{	
 		ui->tabMain->setCurrentIndex ( 0 );
 		if ( client_item->loadData () )
 		{
@@ -522,17 +523,28 @@ void MainWindow::clientExternalChange ( const uint id, const RECORD_ACTION actio
 {
 	switch ( action )
 	{
-		//TODO. Maybe client name changed. We need to update clientsList accordingly
 		case ACTION_EDIT:
-			if ( id == mClientCurItem->dbRecID () )
-				displayClient ( mClientCurItem );
+		{
+			clientListItem* client_parent ( id != mClientCurItem->dbRecID () ? getClientItem ( id ) : mClientCurItem );
+			if ( client_parent != nullptr )
+			{
+				client_parent->clientRecord ()->setRefreshFromDatabase ( true );
+				client_parent->clientRecord ()->readRecord ( id );
+				client_parent->update ();
+				if ( client_parent->dbRecID () == mClientCurItem->dbRecID () )
+					displayClient ( mClientCurItem );
+			}
+		}
 		break;	
 		case ACTION_ADD:
 		{
 			clientListItem* new_client_item ( addClient () );
 			Client* new_client ( new_client_item->clientRecord () );
-			new_client->readRecord ( id );
-			static_cast<void>( saveClient ( new_client_item, false ) );
+			new_client->setRefreshFromDatabase ( true );
+			if ( new_client->readRecord ( id ) )
+				static_cast<void>( saveClient ( new_client_item, false ) );
+			else
+				delClient ( new_client_item, false );
 		}
 		break;
 		case ACTION_DEL:
@@ -1161,7 +1173,7 @@ bool MainWindow::delJob ( jobListItem* job_item, const bool b_ask )
 		if ( b_ask )
 		{
 			const QString text ( TR_FUNC ( "Are you sure you want to remove job %1?" ) );
-			if ( !VM_NOTIFY ()->questionBox ( TR_FUNC ( "Question" ), text.arg ( recStrValue ( job_item->jobRecord (), FLD_JOB_TYPE ) ) ) ) )
+			if ( !VM_NOTIFY ()->questionBox ( TR_FUNC ( "Question" ), text.arg ( recStrValue ( job_item->jobRecord (), FLD_JOB_TYPE ) ) ) )
 				return false;
 		}
 		job_item->setAction ( ACTION_DEL, true );
@@ -1879,30 +1891,38 @@ void MainWindow::on_btnQuickProject_clicked ()
 
 void MainWindow::jobExternalChange ( const uint id, const RECORD_ACTION action )
 {
+	QScopedPointer<Job> job ( new Job );
+	if ( !job->readRecord ( id ) )
+		return;
+	clientListItem* client_parent ( getClientItem ( static_cast<uint>( recIntValue ( job, FLD_JOB_CLIENTID ) ) ) );
+	if ( !client_parent )
+		return;
+									   
 	if ( action == ACTION_EDIT )
-	{
-			if ( id == mJobCurItem->dbRecID () )
-				displayJob ( mJobCurItem );
+	{	
+		jobListItem* job_item ( getJobItem ( client_parent, id ) );
+		if ( job_item->jobRecord () != nullptr )
+			job_item->jobRecord ()->setRefreshFromDatabase ( true ); // if job has been loaded before, tell it to ignore the cache and to load data from the database upon next read
+		job_item->update ();
+		if ( id == mJobCurItem->dbRecID () )
+			displayJob ( job_item );
 	}
 	else
 	{
-		Job* job ( new Job );
-		if ( job->readRecord ( id ) )
+		if ( static_cast<uint>( recIntValue ( job, FLD_JOB_CLIENTID ) ) != mClientCurItem->dbRecID () )
+			displayClient ( client_parent, true );
+
+		if ( action == ACTION_ADD )
 		{
-			if ( static_cast<uint>( recIntValue ( job, FLD_JOB_CLIENTID ) ) == mClientCurItem->dbRecID () )
-			{
-				if ( action == ACTION_ADD )
-				{
-					jobListItem* new_job_item ( addJob ( mClientCurItem ) );
-					Job* new_job ( new_job_item->jobRecord () );
-					new_job->readRecord ( id );
-					static_cast<void>( saveJob ( new_job_item, false ) );
-				}
-				else if ( action == ACTION_DEL )
-				{
-					delJob ( getJobItem ( mClientCurItem, id ), false );
-				}
-			}
+			jobListItem* new_job_item ( addJob ( client_parent ) );
+			Job* new_job ( new_job_item->jobRecord () );
+			new_job->setRefreshFromDatabase ( true );
+			new_job->readRecord ( id );
+			static_cast<void>( saveJob ( new_job_item, false ) );
+		}
+		else if ( action == ACTION_DEL )
+		{
+			delJob ( getJobItem ( client_parent, id ), false );
 		}
 	}
 }
@@ -2091,7 +2111,7 @@ void MainWindow::setupPayPanel ()
 	
 	ui->paysOverdueClientList->setAlwaysEmitCurrentItemChanged ( true );
 	ui->paysOverdueClientList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return paysOverdueClientListWidget_currentItemChanged ( item ); } );
-	ui->paysOverdueClientList->setCallbackForRowActivated ( [&] ( const uint row ) { return insertNavItem ( ui->paysOverdueList->item ( static_cast<int>( row ) )->relatedItem ( RLI_CLIENTITEM ) ); } );
+	ui->paysOverdueClientList->setCallbackForRowActivated ( [&] ( const uint row ) { return insertNavItem ( ui->paysOverdueClientList->item ( static_cast<int>( row ) )->relatedItem ( RLI_CLIENTITEM ) ); } );
 	ui->paysOverdueClientList->setUtilitiesPlaceLayout ( ui->layoutClientOverduePaysUtility );
 	
 	static_cast<void>( vmTableWidget::createPayHistoryTable ( ui->tablePayments ) );
@@ -2381,7 +2401,7 @@ bool MainWindow::delPay ( payListItem* pay_item )
 	if ( pay_item )
 	{
 		const uint row ( ui->tablePayments->currentRow () == -1 ? 0 : static_cast<uint> ( ui->tablePayments->currentRow () ) );
-		ui->tableBuyPayments->removeRow ( row );
+		ui->tablePayments->removeRow ( row );
 		mCal->updateCalendarWithPayInfo ( pay_item->payRecord () );
 		return true;
 	}
@@ -2560,7 +2580,7 @@ void MainWindow::loadClientOverduesList ()
 
 	if ( ui->paysOverdueClientList->count () != 0 )
 	{
-		if ( static_cast<clientListItem*> ( static_cast<payListItem*>( ui->paysOverdueClientList->item ( 0 ) )->relatedItem ( RLI_CLIENTPARENT ) ) == mClientCurItem )
+		if ( static_cast<clientListItem*>( static_cast<payListItem*>( ui->paysOverdueClientList->item ( 0 ) )->relatedItem ( RLI_CLIENTPARENT ) ) == mClientCurItem )
 			return;
 		else
 			ui->paysOverdueClientList->clear ();
@@ -2591,10 +2611,10 @@ void MainWindow::loadClientOverduesList ()
 			else
 				continue;
 		}
-		pay_item_overdue_client->update ();
-		ui->paysOverdueClientList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toPrice () );
-		ui->txtClientPayOverdueTotals->setText ( totalOverdue.toPrice () );
 	}
+	ui->paysOverdueClientList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toPrice () );
+	ui->txtClientPayOverdueTotals->setText ( totalOverdue.toPrice () );
+	ui->paysOverdueClientList->setIgnoreChanges ( false );
 }
 
 void MainWindow::loadAllOverduesList ()
@@ -2605,6 +2625,7 @@ void MainWindow::loadAllOverduesList ()
 		clientListItem* client_item ( nullptr );
 		const int n ( ui->clientsList->count () );
 		vmNumber totalOverdue;
+		ui->paysOverdueList->setIgnoreChanges ( true );
 		for ( int i ( 0 ); i < n; ++i )
 		{
 			client_item = static_cast<clientListItem*> ( ui->clientsList->item ( i ) );
@@ -2627,6 +2648,7 @@ void MainWindow::loadAllOverduesList ()
 		}
 		ui->paysOverdueList->setProperty ( PROPERTY_TOTAL_PAYS, totalOverdue.toPrice () );
 		ui->txtAllOverdueTotals->setText ( totalOverdue.toPrice () );
+		ui->paysOverdueList->setIgnoreChanges ( false );
 	}
 }
 
@@ -2767,7 +2789,46 @@ void MainWindow::tabPaysLists_currentChanged ( const int index )
 
 void MainWindow::payExternalChange ( const uint id, const RECORD_ACTION action )
 {
-	
+	QScopedPointer<Payment> pay ( new Payment );
+	if ( !pay->readRecord ( id ) )
+		return;
+	clientListItem* client_parent ( getClientItem ( static_cast<uint>( recIntValue ( pay, FLD_PAY_CLIENTID ) ) ) );
+	if ( !client_parent )
+		return;
+									   
+	if ( action == ACTION_EDIT )
+	{	
+		payListItem* pay_item ( getPayItem ( client_parent, id ) );
+		if ( pay_item->payRecord () != nullptr )
+			pay_item->payRecord ()->setRefreshFromDatabase ( true ); // if job has been loaded before, tell it to ignore the cache and to load data from the database upon next read
+		pay_item->update ();
+		if ( id == mPayCurItem->dbRecID () )
+			displayPay ( pay_item );
+	}
+	else
+	{
+		if ( static_cast<uint>( recIntValue ( pay, FLD_PAY_CLIENTID ) ) != mClientCurItem->dbRecID () )
+			displayClient (	client_parent, true, getJobItem ( client_parent, static_cast<uint>( recIntValue ( pay, FLD_PAY_JOBID ) ) ) );
+			
+		if ( action == ACTION_ADD )
+		{
+			jobListItem* new_job_item ( addJob ( client_parent ) );
+			Job* new_job ( new_job_item->jobRecord () );
+			new_job->readRecord ( VDB ()->getHighestID ( TABLE_JOB_ORDER ) + 1 );
+			if ( saveJob ( new_job_item, false ) )
+			{
+				payListItem* new_pay_item ( new_job_item->payItem () );
+				Payment* new_pay ( new_pay_item->payRecord () );
+				new_pay->setRefreshFromDatabase ( true );
+				new_pay->readRecord ( id );
+				static_cast<void>( savePay ( new_pay_item ) );
+			}
+		}
+		else if ( action == ACTION_DEL )
+		{
+			delPay ( getPayItem ( client_parent, id ) );
+		}
+	}
 }
 //--------------------------------------------PAY------------------------------------------------------------
 
@@ -3068,21 +3129,22 @@ void MainWindow::controlBuyForms ( const buyListItem* const buy_item )
 	ui->tableBuyPayments->scrollTo ( ui->tableBuyPayments->indexAt ( QPoint ( 0, 0 ) ) );
 }
 
-bool MainWindow::saveBuy ( buyListItem* buy_item )
+bool MainWindow::saveBuy ( buyListItem* buy_item, const bool b_dbsave )
 {
 	if ( buy_item )
 	{
 		Buy* buy ( buy_item->buyRecord () );
-		if ( buy->saveRecord ( false ) ) // do not change indexes just now. Wait for dbCalendar actions
+		if ( buy->saveRecord ( false, b_dbsave ) ) // do not change indexes just now. Wait for dbCalendar actions
 		{
 			mCal->updateCalendarWithBuyInfo ( buy );
 			buy_item->setAction ( ACTION_READ, true ); // now we can change indexes
-			// TODO expurge any supplies' table references and uses
-			//vmTableWidget::exchangePurchaseTablesInfo ( ui->tableBuyItems, SUPPLIES ()->table (), buy, SUPPLIES ()->supplies_rec );
+			
+			dbSupplies sup_rec;
+			ui->tableBuyItems->exportPurchaseToSupplies ( buy, &sup_rec );
 			ui->tableBuyPayments->setTableUpdated ();
 			updateBuyTotalPriceWidgets ( buy_item );
 
-			static_cast<void>(Data::insertComboItem ( ui->cboBuySuppliers, recStrValue ( buy, FLD_BUY_SUPPLIER ) ));
+			static_cast<void>( Data::insertComboItem ( ui->cboBuySuppliers, recStrValue ( buy, FLD_BUY_SUPPLIER ) ) );
 			cboBuySuppliers_indexChanged ( ui->cboBuySuppliers->findText ( ui->cboBuySuppliers->text() ) ); // update suppliers' list with - possibly - a new entry
 			
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), recStrValue ( buy_item->buyRecord (), FLD_BUY_SUPPLIER ) + 
@@ -3115,9 +3177,9 @@ buyListItem* MainWindow::addBuy ( clientListItem* client_parent, jobListItem* jo
 	buy_item->addToList ( ui->buysList );
 	setRecValue ( buy_item->buyRecord (), FLD_BUY_CLIENTID, recStrValue ( client_parent->clientRecord (), FLD_CLIENT_ID ) );
 	setRecValue ( buy_item->buyRecord (), FLD_BUY_JOBID, recStrValue ( job_parent->jobRecord (), FLD_JOB_ID ) );
-	buy_item->setDBRecID ( static_cast<uint>(recIntValue ( buy_item->buyRecord (), FLD_BUY_ID )) );
-	buy_item2->setDBRecID ( static_cast<uint>(recIntValue ( buy_item->buyRecord (), FLD_BUY_ID )) );
-	insertEditItem ( static_cast<vmListItem*>(buy_item) );
+	buy_item->setDBRecID ( static_cast<uint>( recIntValue ( buy_item->buyRecord (), FLD_BUY_ID ) ) );
+	buy_item2->setDBRecID ( static_cast<uint>( recIntValue ( buy_item->buyRecord (), FLD_BUY_ID ) ) );
+	insertEditItem ( static_cast<vmListItem*>( buy_item ) );
 	
 	ui->cboBuySuppliers->setFocus ();
 	return buy_item;
@@ -3130,7 +3192,7 @@ bool MainWindow::editBuy ( buyListItem* buy_item, const bool b_dogui )
 		if ( buy_item->action () == ACTION_READ )
 		{
 			buy_item->setAction ( ACTION_EDIT, true );
-			insertEditItem ( static_cast<vmListItem*>(buy_item) );
+			insertEditItem ( static_cast<vmListItem*>( buy_item ) );
 			if ( b_dogui )
 			{
 				controlBuyForms ( buy_item );
@@ -3142,18 +3204,19 @@ bool MainWindow::editBuy ( buyListItem* buy_item, const bool b_dogui )
 	return false;
 }
 
-bool MainWindow::delBuy ( buyListItem* buy_item )
-
+bool MainWindow::delBuy ( buyListItem* buy_item, const bool b_ask )
 {
 	if ( buy_item )
 	{
-		const QString text ( TR_FUNC ( "Are you sure you want to remove buy %1?" ) );
-		if ( VM_NOTIFY ()->questionBox ( TR_FUNC ( "Question" ), text.arg ( recStrValue ( buy_item->buyRecord (), FLD_BUY_PRICE ) ) ) )
+		if ( b_ask )
 		{
-			buy_item->setAction ( ACTION_DEL, true );
-			mCal->updateCalendarWithBuyInfo ( buy_item->buyRecord () );
-			return cancelBuy ( buy_item );
+			const QString text ( TR_FUNC ( "Are you sure you want to remove buy %1?" ) );
+			if ( !VM_NOTIFY ()->questionBox ( TR_FUNC ( "Question" ), text.arg ( recStrValue ( buy_item->buyRecord (), FLD_BUY_PRICE ) ) ) )
+				return false;
 		}
+		buy_item->setAction ( ACTION_DEL, true );
+		mCal->updateCalendarWithBuyInfo ( buy_item->buyRecord () );
+		return cancelBuy ( buy_item );
 	}
 	return false;
 }
@@ -3167,20 +3230,26 @@ bool MainWindow::cancelBuy ( buyListItem* buy_item )
 			case ACTION_ADD:
 			case ACTION_DEL:
 			{
-				buyListItem* buy_jobitem ( static_cast<buyListItem*>(buy_item->relatedItem ( RLI_JOBITEM )) );
+				buyListItem* buy_jobitem ( static_cast<buyListItem*>( buy_item->relatedItem ( RLI_JOBITEM ) ) );
 				ui->buysJobList->setIgnoreChanges ( true );
-				static_cast<jobListItem*>(buy_item->relatedItem ( RLI_JOBPARENT ))->buys->remove ( buy_jobitem->row () );
+				static_cast<jobListItem*>( buy_item->relatedItem ( RLI_JOBPARENT ) )->buys->remove ( buy_jobitem->row () );
 				removeListItem ( buy_jobitem, false, false );
 				ui->buysJobList->setIgnoreChanges ( false );
 			
 				buy_item->setAction ( ACTION_DEL, true );
 				updateBuyTotalPriceWidgets ( buy_item );
-				static_cast<clientListItem*>(buy_item->relatedItem ( RLI_CLIENTPARENT ))->buys->remove ( buy_item->row () );
+				static_cast<clientListItem*>( buy_item->relatedItem ( RLI_CLIENTPARENT ) )->buys->remove ( buy_item->row () );
 				removeListItem ( buy_item );
+				
+				// If the list is empty, no other item will be selected. We won't have a mBuyCurItem. If the deleted item
+				// was the first to be selected, no prev item also, so we will land in an undefined state unless we force
+				// a null purchase object pointer through
+				if ( ui->buysJobList->isEmpty () )
+					displayBuy ( nullptr );
 			}
 			break;
 			case ACTION_EDIT:
-				removeEditItem ( static_cast<vmListItem*>(buy_item) );
+				removeEditItem ( static_cast<vmListItem*>( buy_item ) );
 				buy_item->setAction ( ACTION_REVERT, true );
 				displayBuy ( buy_item );
 			break;
@@ -3476,7 +3545,43 @@ void MainWindow::setBuyPayValueToBuyPrice ( const QString& price )
 
 void MainWindow::buyExternalChange ( const uint id, const RECORD_ACTION action )
 {
-	
+	QScopedPointer<Buy> buy ( new Buy );
+	if ( !buy->readRecord ( id ) )
+		return;
+	clientListItem* client_parent ( getClientItem ( static_cast<uint>( recIntValue ( buy, FLD_BUY_CLIENTID ) ) ) );
+	if ( !client_parent )
+		return;
+									   
+	if ( action == ACTION_EDIT )
+	{	
+		buyListItem* buy_item ( getBuyItem ( client_parent, id ) );
+		if ( buy_item->buyRecord () != nullptr )
+			buy_item->buyRecord ()->setRefreshFromDatabase ( true ); // if job has been loaded before, tell it to ignore the cache and to load data from the database upon next read
+		buy_item->update ();
+		if ( id == mBuyCurItem->dbRecID () )
+			displayBuy ( buy_item );
+	}
+	else
+	{
+		jobListItem* job_parent ( getJobItem ( client_parent, static_cast<uint>( recIntValue ( buy, FLD_BUY_JOBID ) ) ) );
+		if ( static_cast<uint>( recIntValue ( buy, FLD_BUY_CLIENTID ) ) != mClientCurItem->dbRecID () )
+			displayClient ( client_parent, true, job_parent );
+		else if ( static_cast<uint>( recIntValue ( buy, FLD_BUY_JOBID ) ) != mJobCurItem->dbRecID () )
+			displayJob ( job_parent, true );
+
+		if ( action == ACTION_ADD )
+		{
+			buyListItem* new_buy_item ( addBuy ( client_parent, job_parent ) );
+			Buy* new_buy ( new_buy_item->buyRecord () );
+			new_buy->setRefreshFromDatabase ( true );
+			new_buy->readRecord ( id );
+			static_cast<void>( saveBuy ( new_buy_item, false ) );
+		}
+		else if ( action == ACTION_DEL )
+		{
+			delBuy ( getBuyItem ( client_parent, id ), false );
+		}
+	}
 }
 //--------------------------------------------BUY------------------------------------------------------------
 

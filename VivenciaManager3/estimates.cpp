@@ -870,7 +870,7 @@ jobListItem* estimateDlg::findJobByPath ( QTreeWidgetItem* const item )
 		const QString strPath ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () );
 		const QString strQuery ( QStringLiteral ( "SELECT ID FROM JOBS WHERE CLIENTID=%1 AND PROJECTPATH=%2" ) );
 		QSqlQuery queryRes;
-		if ( VDB ()->runQuery ( strQuery.arg ( clientID, strPath ), queryRes ) )
+		if ( VDB ()->runSelectLikeQuery ( strQuery.arg ( clientID, strPath ), queryRes ) )
 			jobItem = MAINWINDOW ()->getJobItem ( clientItem, queryRes.value ( 0 ).toUInt () );
 	}
 	return jobItem;

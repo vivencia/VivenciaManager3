@@ -46,6 +46,7 @@ void db_rec_swap ( DBRecord& dbrec1, DBRecord& dbrec2 )
 	swap ( dbrec1.mb_modified, dbrec2.mb_modified );
 	swap ( dbrec1.mb_synced, dbrec2.mb_synced );
 	swap ( dbrec1.mb_completerUpdated, dbrec2.mb_completerUpdated );
+	swap ( dbrec1.mb_refresh, dbrec2.mb_refresh );
 	swap ( dbrec1.mListItem, dbrec2.mListItem );
 	swap ( dbrec1.stquery, dbrec2.stquery );
 	swap ( dbrec1.m_RECFIELDS, dbrec2.m_RECFIELDS );
@@ -59,7 +60,7 @@ void db_rec_swap ( DBRecord& dbrec1, DBRecord& dbrec2 )
 DBRecord::DBRecord ()
 	: t_info ( nullptr ), m_RECFIELDS ( nullptr ), mFieldsTypes ( nullptr ), mListItem ( nullptr ), helperFunction ( nullptr ),
 	  fld_count ( 0 ), mb_modified ( false ), mb_synced ( true ),
-	  mb_completerUpdated ( false ), m_action ( ACTION_NONE )
+	  mb_completerUpdated ( false ), mb_refresh ( false ), m_action ( ACTION_NONE )
 {
 	setAction ( ACTION_READ );
 }
@@ -72,6 +73,7 @@ DBRecord::DBRecord ( const DBRecord& other )
 	mb_modified = other.mb_modified;
 	mb_synced = other.mb_synced;
 	mb_completerUpdated = other.mb_completerUpdated;
+	mb_refresh = other.mb_refresh;
 	mListItem = other.mListItem;
 	stquery = other.stquery;
 	mFieldsTypes = other.mFieldsTypes;
@@ -130,10 +132,11 @@ void DBRecord::callHelperFunctions ()
 
 bool DBRecord::readRecord ( const uint id, const bool load_data )
 {
-	if ( id >= 1 && id != static_cast<uint>(actualRecordInt ( 0 )) )
+	if ( id >= 1 && ( id != static_cast<uint>( actualRecordInt ( 0 ) ) || mb_refresh ) )
 	{
-		setIntValue ( 0, static_cast<int>(id) );
+		setIntValue ( 0, static_cast<int>( id ) );
 		setBackupValue ( 0, QString::number ( id ) );
+		setRefreshFromDatabase ( false );
 		return VDB ()->getDBRecord ( this, 0, load_data );
 	}
 	return ( id >= 1 );
@@ -144,7 +147,7 @@ bool DBRecord::readRecord ( const uint field, const QString& search, const bool 
 	if ( search.isEmpty () )
 		return false;
 
-	if ( field != static_cast<uint>( stquery.field ) || search != stquery.search )
+	if ( field != static_cast<uint>( stquery.field ) || search != stquery.search || mb_refresh )
 	{
 		stquery.reset = true;
 		stquery.field = static_cast<int>( field );
@@ -153,6 +156,7 @@ bool DBRecord::readRecord ( const uint field, const QString& search, const bool 
 	else
 		return true;
 
+	setRefreshFromDatabase ( false );
 	return VDB ()->getDBRecord ( this, stquery, load_data );
 }
 
@@ -280,6 +284,7 @@ bool DBRecord::saveRecord ( const bool b_changeAction, const bool b_dbaction )
 		// anywhere else. The mb_completerUpdated flag is just used to speedup execution by not doing the same thing over for
 		// all the fields in the respective record that comprise the product´s completer for it
 		setCompleterUpdated ( false );
+		return true;
 	}
 	return ret;
 }
@@ -376,8 +381,8 @@ void DBRecord::createTemporaryRecord ( DBRecord* dbrec )
 {
 	const uint table ( dbrec->t_info->table_order );
 	const uint new_id ( VDB ()->getNextID ( table ) );
-	dbrec->setIntValue ( 0, static_cast<int>(new_id) ); // this is set so that VivenciaDB::insertDBRecord can use the already evaluated value
-	dbrec->setIntBackupValue ( 0, static_cast<int>(new_id) ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
+	dbrec->setIntValue ( 0, static_cast<int>( new_id ) ); // this is set so that VivenciaDB::insertDBRecord can use the already evaluated value
+	dbrec->setIntBackupValue ( 0, static_cast<int>( new_id ) ); // this is set so that calls using recIntValue in a ACTION_ADD record will retrieve the correct value
 	const QString str_id ( QString::number ( new_id ) );
 	dbrec->setValue ( 0, str_id );
 	dbrec->setBackupValue ( 0, str_id );

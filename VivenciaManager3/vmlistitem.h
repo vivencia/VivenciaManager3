@@ -182,7 +182,7 @@ public:
 	// Prevent Qt from deleting these objects
 	inline void operator delete ( void* )  { return; }
 	
-	inline Job* jobRecord () const { return static_cast<Job*> ( dbRec () ); }
+	inline Job* jobRecord () const { return static_cast<Job*>( dbRec () ); }
 
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const;
 

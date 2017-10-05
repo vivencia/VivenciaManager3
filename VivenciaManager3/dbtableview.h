@@ -38,6 +38,7 @@ private:
 	void showTable ( const QString& tablename );
 	void runPersonalQuery ();
 	void maybeRunQuery ( const QKeyEvent* const ke );
+	void notifyMainWindowOfChanges ( const QString& query );
 	
 	vmListWidget* mTablesList;
 	QFrame* mLeftFrame;
@@ -77,7 +78,6 @@ private:
 	void updateTable ( const vmTableItem* const item );
 	void rowInserted ( const uint row );
 	bool rowRemoved ( const uint row );
-	void tryToFindTableNameFromQuery ( const QString& querycmd );
 	
 	vmTableWidget* m_table;
 	VMList<QString> m_cols;

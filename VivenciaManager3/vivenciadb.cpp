@@ -193,7 +193,7 @@ QString VivenciaDB::tableName ( const TABLE_ORDER table )
 //-----------------------------------------STATIC---------------------------------------------
 
 VivenciaDB::VivenciaDB ()
-	: lowest_id ( 0, TABLES_IN_DB + 1 ), highest_id ( 0, TABLES_IN_DB + 1 ),
+	: m_db ( nullptr ), lowest_id ( 0, TABLES_IN_DB + 1 ), highest_id ( 0, TABLES_IN_DB + 1 ),
 	  m_ok ( false ), mNewDB ( false ), mBackupSynced ( true )
 {
 	openDataBase ();
@@ -203,24 +203,27 @@ VivenciaDB::VivenciaDB ()
 VivenciaDB::~VivenciaDB ()
 {
 	database ()->close ();
+	delete m_db;
 }
 
 //-----------------------------------------READ-OPEN-LOAD-------------------------------------------
 bool VivenciaDB::openDataBase ()
 {
-	if ( !database ()->isOpen () )
+	if ( database () )
 	{
-		//TEST: do not provide a connection name so that this database becomes the default for the application (see docs)
-		// This is so that any QSqlQuery object will automatically use VivenciaDatabase;
-		m_db = QSqlDatabase::addDatabase ( DB_DRIVER_NAME );
-		database ()->setHostName ( HOST );
-		database ()->setPort ( PORT );
-		database ()->setUserName ( USER_NAME );
-		database ()->setPassword ( PASSWORD );
-		database ()->setDatabaseName ( DB_NAME );
-		m_ok = database ()->open ();
+		if ( database ()->isOpen () )
+			return true;
 	}
-	return m_ok;
+	
+	//TEST: do not provide a connection name so that this database becomes the default for the application (see docs)
+	// This is so that any QSqlQuery object will automatically use VivenciaDatabase;
+	m_db = new QSqlDatabase ( QSqlDatabase::addDatabase ( DB_DRIVER_NAME ) );
+	database ()->setHostName ( HOST );
+	database ()->setPort ( PORT );
+	database ()->setUserName ( USER_NAME );
+	database ()->setPassword ( PASSWORD );
+	database ()->setDatabaseName ( DB_NAME );
+	return ( m_ok = database ()->open () );
 }
 
 void VivenciaDB::doPreliminaryWork ()
@@ -648,7 +651,7 @@ bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
 void VivenciaDB::loadDBRecord ( DBRecord* db_rec, const QSqlQuery* const query )
 {
 	for ( uint i ( 0 ); i < db_rec->t_info->field_count; ++i )
-		setRecValue ( db_rec, i, query->value ( static_cast<int>(i) ).toString () );
+		setRecValue ( db_rec, i, query->value ( static_cast<int>( i ) ).toString () );
 }
 
 bool VivenciaDB::insertDBRecord ( DBRecord* db_rec )
@@ -708,7 +711,7 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, const uint field, const bool lo
 		qDebug () << "A runtime exception was caught with message: \"" << e.what () << "\"";
 		APP_RESTORER ()->saveSession ();
 	}
-	catch (const std::exception& e)
+	catch ( const std::exception& e )
 	{
 		qDebug () << "A standard exception was caught with message: \"" << e.what () << "\"";
 		APP_RESTORER ()->saveSession ();
@@ -778,7 +781,7 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, co
 		qDebug () << "A runtime exception was caught with message: \"" << e.what () << "\"";
 		APP_RESTORER ()->saveSession ();
 	}
-	catch (const std::exception& e)
+	catch ( const std::exception& e )
 	{
 		qDebug () << "A standard exception was caught with message: \"" << e.what () << "\"";
 		APP_RESTORER ()->saveSession ();
@@ -792,7 +795,7 @@ uint VivenciaDB::getHighestID ( const uint table ) const
 	if ( highest_id.at ( table ) == highest_id.defaultValue () )
 	{
 		QSqlQuery query;
-		if ( runQuery ( QLatin1String ( "SELECT MAX(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
+		if ( runSelectLikeQuery ( QLatin1String ( "SELECT MAX(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
 		{
 			if ( recordCount ( tableInfo ( table ) ) > 0 )
 			{
@@ -808,7 +811,7 @@ uint VivenciaDB::getLowestID ( const uint table ) const
 	if ( lowest_id.at ( table ) == lowest_id.defaultValue () )
 	{
 		QSqlQuery query;
-		if ( runQuery ( QLatin1String ( "SELECT MIN(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
+		if ( runSelectLikeQuery ( QLatin1String ( "SELECT MIN(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
 		{
 			if ( recordCount ( tableInfo ( table ) ) > 0 )
 			{
@@ -838,7 +841,7 @@ bool VivenciaDB::recordExists ( const QString& table_name, const int id ) const
 	return false;
 }
 
-bool VivenciaDB::runQuery ( const QString& query_cmd, QSqlQuery& queryRes ) const
+bool VivenciaDB::runSelectLikeQuery ( const QString& query_cmd, QSqlQuery& queryRes ) const
 {
 	if ( m_ok && !query_cmd.isEmpty () )
 	{
@@ -846,7 +849,18 @@ bool VivenciaDB::runQuery ( const QString& query_cmd, QSqlQuery& queryRes ) cons
 		if ( queryRes.exec ( query_cmd ) )
 			return queryRes.first ();
 	}
-	return false;
+	return false;	
+}
+
+bool VivenciaDB::runModifyingQuery ( const QString& query_cmd, QSqlQuery& queryRes ) const
+{
+	if ( m_ok && !query_cmd.isEmpty () )
+	{
+		queryRes.setForwardOnly ( true );
+		if ( queryRes.exec ( query_cmd ) )
+			return !queryRes.lastError ().isValid (); // other types of query do not yield browseable results
+	}
+	return false;	
 }
 //-----------------------------------------COMMOM-DBRECORD-------------------------------------------
 

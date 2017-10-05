@@ -128,14 +128,14 @@ void dbStatisticsWorker::countClients ()
 				HTML_BOLD_ITALIC_UNDERLINE_11.arg ( VDB ()->recordCount ( &Client::t_info ) ) + QStringLiteral ( "\n" ) );
 	
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT COUNT(*) FROM CLIENTS WHERE STATUS='1'" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT COUNT(*) FROM CLIENTS WHERE STATUS='1'" ), queryRes ) )
 		EMIT_INFO ( TR_FUNC ( "Total number of active clients: " ) + HTML_BOLD_ITALIC_UNDERLINE_11.arg ( queryRes.value ( 0 ).toString () ) + QStringLiteral ( "\n" ) );
 }
 
 void dbStatisticsWorker::clientsPerYear ( const bool b_start )
 {
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( b_start ? QStringLiteral ( "SELECT BEGINDATE FROM CLIENTS" ) : QStringLiteral ( "SELECT ENDDATE,STATUS FROM CLIENTS" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( b_start ? QStringLiteral ( "SELECT BEGINDATE FROM CLIENTS" ) : QStringLiteral ( "SELECT ENDDATE,STATUS FROM CLIENTS" ), queryRes ) )
 	{
 		vmNumber date, db_date;
 		uint year ( 2005 );
@@ -179,7 +179,7 @@ void dbStatisticsWorker::clientsPerYear ( const bool b_start )
 void dbStatisticsWorker::activeClientsPerYear ()
 {
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT BEGINDATE,ENDDATE FROM CLIENTS" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT BEGINDATE,ENDDATE FROM CLIENTS" ), queryRes ) )
 	{
 		vmNumber date, start_date, end_date;
 		podList<uint> count_clients ( 0, vmNumber::currentDate.year () - 2005 + 1 );
@@ -215,7 +215,7 @@ void dbStatisticsWorker::activeClientsPerYear ()
 void dbStatisticsWorker::clientsPerCity ()
 {
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT CITY FROM CLIENTS" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT CITY FROM CLIENTS" ), queryRes ) )
 	{
 		QMap<QString,uint> city_count;
 		QString city;
@@ -252,7 +252,7 @@ void dbStatisticsWorker::countJobs ()
 		HTML_BOLD_ITALIC_UNDERLINE_11.arg ( VDB ()->recordCount ( &Job::t_info ) ) + QStringLiteral ( "\n" ) );
 	
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT STARTDATE,TIME,REPORT FROM JOBS" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT STARTDATE,TIME,REPORT FROM JOBS" ), queryRes ) )
 	{
 		vmNumber date, db_date;
 		uint year ( 2009 );
@@ -294,7 +294,7 @@ void dbStatisticsWorker::countJobs ()
 void dbStatisticsWorker::jobPrices ()
 {
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT STARTDATE,PRICE FROM JOBS" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT STARTDATE,PRICE FROM JOBS" ), queryRes ) )
 	{
 		vmNumber date, db_date, price, total_income;
 		uint year ( 2009 );
@@ -337,7 +337,7 @@ void dbStatisticsWorker::jobPrices ()
 void dbStatisticsWorker::biggestJobs ()
 {
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SELECT ID,PRICE,TIME FROM JOBS" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT ID,PRICE,TIME FROM JOBS" ), queryRes ) )
 	{
 		vmNumber price ( 0.0 ), highest_price ( 0.0 ), n_days ( 0 ), n_days_max ( 0 );
 		uint jobid_most_value ( 0 ), jobid_longest ( 0 );

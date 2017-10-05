@@ -252,7 +252,7 @@ void completerRecord::batchUpdateTable ( vmCompleters::COMPLETER_CATEGORIES cate
 
 void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates )
 {
-	if ( VDB ()->runQuery (
+	if ( VDB ()->runSelectLikeQuery (
 				QLatin1String ( "SELECT " ) + VivenciaDB::getTableColumnName ( t_info, field ) +
 				QLatin1String ( " FROM " ) + t_info->table_name, query ) )
 	{

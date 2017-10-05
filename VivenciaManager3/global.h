@@ -96,9 +96,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 3
-#define VERSION_REVISION 90
-constexpr const QLatin1String VERSION_APPEND ( "The Festival -Really- Approaches", 32 );
-constexpr const QLatin1String VERSION_DATE ( "2017-08-28", 10 );
+#define VERSION_REVISION 95
+constexpr const QLatin1String VERSION_APPEND ( "It Started In Monte Verde", 25 );
+constexpr const QLatin1String VERSION_DATE ( "2017-09-16", 10 );
 
 static const QString PROGRAM_VERSION (
 	QUOTEME(VERSION_MAJOR) + CHR_DOT +

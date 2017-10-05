@@ -10,7 +10,6 @@
 #include "companypurchasesui.h"
 #include "mainwindow.h"
 #include "vivenciadb.h"
-#include "vmlistitem.h"
 #include "fast_library_functions.h"
 
 #include <QApplication>
@@ -248,7 +247,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 			colsList.chop ( 1 );
 			const QString query_cmd ( QLatin1String ( bhas_clientid ? "SELECT ID,CLIENTID FROM " : "SELECT ID FROM " ) + dbrec->t_info->table_name + QLatin1String ( " WHERE MATCH (" ) +
 					colsList + QLatin1String ( ") AGAINST (\"" ) + mSearchTerm + QLatin1String ( "\" IN BOOLEAN MODE)" ) );
-			if ( VDB ()->runQuery ( query_cmd, query ) )
+			if ( VDB ()->runSelectLikeQuery ( query_cmd, query ) )
 			{
 				const uint fld_max ( dbrec->t_info->field_count );
 
@@ -684,11 +683,11 @@ bool searchUI::getOtherInfo ( vmListItem* item, VMList<QString>& cellData )
 	switch ( item->subType () )
 	{
 		case INVENTORY_TABLE:
-			( void )VDB ()->runQuery ( QStringLiteral ( "SELECT DATE_IN FROM INVENTORY WHERE ID='" ) +
+			( void )VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT DATE_IN FROM INVENTORY WHERE ID='" ) +
 										QString::number ( item->dbRecID () ) + CHR_CHRMARK, query );
 		break;
 		case SUPPLIES_TABLE:
-			( void )VDB ()->runQuery ( QStringLiteral ( "SELECT DATE_IN FROM SUPPLIES WHERE ID='" ) +
+			( void )VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT DATE_IN FROM SUPPLIES WHERE ID='" ) +
 										QString::number ( item->dbRecID () ) + CHR_CHRMARK, query );
 		break;
 		case SUPPLIER_TABLE:

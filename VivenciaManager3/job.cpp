@@ -185,7 +185,7 @@ QString Job::concatenateJobInfo ( const Job& job , const bool b_skip_report )
 QString Job::jobTypeWithDate ( const QString& id )
 {
 	QSqlQuery query;
-	if ( VDB ()->runQuery ( QLatin1String ( "SELECT TYPE,STARTDATE FROM JOBS WHERE ID='" ) + id + CHR_CHRMARK, query ) )
+	if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT TYPE,STARTDATE FROM JOBS WHERE ID='" ) + id + CHR_CHRMARK, query ) )
 		return  CHR_L_PARENTHESIS + id + CHR_R_PARENTHESIS + CHR_SPACE +
 				query.value ( 0 ).toString () + QLatin1String ( " - " ) + query.value ( 1 ).toString ();
 	return emptyString;

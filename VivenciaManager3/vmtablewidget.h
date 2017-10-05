@@ -81,10 +81,8 @@ public:
 
 	// Convenient functions that are called by more than one module in the program. Put here to reduce code and binary size
 	static vmTableWidget* createPurchasesTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr );
-	static void exchangePurchaseTablesInfo (
-		const vmTableWidget* const src_table, vmTableWidget* const dst_table,
-		const DBRecord* const src_dbrec, DBRecord* const dst_dbrec );
-
+	void exportPurchaseToSupplies ( const DBRecord* const src_dbrec, DBRecord* const dst_dbrec );
+	
 	static vmTableWidget* createPayHistoryTable ( vmTableWidget* table = nullptr, QWidget* parent = nullptr,
 			const PAY_HISTORY_RECORD last_column = PHR_USE_DATE );
 	
@@ -183,6 +181,7 @@ public:
 	bool isColumnSelectedForSearch ( const uint column ) const;
 	void setColumnSearchStatus ( const uint column, const bool bsearch );
 	void reHilightItems ( vmTableItem* next, vmTableItem* prev );
+	void displayContextMenuForCell ( const QPoint& pos );
 
 	inline static QString defaultBackgroundColor () { return vmTableWidget::defaultBGColor; }
 	inline QModelIndex indexFromItem ( const vmTableItem* const item ) const { return QTableWidget::indexFromItem ( static_cast<QTableWidgetItem*>( const_cast<vmTableItem*>( item ) ) ); }
@@ -230,7 +229,6 @@ private:
 	void dateWidgetChanged ( const vmWidget* const sender );
 	void timeWidgetChanged ( const vmWidget* const sender );
 	void checkBoxToggled ( const vmWidget* const sender );
-	void displayContextMenuForCell ( const QPoint& pos, const vmWidget* cellWidget );
 	void cellWidgetRelevantKeyPressed ( const QKeyEvent* const ke, const vmWidget* const widget );
 
 	vmTableColumn* mCols;

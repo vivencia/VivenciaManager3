@@ -7,6 +7,8 @@
 #include "vivenciadb.h"
 #include "vmtablewidget.h"
 #include "vmnotify.h"
+#include "mainwindow.h"
+#include "global_db.h"
 
 #include <QSplitter>
 #include <QVBoxLayout>
@@ -15,6 +17,7 @@
 #include <QKeyEvent>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QSqlError>
 #include <QApplication>
 #include <QDesktopWidget>
 
@@ -32,13 +35,146 @@ void deleteDBTableViewInstance ()
 	heap_del ( dbTableView::s_instance );
 }
 
+static RECORD_ACTION getQueryAction ( const QString& query )
+{
+	if ( query.startsWith ( QStringLiteral ( "UPDATE " ) ) )
+		return ACTION_EDIT;
+	else if ( query.startsWith ( QStringLiteral ( "INSERT INTO " ) ) )
+		return ACTION_ADD;
+	else if ( query.startsWith ( QStringLiteral ( "DELETE FROM " ) ) ) 
+		return ACTION_DEL;
+	else
+		return ACTION_NONE;
+}
+
+static const QString query_key_words ( QStringLiteral ( "SELECT UPDATE INSERT INTO VALUES SET WHERE DELETE FROM ID" ) );
+
+static void getTableNameFromQuery ( const QString& query, QString& table_name )
+{
+	const QStringList words ( query.split ( CHR_SPACE, QString::SkipEmptyParts ) );
+	const QStringList::const_iterator itr_end ( words.constEnd () );
+	QStringList::const_iterator itr ( words.constBegin () );
+	
+	QSqlQuery queryRes;
+	static QString tables;
+	
+	if ( tables.isEmpty () )
+	{
+		if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SHOW TABLES" ), queryRes ) )
+		{
+			do
+			{
+				tables += queryRes.value ( 0 ).toString () + CHR_SPACE;
+			} while ( queryRes.next () );
+		}
+	}
+
+	for ( ; itr != itr_end; ++itr )
+	{
+		if ( (*itr).size () > 3 )
+		{
+			if ( !query_key_words.contains ( *itr, Qt::CaseInsensitive ) )
+			{
+				if ( tables.contains ( *(itr) ) )
+				{
+					table_name = *(itr);
+					return;
+				}
+			}
+		}
+	}
+}
+
+static uint getRecordIdFromQuery ( const QString& query )
+{
+	int idx ( -1 );
+	int idx_shift ( -1 );
+	
+	switch ( getQueryAction ( query ) )
+	{
+		case ACTION_EDIT:
+		case ACTION_DEL:
+			idx = query.indexOf ( QStringLiteral ( "WHERE ID=" ) );
+			idx_shift = 10;
+		break;
+		case ACTION_ADD:
+			idx = query.indexOf ( QStringLiteral ( "VALUES (" ) );
+			idx_shift = 9;
+		break;
+		case ACTION_NONE:
+		case ACTION_READ:
+		case ACTION_REVERT:
+		break;
+	}
+
+	if ( idx > 0 )
+	{
+		const int len ( query.size () );
+		int chr ( idx + idx_shift );
+		QString id;
+		while ( chr < len )
+		{
+			if ( query.at ( chr ).isDigit () )
+				id += query.at ( chr++ );
+			else if ( (query.at ( chr ).isSpace ()) || (query.at ( chr ) == CHR_CHRMARK) )
+				++chr;
+			else
+				break;
+		} 
+		return id.toUInt ();
+	}
+	return 0;
+}
+
+static TABLE_IDS tableNameToTableId ( const QString& table_name )
+{
+	if ( table_name.startsWith ( QLatin1Char ( 'C' ) ) )
+	{
+		if ( table_name.at ( 1 ) == QLatin1Char ( 'O' ) )
+			return table_name.at ( 4 ) == QLatin1Char ( 'A' ) ? COMPANY_PURCHASES_TABLE : COMPLETER_RECORDS_TABLE;
+		else
+			return table_name.at ( 1 ) == QLatin1Char ( 'L' ) ? CLIENT_TABLE : CALENDAR_TABLE;
+	}
+	else if ( table_name.startsWith ( QLatin1Char ( 'P' ) ) )
+	{
+		return table_name.at ( 1 ) == QLatin1Char ( 'A' ) ? PAYMENT_TABLE : PURCHASE_TABLE;
+	}
+	else if ( table_name.startsWith ( QLatin1Char ( 'S' ) ) )
+	{
+		if ( table_name.at ( 1 ) == QLatin1Char ( 'E' ) )
+			return SERVICES_TABLE;
+		else
+			return table_name.at ( 7 ) == QLatin1Char ( 'S' ) ? SUPPLIES_TABLE: SUPPLIER_TABLE;
+	}
+	else
+	{
+		if ( table_name.startsWith ( QLatin1Char ( 'J' ) ) )
+			return JOB_TABLE;
+		else if ( table_name.startsWith ( QLatin1Char ( 'I' ) ) )
+			return INVENTORY_TABLE;
+		else if ( table_name.startsWith ( QLatin1Char ( 'M' ) ) )
+			return MACHINES_TABLE;
+		else if ( table_name.startsWith ( QLatin1Char ( 'G' ) ) )
+			return GENERAL_TABLE;
+		else if ( table_name.startsWith ( QLatin1Char ( 'Q' ) ) )
+			return QUICK_PROJECT_TABLE;
+		else
+			return USERS_TABLE;
+	}
+}
+
 dbTableView::dbTableView ()
 	: QObject ( nullptr )
 {
 	mTablesList = new vmListWidget;
 	mTablesList->setMaximumWidth ( 300 );
 	mTablesList->setCallbackForRowActivated ( [&] ( const int row ) { return showTable ( mTablesList->item ( row )->text () ); } );
-			
+
+	vmAction* actionReload ( new vmAction ( 0 ) );
+	actionReload->setShortcut ( QKeySequence ( Qt::Key_F5 ) );
+	static_cast<void>( connect ( actionReload, &QAction::triggered, this, [&] ( const bool ) { return reload (); } ) );	
+	mTablesList->addAction ( actionReload );
+	
 	QVBoxLayout* vLayout ( new QVBoxLayout );
 	vLayout->addWidget ( new QLabel ( TR_FUNC ( "Available tables in the database:" ) ) );
 	vLayout->addWidget ( mTablesList, 3 );
@@ -73,13 +209,11 @@ dbTableView::dbTableView ()
 	mMainLayout = new QVBoxLayout;
 	mMainLayout->addLayout ( hLayout, 0 );
 	mMainLayout->addWidget ( mMainLayoutSplitter, 2 );
+	
 	addPostRoutine ( deleteDBTableViewInstance );
 }
 
-dbTableView::~dbTableView ()
-{
-	return;
-}
+dbTableView::~dbTableView () {}
 
 void dbTableView::reload ()
 {
@@ -92,7 +226,7 @@ void dbTableView::loadTablesIntoList ()
 {
 	mTablesList->clear ( true, true );
 	QSqlQuery queryRes;
-	if ( VDB ()->runQuery ( QStringLiteral ( "SHOW TABLES" ), queryRes ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SHOW TABLES" ), queryRes ) )
 	{
 		do
 		{
@@ -142,19 +276,37 @@ void dbTableView::showTable ( const QString& tablename )
 void dbTableView::runPersonalQuery ()
 {
 	QSqlQuery query;
-	if ( !VDB ()->runQuery ( mTxtQuery->text (), query ) )
+	
+	const bool b_query_is_select ( mTxtQuery->text ().startsWith ( QStringLiteral ( "SELECT " ), Qt::CaseInsensitive ) );
+	bool b_ok ( false );
+	
+	if ( b_query_is_select )
+		b_ok = VDB ()->runSelectLikeQuery ( mTxtQuery->text (), query );
+	else
+		b_ok = VDB ()->runModifyingQuery ( mTxtQuery->text (), query );
+			
+	if ( !b_ok )		
 	{
-		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Error!" ),	TR_FUNC ( "There is an error in your query syntax" ) );
+		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Error!" ),	query.lastError ().text () );
 		mTxtQuery->setFocus ();
 		return;
 	}
 	
-	if ( mTxtQuery->text ().startsWith ( QStringLiteral ( "SELECT " ), Qt::CaseInsensitive ) )
+	tableViewWidget* widget ( nullptr );
+	if ( b_query_is_select )
 	{
-		tableViewWidget* widget ( new tableViewWidget ( &query ) );
-		mTabView->setCurrentIndex ( mTabView->addTab ( widget, mTxtQuery->text () ) );
-		widget->setFocus ();
+		widget = new tableViewWidget ( &query );
 	}
+	else
+	{
+		QString tablename;
+		getTableNameFromQuery ( query.lastQuery (), tablename );
+		widget = new tableViewWidget ( tablename );
+		notifyMainWindowOfChanges ( query.lastQuery () );
+	}
+	
+	mTabView->setCurrentIndex ( mTabView->addTab ( widget, mTxtQuery->text () ) );
+	widget->setFocus ();
 	mTxtQuery->clear ();
 	mBtnRunQuery->setEnabled ( false );
 }
@@ -170,6 +322,20 @@ void dbTableView::maybeRunQuery ( const QKeyEvent* const ke )
 	{
 		if ( mTxtQuery->text ().length () > 10 )
 			runPersonalQuery ();
+	}
+}
+
+void dbTableView::notifyMainWindowOfChanges ( const QString& query )
+{
+	QString table_name;
+	getTableNameFromQuery ( query, table_name );
+	if ( !table_name.isEmpty () )
+	{	
+		MAINWINDOW ()->notifyExternalChange ( 
+					getRecordIdFromQuery ( query ), 
+					tableNameToTableId ( table_name ),
+					getQueryAction ( query )
+		);
 	}
 }
 
@@ -213,7 +379,7 @@ void tableViewWidget::load ()
 		str_tables.chop ( 1 );
 		
 		/* From the Qt's doc: Using SELECT * is not recommended because the order of the fields in the query is undefined.*/
-		if ( !VDB ()->runQuery ( QLatin1String ( "SELECT " ) + str_tables + QLatin1String ( " FROM " ) + tableName (), query ) )
+		if ( !VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT " ) + str_tables + QLatin1String ( " FROM " ) + tableName (), query ) )
 			return;
 	}
 	else
@@ -255,12 +421,12 @@ void tableViewWidget::reload ()
 		//Reload column information
 		VMList<QString> old_cols ( m_cols );
 		getTableInfo ();
-		if ( m_cols.count () != old_cols.count () )
-		{
+		//if ( m_cols.count () != old_cols.count () )
+		//{
 			mLayout->removeWidget ( m_table );
 			delete m_table;
 			createTable ();
-		}
+		//}
 		for ( uint i ( 0 ); i < m_cols.count (); ++i )
 		{
 			if ( m_cols.at ( i ) != old_cols.at ( i ) )
@@ -268,9 +434,8 @@ void tableViewWidget::reload ()
 		}
 		
 		getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
-		m_table->clear ( true );
 		
-		if ( m_nrows >= static_cast<uint>( m_table->rowCount () ) )
+		if ( m_nrows > static_cast<uint>( m_table->rowCount () ) )
 			m_table->insertRow ( static_cast<uint>( m_table->rowCount () ), m_nrows - static_cast<uint>( m_table->rowCount () ) + 1 );
 		load ();
 	}
@@ -310,17 +475,18 @@ void tableViewWidget::createTable ()
 
 void tableViewWidget::getTableInfo ()
 {
+	m_cols.clearButKeepMemory ();
 	if ( mQuery == nullptr )
 	{
 		QSqlQuery query;
-		if ( VDB ()->runQuery ( QLatin1String ( "DESCRIBE " ) + tableName (), query ) )
+		if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "DESCRIBE " ) + tableName (), query ) )
 		{
 			do {
 				m_cols.append ( query.value ( 0 ).toString () );
 			} while ( query.next () );
 		}
 		query.clear ();
-		if ( VDB ()->runQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[7] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
+		if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[7] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
 			m_nrows = query.value ( 0 ).toUInt ();
 	}
 	else
@@ -334,7 +500,7 @@ void tableViewWidget::getTableInfo ()
 				m_cols.append ( rec.fieldName ( i_col ) );
 		
 			m_nrows = static_cast<uint>( mQuery->size () );
-			tryToFindTableNameFromQuery ( mQuery->lastQuery () );
+			getTableNameFromQuery ( mQuery->lastQuery (), m_tablename );
 		}
 	}
 }
@@ -342,7 +508,7 @@ void tableViewWidget::getTableInfo ()
 void tableViewWidget::getTableLastUpdate ( vmNumber& date, vmNumber& time )
 {
 	QSqlQuery query;
-	if ( VDB ()->runQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[15] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
+	if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[15] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
 	{
 		const QString query_res ( query.value ( 0 ).toString () );
 		date.dateFromMySQLDate ( query_res.left ( 10 ) );
@@ -356,7 +522,7 @@ void tableViewWidget::updateTable ( const vmTableItem* const item )
 	const QString record_id ( m_table->sheetItem ( static_cast<uint>( item->row () ), 0 )->text () );
 	const uint field ( static_cast<uint>( item->column () ) );
 	QSqlQuery query;
-	if ( VDB ()->runQuery ( QLatin1String ( "UPDATE " ) + tableName () + QLatin1String ( " SET " ) +
+	if ( VDB ()->runModifyingQuery ( QLatin1String ( "UPDATE " ) + tableName () + QLatin1String ( " SET " ) +
 							m_cols.at ( field ) + QLatin1String ( "=\'" ) + item->text () + QLatin1String ( "\' WHERE ID=" )
 							+ record_id, query ) )
 	{
@@ -365,6 +531,8 @@ void tableViewWidget::updateTable ( const vmTableItem* const item )
 		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Warning!! Table %1 updated" ).arg ( tableName () ), 
 									  TR_FUNC ( "The record id (%1) was updated from the old value (%2) to the new (%3)" ).arg ( 
 										  record_id, item->prevText (), item->text () ) );
+		
+		MAINWINDOW ()->notifyExternalChange ( record_id.toUInt (), tableNameToTableId ( m_tablename ), ACTION_EDIT );
 	}
 }
 
@@ -375,12 +543,17 @@ void tableViewWidget::rowInserted ( const uint row )
 		QSqlQuery query;
 		const QString new_id ( QString::number ( m_table->sheetItem ( row - 1, 0 )->text ().toUInt () + 1 ) );
 		
-		if ( VDB ()->runQuery ( QLatin1String ( "INSERT INTO " ) + tableName () + QLatin1String ( " VALUES ( " ) + new_id + QLatin1String ( " )" ), query ) )
+		if ( VDB ()->runModifyingQuery ( QLatin1String ( "INSERT INTO " ) + tableName () + QLatin1String ( " VALUES ( " ) + new_id + QLatin1String ( " )" ), query ) )
 		{
-			 getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
-			 m_table->enableQtListenerToSimpleTableItemEdition ( false );
-			 m_table->sheetItem ( row, 0 )->setText ( new_id, false );
-			 m_table->enableQtListenerToSimpleTableItemEdition ( true );
+			getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
+			m_table->enableQtListenerToSimpleTableItemEdition ( false );
+			m_table->sheetItem ( row, 0 )->setText ( new_id, false );
+			m_table->enableQtListenerToSimpleTableItemEdition ( true );
+			 
+			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Warning!! Table %1 updated" ).arg ( tableName () ), 
+										  TR_FUNC ( "A new record (with ID=%1) was appended to the table" ).arg ( new_id ) );
+			
+			MAINWINDOW ()->notifyExternalChange ( new_id.toUInt (), tableNameToTableId ( m_tablename ), ACTION_ADD );
 		}
 	}
 }
@@ -388,19 +561,20 @@ void tableViewWidget::rowInserted ( const uint row )
 bool tableViewWidget::rowRemoved ( const uint row )
 {
 	if ( VM_NOTIFY ()->questionBox ( TR_FUNC ( "Delete record?" ), TR_FUNC ( "Are you sure you want to remove the record " ) + QString::number ( row ) +
-																				QLatin1String ( "ID (" ) + m_table->sheetItem ( row, 0 )->text () + QLatin1String ( ") ?" ), this ) )
+																				QLatin1String ( " (ID " ) + m_table->sheetItem ( row, 0 )->text () + QLatin1String ( ") ?" ), this ) )
 	{
 		QSqlQuery query;
-		return VDB ()->runQuery ( QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + m_table->sheetItem ( row, 0 )->text () + CHR_CHRMARK, query );
+		const QString id ( m_table->sheetItem ( row, 0 )->text () );
+		qDebug () << QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + id + CHR_CHRMARK;
+		
+		if ( VDB ()->runModifyingQuery ( QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + id + CHR_CHRMARK, query ) )
+		{
+			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Warning!! Table %1 updated" ).arg ( tableName () ), 
+										  TR_FUNC ( "The record with ID=%1 was removed from the table" ).arg ( id ) );
+			
+			MAINWINDOW ()->notifyExternalChange ( id.toUInt (), tableNameToTableId ( m_tablename ), ACTION_DEL );
+			return true;
+		}
 	}
 	return false;
-}
-
-void tableViewWidget::tryToFindTableNameFromQuery ( const QString& querycmd )
-{
-	const int idx ( querycmd.indexOf ( QStringLiteral ( "FROM " ), 8, Qt::CaseInsensitive ) );
-	if ( idx > 8 )
-	{
-		m_tablename = querycmd.mid ( idx + 5, querycmd.indexOf ( CHR_SPACE, idx + 6 ) );
-	}
 }

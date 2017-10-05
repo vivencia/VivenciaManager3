@@ -1,13 +1,18 @@
 #ifndef TRISTATETYPE_H
 #define TRISTATETYPE_H
 
+#include <utility>
+
 typedef enum { TRI_UNDEF = -1, TRI_ON = 1, TRI_OFF = 0 } TRI_STATE;
 
 class triStateType
 {
 
+inline void tristate_swap ( triStateType& tri1, triStateType& tri2 )
+	{ using std::swap; swap ( tri1.m_state, tri2.m_state ); }
+
 public:
-	constexpr triStateType ()
+	inline constexpr triStateType ()
 		: m_state ( TRI_UNDEF )
 	{}
 
@@ -16,14 +21,20 @@ public:
 		fromInt ( initial_state );
 	}
 
-	constexpr triStateType ( const TRI_STATE initial_state )
+	inline constexpr triStateType ( const TRI_STATE initial_state )
 		: m_state ( initial_state )
 	{}
 
-	constexpr triStateType ( const triStateType& other )
+	inline constexpr triStateType ( const triStateType& other )
 		: m_state ( other.m_state )
 	{}
 
+	inline triStateType ( triStateType&& other )
+		: triStateType () 
+	{ 
+		tristate_swap ( *this, other );
+	}
+	
 	inline const triStateType& operator= ( const bool state )
 	{
 		fromInt ( static_cast<int> ( state ) );
@@ -42,28 +53,34 @@ public:
 		return *this;
 	}
 
-	inline const triStateType& operator= ( const triStateType& other )
+	inline const triStateType& operator= ( triStateType other )
+	{
+		tristate_swap ( *this, other );
+		return *this;
+	}
+	
+	/*inline const triStateType& operator= ( const triStateType& other )
 	{
 		m_state = other.m_state;
 		return *this;
-	}
+	}*/
 
-	constexpr bool operator== ( const int state ) const
+	inline constexpr bool operator== ( const int state ) const
 	{
 		return ( static_cast<int> ( m_state ) == state );
 	}
 
-	constexpr bool operator== ( const TRI_STATE state ) const
+	inline constexpr bool operator== ( const TRI_STATE state ) const
 	{
 		return ( m_state == state );
 	}
 
-	constexpr bool operator== ( const triStateType& other ) const
+	inline constexpr bool operator== ( const triStateType& other ) const
 	{
 		return ( m_state == other.m_state );
 	}
 
-	bool operator!= ( const TRI_STATE state ) const
+	inline bool operator!= ( const TRI_STATE state ) const
 	{
 		return ( m_state != state );
 	}
@@ -82,40 +99,58 @@ public:
 	TRI_STATE togglePrev ();
 	TRI_STATE toggleOnOff ();
 
-	constexpr inline TRI_STATE state () const {
+	inline constexpr TRI_STATE state () const
+	{
 		return m_state;
 	}
-	constexpr inline int toInt () const {
+	
+	inline constexpr int toInt () const
+	{
 		return static_cast<int> ( m_state );
 	}
 
-	inline void setOn () {
+	inline void setOn ()
+	{
 		setState ( TRI_ON );
 	}
-	inline void setOff () {
+	
+	inline void setOff ()
+	{
 		setState ( TRI_OFF );
 	}
-	inline void setUndefined () {
+	
+	inline void setUndefined ()
+	{
 		setState ( TRI_UNDEF );
 	}
 
-	constexpr inline bool isOn () const {
+	inline constexpr bool isOn () const
+	{
 		return m_state == TRI_ON;
 	}
-	constexpr inline bool isOff () const {
+	
+	inline constexpr bool isOff () const
+	{
 		return m_state == TRI_OFF;
 	}
-	constexpr inline bool isUndefined () const {
+	
+	inline constexpr bool isUndefined () const
+	{
 		return m_state == TRI_UNDEF;
 	}
 
-	constexpr inline bool isTrue () const {
+	inline constexpr bool isTrue () const
+	{
 		return m_state == TRI_ON;
 	}
-	constexpr inline bool isFalse () const {
+	
+	inline constexpr bool isFalse () const
+	{
 		return m_state == TRI_OFF;
 	}
-	constexpr inline bool isNeither () const {
+	
+	inline constexpr bool isNeither () const
+	{
 		return m_state == TRI_UNDEF;
 	}
 

@@ -51,7 +51,7 @@ public:
 	
 	inline QSqlDatabase* database () const
 	{
-		return &const_cast<VivenciaDB*>( this )->m_db;
+		return const_cast<VivenciaDB*>( this )->m_db;
 	}
 
 	bool openDataBase ();
@@ -100,9 +100,8 @@ public:
 	
 	bool recordExists ( const QString& table_name, const int id ) const;
 
-	// Call this when there is need for using the result of the query. Use VDB ()->database ()->exec () when
-	// then goal is to command the driver to do something
-	bool runQuery ( const QString& query_cmd, QSqlQuery& queryRes ) const;
+	bool runSelectLikeQuery ( const QString& query_cmd, QSqlQuery& queryRes ) const;
+	bool runModifyingQuery ( const QString& query_cmd, QSqlQuery& queryRes ) const;
 	//-----------------------------------------COMMOM-DBRECORD-------------------------------------------
 
 	//-----------------------------------------IMPORT-EXPORT--------------------------------------------
@@ -128,7 +127,7 @@ private:
 	//-----------------------------------------CREATE-DESTROY-MODIFY------------------------------------
 
 	//----------------------------------------VARIABLE-MEMBERS--------------------------------------
-	QSqlDatabase m_db;
+	QSqlDatabase* m_db;
 
 	podList<uint> lowest_id;
 	podList<uint> highest_id;
