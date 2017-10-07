@@ -421,12 +421,10 @@ void tableViewWidget::reload ()
 		//Reload column information
 		VMList<QString> old_cols ( m_cols );
 		getTableInfo ();
-		//if ( m_cols.count () != old_cols.count () )
-		//{
-			mLayout->removeWidget ( m_table );
-			delete m_table;
-			createTable ();
-		//}
+		mLayout->removeWidget ( m_table );
+		delete m_table;
+		createTable ();
+
 		for ( uint i ( 0 ); i < m_cols.count (); ++i )
 		{
 			if ( m_cols.at ( i ) != old_cols.at ( i ) )
@@ -565,7 +563,6 @@ bool tableViewWidget::rowRemoved ( const uint row )
 	{
 		QSqlQuery query;
 		const QString id ( m_table->sheetItem ( row, 0 )->text () );
-		qDebug () << QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + id + CHR_CHRMARK;
 		
 		if ( VDB ()->runModifyingQuery ( QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + id + CHR_CHRMARK, query ) )
 		{

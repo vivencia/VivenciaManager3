@@ -3857,6 +3857,8 @@ void MainWindow::reOrderTabSequence ()
 	setTabOrder ( ui->dteClientDateFrom, ui->dteClientDateTo );
 	setTabOrder ( ui->dteClientDateTo, ui->btnJobAdd );
 	
+	setTabOrder ( ui->btnQuickProject, ui->txtJobKeyWords );
+	setTabOrder ( ui->txtJobKeyWords, ui->lstJobKeyWords );
 	setTabOrder ( ui->btnJobNextDay, ui->dteJobAddDate );
 	setTabOrder ( ui->dteJobAddDate, ui->btnJobAddDay );
 	setTabOrder ( ui->btnJobSeparatePicture, ui->jobImageViewer );

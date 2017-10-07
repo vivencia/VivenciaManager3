@@ -560,7 +560,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>7</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -5032,7 +5032,8 @@ p, li { white-space: pre-wrap; }
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>btnSearchCancel</tabstop>
+  <tabstop>scrollWorkFlow</tabstop>
+  <tabstop>tabMain</tabstop>
   <tabstop>btnClientAdd</tabstop>
   <tabstop>btnClientEdit</tabstop>
   <tabstop>btnClientDel</tabstop>
@@ -5046,15 +5047,25 @@ p, li { white-space: pre-wrap; }
   <tabstop>txtClientCity</tabstop>
   <tabstop>txtClientZipCode</tabstop>
   <tabstop>chkClientActive</tabstop>
-  <tabstop>scrollWorkFlow</tabstop>
   <tabstop>btnJobAdd</tabstop>
   <tabstop>btnJobEdit</tabstop>
-  <tabstop>tabMain</tabstop>
   <tabstop>btnJobDel</tabstop>
   <tabstop>btnJobSave</tabstop>
   <tabstop>btnJobCancel</tabstop>
   <tabstop>btnJobSelectJob</tabstop>
   <tabstop>jobsList</tabstop>
+  <tabstop>cboJobType</tabstop>
+  <tabstop>txtJobAddress</tabstop>
+  <tabstop>txtJobPrice</tabstop>
+  <tabstop>txtJobProjectPath</tabstop>
+  <tabstop>btnJobEditProjectPath</tabstop>
+  <tabstop>btnJobOpenFileFolder</tabstop>
+  <tabstop>btnJobOpenDoc</tabstop>
+  <tabstop>btnJobOpenXls</tabstop>
+  <tabstop>btnJobOpenPdf</tabstop>
+  <tabstop>txtJobProjectID</tabstop>
+  <tabstop>btnQuickProject</tabstop>
+  <tabstop>lstJobKeyWords</tabstop>
   <tabstop>lstJobDayReport</tabstop>
   <tabstop>btnJobPrevDay</tabstop>
   <tabstop>btnJobNextDay</tabstop>
@@ -5146,6 +5157,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnExitProgram</tabstop>
   <tabstop>txtSearch</tabstop>
   <tabstop>btnSearchStart</tabstop>
+  <tabstop>btnSearchCancel</tabstop>
  </tabstops>
  <resources>
   <include location="resources.qrc"/>
