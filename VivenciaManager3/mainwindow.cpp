@@ -3011,7 +3011,7 @@ void MainWindow::setupBuyPanel ()
 	static_cast<void>( connect ( ui->btnBuyCopyRows, &QToolButton::clicked, this, [&] () { return on_btnBuyCopyRows_clicked (); } ) );
 	
 	const int screen_width ( qApp->desktop ()->availableGeometry ().width () );
-	ui->splitterBuyInfo->setSizes ( QList<int> () << static_cast<int>( screen_width / 4 ) << static_cast<int>( 3 * screen_width / 4 ) );
+	ui->splitterBuyInfo->setSizes ( QList<int> () << static_cast<int>( 3* screen_width / 8 ) << static_cast<int>( 5 * screen_width / 8 ) );
 }
 
 void MainWindow::displayBuyFromCalendar ( vmListItem* cal_item )
