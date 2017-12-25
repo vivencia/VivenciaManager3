@@ -2,7 +2,7 @@
 #include "global.h"
 #include "vmwidgets.h"
 #include "textdb.h"
-#include "data.h"
+#include "system_init.h"
 #include "stringrecord.h"
 #include "vmwidgets.h"
 #include "heapmanager.h"
@@ -10,6 +10,7 @@
 #include "vmtableutils.h"
 #include "vmnotify.h"
 #include "fast_library_functions.h"
+#include "dbrecord.h"
 
 #include <QLabel>
 #include <QMouseEvent>
@@ -23,7 +24,8 @@
 
 QString vmTableWidget::defaultBGColor ( emptyString );
 
-constexpr uint PURCHASES_TABLE_COLS ( 7 );
+constexpr auto PURCHASES_TABLE_COLS ( 7 );
+constexpr auto MAX_COL_WIDTH ( 400 );
 
 //---------------------------------------------STATIC---------------------------------------------------------
 /*static QString encode_pos(int row, int col)
@@ -35,7 +37,7 @@ constexpr uint PURCHASES_TABLE_COLS ( 7 );
 vmTableWidget::vmTableWidget ( QWidget* parent )
 	: QTableWidget ( parent ), vmWidget ( WT_TABLE ),
 	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
-	  mTableChanged ( false ), mbKeepModRec ( true ), mbPlainTable ( false ), mbUseWidgets ( true ), mbTableIsList ( false ), 
+	  mTableChanged ( false ), mb_TableInit ( true ), mbKeepModRec ( true ), mbPlainTable ( false ), mbUseWidgets ( true ), mbTableIsList ( false ), 
 	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), mbColumnAutoResize ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( 10 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
@@ -48,8 +50,8 @@ vmTableWidget::vmTableWidget ( QWidget* parent )
 
 vmTableWidget::vmTableWidget ( const uint rows, QWidget* parent )
 	: QTableWidget ( static_cast<int>(rows) + 1, 0, parent ), vmWidget ( WT_TABLE, static_cast<int>(rows) ),
-	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
-	  mTableChanged ( false ), mbKeepModRec ( true ), mbPlainTable ( false ), mbUseWidgets ( true ), mbTableIsList ( false ), 
+	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ),m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
+	  mTableChanged ( false ), mb_TableInit ( true ), mbKeepModRec ( true ), mbPlainTable ( false ), mbUseWidgets ( true ), mbTableIsList ( false ), 
 	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), mbColumnAutoResize ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( rows + 1 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
@@ -90,115 +92,15 @@ vmTableColumn* vmTableWidget::createColumns ( const uint nCols )
 void vmTableWidget::initTable ( const uint rows )
 {
 	setUpdatesEnabled ( false );
-	uint i_col ( 0 );
-	uint i_row ( 0 );
-
-	vmTableColumn* column ( nullptr );
-	vmTableItem* sheet_item ( nullptr );
-	QString col_header;
-
-	mTotalsRow = static_cast<int>( rows );
 	m_nVisibleRows = rows + static_cast<uint>( !mbPlainTable );
-	setRowCount ( static_cast<int>( m_nVisibleRows ) );
-
-	if ( !isList () )
-	{
-		QFont titleFont ( font () );
-		titleFont.setBold ( true );
-		vmCheckedTableItem* headerItem ( new vmCheckedTableItem ( Qt::Horizontal, this ) );
-		headerItem->setCallbackForCheckStateChange ( [&] ( const uint col, const bool checked ) {
-			return headerItemToggled ( col, checked ); } );
-		setHorizontalHeader ( headerItem );
-	}
-	else
-		horizontalHeader ()->setVisible ( false );
-
-	do
-	{
-		column = &mCols[i_col];
-		insertColumn ( static_cast<int>( i_col ) );
-
-		if ( !column->editable )
-			setBit ( readOnlyColumnsMask, static_cast<uchar>( i_col ) ); // bit is set? read only cell : cell can be cleared or other actions
-
-		if ( !isList () )
-		{
-			setHorizontalHeaderItem ( static_cast<int>( i_col ), new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
-			
-			for ( i_row = 0; i_row < m_nVisibleRows; ++i_row )
-			{
-				if ( i_row != static_cast<uint>( totalsRow () ) )
-					sheet_item = new vmTableItem ( column->wtype, column->text_type, column->default_value, this );
-				else
-					sheet_item = new vmTableItem ( WT_LINEEDIT, i_col != 0 ? column->text_type : vmWidget::TT_TEXT, emptyString, this );
-			
-				setItem ( static_cast<int>( i_row ), static_cast<int>( i_col ), sheet_item );
-				
-				if ( mbUseWidgets )
-				{
-					sheet_item->setButtonType ( column->button_type );
-					sheet_item->setCompleterType ( column->completer_type );
-					setCellWidget ( sheet_item );
-				}
-				
-				sheet_item->setEditable ( !mbPlainTable ? false : true );
-				if ( !mbPlainTable )
-				{
-					if ( i_row == static_cast<uint>( totalsRow () ) )
-					{
-						if ( i_col == 0 )
-							sheet_item->setText ( TR_FUNC ( "Total:" ), false );
-						else
-						{
-							if ( column->text_type >= vmLineEdit::TT_PRICE )
-							{
-								col_header = QChar ( 'A' + i_col );
-								sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header + CHR_ZERO + CHR_SPACE + col_header + 
-														 QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
-							}
-						}
-					}
-					else
-					{
-						if ( !column->formula.isEmpty () )
-							sheet_item->setFormula ( column->formula, QString::number ( i_row ) );
-					}
-				}
-			}
-		}
-		
-		uint colWidth ( column->width );
-		if ( colWidth == 0 )
-		{
-			switch ( column->wtype )
-			{
-				case WT_DATEEDIT:
-					colWidth = 180;
-				break;
-				case WT_LINEEDIT:
-					colWidth = ( column->text_type >= vmWidget::TT_PHONE ? 130 : 100 );
-				break;
-				case WT_LINEEDIT_WITH_BUTTON:
-					colWidth = 150;
-				break;
-				default:
-					colWidth = 100;
-				break;
-			}
-		}
-		setColumnWidth ( static_cast<int>( i_col ), static_cast<int>( colWidth ) );
-		++i_col;
-	}
-	while ( i_col < m_ncols );
 	
-	//All the items that could not have their formula calculated at the time of creation will now
-	for ( i_row = 0; i_row < m_itemsToReScan.count (); ++i_row )
-		m_itemsToReScan.at ( i_row )->targetsFromFormula ();
+	if ( isList () )
+		initList ();
+	else
+		initTable2 ();
 	
 	setUpdatesEnabled ( true );
-	
-	setContextMenuPolicy ( Qt::CustomContextMenu );
-	static_cast<void>( connect ( this, &QTableWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) { displayContextMenuForCell ( pos ); } ) );
+	mb_TableInit = false;
 }
 
 bool vmTableWidget::selectFound ( const vmTableItem* item )
@@ -476,12 +378,10 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 	if ( row <= static_cast<uint> ( rowCount () ) )
 	{
 		uint i_row ( 0 );
-		m_nVisibleRows += n;
 		uint i_col ( 0 );
 		QString new_formula;
 		vmTableItem* sheet_item ( nullptr ), *new_SheetItem ( nullptr );
 		
-		mTotalsRow += n;
 		for ( ; i_row < n; ++i_row )
 		{
 			QTableWidget::insertRow ( static_cast<int>( row + i_row ) );
@@ -509,8 +409,13 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 				rowInserted_func ( row + i_row );
 		}
 
-		if ( !mbPlainTable )
+		if ( !mb_TableInit )
 		{
+			m_nVisibleRows += n;
+			mTotalsRow += n;
+			if ( isPlainTable () )
+				return;
+
 			// update all rows after the inserted ones, so that their formula reflects the row changes
 			for ( i_row = row + n; static_cast<int>( i_row ) < mTotalsRow; ++i_row )
 			{
@@ -532,7 +437,8 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 				uint i ( 0 ), list_value ( 0 ), start_modification ( 0 );
 				for ( i = 0; i < modified_rows; ++i )
 				{
-					if ( row < modifiedRows.at ( i ) ) break;
+					if ( row < modifiedRows.at ( i ) )
+						break;
 					start_modification++; // modified above insertion start point are not affected
 				}
 				for ( i = start_modification; i < modified_rows; ++i )
@@ -1040,8 +946,8 @@ void vmTableWidget::setIsPlainTable ( const bool b_usewidgets )
  */
 void vmTableWidget::setEditable ( const bool editable )
 {
-	if ( isEditable () == editable )
-		return;
+	//if ( isEditable () == editable )
+	//	return;
 
 	uint i_row ( 0 );
 	uint i_col ( 0 );
@@ -1193,8 +1099,8 @@ void vmTableWidget::setColumnReadOnly ( const uint i_col, const bool readonly )
 {
 	if ( i_col < colCount () )
 	{
-		readonly ? setBit ( readOnlyColumnsMask, static_cast<uchar>(i_col) ) :
-		unSetBit ( readOnlyColumnsMask, static_cast<uchar>(i_col) );
+		readonly ?  setBit ( readOnlyColumnsMask, static_cast<uchar>(i_col) ) :
+					unSetBit ( readOnlyColumnsMask, static_cast<uchar>(i_col) );
 	}
 }
 
@@ -1281,8 +1187,11 @@ void vmTableWidget::resizeColumn ( const uint col, const QString& text )
 	if ( autoResizeColumns () )
 	{
 		const QSize sz ( fontMetrics ().size ( Qt::TextDontClip, text ) );
-		if ( sz.width () >= columnWidth ( static_cast<int>( col ) ) )
-			setColumnWidth ( static_cast<int>( col ), sz.width () + 10 );
+		if ( sz.width () < MAX_COL_WIDTH )
+		{
+			if ( sz.width () >= columnWidth ( static_cast<int>( col ) ) )
+				setColumnWidth ( static_cast<int>( col ), sz.width () + 10 );
+		}
 	}
 }
 
@@ -1322,20 +1231,22 @@ void vmTableWidget::displayContextMenuForCell ( const QPoint& pos )
 
 	const QModelIndex index ( indexAt ( pos ) );	
 	mContextMenuCell = sheetItem ( static_cast<uint>( index.row () ), static_cast<uint>( index.column () ) );
-	if ( mContextMenuCell->widget () != nullptr )
+	if ( mContextMenuCell != nullptr )
 	{
-		QMenu* menu ( mContextMenuCell->widget ()->standardContextMenu () );
-		if ( menu != nullptr )
+		if ( mContextMenuCell->widget () != nullptr )
 		{
-			sepActionList = menu->actions ();
-			mContextMenu->addActions ( sepActionList );
+			QMenu* menu ( mContextMenuCell->widget ()->standardContextMenu () );
+			if ( menu != nullptr )
+			{
+				sepActionList = menu->actions ();
+				mContextMenu->addActions ( sepActionList );
+			}
 		}
+		setCurrentItem ( mContextMenuCell, QItemSelectionModel::ClearAndSelect );
+		enableOrDisableActionsForCell ( mContextMenuCell );
+		mContextMenu->popup ( viewport ()->mapToGlobal ( pos ) );
+		mContextMenuCell = nullptr;
 	}
-	
-	setCurrentItem ( mContextMenuCell, QItemSelectionModel::ClearAndSelect );
-	enableOrDisableActionsForCell ( mContextMenuCell );
-	mContextMenu->popup ( viewport ()->mapToGlobal ( pos ) );
-	mContextMenuCell = nullptr;
 }
 
 void vmTableWidget::keyPressEvent ( QKeyEvent* k )
@@ -1378,11 +1289,10 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 			}
 			b_accept = true;
 		}
+		
+		k->setAccepted ( b_accept );
 		if ( b_accept )
-		{
-			k->setAccepted ( true );
 			return;
-		}
 	}
 	
 	if ( isEditable () )
@@ -1448,6 +1358,92 @@ void vmTableWidget::keyPressEvent ( QKeyEvent* k )
 	QTableWidget::keyPressEvent ( k );
 }
 
+void vmTableWidget::initList ()
+{
+	horizontalHeader ()->setVisible ( false );
+	mTotalsRow = static_cast<int>( rowCount () );
+	insertColumn ( 0 );
+}
+
+void vmTableWidget::initTable2 ()
+{
+	QFont titleFont ( font () );
+	titleFont.setBold ( true );
+	vmCheckedTableItem* headerItem ( new vmCheckedTableItem ( Qt::Horizontal, this ) );
+	headerItem->setCallbackForCheckStateChange ( [&] ( const uint col, const bool checked ) {
+		return headerItemToggled ( col, checked ); } );
+	setHorizontalHeader ( headerItem );
+	
+	uint i_col ( 0 );
+
+	vmTableColumn* column ( nullptr );
+	QString col_header;
+	
+	do
+	{
+		column = &mCols[i_col];
+		insertColumn ( static_cast<int>( i_col ) );
+
+		if ( !column->editable )
+			setBit ( readOnlyColumnsMask, static_cast<uchar>( i_col ) ); // bit is set? read only cell : cell can be cleared or other actions
+
+		setHorizontalHeaderItem ( static_cast<int>( i_col ), new vmTableItem ( WT_TABLE_ITEM, vmLineEdit::TT_TEXT, column->label, this ) );
+		
+		uint colWidth ( column->width );
+		if ( colWidth == 0 )
+		{
+			switch ( column->wtype )
+			{
+				case WT_DATEEDIT:
+					colWidth = 180;
+				break;
+				case WT_LINEEDIT:
+					colWidth = ( column->text_type >= vmWidget::TT_PHONE ? 130 : 100 );
+				break;
+				case WT_LINEEDIT_WITH_BUTTON:
+					colWidth = 150;
+				break;
+				default:
+					colWidth = 100;
+				break;
+			}
+		}
+		setColumnWidth ( static_cast<int>( i_col ), static_cast<int>( colWidth ) );
+		++i_col;
+	}
+	while ( i_col < m_ncols );
+
+	mTotalsRow = static_cast<int>( visibleRows () - 1 );
+	// If the table is a spreadsheet (not plain table) then the last row will be special and inserted in the code block below, after this line
+	insertRow ( 0, isPlainTable () ? static_cast<uint>( visibleRows () ) : static_cast<uint>( totalsRow () ) );
+
+	if ( !isPlainTable () )
+	{
+		QTableWidget::insertRow ( totalsRow () );
+		for ( i_col = 0; i_col < colCount (); ++ i_col )
+		{
+			vmTableItem* sheet_item ( new vmTableItem ( WT_LINEEDIT, i_col != 0 ? mCols[i_col].text_type : vmWidget::TT_TEXT, emptyString, this ) );
+			setItem ( totalsRow (), static_cast<int>( i_col ), sheet_item );
+			if ( i_col == 0 )
+				sheet_item->setText ( TR_FUNC ( "Total:" ), false );
+			else
+			{
+				if ( mCols[i_col].text_type >= vmLineEdit::TT_PRICE )
+				{
+					setCellWidget ( sheet_item );
+					col_header = QChar ( 'A' + i_col );
+					sheet_item->setFormula ( QLatin1String ( "sum " ) + col_header + CHR_ZERO + CHR_SPACE + col_header + 
+										 QLatin1String ( "%1" ), QString::number ( mTotalsRow - 1 ) );
+				}
+			}
+			sheet_item->setEditable ( false );
+		}
+		//All the items that could not have their formula calculated at the time of creation will now
+		for ( uint i_row ( 0 ); i_row < m_itemsToReScan.count (); ++i_row )
+			m_itemsToReScan.at ( i_row )->targetsFromFormula ();
+	}
+}
+
 void vmTableWidget::enableOrDisableActionsForCell ( const vmTableItem* sheetItem )
 {
 	mUndoAction->setEnabled ( sheetItem->cellIsAltered () );
@@ -1492,6 +1488,9 @@ void vmTableWidget::sharedContructorsCode ()
 	setFrameShape ( QFrame::NoFrame );
 	setFrameShadow ( QFrame::Plain );
 
+	setContextMenuPolicy ( Qt::CustomContextMenu );
+	static_cast<void>( connect ( this, &QTableWidget::customContextMenuRequested, this, [&] ( const QPoint& pos ) { displayContextMenuForCell ( pos ); } ) );
+	
 	setEditable ( false );
 
 	if ( vmTableWidget::defaultBGColor.isEmpty () )
@@ -1544,7 +1543,7 @@ void vmTableWidget::fixTotalsRow ()
 	vmTableItem* sheet_item ( nullptr );
 	for ( uint i_col ( 0 ); i_col < colCount (); ++i_col )
 	{
-		sheet_item = sheetItem ( static_cast<uint>(mTotalsRow), i_col );
+		sheet_item = sheetItem ( static_cast<uint>( mTotalsRow ), i_col );
 		if ( sheet_item->textType () >= vmLineEdit::TT_PRICE )
 			sheet_item->setFormula ( sheet_item->formulaTemplate (), totalsRowStr );
 	}
@@ -1619,7 +1618,7 @@ void vmTableWidget::copyCellContents ()
 			cell_text.chop ( 1 ); // remove last newline character
 		}
 	}
-	Data::copyToClipboard ( cell_text );
+	VM_LIBRARY_FUNCS::copyToClipboard ( cell_text );
 }
 
 void vmTableWidget::copyRowContents ()
@@ -1650,7 +1649,7 @@ void vmTableWidget::copyRowContents ()
 		}
 	}
 
-	Data::copyToClipboard ( rowText );
+	VM_LIBRARY_FUNCS::copyToClipboard ( rowText );
 }
 
 // Inserts one or more lines ( depending on how many are selected - i.e. two selected, in whichever order, inserts two lines )

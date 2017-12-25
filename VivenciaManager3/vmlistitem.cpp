@@ -5,7 +5,7 @@
 #include "payment.h"
 #include "purchases.h"
 #include "global_enums.h"
-#include "data.h"
+#include "system_init.h"
 #include "crashrestore.h"
 #include "heapmanager.h"
 #include "stringrecord.h"
@@ -94,7 +94,7 @@ vmListItem::vmListItem ( const QString& label )
 
 vmListItem::~vmListItem ()
 {
-	if ( !Data::EXITING_PROGRAM )
+	if ( !Sys_Init::EXITING_PROGRAM )
 		disconnectRelation ( static_cast<int>( RLI_CLIENTITEM ), this );
 	if ( mbSearchCreated )
 		delete[] searchFields;
@@ -253,7 +253,7 @@ void vmListItem::changeAppearance ()
 {
 	if ( listWidget () )
 		listWidget ()->setUpdatesEnabled ( false );
-	setBackground ( QBrush ( COLORS[static_cast<uint>( action () )] ) );
+	setBackground ( action () == ACTION_READ ? QBrush () : QBrush ( COLORS[static_cast<uint>( action () )] ) );
 	QFont fnt ( font () );
 	fnt.setItalic ( action () > ACTION_READ );
 	setFont ( fnt );
@@ -264,7 +264,7 @@ void vmListItem::changeAppearance ()
 	{
 		if ( relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) ) != nullptr )
 		{
-			relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setIcon ( *Data::listIndicatorIcons[static_cast<uint>( action () )] );
+			relatedItem ( static_cast<RELATED_LIST_ITEMS>( i ) )->setIcon ( *Sys_Init::listIndicatorIcons[static_cast<uint>( action () )] );
 		}
 	}
 	

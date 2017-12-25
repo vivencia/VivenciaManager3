@@ -10,7 +10,7 @@
 #include "payment.h"
 #include "documenteditor.h"
 #include "heapmanager.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "mainwindow.h"
 #include "dbcalendar.h"
 
@@ -336,6 +336,10 @@ void reportGenerator::createPaymentStub ( const uint payID )
 		cboHeaderType->setCurrentIndex ( cboHeaderType->findText ( STR_HEADERTYPE_LABEL.at ( PAYMENT_STUB ) ) );
 		btnGenerateReport_clicked ();
 		setIgnoreCursorPos ( false );
+		
+		EDITOR ()->show ();
+		EDITOR ()->activateWindow ();
+		EDITOR ()->raise ();
 	}
 }
 
@@ -730,7 +734,7 @@ void reportGenerator::btnInsertClientAddress_clicked ( const uint c_id )
 		t_cursor = textTable->cellAt ( 1, 0 ).firstCursorPosition ();
 		t_cursor.insertText ( QStringLiteral ( "Endereço: " ), mCursor.charFormat () );
 		t_cursor = textTable->cellAt ( 2, 0 ).firstCursorPosition ();
-		t_cursor.insertText ( QStringLiteral ( "Contato (s): " ), mCursor.charFormat () );
+		t_cursor.insertText ( QStringLiteral ( "Contato: " ), mCursor.charFormat () );
 		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
 
 		if ( recIntValue ( rgClient, FLD_CLIENT_ID ) >= 1 )
@@ -947,6 +951,8 @@ void reportGenerator::getUnpaidPayments ( Payment * const pay )
 
 void reportGenerator::getPaidPayments ( const uint n_months_past, const uint match_payid, vmNumber* const total_paid_value )
 {
+	if ( match_payid == 0 || match_payid > VDB ()->getHighestID ( TABLE_PAY_ORDER ) ) return;
+	
 	TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
 	TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
 	mCursor.insertBlock ();
@@ -958,8 +964,8 @@ void reportGenerator::getPaidPayments ( const uint n_months_past, const uint mat
 	mCursor.movePosition ( QTextCursor::Up, QTextCursor::MoveAnchor, 1 );
 	TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
 	
-	vmNumber twelveMonthsAgo ( vmNumber::currentDate );
-	twelveMonthsAgo.setDate ( 0, static_cast<int>(0 - n_months_past), 0, true );
+	vmNumber startDate ( vmNumber::currentDate );
+	startDate.setDate ( 0, static_cast<int>(0 - n_months_past), 0, true );
 	dbCalendar* cal ( new dbCalendar );
 	const stringTable* paysList ( nullptr );
 	const stringRecord* str_rec ( nullptr );
@@ -972,8 +978,7 @@ void reportGenerator::getPaidPayments ( const uint n_months_past, const uint mat
 	
 	do
 	{
-		twelveMonthsAgo.setDate ( 0, 1, 0, true );
-		paysList = &cal->dateLog ( twelveMonthsAgo, FLD_CALENDAR_MONTH,
+		paysList = &cal->dateLog ( startDate, FLD_CALENDAR_MONTH,
 				FLD_CALENDAR_PAYS, month_paid, FLD_CALENDAR_TOTAL_PAY_RECEIVED );
 		
 		if ( paysList->countRecords () > 0 )
@@ -987,31 +992,32 @@ void reportGenerator::getPaidPayments ( const uint n_months_past, const uint mat
 					if ( str_rec->fieldValue ( 1 ).toUInt () == clientid )
 					{
 						payid =  str_rec->fieldValue ( 0 ).toUInt () ;
-						if ( match_payid != 0 && payid != match_payid )
-							break;
-						if ( rgPay->readRecord ( payid ) )
+						if ( payid == match_payid )
 						{
-							if ( b_jobsummary_inserted )
+							if ( rgPay->readRecord ( payid ) )
 							{
-								TEXT_EDITOR_TOOLBAR ()->removeList ( indentation_level );
-								mCursor.insertBlock ();
-								TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
-							}
-							else
-							{
-								if ( !paid_total.isNull () )
+								if ( b_jobsummary_inserted )
+								{
+									TEXT_EDITOR_TOOLBAR ()->removeList ( indentation_level );
 									mCursor.insertBlock ();
-							}
-							
-							printPayInfo ( rgPay, str_rec->fieldValue ( 2 ).toUInt () - 1, paid_total );
-							if ( rgJob->readRecord ( static_cast<uint>( recIntValue ( rgPay, FLD_PAY_JOBID )) ) )
-							{
-								mCursor.insertText ( QStringLiteral( " , em referência ao serviço " ) );
-								mCursor.insertText ( recStrValue ( rgJob, FLD_JOB_TYPE ) );
-								mCursor.insertText ( QStringLiteral ( ", finalizado em " ) );
-								mCursor.insertText ( rgJob->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_HUMAN_DATE ) );
-								mCursor.insertText ( QStringLiteral ( ";" ) );
-								b_jobsummary_inserted = insertJobKeySentences ();
+									TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
+								}
+								else
+								{
+									if ( !paid_total.isNull () )
+										mCursor.insertBlock ();
+								}
+								
+								printPayInfo ( rgPay, str_rec->fieldValue ( 2 ).toUInt () - 1, paid_total );
+								if ( rgJob->readRecord ( static_cast<uint>( recIntValue ( rgPay, FLD_PAY_JOBID )) ) )
+								{
+									mCursor.insertText ( QStringLiteral( ", em referência ao serviço " ) );
+									mCursor.insertText ( recStrValue ( rgJob, FLD_JOB_TYPE ) );
+									mCursor.insertText ( QStringLiteral ( ", finalizado em " ) );
+									mCursor.insertText ( rgJob->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_HUMAN_DATE ) );
+									mCursor.insertText ( QStringLiteral ( ";" ) );
+									b_jobsummary_inserted = insertJobKeySentences ();
+								}
 							}
 						}
 					}
@@ -1021,7 +1027,8 @@ void reportGenerator::getPaidPayments ( const uint n_months_past, const uint mat
 					TEXT_EDITOR_TOOLBAR ()->removeList ( indentation_level );
 			}
 		}
-	} while ( ++month <= (n_months_past - 1) );
+		startDate.setDate ( 0, 1, 0, true ); // next month
+	} while ( ++month < n_months_past );
 	
 	mCursor.movePosition ( QTextCursor::Down, QTextCursor::MoveAnchor, 2 );
 	mCursor.insertBlock ();
@@ -1114,17 +1121,18 @@ void reportGenerator::insertPaymentStubText ()
 {
 	Job job;
 	vmNumber total_paid ( 0.0 );
-	if ( job.readRecord ( static_cast<uint>(recIntValue ( rgPay, FLD_PAY_JOBID ) )) )
+	if ( job.readRecord ( static_cast<uint>( recIntValue ( rgPay, FLD_PAY_JOBID ) ) ) )
 	{
 		const int n_months ( vmNumber::currentDate.monthsSinceDate ( job.date ( FLD_JOB_ENDDATE ) ) );
 		if ( n_months < 0 )
 			return; // maybe issue an error message. But will only happen if job end date is in the future, and that is not supported yet
-		getPaidPayments ( static_cast<uint>(n_months), static_cast<uint>(recIntValue ( rgPay, FLD_PAY_ID )), &total_paid );
+		getPaidPayments ( static_cast<uint>( n_months ), static_cast<uint>( recIntValue ( rgPay, FLD_PAY_ID ) ), &total_paid );
 	
 		TEXT_EDITOR_TOOLBAR ()->btnAlignLeft_clicked ();
 	
 		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
 		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+		mCursor.insertBlock ();
 		mCursor.insertText ( QStringLiteral ( "Eu, " ) );
 		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
 		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
@@ -1150,21 +1158,16 @@ void reportGenerator::insertPaymentStubText ()
 		mCursor.insertText ( QStringLiteral ( "." ) );
 		mCursor.insertBlock ();
 		mCursor.insertBlock ();
-
-		mCursor.insertText ( QStringLiteral ( "Para clareza, firmo o presente" ) );
-		mCursor.insertBlock ();
 		mCursor.insertText ( Job::jobAddress ( &job ) );
 		mCursor.insertBlock ();
-		
-		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( true );
-		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( true );
 		mCursor.insertText ( vmNumber::currentDate.toDate ( vmNumber::VDF_LONG_DATE ) );
-		TEXT_EDITOR_TOOLBAR ()->btnBold_clicked ( false );
-		TEXT_EDITOR_TOOLBAR ()->btnUnderline_clicked ( false );
+		mCursor.insertBlock ();
+		mCursor.insertBlock ();
+		mCursor.insertText ( QStringLiteral ( "Para clareza, firmo o presente" ) );
 
 		mCursor.insertBlock ();
 		mCursor.insertBlock ();
-		mCursor.insertText ( QStringLiteral ( "Assinatura:__________________________________________" ) );
+		mCursor.insertText ( QStringLiteral ( "__________________________________________" ) );
 		mCursor.insertBlock ();
 		mCursor.insertText ( QStringLiteral ( "CPF: 294.655.068-00 / RG: 30.258.261-7" ) );
 		mCursor.insertBlock ();
@@ -1187,7 +1190,7 @@ dockQP::dockQP ()
 	mainLayout = new QVBoxLayout;
 	mainWidget->setLayout ( mainLayout );
 	setWidget ( mainWidget );
-	addPostRoutine ( deleteDockQPInstance );
+	Sys_Init::addPostRoutine ( deleteDockQPInstance );
 }
 
 void dockQP::attach ( reportGenerator* instance )
@@ -1281,7 +1284,7 @@ dockBJ::dockBJ ()
 
 	frmBriefJob->setLayout ( gLayout );
 	setWidget ( frmBriefJob );
-	addPostRoutine ( deleteDockBJInstance );
+	Sys_Init::addPostRoutine ( deleteDockBJInstance );
 }
 
 void dockBJ::attach ( reportGenerator* instance )

@@ -4,7 +4,7 @@
 #include "completers.h"
 #include "simplecalculator.h"
 #include "backupdialog.h"
-#include "data.h"
+#include "system_init.h"
 #include "configops.h"
 #include "estimates.h"
 #include "documenteditor.h"
@@ -31,7 +31,6 @@
 #include "reportgenerator.h"
 #include "supplierrecord.h"
 #include "machinesdlg.h"
-#include "cleanup.h"
 #include "configdialog.h"
 #include "dbstatistics.h"
 #include "dbtableview.h"
@@ -48,6 +47,7 @@
 #include <QDir>
 #include <QDesktopWidget>
 #include <QScrollBar>
+#include <QToolBar>
 #include <QScopedPointer>
 
 MainWindow* MainWindow::s_instance ( nullptr );
@@ -64,6 +64,7 @@ static const QString chkPayOverdueToolTip_overdue[3] = {
 };
 
 static const QString jobPicturesSubDir ( QStringLiteral ( "Pictures/" ) );
+static const auto screen_width ( qApp->desktop ()->availableGeometry ().width () );
 
 void deleteMainWindowInstance ()
 {
@@ -82,7 +83,8 @@ MainWindow::MainWindow ()
 	setWindowIcon ( ICON ( "vm-logo-22x22" ) );
 	setWindowTitle ( PROGRAM_NAME + QLatin1String ( " - " ) + PROGRAM_VERSION );
 	createTrayIcon (); // create the icon for VM_NOTIFY () use
-	addPostRoutine ( deleteMainWindowInstance );
+	vmNotify::initNotify ();
+	Sys_Init::addPostRoutine ( deleteMainWindowInstance );
 }
 
 MainWindow::~MainWindow ()
@@ -128,7 +130,6 @@ MainWindow::~MainWindow ()
 void MainWindow::continueStartUp ()
 {
 	setStatusBar ( nullptr ); // we do not want a statusbar
-	createTrayIcon ( false );
 	setupCustomControls ();
 	restoreLastSession ();
 	updateProgramDate ();
@@ -140,7 +141,7 @@ void MainWindow::continueStartUp ()
 	
 	// connect for last to avoid unnecessary signal emission when we are removing tabs
 	static_cast<void>( connect ( ui->tabMain, &QTabWidget::currentChanged, this, &MainWindow::tabMain_currentTabChanged ) );
-	static_cast<void>( connect ( qApp, &QCoreApplication::aboutToQuit, this, [&] () { return Data::de_init (); } ) );
+	static_cast<void>( connect ( qApp, &QCoreApplication::aboutToQuit, this, [&] () { return Sys_Init::deInit (); } ) );
 	this->tabPaysLists_currentChanged ( 0 ); // update pay totals line edit text
 }
 //--------------------------------------------CLIENT------------------------------------------------------------
@@ -179,43 +180,31 @@ void MainWindow::setupClientPanel ()
 	ui->txtClientName->setCompleter ( APP_COMPLETERS ()->getCompleter ( vmCompleters::CLIENT_NAME ) );
 	ui->txtClientName->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClientName_textAltered ( sender->text () ); } );
-	ui->txtClientName->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->txtClientCity, FLD_CLIENT_CITY );
 	ui->txtClientCity->setCompleter ( APP_COMPLETERS ()->getCompleter ( vmCompleters::ADDRESS ) );
 	ui->txtClientCity->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClient_textAltered ( sender ); } );
-	ui->txtClientCity->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->txtClientDistrict, FLD_CLIENT_DISTRICT );
 	ui->txtClientDistrict->setCompleter ( APP_COMPLETERS ()->getCompleter ( vmCompleters::ADDRESS ) );
 	ui->txtClientDistrict->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClient_textAltered ( sender ); } );
-	ui->txtClientDistrict->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->txtClientStreetAddress, FLD_CLIENT_STREET );
 	ui->txtClientStreetAddress->setCompleter ( APP_COMPLETERS ()->getCompleter ( vmCompleters::ADDRESS ) );
 	ui->txtClientStreetAddress->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClient_textAltered ( sender ); } );
-	ui->txtClientStreetAddress->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->txtClientNumberAddress, FLD_CLIENT_NUMBER );
 	ui->txtClientNumberAddress->setTextType ( vmWidget::TT_INTEGER );
 	ui->txtClientNumberAddress->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClient_textAltered ( sender ); } );
-	ui->txtClientNumberAddress->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->txtClientZipCode, FLD_CLIENT_ZIP );
 	ui->txtClientZipCode->setTextType ( vmWidget::TT_NUMBER_PLUS_SYMBOL );
 	ui->txtClientZipCode->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtClientZipCode_textAltered ( sender->text () ); } );
-	ui->txtClientZipCode->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->contactsClientPhones, FLD_CLIENT_PHONES );
 	ui->contactsClientPhones->setContactType ( contactsManagerWidget::CMW_PHONES );
@@ -235,40 +224,15 @@ void MainWindow::setupClientPanel ()
 	saveClientWidget ( ui->dteClientDateFrom, FLD_CLIENT_STARTDATE );
 	ui->dteClientDateFrom->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return dteClient_dateAltered ( sender ); } );
-	ui->dteClientDateFrom->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 	ui->dteClientDateTo->setID ( FLD_CLIENT_ENDDATE );
-	ui->dteClientDateTo->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return dteClient_dateAltered ( sender ); } );
-	ui->dteClientDateTo->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return clientKeyPressedSelector ( ke ); } );
 
 	saveClientWidget ( ui->chkClientActive, FLD_CLIENT_STATUS );
 	ui->chkClientActive->setLabel ( TR_FUNC ( "Currently active" ) );
-	ui->chkClientActive->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return txtClient_textAltered ( sender ); } );
-
-	static_cast<void>( connect ( ui->btnClientAdd, &QToolButton::clicked, this, [&] () { return (mClientCurItem = addClient ()); } ) );
-	static_cast<void>( connect ( ui->btnClientEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editClient ( mClientCurItem )); } ) );
-	static_cast<void>( connect ( ui->btnClientDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delClient ( mClientCurItem )); } ) );
-	static_cast<void>( connect ( ui->btnClientSave, &QToolButton::clicked, this, [&] () { return static_cast<void>( saveClient ( mClientCurItem )); } ) );
-	static_cast<void>( connect ( ui->btnClientCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelClient ( mClientCurItem )); } ) );
-}
-
-void MainWindow::clientKeyPressedSelector ( const QKeyEvent* ke )
-{
-	if ( ke->key () == Qt::Key_Escape )
-		static_cast<void>( cancelClient ( mClientCurItem ) );
-	else
-	{
-		ui->clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
-		static_cast<void>( saveClient ( mClientCurItem ) );
-	}
 }
 
 void MainWindow::clientsListWidget_currentItemChanged ( vmListItem* item )
 {
-	static_cast<void>( displayClient( static_cast<clientListItem*>( item ) ) );
+	static_cast<void>( displayClient ( static_cast<clientListItem*>( item ) ) );
 }
 
 void MainWindow::controlClientForms ( const clientListItem* const client_item )
@@ -285,10 +249,12 @@ void MainWindow::controlClientForms ( const clientListItem* const client_item )
 	ui->dteClientDateTo->setEditable ( editing_action.isOn () );
 	ui->chkClientActive->setEditable ( editing_action.isOn () );
 
-	ui->btnClientEdit->setEnabled ( editing_action.isOff () );
-	ui->btnClientDel->setEnabled ( editing_action.isOff () );
-	ui->btnClientSave->setEnabled ( editing_action.isOn () ? client_item->isGoodToSave () : false );
-	ui->btnClientCancel->setEnabled ( editing_action.isOn () );
+	sectionActions[0].b_canAdd = true;
+	sectionActions[0].b_canEdit = editing_action.isOff ();
+	sectionActions[0].b_canRemove = editing_action.isOff ();
+	sectionActions[0].b_canSave = editing_action.isOn () ? client_item->isGoodToSave () : false;
+	sectionActions[0].b_canCancel = editing_action.isOn ();
+	updateActionButtonsState ();
 
 	ui->contactsClientPhones->setEditable ( editing_action.isOn () );
 	ui->contactsClientEmails->setEditable ( editing_action.isOn () );
@@ -301,11 +267,12 @@ bool MainWindow::saveClient ( clientListItem* client_item, const bool b_dbsave )
 {
 	if ( client_item != nullptr )
 	{
+		updateWindowBeforeSave ();
 		if ( client_item->clientRecord ()->saveRecord ( false, b_dbsave ) )
 		{
 			client_item->setAction ( ACTION_READ, true ); // now we can change indexes
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved!" ), TR_FUNC ( "Client data saved!" ) );
-			displayClient ( client_item, true, nullptr, nullptr );
+			controlClientForms ( client_item );
 			saveView ();
 			removeEditItem ( static_cast<vmListItem*>(client_item) );
 			return true;
@@ -395,11 +362,9 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 	// This function is called by user interaction and programatically. When called programatically, item may be nullptr
 	if ( client_item )
 	{	
-		ui->tabMain->setCurrentIndex ( 0 );
+		//ui->tabMain->setCurrentIndex ( 0 );
 		if ( client_item->loadData () )
 		{
-			controlClientForms ( client_item );
-			loadClientInfo ( client_item->clientRecord () );
 			if ( client_item != mClientCurItem )
 			{
 				if ( b_select )
@@ -407,6 +372,8 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 				mClientCurItem = client_item;
 				fillAllLists ( client_item );
 			}
+			controlClientForms ( client_item );
+			loadClientInfo ( client_item->clientRecord () );
 			if ( !job_item )
 				job_item = client_item->jobs->last ();
 			displayJob ( job_item, true, buy_item );
@@ -513,7 +480,8 @@ void MainWindow::alterClientEndDate ( const jobListItem* const job_item )
 		{
 			Client* client ( client_item->clientRecord () );
 			client->setAction ( ACTION_EDIT );
-			setRecValue ( client, FLD_CLIENT_ENDDATE, job_item->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_DB_DATE ) );
+			setRecValue ( client, FLD_CLIENT_ENDDATE, 
+					job_item->jobRecord ()->date ( FLD_JOB_ENDDATE ).toDate ( vmNumber::VDF_DB_DATE ) );
 			static_cast<void>( client->saveRecord () );
 		}
 	}
@@ -649,7 +617,7 @@ void MainWindow::showJobSearchResult ( vmListItem* item, const bool bshow )
 						if ( job_item->searchSubFields ()->at ( day ) != job_item->searchSubFields ()->defaultValue () )
 						{
 							static_cast<vmListItem*>( ui->lstJobDayReport->item( static_cast<int>(day) ) )->highlight ( bshow ? vmBlue : vmDefault_Color );
-							jobWidgetList.at ( FLD_JOB_REPORT + job_item->searchSubFields ()->at ( day ) )->highlight ( bshow ? vmBlue : vmDefault_Color, SEARCH_UI ()->searchTerm () );
+							//jobWidgetList.at ( FLD_JOB_REPORT + job_item->searchSubFields ()->at ( day ) )->highlight ( bshow ? vmBlue : vmDefault_Color, SEARCH_UI ()->searchTerm () );
 						}
 					}
 				}
@@ -662,11 +630,9 @@ void MainWindow::showJobSearchResult ( vmListItem* item, const bool bshow )
 
 void MainWindow::setupJobPanel ()
 {
-	static_cast<void>( connect ( ui->btnJobAdd, &QToolButton::clicked, this, [&] () { return (mJobCurItem = addJob ( mClientCurItem )); } ) );
-	static_cast<void>( connect ( ui->btnJobEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editJob ( mJobCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnJobSave, &QToolButton::clicked, this, [&] () { return static_cast<void>( saveJob ( mJobCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnJobCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelJob ( mJobCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnJobDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delJob ( mJobCurItem ) ); } ) );
+	actJobSelectJob = new QAction ( ICON ( "project-nbr.png" ), emptyString );
+	static_cast<void>( connect ( actJobSelectJob, &QAction::triggered, this, [&] () { return btnJobSelect_clicked (); } ) );
+	
 	static_cast<void>( connect ( ui->btnQuickProject, &QPushButton::clicked, this, [&] () { return on_btnQuickProject_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnJobEditProjectPath, static_cast<void (QToolButton::*)( const bool )>(&QToolButton::clicked),
 			  this, [&] ( const bool checked ) { ui->txtJobProjectPath->setEditable ( checked ); if ( checked ) ui->txtJobProjectPath->setFocus (); } ) );
@@ -682,81 +648,55 @@ void MainWindow::setupJobPanel ()
 	ui->cboJobType->setCompleter ( vmCompleters::JOB_TYPE );
 	ui->cboJobType->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return cboJobType_textAltered ( sender ); } );
-	ui->cboJobType->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobAddress, FLD_JOB_ADDRESS );
 	ui->txtJobAddress->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJob_textAltered ( sender ); } );
-	ui->txtJobAddress->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobProjectID, FLD_JOB_PROJECT_ID );
 	ui->txtJobProjectID->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJob_textAltered ( sender ); } );
-	ui->txtJobProjectID->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobPrice, FLD_JOB_PRICE );
 	ui->txtJobPrice->setTextType ( vmLineEdit::TT_PRICE );
 	ui->txtJobPrice->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJob_textAltered ( sender ); } );
-	ui->txtJobPrice->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobProjectPath, FLD_JOB_PROJECT_PATH );
 	ui->txtJobProjectPath->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJob_textAltered ( sender ); } );
-	ui->txtJobProjectPath->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobPicturesPath, FLD_JOB_PICTURE_PATH );
 	ui->txtJobPicturesPath->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJob_textAltered ( sender ); } );
-	ui->txtJobPicturesPath->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobWheather, FLD_JOB_REPORT + Job::JRF_WHEATHER );
 	ui->txtJobWheather->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJobWheather_textAltered ( sender ); } );
-	ui->txtJobWheather->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobTotalDayTime, FLD_JOB_REPORT + Job::JRF_REPORT + 1 );
 	ui->txtJobTotalDayTime->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtJobTotalDayTime_textAltered ( sender ); } );
-	ui->txtJobTotalDayTime->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobReport, FLD_JOB_REPORT + Job::JRF_REPORT );
 	ui->txtJobReport->setCallbackForContentsAltered ( [&] ( const vmWidget* const widget ) {
 		return updateJobInfo ( static_cast<textEditWithCompleter*>( const_cast<vmWidget*> ( widget ) )->currentText (), JILUR_REPORT ); } );
-	ui->txtJobReport->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 	ui->txtJobReport->setUtilitiesPlaceLayout ( ui->layoutTxtJobUtilities );
 
 	saveJobWidget ( ui->timeJobStart, FLD_JOB_REPORT + Job::JRF_START_TIME );
 	ui->timeJobStart->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) {
 		return timeJobStart_timeAltered (); } );
-	ui->timeJobStart->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->timeJobEnd, FLD_JOB_REPORT + Job::JRF_END_TIME );
 	ui->timeJobEnd->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) {
 		return timeJobEnd_timeAltered (); } );
-	ui->timeJobEnd->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->dteJobStart, FLD_JOB_STARTDATE );
 	ui->dteJobStart->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return dteJob_dateAltered ( sender ); } );
-	ui->dteJobStart->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 	saveJobWidget ( ui->dteJobEnd, FLD_JOB_ENDDATE );
 	ui->dteJobEnd->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return dteJob_dateAltered ( sender ); } );
-	ui->dteJobEnd->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return jobKeyPressedSelector ( ke ); } );
 
 	saveJobWidget ( ui->txtJobKeyWords->lineControl (), FLD_JOB_KEYWORDS );
 	ui->txtJobKeyWords->setButtonType ( vmLineEditWithButton::LEBT_CUSTOM_BUTTOM );
@@ -765,11 +705,8 @@ void MainWindow::setupJobPanel ()
 	ui->txtJobKeyWords->lineControl ()->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		if ( ke->key () == Qt::Key_Enter || ( ke->key () == Qt::Key_Return ) ) return jobAddKeyWord ( ui->txtJobKeyWords->text () ); } );
 	ui->lstJobKeyWords->setCallbackForRowRemoved ( [&] ( const uint row ) { return jobRemoveKeyWord ( row ); } );
-	
-	setupJobPictureControl ();
 
-	static_cast<void>( connect ( ui->btnJobSelectJob, &QToolButton::clicked, this, [&] () { return btnJobSelect_clicked (); } ) );
-	static_cast<void>( connect ( ui->btnJobAddDay, &QToolButton::clicked, this, [&] () { return btnJobAddDay_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnJobAddDay, &QToolButton::clicked, this,	&MainWindow::btnJobAddDay_clicked ) );
 	static_cast<void>( connect ( ui->btnJobEditDay, &QToolButton::clicked, this, [&] () { return btnJobEditDay_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnJobDelDay, &QToolButton::clicked, this, [&] () { return btnJobDelDay_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnJobCancelDelDay, &QToolButton::clicked, this, [&] () { return btnJobCancelDelDay_clicked (); } ) );
@@ -778,6 +715,12 @@ void MainWindow::setupJobPanel ()
 	static_cast<void>( connect ( ui->btnJobMachines, &QToolButton::clicked, this, [&] () { return btnJobMachines_clicked (); } ) );
 	
 	ui->dteJobAddDate->setCallbackForContentsAltered ( [&] ( const vmWidget* const ) { return dteJobAddDate_dateAltered (); } );
+	ui->splitterJobDaysInfo->setSizes ( QList<int> () << 
+						static_cast<int>( screen_width / 4 ) << 
+						static_cast<int>( screen_width / 4 ) << 
+						static_cast<int>( 2 * screen_width / 4 ) );
+	
+	setupJobPictureControl ();
 }
 
 void MainWindow::setUpJobButtons ( const QString& path )
@@ -909,8 +852,8 @@ void MainWindow::setupJobPictureControl ()
 	connect ( ui->btnJobSeparateReportWindow, static_cast<void (QToolButton::*)(bool)>( &QToolButton::clicked ), this, [&] ( bool checked ) { return
 		btnJobSeparateReportWindow_clicked ( checked ); } );
 
+	ui->cboJobPictures->setCallbackForActivated ( [&] ( const int idx ) { return showJobImage ( idx ); } );
 	ui->cboJobPictures->setIgnoreChanges ( false );
-	ui->cboJobPictures->setCallbackForIndexChanged ( [&] ( const int idx ) { return showJobImage ( idx ); } );
 	ui->jobImageViewer->setCallbackForshowImageRequested ( [&] ( const int idx ) { return showJobImageRequested ( idx ); } );
 	ui->jobImageViewer->setCallbackForshowMaximized ( [&] ( const bool maximized ) { return showJobImageInWindow ( maximized ); } );
 
@@ -929,29 +872,6 @@ void MainWindow::displayJobFromCalendar ( vmListItem* cal_item )
 			displayJob ( static_cast<jobListItem*>( cal_item->relatedItem ( RLI_CALENDARITEM ) ), true );
 		
 		ui->lstJobDayReport->setCurrentRow ( cal_item->data ( Qt::UserRole ).toInt () - 1, true, true ); // select pertinent day
-	}
-}
-
-void MainWindow::jobKeyPressedSelector ( const QKeyEvent* ke )
-{
-	switch ( ke->key () )
-	{
-		case Qt::Key_Enter:
-		case Qt::Key_Return:
-			ui->clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
-			saveJob ( mJobCurItem );
-		break;
-		case Qt::Key_S:
-			if ( mJobCurItem )
-			{
-				updateJobInfo ( ui->txtJobReport->currentText (), JILUR_REPORT );
-				if ( mJobCurItem->jobRecord ()->saveRecord () )
-					VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Job report committed" ), TR_FUNC ( "You still need to click on Save to commit other changes" ) );
-			}
-		break;
-		case Qt::Key_Escape:
-			static_cast<void>( cancelJob ( mJobCurItem ) );
-		break;
 	}
 }
 
@@ -1025,11 +945,13 @@ void MainWindow::controlJobForms ( const jobListItem* const job_item )
 	ui->dteJobStart->setEditable ( editing_action.isOn () );
 	ui->dteJobEnd->setEditable ( editing_action.isOn () );
 
-	ui->btnJobSave->setEnabled ( editing_action.isOn () ? job_item->isGoodToSave () : false );
-	ui->btnJobEdit->setEnabled ( editing_action.isOff () );
-	ui->btnJobCancel->setEnabled ( editing_action.isOn () );
-	ui->btnJobDel->setEnabled ( editing_action.isOff () );
-	ui->btnJobAdd->setEnabled ( mClientCurItem != nullptr ? mClientCurItem->action() != ACTION_ADD : false );
+	sectionActions[1].b_canAdd = mClientCurItem != nullptr ? mClientCurItem->action() != ACTION_ADD : false;
+	sectionActions[1].b_canEdit = editing_action.isOff ();
+	sectionActions[1].b_canRemove = editing_action.isOff ();
+	sectionActions[1].b_canSave = editing_action.isOn () ? job_item->isGoodToSave () : false;
+	sectionActions[1].b_canCancel = editing_action.isOn ();
+	updateActionButtonsState ();
+	
 	ui->btnJobEditProjectPath->setEnabled ( editing_action.isOn () );
 
 	ui->cboJobType->highlight ( editing_action.isOn () ? ( ui->cboJobType->text ().isEmpty () ? vmRed : vmDefault_Color ) : vmDefault_Color );
@@ -1052,12 +974,13 @@ void MainWindow::controlJobForms ( const jobListItem* const job_item )
 void MainWindow::controlJobDaySection ( const jobListItem* const job_item )
 {
 	const triStateType editing_action ( job_item ? static_cast<TRI_STATE>( job_item->action () != ACTION_READ ) : TRI_UNDEF );
-	const bool b_hasDays ( ( ui->lstJobDayReport->count () > 0 ) && editing_action.isOn () );
+	const vmListItem* const day_item ( ui->lstJobDayReport->currentItem () );
+	const bool b_editingDay ( editing_action.isOn () ? day_item != nullptr : false );
 	
 	ui->btnJobAddDay->setEnabled ( editing_action.isOn () );
-	ui->btnJobEditDay->setEnabled ( b_hasDays );
-	ui->btnJobDelDay->setEnabled ( b_hasDays );
-	ui->btnJobCancelDelDay->setEnabled ( b_hasDays ? ui->lstJobDayReport->currentItem ()->data ( JILUR_REMOVED ).toBool () : false );
+	ui->btnJobEditDay->setEnabled ( b_editingDay ? !day_item->data ( JILUR_EDITED ).toBool () && !day_item->data ( JILUR_ADDED ).toBool () : false );
+	ui->btnJobDelDay->setEnabled ( b_editingDay ? !day_item->data ( JILUR_REMOVED ).toBool () : false );
+	ui->btnJobCancelDelDay->setEnabled ( b_editingDay ? day_item->data ( JILUR_REMOVED ).toBool () : false );
 	ui->btnJobSeparateReportWindow->setEnabled ( job_item != nullptr );
 	
 	ui->btnJobPrevDay->setEnabled ( ui->lstJobDayReport-> currentRow () >= 1 );
@@ -1092,9 +1015,10 @@ void MainWindow::controlJobPictureControls ()
 }
 
 bool MainWindow::saveJob ( jobListItem* job_item, const bool b_dbsave )
-{
+{	
 	if ( job_item )
 	{
+		updateWindowBeforeSave ();
 		ui->txtJobReport->saveContents ( true, true ); // force committing the newest text to the buffers. Avoid depending on Qt's signals, which might occur later than when reaching here
 		Job* job ( job_item->jobRecord () );
 		if ( job->saveRecord ( false, b_dbsave ) ) // do not change indexes just now. Wait for dbCalendar actions
@@ -1119,7 +1043,7 @@ bool MainWindow::saveJob ( jobListItem* job_item, const bool b_dbsave )
 			//displayJob ( job_item, true, nullptr );
 			controlJobForms ( job_item );
 			//When the job list is empty, we cannot add a purchase. Now that we've saved a job, might be we added one too, so now we can add a buy
-			ui->btnBuyAdd->setEnabled ( true );
+			sectionActions[3].b_canAdd = true;
 			saveView ();
 			removeEditItem ( static_cast<vmListItem*>( job_item ) );
 			return true;
@@ -1219,9 +1143,7 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 	{
 		if ( job_item->loadData () )
 		{
-			ui->tabMain->setCurrentIndex ( 0 );
-			loadJobInfo ( job_item->jobRecord () );
-			controlJobForms ( job_item );
+			//ui->tabMain->setCurrentIndex ( 0 );
 			if ( job_item != mJobCurItem )
 			{
 				if ( b_select )
@@ -1230,6 +1152,8 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 				displayPay ( job_item->payItem (), true );
 				fillJobBuyList ( job_item );
 			}
+			loadJobInfo ( job_item->jobRecord () );
+			controlJobForms ( job_item );
 			if ( !buy_item )
 			{
 				if ( !job_item->buys->isEmpty () )
@@ -1308,8 +1232,7 @@ void MainWindow::scanJobImages ()
 	if ( ui->cboJobPictures->count () == 0 )
 	{
 		const uint year ( static_cast<uint>( vmNumber::currentDate.year () ) );
-		const QString picturePath ( CONFIG ()->getProjectBasePath ( ui->txtClientName->text () ) +
-									jobPicturesSubDir );
+		const QString picturePath ( CONFIG ()->getProjectBasePath ( ui->txtClientName->text () ) + jobPicturesSubDir );
 		fileOps::createDir ( picturePath );
 		QMenu* yearsMenu ( ui->btnJobClientsYearPictures->menu () );
 		for ( uint i ( 0 ), y ( 2008 ); y <= year; ++i, ++y )
@@ -1475,7 +1398,7 @@ void MainWindow::addJobPayment ( jobListItem* const job_item )
 	pay_item->setDBRecID ( static_cast<uint>( recIntValue ( pay_item->payRecord (), FLD_PAY_ID ) ) );
 	static_cast<clientListItem*>( job_item->relatedItem ( RLI_CLIENTPARENT ) )->pays->append ( pay_item );
 	job_item->setPayItem ( pay_item );
-	insertEditItem ( static_cast<vmListItem*>( mPayCurItem ) );
+	insertEditItem ( static_cast<vmListItem*>( pay_item ) );
 	mPayCurItem = pay_item;
 }
 
@@ -1718,7 +1641,8 @@ void MainWindow::fillCalendarJobsList ( const stringTable& jobids, vmListWidget*
 
 void MainWindow::controlFormsForJobSelection ( const bool bStartSelection )
 {
-	ui->btnJobSelectJob->setEnabled ( bStartSelection );
+	sectionActions[1].b_canExtra[0] = bStartSelection;
+	updateActionButtonsState ();
 	ui->tabMain->widget ( TI_CALENDAR )->setEnabled ( !bStartSelection );
 	ui->tabMain->widget ( TI_STATISTICS )->setEnabled ( !bStartSelection );
 	ui->tabMain->widget ( TI_TABLEWIEW )->setEnabled ( !bStartSelection );
@@ -1761,7 +1685,6 @@ void MainWindow::btnJobAddDay_clicked ()
 void MainWindow::btnJobEditDay_clicked ()
 {
 	static_cast<vmListItem*>( ui->lstJobDayReport->currentItem () )->setData ( JILUR_EDITED, true );
-	ui->dteJobAddDate->setEditable ( true );
 	controlJobDayForms ( true );
 	ui->dteJobAddDate->setFocus ();
 }
@@ -1941,7 +1864,6 @@ void MainWindow::cboJobType_textAltered ( const vmWidget* const sender )
 		mJobCurItem->update ();
 		postFieldAlterationActions ( mJobCurItem );
 	}
-	ui->btnJobSave->setEnabled ( mJobCurItem->isGoodToSave () );
 }
 
 void MainWindow::txtJob_textAltered ( const vmWidget* const sender )
@@ -1954,6 +1876,8 @@ void MainWindow::txtJob_textAltered ( const vmWidget* const sender )
 				 new_value.append ( CHR_F_SLASH );
 			setUpJobButtons ( new_value );
 			ui->txtJobPicturesPath->setText ( new_value + QLatin1String ( "Pictures" ), true );
+			btnJobReloadPictures_clicked ();
+		break;
 		case FLD_JOB_PICTURE_PATH:
 			btnJobReloadPictures_clicked ();
 		break;
@@ -2124,13 +2048,14 @@ void MainWindow::setupPayPanel ()
 	
 	static_cast<void>( connect ( ui->tabPaysLists, &QTabWidget::currentChanged, this, [&] ( const int index ) { return tabPaysLists_currentChanged ( index ); } ) );
 	
-	static_cast<void>( connect ( ui->btnPayPayReceipt, &QToolButton::clicked, this, [&] () { return EDITOR ()->startNewReport ()->createPaymentStub ( mPayCurItem->dbRecID () ); } ) );
-	static_cast<void>( connect ( ui->btnPayPaymentsReport, &QToolButton::clicked, this, [&] () { EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), true, emptyString, true ); } ) );
-	static_cast<void>( connect ( ui->btnPayPaymentsReportOnlyUnPaid, &QToolButton::clicked, this, [&] () { EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), false, emptyString, true ); } ) );
-	static_cast<void>( connect ( ui->btnPayInfoDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delPay ( mPayCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnPayInfoEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editPay ( mPayCurItem) ); } ) );
-	static_cast<void>( connect ( ui->btnPayInfoSave, &QToolButton::clicked, this, [&] () { return static_cast<void>( savePay ( mPayCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnPayInfoCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelPay ( mPayCurItem) ); } ) );
+	actPayReceipt = new QAction ( ICON ( "generate_paystub.png"), emptyString );
+	static_cast<void>( connect ( actPayReceipt, &QAction::triggered, this, [&] () { EDITOR ()->startNewReport ()->createPaymentStub ( mPayCurItem->dbRecID () ); } ) );
+	
+	actPayUnPaidReport = new QAction ( ICON ( "generate_report_unpaid.png"), emptyString );
+	static_cast<void>( connect ( actPayUnPaidReport, &QAction::triggered, this, [&] () { EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), false, emptyString, true ); } ) );
+	
+	actPayReport = new QAction ( ICON ( "generate_report.png"), emptyString );
+	static_cast<void>( connect ( actPayReport, &QAction::triggered, this, [&] () { EDITOR ()->startNewReport ()->createJobReport ( mClientCurItem->dbRecID (), true, emptyString, true ); } ) );
 }
 
 void MainWindow::displayPayFromCalendar ( vmListItem* cal_item )
@@ -2331,14 +2256,14 @@ void MainWindow::controlPayForms ( const payListItem* const pay_item )
 	ui->txtPayTotalPrice->setEditable ( editing_action.isOn () );
 	ui->chkPayOverdue->setEditable ( editing_action.isOn () );
 
-	ui->btnPayPaymentsReport->setEnabled ( ui->paysList->count () > 0 );
-	ui->btnPayPaymentsReportOnlyUnPaid->setEnabled ( ui->paysList->count () > 0 );
-	ui->btnPayPayReceipt->setEnabled ( pay_item != nullptr );
-
-	ui->btnPayInfoSave->setEnabled ( editing_action.isOn () ? pay_item->isGoodToSave () : false );
-	ui->btnPayInfoEdit->setEnabled ( editing_action.isOff () );
-	ui->btnPayInfoCancel->setEnabled ( editing_action.isOn () );
-	ui->btnPayInfoDel->setEnabled ( editing_action.isOn () );
+	sectionActions[2].b_canEdit = editing_action.isOff ();
+	sectionActions[2].b_canRemove = editing_action.isOn ();
+	sectionActions[2].b_canSave = editing_action.isOn () ? pay_item->isGoodToSave () : false;
+	sectionActions[2].b_canCancel = editing_action.isOn ();
+	sectionActions[2].b_canExtra[0] = ui->paysList->count () > 0;
+	sectionActions[2].b_canExtra[1] = ui->paysList->count () > 0;
+	sectionActions[2].b_canExtra[2] = pay_item != nullptr && !pay_item->payRecord ()->price ( FLD_PAY_TOTALPAID ).isNull ();
+	updateActionButtonsState ();
 
 	const vmNumber paid_price ( ui->txtPayTotalPaid->text (), VMNT_PRICE, 1 );
 	const vmNumber total_price ( ui->txtPayTotalPrice->text (), VMNT_PRICE, 1 );
@@ -2384,7 +2309,7 @@ bool MainWindow::editPay ( payListItem* pay_item, const bool b_dogui )
 		if ( pay_item->action () == ACTION_READ )
 		{
 			pay_item->setAction ( ACTION_EDIT, true );
-			insertEditItem ( static_cast<vmListItem*>(pay_item) );
+			insertEditItem ( static_cast<vmListItem*>( pay_item ) );
 			if ( b_dogui )
 			{
 				controlPayForms ( pay_item );
@@ -2430,9 +2355,7 @@ void MainWindow::displayPay ( payListItem* pay_item, const bool b_select )
 	{
 		if ( pay_item->loadData () )
 		{
-			ui->tabMain->setCurrentIndex ( 0 );
-			controlPayForms ( pay_item );
-			loadPayInfo ( pay_item->payRecord () );
+			//ui->tabMain->setCurrentIndex ( 0 );
 			if ( pay_item != mPayCurItem )
 			{
 				if ( b_select )
@@ -2441,6 +2364,8 @@ void MainWindow::displayPay ( payListItem* pay_item, const bool b_select )
 				ui->paysOverdueClientList->setCurrentItem ( mPayCurItem->relatedItem ( PAY_ITEM_OVERDUE_CLIENT ), true, false );
 				ui->paysOverdueList->setCurrentItem ( mPayCurItem->relatedItem ( PAY_ITEM_OVERDUE_ALL ), true, false );
 			}
+			controlPayForms ( pay_item );
+			loadPayInfo ( pay_item->payRecord () );
 		}
 	}
 	else
@@ -2660,13 +2585,11 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 
 	const uint col ( static_cast<uint>( item->column () ) );
 	const bool b_paid ( ui->tablePayments->sheetItem ( row, PHR_PAID )->text () == CHR_ONE );
-	bool bSetUseDate ( false );
 
 	triStateType input_ok;
 	switch ( col )
 	{
 		case PHR_DATE:
-			bSetUseDate = true;
 		case PHR_USE_DATE:
 		{
 			input_ok = ui->tablePayments->isRowEmpty ( row );
@@ -2684,7 +2607,6 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 		case PHR_PAID:
 		case PHR_VALUE:
 			updatePayTotalPaidValue ();
-			ui->btnPayPayReceipt->setEnabled ( b_paid );
 			if ( b_paid && !ui->tablePayments->sheetItem ( row, PHR_DATE )->cellIsAltered () )
 				ui->tablePayments->sheetItem ( row, PHR_DATE )->setDate ( vmNumber::currentDate );
 
@@ -2704,7 +2626,6 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 			}
 		break;
 		case PHR_METHOD:
-			bSetUseDate = true;
 		case PHR_ACCOUNT:
 			input_ok = ( b_paid == !( ui->tablePayments->sheetItem ( row, col )->text ().isEmpty () ) );
 			mPayCurItem->setFieldInputStatus ( col + INFO_TABLE_COLUMNS_OFFSET, input_ok.isOn (), item );
@@ -2713,7 +2634,7 @@ void MainWindow::interceptPaymentCellChange ( const vmTableItem* const item )
 		break;
 	}
 
-	if ( bSetUseDate )
+	if ( col == PHR_DATE || col == PHR_METHOD )
 	{
 		const QString strMethod ( ui->tablePayments->sheetItem ( row, PHR_METHOD )->text () );
 		if ( strMethod == QStringLiteral ( "TED" ) || strMethod == QStringLiteral ( "DOC" ) || 
@@ -3002,15 +2923,9 @@ void MainWindow::setupBuyPanel ()
 	ui->tableBuyPayments->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return buyKeyPressedSelector ( ke ); } );
 
-	static_cast<void>( connect ( ui->btnShowSuppliersDlg, &QToolButton::clicked, this, [&] () { return SUPPLIERS ()->displaySupplier ( ui->cboBuySuppliers->currentText (), true ); } ) );
-	static_cast<void>( connect ( ui->btnBuyAdd, &QToolButton::clicked, this, [&] () { return (mBuyCurItem = addBuy ( mClientCurItem, mJobCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnBuyEdit, &QToolButton::clicked, this, [&] () { return static_cast<void>( editBuy ( mBuyCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnBuyDel, &QToolButton::clicked, this, [&] () { return static_cast<void>( delBuy ( mBuyCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnBuySave, &QToolButton::clicked, this, [&] () { return static_cast<void>( saveBuy ( mBuyCurItem ) ); } ) );
-	static_cast<void>( connect ( ui->btnBuyCancel, &QToolButton::clicked, this, [&] () { return static_cast<void>( cancelBuy ( mBuyCurItem ) ); } ) );
+	static_cast<void>( connect ( ui->btnShowSuppliersDlg, &QToolButton::clicked, this, [&] () { return SUPPLIERS ()->displaySupplier ( ui->cboBuySuppliers->currentText (), true ); } ) );	
 	static_cast<void>( connect ( ui->btnBuyCopyRows, &QToolButton::clicked, this, [&] () { return on_btnBuyCopyRows_clicked (); } ) );
 	
-	const int screen_width ( qApp->desktop ()->availableGeometry ().width () );
 	ui->splitterBuyInfo->setSizes ( QList<int> () << static_cast<int>( 3* screen_width / 8 ) << static_cast<int>( 5 * screen_width / 8 ) );
 }
 
@@ -3110,12 +3025,13 @@ void MainWindow::controlBuyForms ( const buyListItem* const buy_item )
 	ui->dteBuyDeliveryDate->setEditable ( editing_action.isOn () );
 	ui->txtBuyNotes->setEditable ( editing_action.isOn () );
 
-	ui->btnBuySave->setEnabled ( editing_action.isOn () ? buy_item->isGoodToSave () : false );
-	ui->btnBuyEdit->setEnabled ( editing_action.isOff () );
-	ui->btnBuyCancel->setEnabled ( editing_action.isOn () );
-	ui->btnBuyDel->setEnabled ( editing_action.isOff () );
-	ui->btnBuyAdd->setEnabled ( mJobCurItem != nullptr );
-
+	sectionActions[3].b_canAdd = mJobCurItem != nullptr ? mJobCurItem->action() != ACTION_ADD : false;
+	sectionActions[3].b_canEdit = editing_action.isOff ();
+	sectionActions[3].b_canRemove = editing_action.isOff ();
+	sectionActions[3].b_canSave = editing_action.isOn () ? buy_item->isGoodToSave () : false;
+	sectionActions[3].b_canCancel = editing_action.isOn ();
+	updateActionButtonsState ();
+	
 	static const Buy static_buy;
 	const Buy* const buy ( buy_item ? buy_item->buyRecord () : &static_buy );
 	const vmNumber buyTotalPrice ( recStrValue ( buy, FLD_BUY_PRICE ), VMNT_PRICE, 1 );
@@ -3144,7 +3060,7 @@ bool MainWindow::saveBuy ( buyListItem* buy_item, const bool b_dbsave )
 			ui->tableBuyPayments->setTableUpdated ();
 			updateBuyTotalPriceWidgets ( buy_item );
 
-			static_cast<void>( Data::insertComboItem ( ui->cboBuySuppliers, recStrValue ( buy, FLD_BUY_SUPPLIER ) ) );
+			static_cast<void>( VM_LIBRARY_FUNCS::insertComboItem ( ui->cboBuySuppliers, recStrValue ( buy, FLD_BUY_SUPPLIER ) ) );
 			cboBuySuppliers_indexChanged ( ui->cboBuySuppliers->findText ( ui->cboBuySuppliers->text() ) ); // update suppliers' list with - possibly - a new entry
 			
 			VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Record saved" ), recStrValue ( buy_item->buyRecord (), FLD_BUY_SUPPLIER ) + 
@@ -3267,9 +3183,7 @@ void MainWindow::displayBuy ( buyListItem* buy_item, const bool b_select )
 {
 	if ( buy_item && buy_item->loadData () )
 	{
-		ui->tabMain->setCurrentIndex ( 0 );
-		controlBuyForms ( buy_item );
-		loadBuyInfo ( buy_item->buyRecord () );
+		//ui->tabMain->setCurrentIndex ( 0 );
 		if ( buy_item != mBuyCurItem )
 		{
 			if ( b_select ) // Sync both lists, but make sure no signals are emitted
@@ -3281,6 +3195,8 @@ void MainWindow::displayBuy ( buyListItem* buy_item, const bool b_select )
 			if ( buy_item->relatedItem ( RLI_EXTRAITEMS ) != nullptr )
 				ui->lstBuySuppliers->setCurrentItem ( static_cast<buyListItem*>( buy_item->relatedItem ( RLI_EXTRAITEMS ) ), true, false );
 		}
+		controlBuyForms ( buy_item );
+		loadBuyInfo ( buy_item->buyRecord () );
 	}
 	else
 	{
@@ -3650,16 +3566,11 @@ void MainWindow::setupCustomControls ()
 {
 	APP_RESTORER ()->addRestoreInfo ( m_crash = new crashRestore ( QStringLiteral ( "vmmain" ) ) );
 	ui->txtSearch->setEditable ( true );
-	static_cast<void>(connect ( ui->txtSearch, &QLineEdit::textEdited, this, [&] ( const QString& text ) { return on_txtSearch_textEdited ( text ); } ));
+	static_cast<void>( connect ( ui->txtSearch, &QLineEdit::textEdited, this, [&] ( const QString& text ) { return on_txtSearch_textEdited ( text ); } ) );
 	ui->txtSearch->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return searchCallbackSelector ( ke ); } );
-	static_cast<void>(connect ( ui->btnSearchStart, &QToolButton::clicked, this, [&] () { return on_btnSearchStart_clicked (); } ));
-	static_cast<void>(connect ( ui->btnSearchCancel, &QToolButton::clicked, this, [&] () { return on_btnSearchCancel_clicked (); } ));
-	
-	ui->lblCurInfoClient->setCallbackForLabelActivated ( [&] () { ui->scrollWorkFlow->ensureWidgetVisible ( grpClients ); ui->clientsList->setFocus (); } );
-	ui->lblCurInfoJob->setCallbackForLabelActivated ( [&] () { ui->scrollWorkFlow->ensureWidgetVisible ( ui->btnJobAdd ); ui->jobsList->setFocus (); } );
-	ui->lblCurInfoPay->setCallbackForLabelActivated ( [&] () { ui->scrollWorkFlow->ensureWidgetVisible ( ui->txtPayTotalPrice ); ui->paysList->setFocus (); } );
-	ui->lblCurInfoBuy->setCallbackForLabelActivated ( [&] () { ui->scrollWorkFlow->ensureWidgetVisible ( ui->tableBuyItems ); ui->buysList->setFocus (); } );
+	static_cast<void>( connect ( ui->btnSearchStart, &QToolButton::clicked, this, [&] () { return on_btnSearchStart_clicked (); } ) );
+	static_cast<void>( connect ( ui->btnSearchCancel, &QToolButton::clicked, this, [&] () { return on_btnSearchCancel_clicked (); } ) );
 
 	setupCalendarMethods ();
 	setupClientPanel ();
@@ -3837,6 +3748,7 @@ void MainWindow::restoreLastSession ()
 				buy_item = static_cast<buyListItem*>( ui->buysList->item ( ui->buysList->count () - 1 ) );
 		}
 	}
+	findSectionByScrollPosition ( 0 ); // when I implement the code to restore screen controls' position, this function will not be called with a hard-coded number
 	displayClient ( client_item, true, job_item, buy_item );
 	ui->clientsList->setFocus ();
 }
@@ -3855,14 +3767,12 @@ void MainWindow::reOrderTabSequence ()
 	setTabOrder ( ui->contactsClientPhones->combo (), ui->contactsClientEmails->combo () );
 	setTabOrder ( ui->contactsClientEmails->combo (), ui->dteClientDateFrom );
 	setTabOrder ( ui->dteClientDateFrom, ui->dteClientDateTo );
-	setTabOrder ( ui->dteClientDateTo, ui->btnJobAdd );
 	
 	setTabOrder ( ui->btnQuickProject, ui->txtJobKeyWords );
 	setTabOrder ( ui->txtJobKeyWords, ui->lstJobKeyWords );
 	setTabOrder ( ui->btnJobNextDay, ui->dteJobAddDate );
 	setTabOrder ( ui->dteJobAddDate, ui->btnJobAddDay );
 	setTabOrder ( ui->btnJobSeparatePicture, ui->jobImageViewer );
-	setTabOrder ( ui->jobImageViewer, ui->btnPayInfoEdit );
 	
 	setTabOrder ( ui->buysJobList, ui->dteBuyDate );
 	setTabOrder ( ui->dteBuyDate, ui->dteBuyDeliveryDate );
@@ -3890,12 +3800,205 @@ void MainWindow::setupWorkFlow ()
 	grpBuys->addQEntry ( ui->splitterBuyInfo, new QHBoxLayout );
 
 	ui->scrollWorkFlow->setWidget ( mainTaskPanel );
-
-	setupTabNavigationButtons ();
+	setupSectionNavigation ();
+	
 	ui->tabMain->removeTab ( 7 );
 	ui->tabMain->removeTab ( 6 );
 	ui->tabMain->removeTab ( 5 );
 	ui->tabMain->removeTab ( 4 );
+}
+
+void MainWindow::setupSectionNavigation ()
+{
+	createFloatToolBar ();
+	
+	clientSectionPos = grpClients->pos ().y () + grpClients->height () - 100;
+	jobSectionPos = grpJobs->pos ().y () + grpJobs->height () - 100;
+	paySectionPos = grpPays->pos ().y () + grpPays->height () - 200;
+	buySectionPos = grpBuys->pos ().y () + grpBuys->height () - 100;
+
+	ui->lblCurInfoClient->setCallbackForLabelActivated ( [&] ()
+	{
+		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpClients->pos ().y () );
+		//ui->clientsList->setFocus ();
+		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
+	} );
+
+	ui->lblCurInfoJob->setCallbackForLabelActivated ( [&] ()
+	{
+		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpJobs->pos ().y () );
+		//ui->jobsList->setFocus ();
+		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
+	} );
+
+	ui->lblCurInfoPay->setCallbackForLabelActivated ( [&] ()
+	{
+		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpPays->pos ().y () );
+		//ui->paysList->setFocus ();
+		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
+	} );
+
+	ui->lblCurInfoBuy->setCallbackForLabelActivated ( [&] ()
+	{
+		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpBuys->pos ().y () );
+		//ui->buysList->setFocus ();
+		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
+	} );
+
+	static_cast<void>( connect ( ui->scrollWorkFlow->verticalScrollBar (), &QScrollBar::valueChanged, 
+						this, [&] ( const int value ) { findSectionByScrollPosition ( value ); } ) );
+	setupTabNavigationButtons ();
+}
+
+void MainWindow::findSectionByScrollPosition ( const int scrollBar_value )
+{
+	static vmActionLabel* curLabel ( nullptr ), *prevLabel ( nullptr );
+	vmActionGroup* grpActive ( nullptr );
+	
+	prevLabel = curLabel;
+	if ( scrollBar_value <= ( clientSectionPos ) )
+	{
+		grpActive = grpClients;
+		curLabel = ui->lblCurInfoClient;
+	}
+	else if ( scrollBar_value <= ( jobSectionPos ) )
+	{
+		grpActive = grpJobs;
+		curLabel = ui->lblCurInfoJob;
+	}
+	else if ( scrollBar_value <= ( paySectionPos ) )
+	{
+		grpActive = grpPays;
+		curLabel = ui->lblCurInfoPay;
+	}
+	else if ( scrollBar_value <= ( buySectionPos  ) )
+	{
+		grpActive = grpBuys;
+		curLabel = ui->lblCurInfoBuy;
+	}
+	
+	if ( prevLabel != curLabel )
+	{
+		curLabel->highlight ( vmBlue );
+		changeFuncActionPointers ( grpActive );
+		if ( prevLabel )
+			prevLabel->highlight ( vmDefault_Color );
+	}
+}
+
+void MainWindow::changeFuncActionPointers ( vmActionGroup* grpActive )
+{
+	static QAction* sepAction ( nullptr );
+	QAction *newSep ( nullptr );
+	
+	if ( grpActive == grpClients )
+	{
+		curSectionAction = &sectionActions[0];
+		func_Save = [&] ( vmListItem* ) { return saveClient ( mClientCurItem ); };
+		func_Add = [&] () { return ( mClientCurItem = addClient () ); };
+		func_Edit = [&] ( vmListItem* ) { return editClient ( mClientCurItem ); };
+		func_Del = [&] ( vmListItem* ) { return delClient ( mClientCurItem ); };
+		func_Cancel = [&] ( vmListItem* ) { return cancelClient ( mClientCurItem ); };
+		ui->clientsList->setFocus ();
+		activeRecord = ui->clientsList->currentItem ();
+	}
+	else if ( grpActive == grpJobs )
+	{
+		curSectionAction = &sectionActions[1];
+		func_Save = [&] ( vmListItem* ) { return saveJob ( mJobCurItem ); };
+		func_Add = [&] () { return ( mJobCurItem = addJob ( mClientCurItem ) ); };
+		func_Edit = [&] ( vmListItem* ) { return editJob ( mJobCurItem ); };
+		func_Del = [&] ( vmListItem* ) { return delJob ( mJobCurItem ); };
+		func_Cancel = [&] ( vmListItem* ) { return cancelJob ( mJobCurItem ); };
+		ui->jobsList->setFocus ();
+		activeRecord = ui->jobsList->currentItem ();
+		
+		newSep = mActionsToolBar->addSeparator ();
+		mActionsToolBar->addAction ( actJobSelectJob );
+	}
+	else if ( grpActive == grpPays )
+	{
+		curSectionAction = &sectionActions[2];
+		func_Save = [&] ( vmListItem* ) { return savePay ( mPayCurItem ); };
+		func_Add = nullptr;
+		func_Edit = [&] ( vmListItem* ) { return editPay ( mPayCurItem ); };
+		func_Del = [&] ( vmListItem* ) { return delPay ( mPayCurItem ); };
+		func_Cancel = [&] ( vmListItem* ) { return cancelPay ( mPayCurItem ); };
+		ui->paysList->setFocus ();
+		activeRecord = ui->paysList->currentItem ();
+		
+		newSep = mActionsToolBar->addSeparator ();
+		mActionsToolBar->addAction ( actPayReceipt );
+		mActionsToolBar->addAction ( actPayUnPaidReport );
+		mActionsToolBar->addAction ( actPayReport );
+	}
+	else if ( grpActive == grpBuys )
+	{
+		curSectionAction = &sectionActions[3];
+		func_Save = [&] ( vmListItem* ) { return saveBuy ( mBuyCurItem ); };
+		func_Add = [&] () { return ( mBuyCurItem = addBuy ( mClientCurItem, mJobCurItem ) ); };
+		func_Edit = [&] ( vmListItem* ) { return editBuy ( mBuyCurItem ); };
+		func_Del = [&] ( vmListItem* ) { return delBuy ( mBuyCurItem ); };
+		func_Cancel = [&] ( vmListItem* ) { return cancelBuy ( mBuyCurItem ); };
+		ui->buysList->setFocus ();
+		activeRecord = ui->buysList->currentItem ();
+	}
+	
+	if ( sepAction != newSep )
+	{
+		QList<QAction*> actions ( mActionsToolBar->actions () );
+		QList<QAction*>::const_iterator itr ( actions.constBegin () );
+		const QList<QAction*>::const_iterator itr_end ( actions.constEnd () );
+		bool b_beginRemoval ( false );
+
+		for ( ; itr != itr_end; ++itr )
+		{
+			if ( *itr == sepAction )
+				b_beginRemoval = true;
+			if ( b_beginRemoval )
+			{
+				if ( *itr == newSep )
+					break;
+				mActionsToolBar->removeAction ( *itr );
+			}
+		}
+		sepAction = newSep;
+		mActionsToolBar->resize ( mActionsToolBar->width (), mActionsToolBar->sizeHint ().height () );
+	}
+	updateActionButtonsState ();
+}
+
+void MainWindow::updateActionButtonsState ()
+{
+	actionAdd->setEnabled ( curSectionAction->b_canAdd );
+	actionEdit->setEnabled ( curSectionAction->b_canEdit );
+	actionRemove->setEnabled ( curSectionAction->b_canRemove );
+	actionSave->setEnabled ( curSectionAction->b_canSave );
+	actionCancel->setEnabled ( curSectionAction->b_canCancel );
+	actJobSelectJob->setEnabled ( curSectionAction->b_canExtra[0] );
+	actPayReceipt->setEnabled ( curSectionAction->b_canExtra[0] );
+	actPayUnPaidReport->setEnabled ( curSectionAction->b_canExtra[1] );
+	actPayReport->setEnabled ( curSectionAction->b_canExtra[2] );
+}
+
+bool MainWindow::execRecordAction ( const int key )
+{
+	switch ( key )
+	{
+		case Qt::Key_S:
+			func_Save ( activeRecord ); break;
+		case Qt::Key_A:
+			activeRecord = func_Add (); break;
+		case Qt::Key_E:
+			func_Edit ( activeRecord ); break;
+		case Qt::Key_R:
+			func_Del ( activeRecord ); break;
+		case Qt::Key_Escape:
+			func_Cancel ( activeRecord ); break;
+		default:
+			return false;
+	}
+	return true;
 }
 
 void MainWindow::setupTabNavigationButtons ()
@@ -4168,23 +4271,6 @@ void MainWindow::closeEvent ( QCloseEvent* e )
 	trayActivated ( QSystemTrayIcon::Trigger );
 }
 
-void MainWindow::changeEvent ( QEvent* e )
-{
-	QMainWindow::changeEvent ( e );
-	switch ( e->type () )
-	{
-		default:
-		break;
-		case QEvent::LanguageChange:
-			ui->retranslateUi ( this );
-		break;
-		case QEvent::StyleChange:
-			setStyle ( QApplication::style () );
-			setPalette ( QApplication::style ()->standardPalette () );
-		break;
-	}
-}
-
 void MainWindow::saveView ()
 {
 	ui->lblCurInfoClient->setText ( mClientCurItem ? mClientCurItem->text () : TR_FUNC ( "No client selected" ) );
@@ -4209,43 +4295,42 @@ void MainWindow::saveView ()
 bool MainWindow::eventFilter ( QObject* o, QEvent* e )
 {
 	bool b_accepted ( false );
-	if ( e->type () == QEvent::KeyPress )
+	if ( ui->tabMain->currentIndex () == TI_MAIN )
 	{
-		const QKeyEvent* k ( static_cast<QKeyEvent*> ( e ) );
-		if ( k->modifiers () & Qt::ControlModifier )
+		if ( e->type () == QEvent::KeyPress )
 		{
-			switch ( k->key () )
+			const QKeyEvent* k ( static_cast<QKeyEvent*> ( e ) );
+			if ( k->modifiers () & Qt::ControlModifier )
 			{
-				case Qt::Key_F:
-					ui->txtSearch->setFocus ();
-					b_accepted = true;
-				break;
-				default:
-				break;
-			}
-		}
-		else
-		{ // no control key pressed
-			b_accepted = (k->key () - Qt::Key_F4) <= (Qt::Key_F12 - Qt::Key_F4);
-			switch ( k->key () )
-			{
-				case Qt::Key_Escape:
-					if ( selJob_callback )
+				if ( (k->key () - Qt::Key_A) <= ( Qt::Key_Z - Qt::Key_A) )
+				{
+					if ( k->key () == Qt::Key_F )
 					{
-						selJob_callback ( 0 );
-						selJob_callback = nullptr;
+						ui->txtSearch->setFocus ();
 						b_accepted = true;
 					}
-				break;
+					else
+						b_accepted = execRecordAction ( k->key () );
+				}
+			}
+			else
+			{ // no control key pressed
+				b_accepted = (k->key () - Qt::Key_F4) <= (Qt::Key_F12 - Qt::Key_F4);
+				switch ( k->key () )
+				{
+					case Qt::Key_Escape:
+						b_accepted = execRecordAction ( k->key () );
+					break;
 
-				case Qt::Key_F4: btnReportGenerator_clicked (); break;
-				case Qt::Key_F5: btnBackupRestore_clicked (); break;
-				case Qt::Key_F6: btnCalculator_clicked (); break;
-				case Qt::Key_F7: ; break;
-				case Qt::Key_F8: btnEstimates_clicked (); break;
-				case Qt::Key_F9: btnCompanyPurchases_clicked (); break;
-				case Qt::Key_F10: btnConfiguration_clicked (); break;
-				case Qt::Key_F12: btnExitProgram_clicked (); break;
+					case Qt::Key_F4: btnReportGenerator_clicked (); break;
+					case Qt::Key_F5: btnBackupRestore_clicked (); break;
+					case Qt::Key_F6: btnCalculator_clicked (); break;
+					case Qt::Key_F7: break;
+					case Qt::Key_F8: btnEstimates_clicked (); break;
+					case Qt::Key_F9: btnCompanyPurchases_clicked (); break;
+					case Qt::Key_F10: btnConfiguration_clicked (); break;
+					case Qt::Key_F12: btnExitProgram_clicked (); break;
+				}
 			}
 		}
 	}
@@ -4265,18 +4350,22 @@ void MainWindow::tabMain_currentTabChanged ( const int tab_idx )
 	switch ( tab_idx )
 	{
 		case TI_CALENDAR:
+			mActionsToolBar->hide ();
 			calMain_activated ( ui->calMain->selectedDate (), true );
 			updateCalendarView ( mCalendarDate.year (), mCalendarDate.month () );
 		break;
 		case TI_STATISTICS:
+			mActionsToolBar->hide ();
 			ui->tabStatistics->setLayout ( DB_STATISTICS ()->layout () );
 			DB_STATISTICS ()->reload ();
 		break;
 		case TI_TABLEWIEW:
+			mActionsToolBar->hide ();
 			ui->tabTableView->setLayout ( DB_TABLE_VIEW ()->layout () );
 			DB_TABLE_VIEW ()->reload ();
 		break;
 		default:
+			mActionsToolBar->show ();
 		break;
 	}
 }
@@ -4296,7 +4385,9 @@ void MainWindow::selectBuysItems ( const PROCESS_STEPS step )
 		{
 			const uint n_copied_items ( QUICK_PROJECT ()->copyItemsFromTable ( ui->tableBuyItems ) );
 			ui->statusbar->showMessage ( QString ( TR_FUNC ( "%1 rows were copied to the project table!" ).arg ( n_copied_items ) ), 5000 );
+			QUICK_PROJECT ()->selectDone ();
 		}
+		break;
 		case PS_FINISH:
 		case PS_CANCEL:
 			QUICK_PROJECT ()->selectDone ();
@@ -4386,7 +4477,7 @@ void MainWindow::removeEditItem ( vmListItem* item )
 
 void MainWindow::saveEditItems ()
 {
-	if ( !Data::EXITING_PROGRAM || editItems.isEmpty () )
+	if ( !Sys_Init::EXITING_PROGRAM || editItems.isEmpty () )
 		return;
 	
 	dlgSaveEditItems = new QDialog ( this, Qt::Tool );
@@ -4483,29 +4574,28 @@ void MainWindow::receiveWidgetBack ( QWidget* widget )
 inline void MainWindow::btnReportGenerator_clicked ()
 { 
 	if ( !EDITOR ()->isVisible () )
-	{
 		EDITOR ()->show ();
-	} 
+
 	EDITOR ()->activateWindow ();
 	EDITOR ()->raise ();
 }
 
-inline void MainWindow::btnBackupRestore_clicked () { BACKUP ()->isVisible ()
-			? BACKUP ()->hide () : BACKUP ()->showWindow (); }
+inline void MainWindow::btnBackupRestore_clicked () { BACKUP ()->isVisible () ? 
+		BACKUP ()->hide () : BACKUP ()->showWindow (); }
 
-inline void MainWindow::btnCalculator_clicked () { CALCULATOR ()->isVisible ()
-			? CALCULATOR ()->hide () : CALCULATOR ()->showCalc ( emptyString, mapToGlobal ( ui->btnCalculator->pos () ) ); }
+inline void MainWindow::btnCalculator_clicked () { CALCULATOR ()->isVisible () ?
+		CALCULATOR ()->hide () : CALCULATOR ()->showCalc ( emptyString, mapToGlobal ( ui->btnCalculator->pos () ) ); }
 
-inline void MainWindow::btnEstimates_clicked () { if ( !mClientCurItem ) return; ESTIMATE ()->isVisible ()
-			? ESTIMATE ()->hide () : ESTIMATE ()->showWindow ( recStrValue ( mClientCurItem->clientRecord (), FLD_CLIENT_NAME ) ); }
+inline void MainWindow::btnEstimates_clicked () { ESTIMATE ()->isVisible () ?
+		ESTIMATE ()->hide () : ESTIMATE ()->showWindow ( recStrValue ( mClientCurItem->clientRecord (), FLD_CLIENT_NAME ) ); }
 
-inline void MainWindow::btnCompanyPurchases_clicked () { COMPANY_PURCHASES ()->isVisible ()
-			? COMPANY_PURCHASES ()->hide () : COMPANY_PURCHASES ()->show (); }
+inline void MainWindow::btnCompanyPurchases_clicked () { COMPANY_PURCHASES ()->isVisible () ?
+		COMPANY_PURCHASES ()->hide () : COMPANY_PURCHASES ()->show (); }
 
-inline void MainWindow::btnConfiguration_clicked () { CONFIG ()->dialogWindow ()->isVisible ()
-			? CONFIG ()->dialogWindow ()->hide () : CONFIG ()->dialogWindow ()->show () ; }
+inline void MainWindow::btnConfiguration_clicked () { CONFIG ()->dialogWindow ()->isVisible () ?
+		CONFIG ()->dialogWindow ()->hide () : CONFIG ()->dialogWindow ()->show () ; }
 
-inline void MainWindow::btnExitProgram_clicked () { Data::de_init (); }
+inline void MainWindow::btnExitProgram_clicked () { Sys_Init::deInit (); }
 //--------------------------------------------SLOTS------------------------------------------------------------
 
 //--------------------------------------------SEARCH------------------------------------------------------------
@@ -4537,27 +4627,73 @@ void MainWindow::on_btnSearchCancel_clicked ()
 //--------------------------------------------SEARCH------------------------------------------------------------
 
 //--------------------------------------------TRAY-----------------------------------------------------------
-void MainWindow::createTrayIcon ( const bool b_setup )
+void MainWindow::createTrayIcon ()
 {
-	if ( b_setup )
-	{
-		trayIcon = new QSystemTrayIcon ();
-		trayIcon->setIcon ( ICON ( "vm-logo-22x22" ) );
-		trayIcon->setToolTip ( windowTitle () );
-		connect ( trayIcon, &QSystemTrayIcon::activated, this,
-				  [&] ( QSystemTrayIcon::ActivationReason actReason ) { return trayActivated ( actReason ); } );
+	trayIcon = new QSystemTrayIcon ();
+	trayIcon->setIcon ( ICON ( "vm-logo-22x22" ) );
+	trayIcon->setToolTip ( windowTitle () );
+	static_cast<void>( connect ( trayIcon, &QSystemTrayIcon::activated, this,
+			  [&] ( QSystemTrayIcon::ActivationReason actReason ) { return trayActivated ( actReason ); } ) );
+	trayIcon->show ();
+	
+	trayIconMenu = new QMenu ( this );
+	trayIconMenu->addAction ( new vmAction ( 101, TR_FUNC ( "Hide" ), this ) );
+	trayIconMenu->addAction ( new vmAction ( 100, TR_FUNC ( "Exit" ), this ) );
+	static_cast<void>( connect ( trayIconMenu, &QMenu::triggered, this, [&] ( QAction* act ) { return trayMenuTriggered ( act ); } ) );
+	trayIcon->setContextMenu ( trayIconMenu );
+}
 
-		trayIcon->show ();
-		vmNotify::initNotify ();
-	}
-	else
-	{
-		trayIconMenu = new QMenu ( this );
-		trayIconMenu->addAction ( new vmAction ( 101, TR_FUNC ( "Hide" ), this ) );
-		trayIconMenu->addAction ( new vmAction ( 100, TR_FUNC ( "Exit" ), this ) );
-		connect ( trayIconMenu, &QMenu::triggered, this, [&] ( QAction* act ) { return trayMenuTriggered ( act ); } );
-		trayIcon->setContextMenu ( trayIconMenu );
-	}
+void MainWindow::createFloatToolBar ()
+{
+	mActionsToolBar = new QToolBar ( this );
+	
+	actionAdd = mActionsToolBar->addAction ( ICON ( "browse-controls/add.png" ), QStringLiteral ( "Add" ), 
+							 this, [&] () { return execRecordAction ( Qt::Key_A ); } );
+	actionEdit = mActionsToolBar->addAction ( ICON ( "browse-controls/edit.png" ), QStringLiteral ( "Edit" ), 
+							 this, [&] () { return execRecordAction ( Qt::Key_E ); } );
+	actionRemove = mActionsToolBar->addAction ( ICON ( "browse-controls/remove.png" ), QStringLiteral ( "Remove" ), 
+							 this, [&] () { return execRecordAction ( Qt::Key_R ); } );
+	actionSave = mActionsToolBar->addAction ( ICON ( "document-save" ), QStringLiteral ( "Save" ), this, 
+							 [&] () { return execRecordAction ( Qt::Key_S ); } );
+	actionCancel = mActionsToolBar->addAction ( QIcon ( QStringLiteral ( ":resources/cancel.png" ) ), QStringLiteral ( "Cancel" ), 
+							 this, [&] () { return execRecordAction ( Qt::Key_Escape ); } );
+	
+	mActionsToolBar->setFloatable ( true );
+	mActionsToolBar->setMovable ( true );
+	mActionsToolBar->setOrientation ( Qt::Vertical );
+	mActionsToolBar->setToolButtonStyle ( Qt::ToolButtonIconOnly );
+	mActionsToolBar->setIconSize ( QSize ( 30, 30 ) );
+	mActionsToolBar->setGeometry ( 20, 50, mActionsToolBar->sizeHint ().width (), mActionsToolBar->sizeHint ().height () );
+	addToolBar ( Qt::LeftToolBarArea, mActionsToolBar );
+	
+	QToolBar* utilitiesToolBar ( new QToolBar ( this ) );
+	utilitiesToolBar->addWidget ( ui->btnReportGenerator );
+	utilitiesToolBar->addWidget ( ui->btnBackupRestore );
+	utilitiesToolBar->addWidget ( ui->btnCalculator );
+	utilitiesToolBar->addWidget ( ui->btnServicesPrices );
+	utilitiesToolBar->addWidget ( ui->btnEstimates );
+	utilitiesToolBar->addWidget ( ui->btnCompanyPurchases );
+	utilitiesToolBar->addWidget ( ui->btnConfiguration );
+	utilitiesToolBar->addWidget ( ui->btnExitProgram );
+	addToolBar ( Qt::TopToolBarArea, utilitiesToolBar );
+	
+	QToolBar* sectionsToolBar ( new QToolBar ( this ) );
+	sectionsToolBar->addWidget ( ui->lblCurInfoClient );
+	sectionsToolBar->addWidget ( ui->line_2 );
+	sectionsToolBar->addWidget ( ui->lblCurInfoJob );
+	sectionsToolBar->addWidget ( ui->line_3 );
+	sectionsToolBar->addWidget ( ui->lblCurInfoPay );
+	sectionsToolBar->addWidget ( ui->line_4 );
+	sectionsToolBar->addWidget ( ui->lblCurInfoBuy );
+	addToolBar ( Qt::TopToolBarArea, sectionsToolBar );
+	addToolBarBreak ( Qt::TopToolBarArea );
+	
+	QToolBar* searchToolBar ( new QToolBar ( this ) );
+	searchToolBar->addWidget ( ui->lblFastSearch );
+	searchToolBar->addWidget ( ui->txtSearch );
+	searchToolBar->addWidget ( ui->btnSearchStart );
+	searchToolBar->addWidget ( ui->btnSearchCancel );
+	addToolBar ( Qt::TopToolBarArea, searchToolBar );
 }
 
 void MainWindow::trayMenuTriggered ( QAction* action )
@@ -4585,6 +4721,8 @@ void MainWindow::trayActivated ( QSystemTrayIcon::ActivationReason reason )
 				showNormal ();
 				activateWindow ();
 				raise ();
+				if ( ui->tabMain->currentIndex () == TI_MAIN )
+					mActionsToolBar->show ();
 				if ( documentEditor::isEditorStarted () )
 				{
 					if ( EDITOR ()->isHidden () )
@@ -4595,6 +4733,7 @@ void MainWindow::trayActivated ( QSystemTrayIcon::ActivationReason reason )
 			{
 				trayIconMenu->actions ().at ( 0 )->setText ( TR_FUNC ( "Restore" ) );
 				hide ();
+				mActionsToolBar->hide ();
 				if ( documentEditor::isEditorStarted () )
 				{
 					if ( EDITOR ()->isVisible () )
@@ -4641,24 +4780,19 @@ void MainWindow::postFieldAlterationActions ( vmListItem* item )
 {
 	item->saveCrashInfo ( m_crash );
 	const bool bCanSave ( true );//item->isGoodToSave () );
-	switch ( item->subType () )
-	{
-		case CLIENT_TABLE:
-			ui->btnClientSave->setEnabled ( bCanSave );
-		break;
-		case JOB_TABLE:
-			ui->btnJobSave->setEnabled ( bCanSave );
-		break;
-		case PAYMENT_TABLE:
-			ui->btnPayInfoSave->setEnabled ( bCanSave );
-		break;
-		case PURCHASE_TABLE:
-			ui->btnBuySave->setEnabled ( bCanSave );
-		break;
-		default:
-			break;
-	}
+	curSectionAction->b_canSave = bCanSave;
+	updateActionButtonsState ();
 	item->update ();
+}
+
+// Trigger a focus change to force an update in case there are any pending changes to be processed
+void MainWindow::updateWindowBeforeSave ()
+{
+	QWidget* wdgFocus ( this->focusWidget () );
+	ui->txtSearch->setFocus ();
+	qApp->sendPostedEvents();
+	wdgFocus->setFocus ();
+	qApp->sendPostedEvents();
 }
 //-------------------------------------------ITEM-SHARED---------------------------------------------------------
 
@@ -4713,14 +4847,16 @@ void MainWindow::addJobPictures ()
 		VM_NOTIFY ()->notifyMessage ( TR_FUNC ( "Waiting for " ) + CONFIG ()->fileManager () + TR_FUNC ( " to finish" ), 
 									  TR_FUNC ( "Add some pictures to this job info data" ) );
 		fileOps::executeWait ( strPicturePath, CONFIG ()->fileManager () );
-		btnJobReloadPictures_clicked ();
+		// useless, because I cannot block the main thread wating for the filemanager to return
+		// One possible solution would be to connect the QProcess inside fileOps::executeWait to the finished signal
+		// but fileOps is not an objectfiable class, therefore it cannot inherit QObject
+		//btnJobReloadPictures_clicked ();
 	}
 }
 
 void MainWindow::btnJobReloadPictures_clicked ()
 {
-	ui->jobImageViewer->showImage ( -1, ui->txtJobPicturesPath->text () );
-	ui->jobImageViewer->reload ();
+	ui->jobImageViewer->reload ( ui->txtJobPicturesPath->text () );
 	ui->cboJobPictures->clear ();
 	ui->cboJobPictures->insertItems ( 0, ui->jobImageViewer->imagesList () );
 	controlJobPictureControls ();
@@ -4806,7 +4942,8 @@ void MainWindow::showJobImage ( const int index )
 
 void MainWindow::showJobImageRequested ( const int index )
 {
-	ui->cboJobPictures->setCurrentIndex ( index );
+	//ui->cboJobPictures->setCurrentIndex ( index );
+	ui->cboJobPictures->setCurrentText ( ui->cboJobPictures->itemText ( index ) );
 	ui->btnJobPrevPicture->setEnabled ( index > 0 );
 	ui->btnJobNextPicture->setEnabled ( index < ( ui->cboJobPictures->count () - 1 ) );
 	if ( sepWin_JobPictures && index != -1 )

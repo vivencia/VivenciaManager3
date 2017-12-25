@@ -12,7 +12,7 @@
 #include "vmnotify.h"
 #include "vmlistitem.h"
 #include "searchui.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 #include "fast_library_functions.h"
 
@@ -48,7 +48,7 @@ companyPurchasesUI::companyPurchasesUI ( QWidget* parent )
 	cp_rec->readLastRecord ();
 	fillForms ();
 
-	addPostRoutine ( deleteCompanyPurchasesUiInstance );
+	Sys_Init::addPostRoutine ( deleteCompanyPurchasesUiInstance );
 }
 
 companyPurchasesUI::~companyPurchasesUI ()

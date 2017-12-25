@@ -734,7 +734,8 @@ void VMList<T>::resize ( const uint n )
 			reserve ( n );
 		nItems = n;
 	}
-	else {
+	else
+	{
 		realloc ( n );
 		nItems = n;
 	}
@@ -790,22 +791,28 @@ int VMList<T>::replace ( const uint pos, const T &item )
 template <typename T>
 int VMList<T>::contains ( const T& item, int from_pos ) const
 {
-	if ( nItems > 0 ) {
+	if ( nItems > 0 )
+	{
 		bool forward ( true );
 
-		if ( from_pos < 0 || from_pos >= static_cast<int>( nItems ) ) {
+		if ( from_pos < 0 || from_pos >= static_cast<int>( nItems ) )
+		{
 			from_pos = nItems - 1;
 			forward = false;
 		}
 		int i = from_pos;
-		if ( forward ) {
-			for ( ; i < static_cast<int>( nItems ); ++i ) {
+		if ( forward )
+		{
+			for ( ; i < static_cast<int>( nItems ); ++i )
+			{
 				if ( _data[i] == item )
 					return i;
 			}
 		}
-		else {
-			for ( ; i >= 0; --i ) {
+		else
+		{
+			for ( ; i >= 0; --i )
+			{
 				if ( _data[i] == item )
 					return i;
 			}

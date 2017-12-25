@@ -1,6 +1,6 @@
 #include "job.h"
 #include "global.h"
-#include "data.h"
+#include "system_init.h"
 #include "mainwindow.h"
 #include "vmlistitem.h"
 #include "vivenciadb.h"
@@ -12,7 +12,7 @@ static const unsigned int TABLE_VERSION ( 'B' );
 
 constexpr DB_FIELD_TYPE JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_TIME,
-	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD
+	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
 };
 
 bool updateJobTable ()

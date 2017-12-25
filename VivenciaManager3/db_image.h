@@ -5,8 +5,6 @@
 #include "global_enums.h"
 #include "fileops.h"
 
-#include <QDir>
-#include <QStringList>
 #include <QFrame>
 
 #include <functional>
@@ -21,13 +19,13 @@ private:
 	QLabel* imageViewer;
 	QScrollArea* scrollArea;
 
-	struct RECORD_IMAGES { // OPT-2
-		QStringList files;
+	struct RECORD_IMAGES // OPT-2
+	{ 
+		PointersList<fileOps::st_fileInfo*> files;
 		QString path;
-		int cur_image;
 		int rec_id;
 
-		RECORD_IMAGES () : cur_image ( 0 ), rec_id ( -1 ) {}
+		RECORD_IMAGES () : files ( 50 ), rec_id ( -1 ) { files.setAutoDeleteItem ( true ); }
 	};
 
 	bool findImagesByID ( const int rec_id );
@@ -46,7 +44,6 @@ private:
 	bool mb_fitToWindow, mb_maximized;
 	double scaleFactor;
 	PointersList <RECORD_IMAGES*> images_array;
-	QString mstr_FileName;
 
 	std::function<void ( const int )> funcImageRequested;
 	std::function<void ( const bool )> funcShowMaximized;
@@ -60,11 +57,10 @@ public:
 
 	void showImage ( const int rec_id = -1, const QString& path = QString::null );
 
-	inline const QString imageFileName () const {
-		return fileOps::filePathWithoutExtension ( fileOps::fileNameWithoutPath ( mstr_FileName ) );
-	}
+	const QString imageFileName () const;
+
 	inline const QString imageCompletePath () const {
-		return mstr_FileName;
+		return images_array.current () ? images_array.current ()->files.current ()->fullpath : QString::null;
 	}
 	inline const QString currentPath () const {
 		return ( images_array.current () ? images_array.current ()->path : QString::null );
@@ -81,13 +77,13 @@ public:
 		funcShowMaximized = func;
 	}
 
-	const QStringList& imagesList () const;
+	QStringList imagesList () const;
 
 	void showSpecificImage ( const int index );
 	int showPrevImage ();
 	int showNextImage ();
-	bool showFirstImage ();
-	bool showLastImage ();
+	int showFirstImage ();
+	int showLastImage ();
 	int rename ( const QString& newName );
 
 	void zoomIn ();
@@ -98,7 +94,7 @@ public:
 		mb_maximized = maximized;
 	}
 
-	void reload ();
+	void reload ( const QString& new_path = QString::null );
 	void removeDir ( const bool b_deleteview = false );
 };
 

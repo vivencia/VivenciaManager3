@@ -1,21 +1,11 @@
-#include "data.h"
+#include "system_init.h"
 #include "global.h"
-#include "usermanagement.h"
 #include "mainwindow.h"
-#include "quickproject.h"
-#include "backupdialog.h"
 #include "configops.h"
-#include "fileops.h"
-#include "vmlistitem.h"
-#include "completers.h"
-#include "spellcheck.h"
-#include "vmnotify.h"
+#include "vivenciadb.h"
+#include "backupdialog.h"
 #include "calculator.h"
-#include "cleanup.h"
-#include "heapmanager.h"
-#include "vmwidgets.h"
-#include "companypurchasesui.h"
-#include "suppliersdlg.h"
+#include "spellcheck.h"
 #include "fast_library_functions.h"
 #include "keychain/passwordsessionmanager.h"
 
@@ -35,8 +25,8 @@ extern "C"
 	#include <unistd.h>
 }
 
-QIcon* Data::listIndicatorIcons[4] = { nullptr };
-bool Data::EXITING_PROGRAM ( false );
+QIcon* Sys_Init::listIndicatorIcons[4] = { nullptr };
+bool Sys_Init::EXITING_PROGRAM ( false );
 
 static const QString MYSQL_INIT_SCRIPT ( QStringLiteral ( "/etc/init.d/mysql" ) );
 QString APP_START_CMD ( emptyString );
@@ -47,9 +37,12 @@ QString APP_START_CMD ( emptyString );
 #define ERR_SETUP_FILES_MISSING 4
 #define ERR_COMMAND_MYSQL 5
 
+typedef PointersList<VMCleanUpFunction> VMVFuncList;
+static VMVFuncList funcList ( 25 );
+
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
 
-void Data::restartProgram ()
+void Sys_Init::restartProgram ()
 {
 	char* args[2] = { 0, 0 };
 	args[0] = static_cast<char*> ( ::malloc ( static_cast<size_t>(APP_START_CMD.toLocal8Bit ().count ()) * sizeof (char) ) );
@@ -59,7 +52,7 @@ void Data::restartProgram ()
 	qApp->exit ( 0 );
 }
 
-bool Data::isMySQLRunning ()
+bool Sys_Init::isMySQLRunning ()
 {
 	QString outStr ( fileOps::executeAndCaptureOutput ( QStringLiteral ( "status" ), MYSQL_INIT_SCRIPT ) );
 
@@ -74,7 +67,7 @@ bool Data::isMySQLRunning ()
 		return ( static_cast<bool> ( outStr.indexOf ( QStringLiteral ( "OK" ) ) != -1 ) );
 }
 
-QString Data::commandMySQLServer ( const QString& command, const QString& message, const bool only_return_cmd_line )
+QString Sys_Init::commandMySQLServer ( const QString& command, const QString& message, const bool only_return_cmd_line )
 {
 	if ( !only_return_cmd_line )
 	{
@@ -84,7 +77,7 @@ QString Data::commandMySQLServer ( const QString& command, const QString& messag
 	return ( MYSQL_INIT_SCRIPT + CHR_SPACE + command );
 }
 
-bool Data::checkSystem ( const bool bFirstPass )
+bool Sys_Init::checkSystem ( const bool bFirstPass )
 {
 	if ( !fileOps::exists ( MYSQL_INIT_SCRIPT).isOn () )
 	{
@@ -113,11 +106,11 @@ bool Data::checkSystem ( const bool bFirstPass )
 }
 
 /*
- * If there is something wrong, Data::checkDatabase will exit the app. Any other options that might be presented to the user,
+ * If there is something wrong, Sys_Init::checkDatabase will exit the app. Any other options that might be presented to the user,
  * if they do not encounter any error, will lead to a sane state to start the program and, therefore, all the calls subsequent to that one
  * will find a sane environment
  */
-void Data::checkSetup ()
+void Sys_Init::checkSetup ()
 {
 	static_cast<void>( checkSystem () );
 	checkDatabase ();
@@ -149,14 +142,14 @@ void Data::checkSetup ()
 	}
 }
 
-void Data::checkDatabase ()
+void Sys_Init::checkDatabase ()
 {
 	if ( !isMySQLRunning () )
 	{
 		static_cast<void>(commandMySQLServer ( QStringLiteral ( "start" ),
 							 APP_TR_FUNC (  "The mysql server is not running. "
 									 "It needs to be started in order to run this program. "
-									 "Please, type below the administrator's password." ) ));
+									 "Please, type in below your password." ) ));
 	}
 
 	if ( isMySQLRunning () )
@@ -177,7 +170,7 @@ void Data::checkDatabase ()
 	}
 }
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
-void Data::init ()
+void Sys_Init::init ()
 {
 	VivenciaDB::init ();
 	vmNumber::updateCurrentDate ();
@@ -199,7 +192,7 @@ void Data::init ()
 	MAINWINDOW ()->continueStartUp ();
 }
 
-void Data::de_init ()
+void Sys_Init::deInit ()
 {
 	static bool already_called ( false );
 
@@ -221,7 +214,7 @@ void Data::de_init ()
 	qApp->quit ();
 }
 
-void Data::loadDataIntoMemory ()
+void Sys_Init::loadDataIntoMemory ()
 {	
 	// To debug the GUI, it is possible to introduce a return here and skip all the code below
 	clientListItem* client_item ( nullptr );
@@ -299,131 +292,16 @@ void Data::loadDataIntoMemory ()
 	} while ( ++id <= lastRec );
 }
 
-void Data::copyToClipboard ( const QString& str )
+void Sys_Init::addPostRoutine ( VMCleanUpFunction func , const bool bEarlyExec )
 {
-	QApplication::clipboard ()->setText ( str, QClipboard::Clipboard );
+	if ( bEarlyExec )
+		( func ) ();
+	funcList.append ( func );
 }
 
-int Data::insertComboItem ( vmComboBox* __restrict cbo, const QString& text )
+void Sys_Init::cleanUpApp ()
 {
-	if ( text.isEmpty () )
-		return -1;
-
-	QString str;
-	int x ( 0 );
-	int i ( 0 );
-	const int n_items ( cbo->count () );
-
-	for ( ; i < n_items; ++i )
-	{
-		str = cbo->itemText ( i );
-		if ( text.compare ( str, Qt::CaseInsensitive ) == 0 )
-			return i; // item already in combo, do nothing
-		// Insert item alphabetically
-		for ( x = 0; x < text.count (); ++x )
-		{
-			if ( x >= str.count () )
-				break;
-			if ( text.at ( x ) > str.at ( x ) )
-				break;
-			else if ( text.at ( x ) == str.at ( x ) )
-				continue;
-			else
-			{
-				cbo->insertItem ( text, i, false );
-				return i;
-			}
-		}
-	}
-	cbo->insertItem ( text, i, false );
-	return i;
+	for ( int i ( static_cast<int>( funcList.count () ) - 1 ); i >= 0 ; --i )
+		( funcList.at ( i ) ) ();
+	funcList.clear ();
 }
-
-int Data::insertStringListItem ( QStringList& list, const QString& text )
-{
-	if ( text.isEmpty () )
-		return -1;
-
-	QString str;
-	int x ( 0 );
-	int i ( 0 );
-
-	for ( ; i < list.count (); ++i )
-	{
-		str = list.at ( i );
-		if ( text.compare ( str, Qt::CaseInsensitive ) == 0 )
-			return i; // item already in list, do nothing
-		// Insert item alphabetically
-		for ( x = 0; x < text.count (); ++x )
-		{
-			if ( x >= str.count () )
-				break;
-			if ( text.at ( x ) > str.at ( x ) )
-				break;
-			else if ( text.at ( x ) == str.at ( x ) )
-				continue;
-			else
-			{
-				list.insert ( i, text );
-				return i;
-			}
-		}
-	}
-	list.append ( text );
-	return i;
-}
-
-QPoint Data::getGlobalWidgetPosition ( const QWidget* widget )
-{
-	QWidget* refWidget ( nullptr );
-	if ( MAINWINDOW ()->isAncestorOf ( widget ) )
-		refWidget = MAINWINDOW ();
-	else
-	{
-		refWidget = widget->parentWidget ();
-		if ( refWidget == nullptr )
-			refWidget = qApp->desktop ();
-	}
-	QPoint wpos;
-	const QPoint posInRefWidget ( widget->mapTo ( refWidget, widget->pos () ) );
-	wpos.setX ( refWidget->pos ().x () + posInRefWidget.x () - widget->pos ().x () );
-	wpos.setY ( refWidget->pos ().y () + posInRefWidget.y () - widget->pos ().y () + widget->height () + TITLE_BAR_HEIGHT );
-	return wpos;
-}
-
-void Data::execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoint& mouse_pos )
-{
-	QPoint menuPos ( getGlobalWidgetPosition ( widget ) );
-	menuPos.setX ( menuPos.x () + mouse_pos.x () + TITLE_BAR_HEIGHT );
-	menuPos.setY ( menuPos.y () + mouse_pos.y () );
-	menu->exec ( menuPos );
-}
-
-void Data::fillJobTypeList ( QStringList& jobList, const QString& clientid )
-{
-	Job job;
-	if ( job.readFirstRecord ( FLD_JOB_CLIENTID, clientid ) )
-	{
-		do
-		{
-			jobList.append ( job.jobTypeWithDate () );
-		} while ( job.readNextRecord ( true ) );
-	}
-}
-
-int Data::vmColorIndex ( const VMColors vmcolor )
-{
-	int idx ( -1 );
-	switch ( vmcolor )
-	{
-		case vmGray: idx = 0; break;
-		case vmRed: idx = 1; break;
-		case vmYellow: idx = 2; break;
-		case vmGreen: idx = 3; break;
-		case vmBlue: idx = 4; break;
-		case vmWhite: idx = 5; break;
-		case vmDefault_Color: break;
-	}
-	return idx;
-}
-

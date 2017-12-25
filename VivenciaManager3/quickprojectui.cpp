@@ -5,7 +5,7 @@
 #include "vivenciadb.h"
 #include "vmnotify.h"
 #include "stringrecord.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 
 #include <QDialog>
@@ -40,7 +40,7 @@ quickProjectUI::quickProjectUI ()
 {
 	setWindowFlags ( Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint ); // remove close button
 	setupUI ();
-	addPostRoutine ( deleteQPInstance );
+	Sys_Init::addPostRoutine ( deleteQPInstance );
 }
 
 quickProjectUI::~quickProjectUI ()

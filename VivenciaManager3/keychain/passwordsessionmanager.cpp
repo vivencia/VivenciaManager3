@@ -1,6 +1,6 @@
 #include "passwordsessionmanager.h"
 #include "heapmanager.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "vmnotify.h"
 
 passwordSessionManager* passwordSessionManager::s_instance ( nullptr );
@@ -12,7 +12,7 @@ void deletepasswordSessionManagerInstance ()
 
 passwordSessionManager::passwordSessionManager ()
 {
-	addPostRoutine ( deletepasswordSessionManagerInstance );
+	Sys_Init::addPostRoutine ( deletepasswordSessionManagerInstance );
 }
 
 passwordSessionManager::~passwordSessionManager ()

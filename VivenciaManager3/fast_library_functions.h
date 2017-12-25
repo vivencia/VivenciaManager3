@@ -1,6 +1,19 @@
 #ifndef FAST_LIBRARY_FUNCTIONS_H
 #define FAST_LIBRARY_FUNCTIONS_H
 
+#include <QString>
+#include <QStringList>
+
+class vmComboBox;
+
+namespace VM_LIBRARY_FUNCS
+{
+	void copyToClipboard ( const QString& str );
+	int insertComboItem ( vmComboBox* cbo, const QString& text );
+	int insertStringListItem ( QStringList& list, const QString& text );
+	void fillJobTypeList ( QStringList& jobList, const QString& clientid );
+}
+
 template <typename T>
 inline void setBit ( T& __restrict var, const unsigned char bit )
 {

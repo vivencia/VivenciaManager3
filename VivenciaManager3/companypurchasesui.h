@@ -2,7 +2,7 @@
 #define COMPANYPURCHASESUI_H
 
 #include "vmlist.h"
-#include "data.h"
+#include "system_init.h"
 #include "stringrecord.h"
 
 #include <QDialog>
@@ -13,6 +13,7 @@ class vmTableItem;
 class vmWidget;
 class vmLineEdit;
 class vmDateEdit;
+class vmListItem;
 
 namespace Ui
 {

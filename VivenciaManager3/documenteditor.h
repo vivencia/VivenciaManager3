@@ -3,7 +3,7 @@
 
 #include "documenteditorwindow.h"
 #include "stringrecord.h"
-#include "data.h"
+#include "system_init.h"
 
 #include <QMainWindow>
 #include <QStringList>

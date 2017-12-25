@@ -1,7 +1,7 @@
 #include "dbstatistics.h"
 #include "vivenciadb.h"
 #include "texteditwithcompleter.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 #include "client.h"
 #include "job.h"
@@ -23,13 +23,17 @@ std::this_thread::sleep_for ( std::chrono::seconds ( 1 ) );
 
 #undef USE_THREADS
 #ifdef USE_THREADS
-#include <QThread>
 
-#define PROCESS_EVENTS qApp->processEvents ();
-#define EMIT_INFO emit infoProcessed
+	#include <QThread>
+
+	#define PROCESS_EVENTS qApp->processEvents ();
+	#define EMIT_INFO emit infoProcessed
+
 #else
-#define PROCESS_EVENTS
-#define EMIT_INFO m_readyFunc
+
+	#define PROCESS_EVENTS
+	#define EMIT_INFO m_readyFunc
+
 #endif
 
 dbStatistics* dbStatistics::s_instance ( nullptr );
@@ -48,7 +52,7 @@ dbStatistics::dbStatistics ( QObject* parent )
 	m_textinfo->setUtilitiesPlaceLayout ( mainLayout );
 	m_textinfo->setEditable ( false );
 	mainLayout->addWidget ( m_textinfo );
-	addPostRoutine ( deleteDBStatistics );
+	Sys_Init::addPostRoutine ( deleteDBStatistics );
 }
 
 dbStatistics::~dbStatistics () {}
@@ -116,7 +120,9 @@ void dbStatisticsWorker::startWorks ()
 	PROCESS_EVENTS
 	biggestJobs ();
 	PROCESS_EVENTS
-	
+	countPayments ();
+	PROCESS_EVENTS
+
 #ifdef USE_THREADS
 	emit finished ();
 #endif
@@ -254,30 +260,22 @@ void dbStatisticsWorker::countJobs ()
 	QSqlQuery queryRes;
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT STARTDATE,TIME,REPORT FROM JOBS" ), queryRes ) )
 	{
-		vmNumber date, db_date;
-		uint year ( 2009 );
-		podList<uint> count_years ( 0, vmNumber::currentDate.year () - year + 1 );
+		vmNumber db_date;
+		podList<uint> count_years ( 0, vmNumber::currentDate.year () - 2009 + 1 );
 		VMList<vmNumber> count_hours ( vmNumber (), count_years.preallocNumber () );
 		podList<uint> count_days ( 0, count_years.preallocNumber () );
 		do
 		{
-			date.setDate ( 1, 1, year = 2009 );
 			db_date.fromTrustedStrDate ( queryRes.value ( 0 ).toString (), vmNumber::VDF_DB_DATE, false );
-			do {
-				if ( date.year () == db_date.year () )
-				{
-					count_years[year-2009]++;
-					count_hours[year-2009] += vmNumber ( queryRes.value ( 1 ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
-					count_days[year-2009] += stringTable ( queryRes.value ( 2 ).toString () ).countRecords ();
-					break;
-				}
-				date.setDate ( 1, 1, static_cast<int>( ++year ), false );
-			} while ( year <= vmNumber::currentDate.year () );
+			if ( db_date.year () < 2009 ) continue;
+			count_years[db_date.year () - 2009]++;
+			count_hours[db_date.year () - 2009] += vmNumber ( queryRes.value ( 1 ).toString (), VMNT_TIME, vmNumber::VTF_DAYS );
+			count_days[db_date.year () - 2009] += stringTable ( queryRes.value ( 2 ).toString () ).countRecords ();
 		} while ( queryRes.next () );
 		
 		EMIT_INFO ( TR_FUNC ( "\nNumber of jobs per year since 2009:\n" ) );
 		const QString strtemplate ( TR_FUNC ( "\tJobs in %1: %2. Total number of worked hours: %3 ( %4 ). Worked days: %5;" ) );
-		year = 2009;
+		uint year ( 2009 );
 		while ( year <= vmNumber::currentDate.year () )
 		{
 			
@@ -296,33 +294,26 @@ void dbStatisticsWorker::jobPrices ()
 	QSqlQuery queryRes;
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT STARTDATE,PRICE FROM JOBS" ), queryRes ) )
 	{
-		vmNumber date, db_date, price, total_income;
-		uint year ( 2009 );
-		podList<uint> count_jobs ( 0, vmNumber::currentDate.year () - year + 1 );
+		vmNumber db_date, price, total_income;
+		podList<uint> count_jobs ( 0, vmNumber::currentDate.year () - 2009 + 1 );
 		VMList<vmNumber> count_price ( vmNumber (), count_jobs.preallocNumber () );
 		
 		do
 		{
-			date.setDate ( 1, 1, year = 2009 );
 			db_date.fromTrustedStrDate ( queryRes.value ( 0 ).toString (), vmNumber::VDF_DB_DATE, false );
-			do {
-				if ( date.year () == db_date.year () )
-				{
-					price = vmNumber ( queryRes.value ( 1 ).toString (), VMNT_PRICE, 1 );
-					total_income += price;
-					count_price[year-2009] += price;
-					count_jobs[year-2009]++;
-					break;
-				}
-				date.setDate ( 1, 1, static_cast<int>( ++year ), false );
-			} while ( year <= vmNumber::currentDate.year () );
+			if ( db_date.year () < 2009 ) continue;
+			price = vmNumber ( queryRes.value ( 1 ).toString (), VMNT_PRICE, 1 );
+			total_income += price;
+			count_price[db_date.year () - 2009] += price;
+			count_jobs[db_date.year () - 2009]++;
 		} while ( queryRes.next () );
 		
 		EMIT_INFO ( "" );
-		EMIT_INFO ( TR_FUNC ( "Total income since 2009: " ) + HTML_BOLD_ITALIC_UNDERLINE_11.arg ( total_income.toPrice () ) );
-		EMIT_INFO ( TR_FUNC ( "\nTotal income per year since 2009:\n" ) );
-		const QString strtemplate ( TR_FUNC ( "\tIncome for the year %1: %2, in a total of %3 jobs;" ) );
-		year = 2009;
+		EMIT_INFO ( TR_FUNC ( "Total estimated income since 2009: " ) + HTML_BOLD_ITALIC_UNDERLINE_11.arg ( total_income.toPrice () ) );
+		EMIT_INFO ( TR_FUNC ( "\nTotal estimated income per year since 2009:\n" ) );
+		
+		const QString strtemplate ( TR_FUNC ( "\tEstimated Income for the year %1: %2, in a total of %3 jobs:" ) );
+		uint year ( 2009 );
 		while ( year <= vmNumber::currentDate.year () )
 		{
 			
@@ -372,6 +363,51 @@ void dbStatisticsWorker::biggestJobs ()
 			EMIT_INFO ( TR_FUNC ( "Longest job:\n" ) );
 			EMIT_INFO ( Job::concatenateJobInfo ( job, true ) );
 			EMIT_INFO ( "" );
+		}
+	}
+}
+
+void dbStatisticsWorker::countPayments ()
+{
+	QSqlQuery queryRes;
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT INFO FROM PAYMENTS" ), queryRes ) )
+	{
+		vmNumber db_date, price, total_income;
+		VMList<vmNumber> count_price ( vmNumber (), vmNumber::currentDate.year () - 2009 + 1 );
+		stringTable payInfo;
+		stringRecord* payRecord ( nullptr );
+		uint n_pays ( 0 );
+		
+		do
+		{
+			payInfo.fromString ( queryRes.value ( 0 ).toString () );
+			n_pays = payInfo.countRecords ();
+			for ( uint i ( 0 ); i < n_pays ; ++i )
+			{
+				payRecord = const_cast<stringRecord*>( &payInfo.readRecord ( i ) );
+				db_date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
+				if ( db_date.year () >= 2009 )
+				{
+					price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
+					total_income += price;
+					count_price[db_date.year () - 2009] += price;
+				}
+			}
+		} while ( queryRes.next () );
+		
+		EMIT_INFO ( "" );
+		EMIT_INFO ( TR_FUNC ( "Total actual income since 2009: " ) + HTML_BOLD_ITALIC_UNDERLINE_11.arg ( total_income.toPrice () ) );
+		EMIT_INFO ( TR_FUNC ( "\nTotal actual income per year since 2009:\n" ) );
+		
+		const QString strtemplate ( TR_FUNC ( "\tActual income for the year %1: %2" ) );
+		uint year ( 2009 );
+		while ( year <= vmNumber::currentDate.year () )
+		{
+			
+			EMIT_INFO ( strtemplate.arg ( HTML_BOLD_FONT_11.arg ( QString::number ( year ) ), 
+										  HTML_BOLD_ITALIC_UNDERLINE_11.arg ( count_price.at ( year-2009 ).toPrice () )
+						) );
+			++year;
 		}
 	}
 }

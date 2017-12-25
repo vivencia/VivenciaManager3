@@ -3,9 +3,13 @@
 #include "texteditwithcompleter.h"
 #include "vmtablewidget.h"
 #include "vmtableitem.h"
-#include "data.h"
+#include "global.h"
+#include "mainwindow.h"
 
 #include <QVBoxLayout>
+#include <QApplication>
+#include <QMenu>
+#include <QDesktopWidget>
 
 void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 )
 {
@@ -58,7 +62,7 @@ QString vmWidget::widgetToString () const
 void vmWidget::highlight ( const VMColors vm_color, const QString& )
 {
 	toQWidget ()->setStyleSheet ( vm_color == vmDefault_Color ? defaultStyleSheet () :
-			qtClassName () + QLatin1String ( " { background-color: rgb(" ) + colorsStr[Data::vmColorIndex (vm_color)] + QLatin1String ( " ) }" ) );
+			qtClassName () + QLatin1String ( " { background-color: rgb(" ) + colorsStr[vmColorIndex (vm_color)] + QLatin1String ( " ) }" ) );
 }
 
 vmWidget* vmWidget::stringToWidget ( const QString& /*str_widget*/ )
@@ -180,4 +184,46 @@ bool vmWidget::toggleUtilityPanel ( const int widget_idx )
 		}
 	}
 	return false;
+}
+
+int vmWidget::vmColorIndex ( const VMColors vmcolor )
+{
+	int idx ( -1 );
+	switch ( vmcolor )
+	{
+		case vmGray: idx = 0; break;
+		case vmRed: idx = 1; break;
+		case vmYellow: idx = 2; break;
+		case vmGreen: idx = 3; break;
+		case vmBlue: idx = 4; break;
+		case vmWhite: idx = 5; break;
+		case vmDefault_Color: break;
+	}
+	return idx;
+}
+
+QPoint vmWidget::getGlobalWidgetPosition ( const QWidget* widget )
+{
+	QWidget* refWidget ( nullptr );
+	if ( MAINWINDOW ()->isAncestorOf ( widget ) )
+		refWidget = MAINWINDOW ();
+	else
+	{
+		refWidget = widget->parentWidget ();
+		if ( refWidget == nullptr )
+			refWidget = qApp->desktop ();
+	}
+	QPoint wpos;
+	const QPoint posInRefWidget ( widget->mapTo ( refWidget, widget->pos () ) );
+	wpos.setX ( refWidget->pos ().x () + posInRefWidget.x () - widget->pos ().x () );
+	wpos.setY ( refWidget->pos ().y () + posInRefWidget.y () - widget->pos ().y () + widget->height () + TITLE_BAR_HEIGHT );
+	return wpos;
+}
+
+void vmWidget::execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoint& mouse_pos )
+{
+	QPoint menuPos ( getGlobalWidgetPosition ( widget ) );
+	menuPos.setX ( menuPos.x () + mouse_pos.x () );
+	menuPos.setY ( menuPos.y () + mouse_pos.y () + TITLE_BAR_HEIGHT );
+	menu->exec ( menuPos );
 }

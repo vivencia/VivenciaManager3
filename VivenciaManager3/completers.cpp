@@ -1,12 +1,12 @@
 #include "completers.h"
 #include "global.h"
-#include "data.h"
+#include "system_init.h"
 #include "stringrecord.h"
 #include "dbrecord.h"
-#include "cleanup.h"
 #include "completerrecord.h"
 #include "heapmanager.h"
 #include "vmwidgets.h"
+#include "fast_library_functions.h"
 
 #include <QStandardItemModel>
 
@@ -35,7 +35,7 @@ vmCompleters::vmCompleters ()
 		completersList.insert ( i, completer );
 	}
 	loadCompleters ();
-	addPostRoutine ( deleteCompletersInstance );
+	Sys_Init::addPostRoutine ( deleteCompletersInstance );
 }
 
 vmCompleters::~vmCompleters ()
@@ -120,7 +120,7 @@ void vmCompleters::fillList ( const vmCompleters::COMPLETER_CATEGORIES type, QSt
 			const QModelIndex index ( model->index ( 0, 0 ) );
 			list.clear ();
 			for ( uint i_row ( 0 ); i_row < n_items; ++i_row )
-				static_cast<void>( Data::insertStringListItem ( list, model->data ( index.sibling ( static_cast<int>(i_row), 0 ) ).toString () ) );
+				static_cast<void>( VM_LIBRARY_FUNCS::insertStringListItem ( list, model->data ( index.sibling ( static_cast<int>(i_row), 0 ) ).toString () ) );
 		}
 	}
 }

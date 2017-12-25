@@ -337,7 +337,7 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 				return;
 			}
 		}
-		else {
+		/*else {
 			if ( e->key () == Qt::Key_Escape )
 			{
 				e->accept ();
@@ -345,12 +345,12 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 					keypressed_func ( e, this );
 				return;
 			}
-		}
+		}*/
 	}
 
 	QTextEdit::keyPressEvent ( e );
 
-	const QString completionPrefix = textUnderCursor ();
+	const QString completionPrefix ( textUnderCursor () );
 	const bool hasModifier = e->modifiers () != Qt::NoModifier;
 	if  ( hasModifier || e->text().isEmpty () || completionPrefix.length () < 3 || eow.contains ( e->text ().right ( 1 ) ) )
 	{
@@ -364,7 +364,7 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 		mCompleter->popup ()->setCurrentIndex ( mCompleter->completionModel ()->index ( 0, 0 ) );
 	}
 
-	QRect cr = cursorRect ();
+	QRect cr ( cursorRect () );
 	cr.setWidth ( mCompleter->popup ()->sizeHintForColumn ( 0 ) + mCompleter->popup ()->verticalScrollBar ()->sizeHint ().width () );
 	mCompleter->complete ( cr ); // pop it up!
 

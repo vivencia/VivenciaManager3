@@ -1,7 +1,7 @@
 #include "htmldb.h"
 #include "configops.h"
 #include "fileops.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 
 htmlDB* htmlDB::s_instance ( nullptr );
@@ -14,7 +14,7 @@ void deletehtmlDB_instance ()
 htmlDB::htmlDB ()
 {
 	checkInit ();
-	addPostRoutine ( deletehtmlDB_instance );
+	Sys_Init::addPostRoutine ( deletehtmlDB_instance );
 }
 
 htmlDB::~htmlDB () {}

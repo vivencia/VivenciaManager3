@@ -3,7 +3,7 @@
 #include "vivenciadb.h"
 #include "fileops.h"
 #include "textdb.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "configdialog.h"
 #include "mainwindow.h"
 #include "generaltable.h"
@@ -74,7 +74,7 @@ configOps::configOps ()
 
 	fileOps::createDir ( fileOps::dirFromPath ( m_filename ) );
 	m_cfgFile = new configFile ( m_filename );
-	addPostRoutine ( deleteConfigInstance );
+	Sys_Init::addPostRoutine ( deleteConfigInstance );
 }
 
 configOps::~configOps ()

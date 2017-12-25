@@ -2,7 +2,6 @@
 #include "estimates.h"
 #include "configops.h"
 #include "fileops.h"
-#include "data.h"
 #include "vmnotify.h"
 #include "vivenciadb.h"
 #include "vmwidgets.h"
@@ -11,7 +10,7 @@
 #include "reportgenerator.h"
 #include "texteditor.h"
 #include "emailconfigdialog.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 #include "vmlistitem.h"
 #include "newprojectdialog.h"
@@ -309,7 +308,7 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	setupActions ();
 	scanDir ();
 	updateButtons ();
-	addPostRoutine ( deleteEstimateInstance );
+	Sys_Init::addPostRoutine ( deleteEstimateInstance );
 }
 
 estimateDlg::~estimateDlg () 

@@ -1,7 +1,7 @@
 #include "texteditor.h"
 #include "fileops.h"
 #include "configops.h"
-#include "data.h"
+#include "system_init.h"
 #include "vmnotify.h"
 #include "vmwidgets.h"
 #include "texteditwithcompleter.h"

@@ -9,7 +9,7 @@
 #include "global.h"
 #include "db_image.h"
 #include "fileops.h"
-#include "data.h"
+#include "fast_library_functions.h"
 
 inline static bool operator> ( const QSize& size1, const QSize& size2 )
 {
@@ -18,7 +18,7 @@ inline static bool operator> ( const QSize& size1, const QSize& size2 )
 
 DB_Image::DB_Image ( QWidget* parent )
 	: QFrame ( parent ), imageViewer ( nullptr ), mouse_ex ( 0 ), mouse_ey ( 0 ),
-	  mb_fitToWindow ( true ), mb_maximized ( false ), scaleFactor ( 1.0 ), images_array ( 50 ),
+	  mb_fitToWindow ( true ), mb_maximized ( false ), scaleFactor ( 1.0 ), images_array ( 10 ),
 	  funcImageRequested ( nullptr ), funcShowMaximized ( nullptr )
 {
 	imageViewer = new QLabel;
@@ -34,16 +34,13 @@ DB_Image::DB_Image ( QWidget* parent )
 
 	imageViewer->installEventFilter ( this );
 
-	name_filters.insert ( 0, QStringLiteral ( "*.jpg" ) );
-	name_filters.insert ( 1, QStringLiteral ( "*.JPG" ) );
-	name_filters.insert ( 2, QStringLiteral ( "*" ) );
-	name_filters.insert ( 4, QStringLiteral ( "*" ) );
+	name_filters.insert ( 0, QStringLiteral ( ".jpg" ) );
+	name_filters.insert ( 1, QStringLiteral ( ".png" ) );
+
+	images_array.setAutoDeleteItem ( true );
 }
 
-DB_Image::~DB_Image ()
-{
-	images_array.clear ( true );
-}
+DB_Image::~DB_Image () {}
 
 void DB_Image::showImage ( const int rec_id, const QString& path )
 {
@@ -66,26 +63,25 @@ void DB_Image::showImage ( const int rec_id, const QString& path )
 	showFirstImage ();
 }
 
+const QString DB_Image::imageFileName () const
+{
+	RECORD_IMAGES* ri ( images_array.current () );
+	if ( ri != nullptr )
+	{
+		if ( ri->files.currentIndex () >= 0 )
+			return fileOps::filePathWithoutExtension ( ri->files.current ()->filename );
+	}
+	return QString::null;
+}
+
 void DB_Image::loadImage ( const QString& filename )
 {
 	QImageReader reader;
 	reader.setAutoTransform ( true );
-	if ( filename.isEmpty () )
-	{
-		reader.setFileName ( QStringLiteral ( ":/resources/no_image.jpg" ) );
-		mstr_FileName = emptyString;
-	}
+	if ( !filename.isEmpty () )
+		reader.setFileName ( QSTRING_ENCODING_FIX(filename) );
 	else
-	{
-		mstr_FileName = images_array.current ()->path + filename;
-		if ( !fileOps::exists ( mstr_FileName ).isOn () )
-		{
-			reader.setFileName ( QStringLiteral ( ":/resources/no_image.jpg" ) );
-			mstr_FileName = emptyString;
-		}
-		else
-			reader.setFileName ( mstr_FileName );
-	}
+		reader.setFileName ( QStringLiteral ( ":/resources/no_image.jpg" ) );
 	mouse_ex = mouse_ey = 0;
 	loadImage (	QPixmap::fromImage ( reader.read () ) );
 }
@@ -135,13 +131,9 @@ bool DB_Image::findImagesByPath ( const QString& path )
 	return false;
 }
 
-void DB_Image::reloadInternal ( RECORD_IMAGES* ri, const QString& path )
+inline void DB_Image::reloadInternal ( RECORD_IMAGES* ri, const QString& path )
 {
-	if ( fileOps::isDir ( path ).isOn () )
-	{
-		QDir dir ( path );
-		ri->files = dir.entryList ( name_filters, QDir::Files, QDir::Name );
-	}
+	fileOps::lsDir ( ri->files, path, name_filters );
 }
 
 bool DB_Image::hookUpDir ( const int rec_id, const QString& path )
@@ -153,20 +145,27 @@ bool DB_Image::hookUpDir ( const int rec_id, const QString& path )
 	ri->rec_id = ( rec_id != -1 ) ? rec_id : -2;
 	ri->path = path;
 	reloadInternal ( ri, path );
-	images_array.setCurrent ( static_cast<int>( images_array.count () ) );
+	images_array.setCurrent ( static_cast<int>( images_array.count () ) - 1 );
 	images_array.append ( ri );
 	return true;
 }
 
-void DB_Image::reload ()
+void DB_Image::reload ( const QString& new_path )
 {
 	if ( images_array.current () )
 	{
-		images_array.current ()->files.clear ();
-		reloadInternal ( static_cast<RECORD_IMAGES*>( images_array.current () ),
+		images_array.current ()->files.clearButKeepMemory ();
+		if ( !new_path.isEmpty () && new_path != images_array.current ()->path )
+			hookUpDir ( -1, new_path );
+		else
+		{
+			reloadInternal ( static_cast<RECORD_IMAGES*>( images_array.current () ),
 						 static_cast<RECORD_IMAGES*>( images_array.current () )->path );
+		}
 		showFirstImage ();
 	}
+	else
+		hookUpDir ( -1, new_path );
 }
 
 // called when deleting a record, when changing the dir path of a record or when changing a dir path for a single image
@@ -180,12 +179,17 @@ void DB_Image::removeDir ( const bool b_deleteview )
 	}
 }
 
-static const QStringList emptyStringList;
-const QStringList& DB_Image::imagesList () const
+QStringList DB_Image::imagesList () const
 {
 	if ( images_array.currentIndex () >= 0 )
-		return images_array.current ()->files;
-	return emptyStringList;
+	{
+		QStringList imageNameList;
+		const PointersList<fileOps::st_fileInfo*> &files ( images_array.current ()->files );
+		for ( uint i ( 0 ); i < files.count (); ++i )
+			imageNameList.append ( files.at ( i )->filename );
+		return imageNameList;
+	}
+	return QStringList ();
 }
 
 // Only one caller for this function and it uses the same QStringList we use. No need to check for the validity of index
@@ -194,67 +198,59 @@ const QStringList& DB_Image::imagesList () const
 // be displayed correctly.
 void DB_Image::showSpecificImage ( const int index )
 {
-	if ( index >= 0 && index < images_array.current ()->files.count () )
+	if ( index >= 0 && static_cast<uint>( index ) < images_array.current ()->files.count () )
 	{
-		if ( images_array.currentIndex () >= 0 )
-		{
-			images_array.current ()->cur_image = index;
-			if ( images_array.current ()->files.count () > index )
-			{
-				loadImage ( images_array.current ()->files.at ( index ) );
-				return;
-			}
-		}
+		images_array.current ()->files.setCurrent ( index );
+		loadImage ( images_array.current ()->files.current ()->fullpath );
+		funcImageRequested ( index );
+		return;
 	}
-	loadImage ( emptyString );
+	else
+		loadImage ( emptyString );
 }
 
-bool DB_Image::showFirstImage ()
+int DB_Image::showFirstImage ()
 {
 	if ( images_array.currentIndex () >= 0 )
 	{
-		images_array.current ()->cur_image = 0;
-		if ( images_array.current ()->files.count () > 0 )
+		RECORD_IMAGES* ri ( images_array.current () );
+		if ( !ri->files.isEmpty () )
 		{
-			loadImage ( images_array.current ()->files.at ( 0 ) );
+			loadImage ( ri->files.first ()->fullpath );
 			funcImageRequested ( 0 ); // do not check if not nullptr. In this app, it will be set
-			return true;
+			return 0;
 		}
 	}
 	loadImage ( emptyString );
-	return false;
+	return -1;
 }
 
-bool DB_Image::showLastImage ()
+int DB_Image::showLastImage ()
 {
 	if ( images_array.currentIndex () >= 0 )
 	{
-		const int last_idx ( images_array.current ()->files.count () - 1 );
-		images_array.current ()->cur_image = last_idx;
-		if ( last_idx >= 0 )
+		RECORD_IMAGES* ri ( images_array.current () );
+		if ( !ri->files.isEmpty () )
 		{
-			loadImage ( images_array.current ()->files.at ( last_idx ) );
-			funcImageRequested ( last_idx );
-			return true;
+			loadImage ( ri->files.last ()->fullpath );
+			funcImageRequested ( ri->files.currentIndex () );
+			return ri->files.currentIndex ();
 		}
 	}
 	loadImage ( emptyString );
-	return false;
+	return -1;
 }
 
 int DB_Image::showPrevImage ()
 {
-	if ( images_array.currentIndex () >= 0 ) {
+	if ( images_array.currentIndex () >= 0 )
+	{
 		RECORD_IMAGES* ri ( images_array.current () );
-		if ( ri->cur_image >= 1 )
+		if ( ri->files.currentIndex () > 0 )
 		{
-			--( ri->cur_image );
-			if ( images_array.current ()->files.count () > ri->cur_image )
-			{
-				loadImage ( ri->files.at ( ri->cur_image ) );
-				funcImageRequested ( ri->cur_image );
-				return ri->cur_image;
-			}
+			loadImage ( ri->files.prev ()->fullpath );
+			funcImageRequested ( ri->files.currentIndex () );
+			return ri->files.currentIndex ();
 		}
 	}
 	loadImage ( emptyString );
@@ -265,16 +261,12 @@ int DB_Image::showNextImage ()
 {
 	if ( images_array.currentIndex () >= 0 )
 	{
-		RECORD_IMAGES *ri ( images_array.current () );
-		if ( ri->cur_image < ( ri->files.count () - 1 ) )
+		RECORD_IMAGES* ri ( images_array.current () );
+		if ( ri->files.currentIndex () < static_cast<int>( ri->files.count () ) - 1 )
 		{
-			++( ri->cur_image );
-			if ( images_array.current ()->files.count () > ri->cur_image )
-			{
-				loadImage ( ri->files.at ( ri->cur_image ) );
-				funcImageRequested ( ri->cur_image );
-				return ri->cur_image;
-			}
+			loadImage ( ri->files.next ()->fullpath );
+			funcImageRequested ( ri->files.currentIndex () );
+			return ri->files.currentIndex ();
 		}
 	}
 	loadImage ( emptyString );
@@ -283,21 +275,24 @@ int DB_Image::showNextImage ()
 
 int DB_Image::rename ( const QString& newName )
 {
-	if ( images_array.currentIndex () >= 0 ) {
-		if ( newName != images_array.current ()->files.at ( images_array.current ()->cur_image ) )
+	if ( images_array.currentIndex () >= 0 )
+	{
+		RECORD_IMAGES* ri ( images_array.current () );
+		const QString currentImageName ( ri->files.current ()->filename );
+		if ( newName != currentImageName )
 		{
-			QString new_fileName ( fileOps::dirFromPath ( mstr_FileName ) + newName );
-			const QString ext ( CHR_DOT + fileOps::fileExtension ( mstr_FileName ) );
+			QString new_fileName ( ri->path + newName );
+			const QString ext ( CHR_DOT + fileOps::fileExtension ( currentImageName ) );
 			if ( !newName.endsWith ( ext ) )
 				new_fileName.append ( ext );
 
-			if ( fileOps::rename ( mstr_FileName, new_fileName ).isOn () )
+			if ( fileOps::rename ( currentImageName, new_fileName ).isOn () )
 			{
-				mstr_FileName = new_fileName;
-				images_array.current ()->files.removeAt ( images_array.current ()->cur_image );
-				images_array.current ()->cur_image =
-					Data::insertStringListItem ( images_array.current ()->files, newName );
-				return images_array.current ()->cur_image;
+				ri->files.current ()->fullpath = new_fileName;
+				ri->files.current ()->filename = fileOps::fileNameWithoutPath ( new_fileName );
+				//ri->cur_image =
+				//	VM_LIBRARY_FUNCS::insertStringListItem ( ri->files, newName );
+				return ri->files.currentIndex ();
 			}
 		}
 	}

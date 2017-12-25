@@ -550,7 +550,7 @@ int fileOps::sysExec ( const QStringList &command_line, const QString& as_root_m
 
 int fileOps::sysExec ( const QString& command_line, const QString& as_root_message )
 {
-	QString cmdLine ( command_line );
+	QString cmdLine ( QSTRING_ENCODING_FIX(command_line) );
 	if ( !as_root_message.isEmpty () )
 		cmdLine = suProgram ( as_root_message, cmdLine );
 	return ::system ( cmdLine.toLocal8Bit () );
@@ -564,7 +564,7 @@ bool fileOps::executeWait ( const QString& arguments, const QString& program,
 	if ( !arguments.isEmpty () )
 	{
 		prog += CHR_SPACE;
-		prog += CHR_QUOTES + arguments + CHR_QUOTES;
+		prog += CHR_QUOTES + QSTRING_ENCODING_FIX ( arguments ) + CHR_QUOTES;
 	}
 	if ( !as_root_message.isEmpty () )
 		prog = suProgram ( as_root_message, prog );
@@ -587,7 +587,7 @@ const QString fileOps::executeAndCaptureOutput ( const QString& arguments, const
 	if ( !arguments.isEmpty () )
 	{
 		prog += CHR_SPACE;
-		prog += arguments;
+		prog += QSTRING_ENCODING_FIX( arguments );
 	}
 	if ( !as_root_message.isEmpty () )
 		prog = suProgram ( as_root_message, prog );
@@ -611,7 +611,7 @@ bool fileOps::executeWithFeedFile ( const QString& arguments, const QString& pro
 	if ( !arguments.isEmpty () )
 	{
 		prog += CHR_SPACE;
-		prog += arguments;
+		prog += QSTRING_ENCODING_FIX( arguments );
 	}
 	if ( !as_root_message.isEmpty () )
 		prog = suProgram ( as_root_message, prog );
@@ -631,7 +631,7 @@ bool fileOps::execute ( const QString& arguments, const QString& program )
 {
 	bool ret ( false );
 	QProcess* __restrict proc ( new QProcess () );
-	const QString prog ( program + CHR_SPACE + CHR_QUOTES + arguments + CHR_QUOTES );
+	const QString prog ( program + CHR_SPACE + CHR_QUOTES + QSTRING_ENCODING_FIX( arguments ) + CHR_QUOTES );
 	ret = proc->startDetached ( prog );
 	delete proc;
 	return ret;
@@ -657,12 +657,12 @@ void fileOps::openAddress ( const QString& address )
 
 QString fileOps::getExistingDir ( const QString& dir )
 {
-	return QFileDialog::getExistingDirectory ( nullptr, APP_TR_FUNC ( "Choose dir " ), dir );
+	return QFileDialog::getExistingDirectory ( nullptr, APP_TR_FUNC ( "Choose dir " ), QSTRING_ENCODING_FIX( dir ) );
 }
 
 QString fileOps::getOpenFileName ( const QString& dir, const QString& filter )
 {
-	return QFileDialog::getOpenFileName ( nullptr, APP_TR_FUNC ( "Choose file" ), dir, filter );
+	return QFileDialog::getOpenFileName ( nullptr, APP_TR_FUNC ( "Choose file" ), QSTRING_ENCODING_FIX( dir ), filter );
 }
 
 QString fileOps::getSaveFileName ( const QString& default_name, const QString& filter )

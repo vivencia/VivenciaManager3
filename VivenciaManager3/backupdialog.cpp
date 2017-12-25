@@ -3,11 +3,10 @@
 #include "vmlist.h"
 #include "vivenciadb.h"
 #include "vmcompress.h"
-#include "data.h"
 #include "configops.h"
 #include "fileops.h"
 #include "vmnotify.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 #include "emailconfigdialog.h"
 #include "crashrestore.h"
@@ -43,7 +42,7 @@ BackupDialog::BackupDialog ()
 	setupConnections ();
 	fillTable ();
 	readFromBackupList ();
-	addPostRoutine ( deleteBackupDialogInstance );
+	Sys_Init::addPostRoutine ( deleteBackupDialogInstance );
 }
 
 BackupDialog::~BackupDialog ()
@@ -205,7 +204,7 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 	QString backupFile ( path + filename + QLatin1String ( ".sql" ) );
 
 	bool ok ( false );
-	if ( Data::EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) )
+	if ( Sys_Init::EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) )
 	{
 		QString tables;
 		if ( bDlg )
@@ -609,7 +608,7 @@ void BackupDialog::btnClose_clicked ()
 			done ( actionSuccess () );
 		break;
 		case ACA_RESTART:
-			Data::restartProgram ();
+			Sys_Init::restartProgram ();
 		break;
 		case ACA_CONTINUE:
 			ui->btnApply->setEnabled ( true );

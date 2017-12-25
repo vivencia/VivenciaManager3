@@ -2800,9 +2800,12 @@ vmNumber vmNumber::operator- ( const vmNumber& vmnumber ) const
 					}
 				break;
 				case VMNT_PRICE:
-					if ( ret.m_type == VMNT_DOUBLE )
-						ret.m_type = VMNT_PRICE;
 				case VMNT_DOUBLE:
+					if ( vmnumber.m_type == VMNT_PRICE )
+					{
+						if ( ret.m_type == VMNT_DOUBLE )
+							ret.m_type = VMNT_PRICE;	
+					}
 					ret.nbr_part[0] -= vmnumber.nbr_part[0];
 					ret.nbr_part[1] -= vmnumber.nbr_part[1];
 					if ( ret.nbr_part[1] > 0 )

@@ -17,7 +17,7 @@
 #include "texteditor.h"
 #include "heapmanager.h"
 #include "searchui.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "contactsmanagerwidget.h"
 
 suppliersDlg* suppliersDlg::s_instance ( nullptr );
@@ -34,7 +34,7 @@ suppliersDlg::suppliersDlg ()
 	setWindowTitle ( TR_FUNC ( "Suppliers" ) );
 	setWindowFlags ( Qt::Tool | Qt::WindowStaysOnTopHint );
 	setupUI ();
-	addPostRoutine ( deleteSuppliersInstance );
+	Sys_Init::addPostRoutine ( deleteSuppliersInstance );
 }
 
 suppliersDlg::~suppliersDlg ()

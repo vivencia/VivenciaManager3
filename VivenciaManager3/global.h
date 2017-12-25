@@ -48,6 +48,18 @@
 #define QUOTEME_(x) #x
 #define QUOTEME(x) QUOTEME_(x)
 
+/* Don't know what happend here. This is the fix a found for the pŕoblem of Qt misinterpreting all the strings
+ * that have non-english characters in them. They display fine on the window, but not on the console. The system-wide 
+ * Qt libraries themselves do not read those strings, no matter if write them on the editor and hardcode them into the
+ * program or if I read from the system using C libraries or if I read from the Database using Qt's own mechanism for doing
+ * it so. 
+ */
+#if QT_VERSION >= QT_VERSION_CHECK(5, 9, 1)
+#define QSTRING_ENCODING_FIX(str) QString::fromLocal8Bit ( str.toUtf8 () )
+#else
+#define QSTRING_ENCODING_FIX(str) str
+#endif
+
 constexpr const QLatin1Char CHR_DOT ( '.' );
 constexpr const QLatin1Char CHR_COMMA ( ',' );
 constexpr const QLatin1Char CHR_SPACE ( ' ' );
@@ -95,10 +107,10 @@ static const QString emptyString;
 constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
-#define VERSION_MINOR 3
-#define VERSION_REVISION 95
-constexpr const QLatin1String VERSION_APPEND ( "It Started In Monte Verde", 25 );
-constexpr const QLatin1String VERSION_DATE ( "2017-09-16", 10 );
+#define VERSION_MINOR 4
+#define VERSION_REVISION -alpha
+constexpr const QLatin1String VERSION_APPEND ( "The End (of the year) is Near", 29 );
+constexpr const QLatin1String VERSION_DATE ( "2017-12-09", 10 );
 
 static const QString PROGRAM_VERSION (
 	QUOTEME(VERSION_MAJOR) + CHR_DOT +

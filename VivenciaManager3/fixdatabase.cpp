@@ -1,7 +1,7 @@
 #include "fixdatabase.h"
 #include "global.h"
 #include "fileops.h"
-#include "data.h"
+#include "system_init.h"
 #include "vmnotify.h"
 #include "fixdatabaseui.h"
 #include "heapmanager.h"
@@ -22,8 +22,8 @@ static const QLatin1String tempFile ( "/tmp/.vm-fixdb" );
 
 static void commandQueue ( QString& main_command )
 {
-	main_command += QLatin1String ( "; " ) + Data::commandMySQLServer ( QStringLiteral ( "stop" ), emptyString, true ) +
-					QLatin1String ( "; " ) + Data::commandMySQLServer ( QStringLiteral ( "start" ), emptyString, true );
+	main_command += QLatin1String ( "; " ) + Sys_Init::commandMySQLServer ( QStringLiteral ( "stop" ), emptyString, true ) +
+					QLatin1String ( "; " ) + Sys_Init::commandMySQLServer ( QStringLiteral ( "start" ), emptyString, true );
 }
 
 fixDatabase::fixDatabase ()

@@ -1,5 +1,5 @@
 #include "calculator.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 
 #include <QStack>
@@ -225,7 +225,7 @@ struct Calculator::Private
 Calculator::Calculator ()
 	: stc_private ( new Private )
 {
-	addPostRoutine ( deleteCalculatorInstance );
+	Sys_Init::addPostRoutine ( deleteCalculatorInstance );
 }
 
 Calculator::~Calculator ()

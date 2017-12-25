@@ -10,11 +10,10 @@
 #include "simplecalculator.h"
 #include "configops.h"
 #include "vmwidgets.h"
-#include "data.h"
+#include "system_init.h"
 #include "documenteditorwindow.h"
 #include "texteditor.h"
 #include "reportgenerator.h"
-#include "cleanup.h"
 #include "heapmanager.h"
 #include "emailconfigdialog.h"
 
@@ -68,7 +67,7 @@ documentEditor::documentEditor ( QWidget* parent )
 	setWindowIcon ( ICON ( "report" ) );
 
 	resize ( 500, 450 );
-	addPostRoutine ( deleteEditorInstance );
+	Sys_Init::addPostRoutine ( deleteEditorInstance );
 }
 
 void documentEditor::addDockWindow ( Qt::DockWidgetArea area, QDockWidget* dockwidget )
@@ -90,27 +89,27 @@ void documentEditor::removeDockWindow ( QDockWidget *dockwidget )
 void documentEditor::createActions ()
 {
 	newAct = new vmAction ( -1, ( ICON ( "document-new" ) ), TR_FUNC ( "&New text file" ), this );
-	newAct->setShortcuts ( QKeySequence::New );
+	newAct->setShortcut ( QKeySequence::New );
 	newAct->setStatusTip ( TR_FUNC ( "Create a new document" ) );
 	static_cast<void>( connect ( newAct, &QAction::triggered, this, [&] ( const bool ) { return startNewTextEditor ()->show (); } ) );
 
 	newReportAct = new vmAction ( -1, ( ICON ( "report" ) ), TR_FUNC ( "New &Report" ), this );
-	newReportAct->setShortcuts ( QKeySequence::Refresh );
+	newReportAct->setShortcut ( QKeySequence::Refresh );
 	newReportAct->setStatusTip ( TR_FUNC ( "Create a new report" ) );
 	static_cast<void>( connect ( newReportAct, &QAction::triggered, this, [&] ( const bool ) { return startNewReport ()->show (); } ) );
 
 	openAct = new vmAction ( -1, ICON ( "document-open" ), TR_FUNC ( "&Open..." ), this );
-	openAct->setShortcuts ( QKeySequence::Open );
+	openAct->setShortcut ( QKeySequence::Open );
 	openAct->setStatusTip ( TR_FUNC ( "Open an existing file" ) );
 	static_cast<void>( connect ( openAct, &QAction::triggered, this, [&] ( const bool ) { return openDocument (); } ) );
 
 	saveAct = new vmAction ( -1, ICON ( "document-save" ), TR_FUNC ( "&Save" ), this );
-	saveAct->setShortcuts ( QKeySequence::Save );
+	saveAct->setShortcut ( QKeySequence::Save );
 	saveAct->setStatusTip ( TR_FUNC ( "Save the document to disk" ) );
 	static_cast<void>( connect ( saveAct, &QAction::triggered, this, [&] ( const bool ) { return saveDocument (); } ) );
 
 	saveAsAct = new vmAction ( -1, ICON ( "document-save-as" ), TR_FUNC ( "Save &as..." ), this );
-	saveAsAct->setShortcuts ( QKeySequence::SaveAs );
+	saveAsAct->setShortcut ( QKeySequence::SaveAs );
 	saveAsAct->setStatusTip ( TR_FUNC ( "Save the document under a new name" ) );
 	static_cast<void>( connect ( saveAsAct, &QAction::triggered, this, [&] ( const bool ) { return saveAsDocument (); } ) );
 
@@ -119,40 +118,41 @@ void documentEditor::createActions ()
 	static_cast<void>( connect ( mailAct, &QAction::triggered, this, [&] ( const bool ) { return sendMailAttachment (); } ) );
 
 	cutAct = new vmAction ( -1, ICON ( "edit-cut" ), TR_FUNC ( "Cu&t" ), this );
-	cutAct->setShortcuts ( QKeySequence::Cut );
+	cutAct->setShortcut ( QKeySequence::Cut );
 	cutAct->setStatusTip ( TR_FUNC ( "Cut the current selection's contents to the clipboard" ) );
 	static_cast<void>( connect ( cutAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->cut (); } ) );
 
 	copyAct = new vmAction ( -1, ICON ( "edit-copy" ), TR_FUNC ( "&Copy" ), this );
-	copyAct->setShortcuts ( QKeySequence::Copy );
+	copyAct->setShortcut ( QKeySequence::Copy );
 	copyAct->setStatusTip ( TR_FUNC ( "Copy the current selection's contents to the clipboard" ) );
 	static_cast<void>( connect ( copyAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->copy (); } ) );
 
 	pasteAct = new vmAction ( -1, ICON ( "edit-paste" ), TR_FUNC ( "&Paste" ), this );
-	pasteAct->setShortcuts ( QKeySequence::Paste );
+	pasteAct->setShortcut ( QKeySequence::Paste );
 	pasteAct->setStatusTip ( TR_FUNC ( "Paste the clipboard's contents into the current selection" ) );
 	static_cast<void>( connect ( pasteAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->paste (); } ) );
 
 	closeAct = new vmAction ( -1, ICON ( "close-active-window" ), TR_FUNC ( "Cl&ose" ), this );
+	closeAct->setShortcut ( QKeySequence::Close );
 	closeAct->setStatusTip ( TR_FUNC ( "Close the active window" ) );
-	static_cast<void>( connect ( closeAct, &QAction::triggered, this, [&] ( const bool ) { return tabDocuments->currentWidget ()->close (); } ) );
+	static_cast<void>( connect ( closeAct, &QAction::triggered, this, [&] ( const bool ) { return closeTab ( tabDocuments->currentIndex () ); } ) );
 
 	closeAllAct = new vmAction ( -1, ICON ( "close-all" ), TR_FUNC ( "Close &All" ), this );
 	closeAllAct->setStatusTip ( TR_FUNC ( "Close all the windows" ) );
 	static_cast<void>( connect ( closeAllAct, &QAction::triggered, this, [&] ( const bool ) { return closeAllTabs (); } ) );
 
 	hideAct = new vmAction ( -1, ICON ( "window-close" ), TR_FUNC ( "Close editor window" ), this );
-	hideAct->setShortcuts ( QKeySequence::Quit );
+	hideAct->setShortcut ( QKeySequence::Quit );
 	hideAct->setStatusTip ( TR_FUNC ( "Close Document Editor window" ) );
 	static_cast<void>( connect ( hideAct, &QAction::triggered, this, [&] ( const bool ) { return hide (); } ) );
 
 	nextAct = new vmAction ( -1, TR_FUNC ( "Ne&xt" ), this );
-	nextAct->setShortcuts ( QKeySequence::NextChild );
+	nextAct->setShortcut ( QKeySequence::NextChild );
 	nextAct->setStatusTip ( TR_FUNC ( "Move the focus to the next window" ) );
 	static_cast<void>( connect ( nextAct, &QAction::triggered, this, [&] ( const bool ) { return activateNextTab (); } ) );
 
 	previousAct = new vmAction ( -1, TR_FUNC ( "Pre&vious" ), this );
-	previousAct->setShortcuts ( QKeySequence::PreviousChild );
+	previousAct->setShortcut ( QKeySequence::PreviousChild );
 	previousAct->setStatusTip ( TR_FUNC ( "Move the focus to the previous window" ) );
 	static_cast<void>( connect ( previousAct, &QAction::triggered, this, [&] ( const bool ) { return activatePreviousTab (); } ) );
 
@@ -344,7 +344,7 @@ void documentEditor::closeAllTabs ()
 	mb_ClosingAllTabs = false;
 	// Mainwindow, when it receives the signal indicating the program is about to be closed
 	// will call here. To avoid a destructor, put clean up code here
-	if ( Data::EXITING_PROGRAM )
+	if ( Sys_Init::EXITING_PROGRAM )
 		recentFilesList.clear ();
 }
 
@@ -556,6 +556,6 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 
 void documentEditor::openRecentFile ( QAction* selectedMenu )
 {
-	const vmAction* action ( static_cast<vmAction*> ( selectedMenu ) );
+	const vmAction* action ( static_cast<vmAction*>( selectedMenu ) );
 	openDocument ( action->data ().toString () );
 }

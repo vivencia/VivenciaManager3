@@ -17,7 +17,6 @@ SOURCES += main.cpp \
 	quickproject.cpp \
 	supplierrecord.cpp \
 	vivenciadb.cpp \
-	data.cpp \
 	db_image.cpp \
 	suppliersdlg.cpp \
 	textdb.cpp \
@@ -53,7 +52,6 @@ SOURCES += main.cpp \
 	fixdatabase.cpp \
 	fixdatabaseui.cpp \
 	tristatetype.cpp \
-	cleanup.cpp \
 	wordhighlighter.cpp \
 	vmwidget.cpp \
 	stringrecord.cpp \
@@ -84,7 +82,9 @@ SOURCES += main.cpp \
     keychain/passwordsessionmanager.cpp \
     htmldb.cpp \
     dbstatistics.cpp \
-    dbtableview.cpp
+    dbtableview.cpp \
+    fast_library_functions.cpp \
+    system_init.cpp
 
 HEADERS += dbrecord.h \
 	vmnumberformats.h \
@@ -93,7 +93,6 @@ HEADERS += dbrecord.h \
 	payment.h \
 	purchases.h \
 	vivenciadb.h \
-	data.h \
 	supplierrecord.h \
 	companypurchases.h \
 	companypurchasesui.h \
@@ -136,7 +135,6 @@ HEADERS += dbrecord.h \
 	mainwindow.h \
     tristatetype.h \
     heapmanager.h \
-    cleanup.h \
     wordhighlighter.h \
     vmwidget.h \
     stringrecord.h \
@@ -168,7 +166,8 @@ HEADERS += dbrecord.h \
     htmldb.h \
     dbstatistics.h \
     dbtableview.h \
-    inventory.h
+    inventory.h \
+    system_init.h
 
 FORMS += mainwindow.ui \
 	backupdialog.ui \

@@ -2,12 +2,18 @@
 #include "vmwidgets.h"
 #include "vmlistitem.h"
 #include "global.h"
-#include "data.h"
 #include "mainwindow.h"
 #include "configops.h"
+#include "fast_library_functions.h"
+#include "vivenciadb.h"
 
 #include <QPushButton>
 #include <QVBoxLayout>
+
+static inline void fillClientsNamesList ( QStringList& namesList ) {
+	for ( uint i ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) ); i <= VDB ()->getHighestID ( TABLE_CLIENT_ORDER ); ++i )
+		VM_LIBRARY_FUNCS::insertStringListItem ( namesList, Client::clientName ( i ) );
+}
 
 newProjectDialog::newProjectDialog ( QWidget *parent )
 	: QDialog ( parent, Qt::Tool ), mJobItem ( nullptr ), bresult ( false )
@@ -78,7 +84,7 @@ void newProjectDialog::showDialog ( const QString& clientname, const bool b_allo
 	if ( cboClients->count () == 0 )
 	{
 		QStringList client_names;
-		Data::fillClientsNamesList ( client_names );
+		fillClientsNamesList ( client_names );
 		cboClients->addItems ( client_names );
 	}
 	if ( !clientname.isEmpty () ) {
@@ -103,7 +109,7 @@ void newProjectDialog::loadJobsList ( const uint clientid )
 	mProjectPath.clear ();
 
 	QStringList jobTypesList;
-	Data::fillJobTypeList ( jobTypesList, QString::number ( clientid ) );
+	VM_LIBRARY_FUNCS::fillJobTypeList ( jobTypesList, QString::number ( clientid ) );
 
 	QString jobid;
 	mClientItem = MAINWINDOW ()->getClientItem ( clientid );

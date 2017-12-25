@@ -340,10 +340,13 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 			switch ( action )
 			{
 				case ACTION_READ:
-					// copy temp values into actual after a save operation. Canceled edits must not be synced
-					if ( !inSync () )
-						sync ( RECORD_FIELD::IDX_TEMP, false );
 				case ACTION_REVERT:
+					if ( action == ACTION_READ )
+					{
+						// copy temp values into actual after a save operation. Canceled edits must not be synced
+						if ( !inSync () )
+							sync ( RECORD_FIELD::IDX_TEMP, false );
+					}
 					*const_cast<RECORD_ACTION*>( &m_action ) = ACTION_READ;
 					mb_synced = true;
 					fptr_change = &DBRecord::setValue;

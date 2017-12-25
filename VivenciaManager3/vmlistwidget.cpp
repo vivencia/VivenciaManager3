@@ -40,8 +40,12 @@ void vmListWidget::setCurrentRow ( int row, const bool b_force, const bool b_mak
 			return;
 	}
 	
-	if ( row == -1 )
+	if ( row < 0 )
+	{
 		row = mPrevRow;
+		if ( row < 0 ) // force a non-negative value for row
+			row = mPrevRow = lastUsedRow ();
+	}
 	else
 	{
 		if ( mCurrentItem != nullptr )

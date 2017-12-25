@@ -1,9 +1,8 @@
 #include "emailconfigdialog.h"
-#include "data.h"
+#include "system_init.h"
 #include "global.h"
 #include "vmwidgets.h"
 #include "heapmanager.h"
-#include "cleanup.h"
 #include "fileops.h"
 
 #include <QPushButton>
@@ -72,7 +71,7 @@ static const THUNDERBIRD_OPTS thunderbird;
 emailConfigDialog::emailConfigDialog ()
 	: QDialog ( nullptr ), bProfilesLoaded ( false ), optsList ( 3 )
 {
-	addPostRoutine ( deleteEmailConfigInstance );
+	Sys_Init::addPostRoutine ( deleteEmailConfigInstance );
 }
 
 emailConfigDialog::~emailConfigDialog ()

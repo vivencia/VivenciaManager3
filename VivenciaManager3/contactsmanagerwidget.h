@@ -37,6 +37,11 @@ public:
 	inline void setCallbackForRemoval ( const std::function<void ( const int idx, const vmWidget* const )>& func ) {
 		removeFunc = func; }
 
+	static inline bool isEmailAddress ( const QString& address )
+	{
+		return address.contains ( QLatin1Char ( '@' ) ) && address.contains ( CHR_DOT );
+	}
+
 private:
 	vmComboBox* cboInfoData;
 	QToolButton* btnAdd, *btnDel, *btnExtra;

@@ -29,7 +29,7 @@ public:
 	inline vmAction ( const int index, const QIcon &icon, const QString& text, QObject* parent = nullptr )
 		: QAction ( icon, text, parent ), vmWidget ( WT_ACTION, -1, index ) {}
 
-	inline virtual ~vmAction () {}
+	virtual ~vmAction ();
 	
 	inline void setLabel ( const QString& text ) { QAction::setText ( text ); }
 };
@@ -46,6 +46,9 @@ public:
 
 	virtual ~vmActionLabel ();
 
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QToolButton" ); }
+	QString defaultStyleSheet () const override;
+	
 	inline void setText ( const QString& text, const bool = false ) override { QToolButton::setText ( text ); }
 	inline QString text () const override { return QToolButton::text (); }
 
@@ -230,10 +233,12 @@ public:
 	vmComboBox ( QWidget* parent = nullptr );
 	virtual ~vmComboBox ();
 
-	inline void setID ( const int id ) {
+	inline void setID ( const int id )
+	{
 		mLineEdit->setID ( id );
 		vmWidget::setID ( id );
 	}
+	
 	inline QLatin1String qtClassName () const override { return QLatin1String ( "QComboBox" ); }
 	QString defaultStyleSheet () const override;
 	void highlight ( const VMColors vm_color, const QString& str = QString::null ) override;
@@ -258,6 +263,7 @@ public:
 		mLineEdit->setCallbackForContentsAltered ( func );
 	}
 
+	inline void setCallbackForActivated ( const std::function<void ( const int )>& func ) { indexChanged_func = func; }
 	inline void setCallbackForIndexChanged ( const std::function<void ( const int )>& func ) { indexChanged_func = func; }
 	inline void setCallbackForEnterKeyPressed ( const std::function<void ()>& func ) { keyEnter_func = func; }
 	inline void setCallbackForEscKeyPressed ( const std::function<void ()>& func ) { keyEsc_func = func; }
@@ -279,10 +285,11 @@ private:
 
 	std::function<void ( const vmLineEdit* const )> textAltered_func;
 	std::function<void ( const int )> indexChanged_func;
+	std::function<void ( const int )> activated_func;
 	std::function<void ()> keyEnter_func;
 	std::function<void ()> keyEsc_func;
 
-	void currentIndexChanged_slot ( const int );
+	void currentIndexChanged_slot ( const int idx );
 };
 //------------------------------------------------VM-COMBO-BOX------------------------------------------------
 

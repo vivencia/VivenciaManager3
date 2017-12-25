@@ -52,7 +52,7 @@ private:
 
 inline estimateDlg* ESTIMATE ()
 {
-	// QDockWidgets do not need to hook up to qAddPostRoutine () because they are added to MainWindow's stack of widgets and are deleted when MainWindow is deleted
+	// QDockWidgets do not need to hook up to qSys_Init::addPostRoutine () because they are added to MainWindow's stack of widgets and are deleted when MainWindow is deleted
 	if ( !estimateDlg::s_instance )
 		estimateDlg::s_instance = new estimateDlg ( MAINWINDOW () );
 	return estimateDlg::s_instance;

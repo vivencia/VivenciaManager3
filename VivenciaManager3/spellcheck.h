@@ -6,7 +6,6 @@
 
 #include <QObject>
 #include <QStringList>
-#include <QTextCodec>
 
 #include <functional>
 #include <hunspell/hunspell.hxx>
@@ -30,7 +29,7 @@ public:
 
 	inline triStateType checkWord ( const QString& word )
 	{
-		return ( mChecker ? mChecker->spell ( mCodec->fromUnicode ( word ).constData () ) : TRI_UNDEF );
+		return ( mChecker ? static_cast<TRI_STATE>( mChecker->spell ( word.toLatin1 ().toStdString () ) ) : TRI_UNDEF );
 	}
 
 	inline void setCallbackForMenuEntrySelected ( const std::function<void ( const bool )>& func ) { menuEntrySelected_func = func; }
@@ -57,7 +56,6 @@ private:
 	QString mDictionary;
 
 	Hunspell* __restrict mChecker;
-	QTextCodec* __restrict mCodec;
 	QMenu* mMenu;
 
 	std::function<void ( const bool )> menuEntrySelected_func;

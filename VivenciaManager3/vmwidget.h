@@ -106,6 +106,11 @@ public:
 	inline QWidget* utilityPanel ( const int widget_idx ) const { return m_UtilityWidgetsList.at ( widget_idx ); }
 	bool toggleUtilityPanel ( const int widget_idx );
 
+	static int vmColorIndex ( const VMColors vmcolor );
+	
+	static QPoint getGlobalWidgetPosition ( const QWidget* widget );
+	static void execMenuWithinWidget ( QMenu* menu, const QWidget* widget, const QPoint& mouse_pos );
+
 protected:
 	std::function<void ( const QKeyEvent* const ke, const vmWidget* const widget )> keypressed_func;
 	std::function<void ( const vmWidget* const )> contentsAltered_func;

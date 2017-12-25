@@ -78,6 +78,7 @@ private:
 	void countJobs ();
 	void jobPrices ();
 	void biggestJobs ();
+	void countPayments ();
 	
 #ifndef USE_THREADS
 	std::function<void( const QString& )> m_readyFunc;

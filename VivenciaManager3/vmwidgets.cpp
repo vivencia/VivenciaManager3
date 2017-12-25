@@ -1,10 +1,9 @@
 #include "vmwidgets.h"
 #include "mainwindow.h"
 #include "simplecalculator.h"
-#include "data.h"
+#include "system_init.h"
 #include "configops.h"
 #include "vmlistitem.h"
-#include "cleanup.h"
 #include "heapmanager.h"
 
 #include <QApplication>
@@ -16,6 +15,7 @@
 #include <QDoubleValidator>
 #include <QIntValidator>
 
+vmAction::~vmAction () {}
 //------------------------------------------------VM-ACTION-LABEL-------------------------------------------------
 vmActionLabel::vmActionLabel ( QWidget *parent )
 	: QToolButton ( parent ), vmWidget ( WT_LABEL | WT_BUTTON, WT_ACTION ), labelActivated_func ( nullptr )
@@ -39,6 +39,21 @@ vmActionLabel::vmActionLabel ( vmAction* action, QWidget* parent )
 
 vmActionLabel::~vmActionLabel ()
 {}
+
+QString vmActionLabel::defaultStyleSheet () const
+{
+	QString colorstr;
+	if ( !parentWidget () )
+		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
+	else
+	{
+		const vmActionLabel* lbl ( new vmActionLabel ( parentWidget () ) );
+		colorstr = QLatin1String ( " ( " ) + lbl->palette ().color ( lbl->backgroundRole () ).name ()
+				   + QLatin1String ( " ) }" );
+		delete lbl;
+	}
+	return ( QLatin1String ( "QToolButton { background-color: hex" ) + colorstr );
+}
 
 void vmActionLabel::init ( const bool b_action )
 {
@@ -136,9 +151,10 @@ protected:
 private:
 	vmDateEdit* mOwner;
 	vmLineEdit* mLineEdit;
+	
 	QDate mDateBeforeFocus;
-	bool mbHasFocus;
 	triStateType mEmitSignal;
+	bool mbHasFocus;
 
 	void vmDateChanged ( const QDate& date );
 };
@@ -154,7 +170,7 @@ void deleteMenuDateButtons ()
 
 pvmDateEdit::pvmDateEdit ( vmDateEdit* owner )
 		: QDateEdit ( QDate ( 2000, 1, 1 ) ), vmWidget ( WT_DATEEDIT ), mOwner ( owner ),
-		  mLineEdit ( new vmLineEdit ), mDateBeforeFocus ( 2000, 1, 1 ), mbHasFocus ( false ), mEmitSignal ( TRI_UNDEF )
+		  mLineEdit ( new vmLineEdit ), mDateBeforeFocus ( 2000, 1, 1 ), mEmitSignal ( TRI_UNDEF ), mbHasFocus ( false )
 {
 	setWidgetPtr ( static_cast<QWidget*>( this ) );
 	setLineEdit ( mLineEdit );
@@ -285,14 +301,16 @@ void pvmDateEdit::contextMenuEvent ( QContextMenuEvent* e )
 {
 	if ( isEditable () )
 	{
-		if ( mOwner->ownerItem () == nullptr )
+		// ignore the context menu for QDateEdit->QAbstractSpinBox. The widget that will receive the event is our mLineEdit
+		e->ignore ();
+		if ( mOwner->ownerItem () != nullptr )
 		{
-			QDateEdit::contextMenuEvent ( e );
-			return;
+			// see: void vmLineEdit::contextMenuEvent ( QContextMenuEvent* e )
+			mOwner->ownerItem ()->table ()->displayContextMenuForCell ( mapTo ( mOwner->ownerItem ()->table (), e->pos () ) );
 		}
+		else
+			QDateEdit::contextMenuEvent ( e );
 	}
-	// ignore the context menu for QDateEdit->QAbstractSpinBox. The widget that will receive the event is our mLineEdit
-	e->ignore ();
 }
 
 vmDateEdit::vmDateEdit ( QWidget* parent )
@@ -380,7 +398,7 @@ void vmDateEdit::createDateButtonsMenu ( QWidget* parent )
 	dateAction->setInternalData ( date.toQDate () );
 	menuDateButtons->addAction ( dateAction );
 
-	addPostRoutine ( deleteMenuDateButtons );
+	Sys_Init::addPostRoutine ( deleteMenuDateButtons );
 }
 
 // Called by MainWindow when current date changes
@@ -779,10 +797,17 @@ void vmLineEdit::contextMenuEvent ( QContextMenuEvent* e )
 		}
 		menu->exec ( e->globalPos () );
 		delete menu;
+		e->accept ();
 	}
 	else
-		qDebug () << "has owner item";
-	e->ignore ();
+	{
+		//e->ignore ();
+		/* Before Ubuntu 17.10 (Qt 5.9.1) this line was not necessary. The table would receive the event signal
+		 * because we were ignoring it. Now we have to explicitly ask the table to display the menu and give it
+		 * the position too
+		 */
+		ownerItem ()->table ()->displayContextMenuForCell ( mapTo ( ownerItem ()->table (), e->pos () ) );
+	}
 }
 
 void vmLineEdit::focusInEvent ( QFocusEvent* e )
@@ -812,7 +837,7 @@ void vmLineEdit::focusInEvent ( QFocusEvent* e )
 		
 		if ( ownerItem () )
 		{
-			vmTableWidget* table ( static_cast<vmListWidget*>(const_cast<vmTableItem*>( ownerItem () )->table ()) );
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*>( ownerItem () )->table () ) );
 			table->setCurrentItem ( const_cast<vmTableItem*>( ownerItem () ) );
 		}
 		e->setAccepted ( true );
@@ -926,7 +951,7 @@ void vmLineEditWithButton::execButtonAction ()
 //------------------------------------------------VM-COMBO-BOX------------------------------------------------
 vmComboBox::vmComboBox ( QWidget* parent )
 	: QComboBox ( parent ), vmWidget ( WT_COMBO ), mbIgnoreChanges ( true ),
-		mLineEdit ( new vmLineEdit ), indexChanged_func ( nullptr ),
+		mLineEdit ( new vmLineEdit ), indexChanged_func ( nullptr ), activated_func ( nullptr ),
 		keyEnter_func ( nullptr ), keyEsc_func ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
@@ -1004,12 +1029,19 @@ void vmComboBox::setIgnoreChanges ( const bool b_ignore )
 	mbIgnoreChanges = b_ignore;
 	if ( !mbIgnoreChanges )
 	{
-		// If I do not static_cast like this, the compiler cannot know which overloaded function to use
-		connect ( this, static_cast<void (QComboBox::*)(int)>( &QComboBox::currentIndexChanged ), this, [&] ( int idx ) {
-				return currentIndexChanged_slot ( idx ); } );
+		if ( indexChanged_func != nullptr )
+		{
+			static_cast<void>( connect ( this, static_cast<void (QComboBox::*)(int)>( &QComboBox::currentIndexChanged ), this, [&] ( int idx ) {
+				return currentIndexChanged_slot ( idx ); } ) );
+		}
+		if ( activated_func != nullptr )
+		{
+			static_cast<void>( connect ( this, static_cast<void (QComboBox::*)(int)>( &QComboBox::activated ), this, [&] ( int idx ) {
+				if ( idx >= 0 ) activated_func ( idx ); } ) );
+		}
 	}
 	else 
-		disconnect ( this, nullptr, nullptr, nullptr );
+		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
 }
 
 void vmComboBox::setEditable ( const bool editable )
@@ -1129,13 +1161,13 @@ void vmComboBox::wheelEvent ( QWheelEvent *e )
 vmCheckBox::vmCheckBox ( QWidget* parent )
 	: QCheckBox ( parent ), vmWidget ( WT_CHECKBOX )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 }
 
 vmCheckBox::vmCheckBox ( const QString& text, QWidget* parent )
 	: QCheckBox ( text, parent ), vmWidget ( WT_CHECKBOX )
 {
-	setWidgetPtr ( static_cast<QWidget*> ( this ) );
+	setWidgetPtr ( static_cast<QWidget*>( this ) );
 }
 
 vmCheckBox::~vmCheckBox () {}

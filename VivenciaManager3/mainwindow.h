@@ -92,7 +92,6 @@ public:
 	void saveClientWidget ( vmWidget* widget, const int id );
 	void showClientSearchResult ( vmListItem* item, const bool bshow );
 	void setupClientPanel ();
-	void clientKeyPressedSelector ( const QKeyEvent* ke );
 	void clientsListWidget_currentItemChanged ( vmListItem* item );
 	void controlClientForms ( const clientListItem* const client_item );
 	bool saveClient ( clientListItem* client_item, const bool b_dbsave = true );
@@ -124,7 +123,6 @@ public:
 	void setUpJobButtons ( const QString& path );
 	void setupJobPictureControl ();
 	void displayJobFromCalendar ( vmListItem* cal_item );
-	void jobKeyPressedSelector ( const QKeyEvent* ke );
 	void jobsListWidget_currentItemChanged ( vmListItem* item );
 	void lstJobDayReport_currentItemChanged ( vmListItem* item );
 	void controlJobForms ( const jobListItem* const job_item );
@@ -266,8 +264,14 @@ public:
 	void searchCallbackSelector ( const QKeyEvent* ke );
 	void reOrderTabSequence ();
 	void setupWorkFlow ();
-	inline void changeSchemeStyle ( const QString& style ) { mainTaskPanel->setScheme ( style ); }
+	void setupSectionNavigation ();
+	void findSectionByScrollPosition ( const int scrollBar_value );
+	void changeFuncActionPointers ( vmActionGroup* grpActive );
+	void updateActionButtonsState ();
+	bool execRecordAction ( const int key );
 	void setupTabNavigationButtons ();
+	inline void changeSchemeStyle ( const QString& style ) { mainTaskPanel->setScheme ( style ); }
+	
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 
 //--------------------------------------------CALENDAR-----------------------------------------------------------
@@ -305,6 +309,7 @@ public:
 	
 	void removeListItem ( vmListItem* item, const bool b_delete_item = true, const bool b_auto_select_another = true );
 	void postFieldAlterationActions ( vmListItem* item );
+	void updateWindowBeforeSave ();
 	inline clientListItem* currentClient () const { return mClientCurItem; }
 	inline jobListItem* currentJob () const { return mJobCurItem; }
 	inline payListItem* currentPay () const { return mPayCurItem; }
@@ -313,17 +318,18 @@ public:
 
 protected:
 	void closeEvent ( QCloseEvent * ) override;
-	void changeEvent ( QEvent* e ) override;
 	bool eventFilter ( QObject* o, QEvent* e ) override;
 
 private:
 	static MainWindow* s_instance;
 	friend MainWindow* MAINWINDOW ();
 	friend void deleteMainWindowInstance ();
-	
+
 	Ui::MainWindow* ui;
 
 	QSystemTrayIcon* trayIcon;
+	QToolBar* mActionsToolBar;
+	QAction* actionAdd, *actionEdit, *actionRemove, *actionSave, *actionCancel;
 	QMenu* trayIconMenu;
 
 	QMenu* menuJobDoc, *menuJobXls;
@@ -344,6 +350,8 @@ private:
 	dbCalendar* mCal;
 
 	QAction* jobsPicturesMenuAction;
+	QAction* actJobSelectJob;
+	QAction* actPayReceipt, *actPayReport, *actPayUnPaidReport;
 	vmAction* actCountDayHours, *actCountAllHours, *actAppendDayToday, *actAppendDayYesterday;
 
 	vmTaskPanel* mainTaskPanel;
@@ -352,6 +360,14 @@ private:
 	vmActionGroup* grpJobs;
 	vmActionGroup* grpPays;
 	vmActionGroup* grpBuys;
+	
+	int clientSectionPos, jobSectionPos, paySectionPos, buySectionPos;
+	vmListItem* activeRecord;
+	std::function<bool ( vmListItem* )> func_Save;
+	std::function<vmListItem* ()> func_Add;
+	std::function<bool ( vmListItem* )> func_Edit;
+	std::function<bool ( vmListItem* )> func_Del;
+	std::function<bool ( vmListItem* )> func_Cancel;
 	
 	std::function<void ( const uint )> selJob_callback;
 	bool mb_jobPosActions;
@@ -372,7 +388,21 @@ private:
 
 	QToolButton* mBtnNavPrev, *mBtnNavNext;
 	QDialog* dlgSaveEditItems;
-//---------------------------CUSTOM-WIDGETS-------------------------------------
+
+	struct actionsAvailability
+	{
+		bool b_canAdd;
+		bool b_canEdit;
+		bool b_canRemove;
+		bool b_canSave;
+		bool b_canCancel;
+		bool b_canExtra[3];
+		
+		actionsAvailability () : b_canAdd ( false ), b_canEdit ( false ), b_canRemove ( false ), b_canSave ( false ),
+			b_canCancel ( false ), b_canExtra { false } {}
+	} sectionActions[4], *curSectionAction;
+
+	//---------------------------CUSTOM-WIDGETS-------------------------------------
 
 //--------------------------------------------JOB-----------------------------------------------------------
 	void addJobPictures ();
@@ -412,7 +442,8 @@ private:
 //--------------------------------------------SEARCH-----------------------------------------------------------
 
 //--------------------------------------------TRAY-----------------------------------------------------------
-	void createTrayIcon ( const bool b_setup = true );
+	void createTrayIcon ();
+	void createFloatToolBar ();
 	inline QSystemTrayIcon* appTrayIcon () const { return trayIcon; }
 	void trayMenuTriggered ( QAction* );
 	void trayActivated ( QSystemTrayIcon::ActivationReason );

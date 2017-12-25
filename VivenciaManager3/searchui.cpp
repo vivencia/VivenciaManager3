@@ -108,14 +108,14 @@ void searchUI::parseSearchTerm ( const QString& searchTerm )
 
 	if ( searchTerm.at ( 0 ) == CHR_PERCENT )
 	{
-		while ( searchTerm.at ( static_cast<int>(++char_pos) ) != CHR_SPACE )
+		while ( searchTerm.at ( static_cast<int>( ++char_pos ) ) != CHR_SPACE )
 		{
-			if ( char_pos >= static_cast<uint>(searchTerm.count () - 1) )
+			if ( char_pos >= static_cast<uint>( searchTerm.count () - 1 ) )
 				break;
 
-			switch ( searchTerm.at ( static_cast<int>(char_pos) ).toLatin1 () )
+			switch ( searchTerm.at ( static_cast<int>( char_pos ) ).toLatin1 () )
 			{
-				case 'r': // job and sched reports
+				case 'r': // job, buy reports
 				case 'R':
 					setBit ( mSearchFields, SC_REPORT_1 );
 					setBit ( mSearchFields, SC_REPORT_2 );
@@ -238,7 +238,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 			recordcategory = dbrec->searchCategoryTranslate ( static_cast<SEARCH_CATEGORIES> ( i ) );
 			if ( recordcategory >= 0 )
 			{
-				if ( isBitSet ( mSearchFields, static_cast<uchar>(recordcategory) ) && dbrec->fieldType ( static_cast<uint>(recordcategory) ) != DBTYPE_ID )
+				if ( isBitSet ( mSearchFields, static_cast<uchar>( recordcategory ) ) && dbrec->fieldType ( static_cast<uint>( recordcategory ) ) != DBTYPE_ID )
 					colsList += VDB ()->getTableColumnName ( dbrec->t_info, static_cast<uint>(recordcategory) ) + CHR_COMMA;
 			}
 		}
@@ -310,7 +310,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 		searchStatus.setState ( searchFirst () ? SS_SEARCH_FOUND : SS_NOT_FOUND );
 		if ( mbShow )
 		{
-			move ( Data::getGlobalWidgetPosition ( mWidget ) );
+			move ( vmWidget::getGlobalWidgetPosition ( mWidget ) );
 			show ();
 		}
 	}
@@ -472,6 +472,7 @@ void searchUI::createTable ()
 	}
 
 	mFoundList->initTable ( 5 );
+	mFoundList->setEditable ( false );
 	mFoundList->setCallbackForRowActivated ( [&] ( const int row ) { return listRowSelected ( row ); } );
 	mFoundList->setMinimumWidth ( 600 );
 }
@@ -500,6 +501,7 @@ void searchUI::btnNextClicked ()
 
 void searchUI::listRowSelected ( const int row )
 {
+	qDebug () << row;
 	if ( displayFunc && mPreviusItemActivated )
 		displayFunc ( mFoundItems.at ( mPreviusItemActivated->row () ), false );
 

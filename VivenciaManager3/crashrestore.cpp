@@ -4,9 +4,8 @@
 #include "textdb.h"
 #include "fileops.h"
 #include "heapmanager.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "mainwindow.h"
-#include "data.h"
 
 restoreManager* restoreManager::s_instance ( nullptr );
 
@@ -26,7 +25,7 @@ void deleteRestoreManagerInstance ()
 restoreManager::restoreManager ()
 	: crashInfoList ( 5 ), mb_newDBSession ( false )
 {
-	addPostRoutine ( deleteRestoreManagerInstance, true );
+	Sys_Init::addPostRoutine ( deleteRestoreManagerInstance, true );
 }
 
 restoreManager::~restoreManager ()
@@ -46,7 +45,7 @@ void restoreManager::saveSession ()
 		crash->done ();
 		crash = crashInfoList.next ();
 	}
-	Data::de_init ();
+	Sys_Init::deInit ();
 }
 
 crashRestore::crashRestore ( const QString& str_id )
@@ -103,7 +102,7 @@ int crashRestore::commitState ( const int id, const stringRecord& value )
 	int ret ( id );
 	if ( id == -1 )
 	{
-		ret = static_cast<int>(fileCrash->recCount ());
+		ret = static_cast<int>( fileCrash->recCount () );
 		fileCrash->appendRecord ( value );
 	}
 	else

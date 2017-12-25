@@ -21,7 +21,7 @@
 #include "backupdialog.h"
 #include "vmcompress.h"
 #include "fixdatabaseui.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "stringrecord.h"
 #include "heapmanager.h"
 #include "textdb.h"
@@ -197,7 +197,7 @@ VivenciaDB::VivenciaDB ()
 	  m_ok ( false ), mNewDB ( false ), mBackupSynced ( true )
 {
 	openDataBase ();
-	addPostRoutine ( deleteVivenciaDBInstance );
+	Sys_Init::addPostRoutine ( deleteVivenciaDBInstance );
 }
 
 VivenciaDB::~VivenciaDB ()

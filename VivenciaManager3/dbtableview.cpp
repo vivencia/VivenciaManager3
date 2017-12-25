@@ -1,7 +1,7 @@
 #include "dbtableview.h"
 #include "global.h"
 #include "heapmanager.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "vmlistwidget.h"
 #include "vmlistitem.h"
 #include "vivenciadb.h"
@@ -168,7 +168,7 @@ dbTableView::dbTableView ()
 {
 	mTablesList = new vmListWidget;
 	mTablesList->setMaximumWidth ( 300 );
-	mTablesList->setCallbackForRowActivated ( [&] ( const int row ) { return showTable ( mTablesList->item ( row )->text () ); } );
+	mTablesList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return showTable ( mTablesList->item ( item->row () )->text () ); } );
 
 	vmAction* actionReload ( new vmAction ( 0 ) );
 	actionReload->setShortcut ( QKeySequence ( Qt::Key_F5 ) );
@@ -186,6 +186,11 @@ dbTableView::dbTableView ()
 	mTabView->setTabsClosable ( true );
 	mTabView->connect ( mTabView, &QTabWidget::tabCloseRequested, mTabView, [&] ( const int idx ) { mTabView->removeTab ( idx ); } );
 	
+	vmAction* actionCloseTab ( new vmAction ( 1 ) );
+	actionCloseTab->setShortcut ( QKeySequence ( "Ctrl+W" ) );
+	static_cast<void>( connect ( actionCloseTab, &QAction::triggered, this, [&] ( const bool ) { mTabView->removeTab ( mTabView->currentIndex () ); } ) );	
+	mTablesList->addAction ( actionCloseTab );
+	
 	mMainLayoutSplitter = new QSplitter;
 	mMainLayoutSplitter->insertWidget ( 0, mLeftFrame );
 	mMainLayoutSplitter->insertWidget ( 1, mTabView );
@@ -194,7 +199,7 @@ dbTableView::dbTableView ()
 	mMainLayoutSplitter->setSizes ( QList<int> () << static_cast<int>( screen_width / 5 ) << static_cast<int>( 4 * screen_width / 5 ) );
 
 	mTxtQuery = new vmLineEdit;
-	static_cast<void> ( connect ( mTxtQuery, &QLineEdit::textChanged, this, [&] ( const QString& text ) { mBtnRunQuery->setEnabled ( text.length () > 10 ); } ) );
+	static_cast<void>( connect ( mTxtQuery, &QLineEdit::textChanged, this, [&] ( const QString& text ) { mBtnRunQuery->setEnabled ( text.length () > 10 ); } ) );
 	mTxtQuery->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) { maybeRunQuery ( ke ); } );
 	mTxtQuery->setEditable ( true );
 	mBtnRunQuery = new QToolButton;
@@ -210,7 +215,7 @@ dbTableView::dbTableView ()
 	mMainLayout->addLayout ( hLayout, 0 );
 	mMainLayout->addWidget ( mMainLayoutSplitter, 2 );
 	
-	addPostRoutine ( deleteDBTableViewInstance );
+	Sys_Init::addPostRoutine ( deleteDBTableViewInstance );
 }
 
 dbTableView::~dbTableView () {}

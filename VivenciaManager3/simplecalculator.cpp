@@ -2,8 +2,9 @@
 #include "global.h"
 #include "calculator.h"
 #include "mainwindow.h"
-#include "data.h"
+#include "system_init.h"
 #include "vmwidgets.h"
+#include "fast_library_functions.h"
 #include "ui_simplecalculator.h"
 
 #include <QCloseEvent>
@@ -89,7 +90,7 @@ void SimpleCalculator::relevantKeyPressed ( const QKeyEvent* qe )
 void SimpleCalculator::btnCopyResultClicked ()
 {
 	calculate ();
-	Data::copyToClipboard ( mStrResult );
+	VM_LIBRARY_FUNCS::copyToClipboard ( mStrResult );
 	if ( txtReceiveResult )
 		txtReceiveResult->setText ( mStrResult, true );
 }

@@ -1,11 +1,10 @@
 #include "vmnotify.h"
 #include "vmtaskpanel.h"
-#include "data.h"
 #include "vmwidgets.h"
 #include "global.h"
 #include "heapmanager.h"
 #include "mainwindow.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "vmactiongroup.h"
 
 #include <QPixmap>
@@ -106,7 +105,7 @@ void vmNotify::initNotify ()
 	if ( !s_instance )
 	{
 		s_instance = new vmNotify ( QString::null, MAINWINDOW () );
-		addPostRoutine ( deleteNotifyInstance );
+		Sys_Init::addPostRoutine ( deleteNotifyInstance );
 	}
 }
 

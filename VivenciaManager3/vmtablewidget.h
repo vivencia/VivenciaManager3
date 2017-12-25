@@ -107,7 +107,7 @@ public:
 	inline void appendRow ()
 	{
 		// totalsRow cannot be < 0. If it is, initTable was not called, and therefore something wrong is abount to happen anyway
-		insertRow ( mbPlainTable ? static_cast<uint>( rowCount () ) : static_cast<uint>( totalsRow () ) );
+		insertRow ( isPlainTable () ? m_nVisibleRows : static_cast<uint>( totalsRow () ) );
 	}
 
 	void rowActivatedConnection ( const bool b_activate );
@@ -209,6 +209,8 @@ protected:
 	inline void resetLastUsedRow () { m_lastUsedRow = -1; }
 
 private:
+	void initList ();
+	void initTable2 ();
 	void enableOrDisableActionsForCell ( const vmTableItem* sheetItem );
 	void sharedContructorsCode ();
 	void fixTotalsRow ();
@@ -238,7 +240,7 @@ private:
 	uint m_ncols;
 	uint mAddedItems;
 	bool mTableChanged;
-	//bool m_clearRowNotify;
+	bool mb_TableInit;
 
 	/* TRUE: changes a recorded in a list so that at a later point this list can iterated
 	 * through and with the changes update some database table or something else.

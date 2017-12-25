@@ -1,10 +1,9 @@
 #include "usermanagement.h"
 #include "usermanagementui.h"
 #include "global.h"
-#include "data.h"
 #include "global_enums.h"
 #include "vivenciadb.h"
-#include "cleanup.h"
+#include "system_init.h"
 #include "heapmanager.h"
 #include "vmnotify.h"
 #include "fast_library_functions.h"
@@ -58,7 +57,7 @@ UserManagement::UserManagement ()
 {
 	user_rec = new userRecord;
 //	mPasswdMngr = new passwordManager ( QStringLiteral ( "usrmngr" ), passwordManager::PWSS_SAVE );
-	addPostRoutine ( deleteUserManagementInstance );
+	Sys_Init::addPostRoutine ( deleteUserManagementInstance );
 }
 
 UserManagement::~UserManagement ()

@@ -2,14 +2,14 @@
 #include "machinesrecord.h"
 #include "heapmanager.h"
 #include "vmwidgets.h"
-#include "cleanup.h"
 #include "vmtablewidget.h"
 #include "vmactiongroup.h"
 #include "job.h"
 #include "stringrecord.h"
 #include "vmnotify.h"
 #include "mainwindow.h"
-#include "data.h"
+#include "system_init.h"
+#include "fast_library_functions.h"
 #include "vmnotify.h"
 #include "completers.h"
 
@@ -30,7 +30,7 @@ machinesDlg::machinesDlg ( QWidget* parent )
 	: QDialog ( parent ), mMacRec ( new machinesRecord )
 {
 	setupUI ();
-	addPostRoutine ( deleteMachinesInstance );
+	Sys_Init::addPostRoutine ( deleteMachinesInstance );
 }
 
 machinesDlg::~machinesDlg ()
@@ -541,13 +541,13 @@ void machinesDlg::btnSave_clicked ()
 		dataAltered ( txtJob );
 	}
 	if ( mMacRec->saveRecord () ) {
-		if ( Data::insertComboItem ( cboEvents, cboEvents->text () ) != -1 )
+		if ( VM_LIBRARY_FUNCS::insertComboItem ( cboEvents, cboEvents->text () ) != -1 )
 			APP_COMPLETERS ()->updateCompleter ( cboEvents->text (), vmCompleters::MACHINE_EVENT );
-		if ( Data::insertComboItem ( cboMachines, cboMachines->text () ) != -1 )
+		if ( VM_LIBRARY_FUNCS::insertComboItem ( cboMachines, cboMachines->text () ) != -1 )
 			APP_COMPLETERS ()->updateCompleter ( cboMachines->text (), vmCompleters::MACHINE_NAME );
-		if ( Data::insertComboItem ( cboBrand, cboBrand->text () ) != -1 )
+		if ( VM_LIBRARY_FUNCS::insertComboItem ( cboBrand, cboBrand->text () ) != -1 )
 			APP_COMPLETERS ()->updateCompleter ( cboBrand->text (), vmCompleters::BRAND );
-		if ( Data::insertComboItem ( cboType, cboType->text () ) != -1 )
+		if ( VM_LIBRARY_FUNCS::insertComboItem ( cboType, cboType->text () ) != -1 )
 			APP_COMPLETERS ()->updateCompleter ( cboBrand->text (), vmCompleters::STOCK_TYPE );
 		
 		uint row ( tableMachineHistory->lastUsedRow () + 1 );
@@ -563,7 +563,7 @@ void machinesDlg::btnSave_clicked ()
 		tableJobEvents->setCellValue ( timeEventTime->text (), row, 3 );
 
 		VM_NOTIFY ()->notifyMessage ( tr ( "Machine Events" ), tr ( "Machine event info saved" ) );
-		Data::insertComboItem ( cboMachines, cboMachines->text () );
+		VM_LIBRARY_FUNCS::insertComboItem ( cboMachines, cboMachines->text () );
 		controlForms ();
 	}
 }

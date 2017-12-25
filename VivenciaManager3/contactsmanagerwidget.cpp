@@ -1,7 +1,7 @@
 #include "contactsmanagerwidget.h"
 #include "vmwidgets.h"
 #include "fileops.h"
-#include "data.h"
+#include "system_init.h"
 #include "vmnotify.h"
 
 #include <QToolButton>
@@ -107,7 +107,7 @@ void contactsManagerWidget::cbo_textAltered ( const QString& text )
 	{*/
 	if ( m_contact_type == CMW_EMAIL )
 	{
-		if ( Data::isEmailAddress ( text ) )
+		if ( isEmailAddress ( text ) )
 			cboInfoData->setEditText ( text.toLower () );
 			//new_text = text.toLower ();
 	}
@@ -143,7 +143,7 @@ void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 		}
 		else
 		{
-			input_ok = Data::isEmailAddress ( cboInfoData->text () );
+			input_ok = isEmailAddress ( cboInfoData->text () );
 			if ( input_ok )
 				cboInfoData->setText ( cboInfoData->text () );
 		}

@@ -4,8 +4,9 @@
 #include "fileops.h"
 #include "heapmanager.h"
 #include "vmwidgets.h"
-#include "cleanup.h"
+#include "system_init.h"
 
+#include <QTextCodec>
 #include <QTextStream>
 #include <QFile>
 #include <QLocale>
@@ -23,13 +24,13 @@ void deleteSpellCheckInstance ()
 }
 
 spellCheck::spellCheck ()
-	: mChecker ( nullptr ), mCodec ( nullptr ), mMenu ( nullptr ), menuEntrySelected_func ( nullptr )
+	: mChecker ( nullptr ), mMenu ( nullptr ), menuEntrySelected_func ( nullptr )
 {
 	getDictionariesPath ();
 	setDictionaryLanguage ( CONFIG ()->readConfigFile ( -1, CONFIG_CATEGORY_NAME ) );
 	createDictionaryInterface ();
 	setUserDictionary ();
-	addPostRoutine ( deleteSpellCheckInstance );
+	Sys_Init::addPostRoutine ( deleteSpellCheckInstance );
 }
 
 spellCheck::~spellCheck ()
@@ -62,17 +63,22 @@ void spellCheck::updateUserDict ()
 	}
 }
 
+/* The dictionaries files (.dic and .aff) are encoded in Western Europe's ISO-8859-15. Using
+ * QString's UTF-8, local8Bit and to or from StdString(which assumes std::string::data () to be in UTF-8 format)
+ * results in misinterpreted characters. Again, this behavior of QString started showing after the upgrade to
+ * 5.9.1, the same version that prompeted errors elsewhere and had me create the QSTRING_ENCODING_FIX to overcome
+ * those errors
+ */
 bool spellCheck::suggestionsList ( const QString& word, QStringList& wordList )
 {
 	if ( checkWord ( word ).isFalse () )
 	{
-		char** wlst ( nullptr );
-		const int ns ( mChecker->suggest ( &wlst, mCodec->fromUnicode ( word ).constData () ) );
-		if ( ns > 0 )
+		std::vector<std::string> suggestList ( mChecker->suggest ( word.toLatin1 ().constData () ) );
+		if ( suggestList.size () > 0 )
 		{
-			for ( int i ( 0 ); i < ns; ++i )
-				wordList.append ( mCodec->toUnicode ( wlst[i] ) );
-			mChecker->free_list ( &wlst, ns );
+			for ( size_t i ( 0 ); i < suggestList.size (); ++i )
+				wordList.append ( QString::fromLatin1 ( suggestList.at ( i ).data () ) );
+			suggestList.clear ();
 			return true;
 		}
 	}
@@ -83,7 +89,7 @@ void spellCheck::addWord ( const QString& word, const bool b_add )
 {
 	if ( mChecker )
 	{
-		mChecker->add ( word.toLocal8Bit ().constData () );
+		mChecker->add ( word.toLocal8Bit ().toStdString () );
 		if ( b_add )
 		{
 			unknownWordList.append ( word );
@@ -163,9 +169,9 @@ void spellCheck::createDictionaryInterface ()
 	{
 		heap_del ( mChecker );
 		QString dicAff;
-		getDictionaryAff( dicAff );
+		getDictionaryAff ( dicAff );
 		mChecker = new Hunspell ( dicAff.toLatin1 ().constData (), mDictionary.toLatin1 ().constData () );
-		mCodec = QTextCodec::codecForName ( mChecker->get_dic_encoding () );
+		QTextCodec::setCodecForLocale ( QTextCodec::codecForName ( mChecker->get_dic_encoding () ) );
 	}
 }
 

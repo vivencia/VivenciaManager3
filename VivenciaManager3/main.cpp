@@ -1,5 +1,5 @@
 #include "global.h"
-#include "data.h"
+#include "system_init.h"
 
 #include <QApplication>
 #include <QtGui>
@@ -30,6 +30,6 @@ int main ( int argc, char *argv[] )
 	app.installTranslator ( &translator );
 #endif
 
-	Data::init ();
+	Sys_Init::init ();
 	return app.exec ();
 }
