@@ -13,16 +13,13 @@ constexpr DB_FIELD_TYPE CLIENTS_FIELDS_TYPE[CLIENT_FIELD_COUNT] = {
 	DBTYPE_YESNO
 };
 
+#ifdef CLIENT_TABLE_UPDATE_AVAILABLE
 bool updateClientTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &Client::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &Client::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //CLIENT_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Client::t_info =
 {
@@ -37,7 +34,12 @@ const TABLE_INFO Client::t_info =
 	" varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | int ( 2 ) DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Name|Street|Number|District|City|Zip code|Phones|E-mail|Client since|Client to|Active|" ),
 	CLIENTS_FIELDS_TYPE,
-	TABLE_VERSION, CLIENT_FIELD_COUNT, TABLE_CLIENT_ORDER, &updateClientTable
+	TABLE_VERSION, CLIENT_FIELD_COUNT, TABLE_CLIENT_ORDER,
+	#ifdef CLIENT_TABLE_UPDATE_AVAILABLE
+	&updateClientTable
+	#else
+	nullptr
+	#endif //CLIENT_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	// it is actually false, but the update routine in generaltable.cpp checks for it, and is the only place in all of the code.
 	// Since the code there must not call updateIDs for the client table, this false information here is actually harmless and makes for one less conditional statement there

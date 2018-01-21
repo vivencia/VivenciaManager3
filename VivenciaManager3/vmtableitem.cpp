@@ -222,7 +222,15 @@ void vmTableItem::highlight ( const VMColors color, const QString& )
 	if ( m_widget )
 		m_widget->highlight ( color );
 	else
+	{
+		//setBackground triggers the signal QTableWidget::itemChanged. We have to avoid that
+		const bool b_ignorechanges ( table ()->isIgnoringChanges () );
+		if ( !b_ignorechanges )
+			table ()->setIgnoreChanges ( true );
 		setBackground ( color == vmDefault_Color ? QColor ( defaultStyleSheet () ) : QColor ( vmColorToQt ( color ) ) );
+		if ( !b_ignorechanges )
+			table ()->setIgnoreChanges ( false );
+	}
 }
 
 QVariant vmTableItem::data ( const int role ) const

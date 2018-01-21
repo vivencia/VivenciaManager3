@@ -210,7 +210,6 @@ public:
 	void loadAllOverduesList ();
 	void interceptPaymentCellChange ( const vmTableItem* const item );
 	void updatePayTotalPaidValue ();
-	void payKeyPressedSelector ( const QKeyEvent* ke );
 	void tabPaysLists_currentChanged ( const int index );
 	void payExternalChange ( const uint id, const RECORD_ACTION action );
 //--------------------------------------------PAY------------------------------------------------------------
@@ -244,7 +243,6 @@ public:
 	void interceptBuyItemsCellChange ( const vmTableItem* const item );
 	void interceptBuyPaymentCellChange ( const vmTableItem* const item );
 	void updateBuyTotalPaidValue ();
-	void buyKeyPressedSelector ( const QKeyEvent* ke );
 	void getPurchasesForSuppliers ( const QString& supplier );
 	void setBuyPayValueToBuyPrice ( const QString& price );
 	void buyExternalChange ( const uint id, const RECORD_ACTION action );
@@ -288,7 +286,6 @@ public:
 	void showTab ( const TAB_INDEXES ti );
 	void tabMain_currentTabChanged ( const int tab_idx );
 	void saveView ();
-	void selectBuysItems ( const PROCESS_STEPS step );
 	void navigatePrev ();
 	void navigateNext ();
 	void insertNavItem ( vmListItem* item );
@@ -416,16 +413,12 @@ private:
 	void btnJobSeparateReportWindow_clicked ( const bool checked );
 //--------------------------------------------JOB-----------------------------------------------------------
 
-//--------------------------------------------BUY-----------------------------------------------------------
-	void on_btnBuyCopyRows_clicked ();
-//--------------------------------------------BUY-----------------------------------------------------------
-
 //-----------------------------------------------DATE-BTNS--------------------------------------------------
 	void updateProgramDate ();
 //----------------------------------------------CURRENT-DATE-BTNS-------------------------------------------
 
 //--------------------------------------------SLOTS---------------------------------------------------------
-	void receiveWidgetBack ( QWidget* );
+	void receiveWidgetBack ( QLayout* layout );
 	void btnReportGenerator_clicked ();
 	void btnBackupRestore_clicked ();
 	void btnCalculator_clicked ();

@@ -15,17 +15,14 @@ constexpr DB_FIELD_TYPE JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
 	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
 };
 
+#ifdef JOB_TABLE_UPDATE_AVAILABLE
 bool updateJobTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->insertColumn ( FLD_JOB_KEYWORDS, &Job::t_info );
 	VDB ()->optimizeTable ( &Job::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &Job::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //JOB_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Job::t_info =
 {
@@ -39,8 +36,12 @@ const TABLE_INFO Job::t_info =
 	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, | varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | longtext COLLATE utf8_unicode_ci, |longtext COLLATE utf8_unicode_ci, |" ),
 	QStringLiteral ( "ID|Client ID|Type|Start date|Finish date|Worked hours|Price|Project path|Project ID|Image path|Job Address|Job Keywords|Report|" ),
-	JOBS_FIELDS_TYPE,
-	TABLE_VERSION, JOB_FIELD_COUNT, TABLE_JOB_ORDER, &updateJobTable
+	JOBS_FIELDS_TYPE, TABLE_VERSION, JOB_FIELD_COUNT, TABLE_JOB_ORDER,
+	#ifdef JOB_TABLE_UPDATE_AVAILABLE
+	&updateJobTable
+	#else
+	nullptr
+	#endif //JOB_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif

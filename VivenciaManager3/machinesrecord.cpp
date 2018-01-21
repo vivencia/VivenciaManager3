@@ -10,16 +10,13 @@ constexpr DB_FIELD_TYPE MACHINES_FIELDS_TYPE[MACHINES_FIELD_COUNT] =
 	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
 };
 
+#ifdef MACHINES_TABLE_UPDATE_AVAILABLE
 bool updateMachinesTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &machinesRecord::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &machinesRecord::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //MACHINES_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO machinesRecord::t_info =
 {
@@ -33,7 +30,12 @@ const TABLE_INFO machinesRecord::t_info =
 	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, |"
 	" longtext COLLATE utf8_unicode_ci, |" ),
 	QStringLiteral ( "ID|Supplies ID|Name|Brand|Type|Events|Events dates|Events times|Events jobs|" ),
-	MACHINES_FIELDS_TYPE, TABLE_VERSION, MACHINES_FIELD_COUNT, TABLE_MACHINES_ORDER, &updateMachinesTable
+	MACHINES_FIELDS_TYPE, TABLE_VERSION, MACHINES_FIELD_COUNT, TABLE_MACHINES_ORDER,
+	#ifdef MACHINES_TABLE_UPDATE_AVAILABLE
+	&updateMachinesTable
+	#else
+	nullptr
+	#endif //MACHINES_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif

@@ -27,6 +27,7 @@ public:
 	bool suggestionsList ( const QString& word, QStringList& wordList );
 	void addWord ( const QString& word, const bool b_add );
 
+	// Refer to comment before suggestionsList () in the cpp file
 	inline triStateType checkWord ( const QString& word )
 	{
 		return ( mChecker ? static_cast<TRI_STATE>( mChecker->spell ( word.toLatin1 ().toStdString () ) ) : TRI_UNDEF );

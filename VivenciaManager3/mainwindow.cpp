@@ -267,7 +267,6 @@ bool MainWindow::saveClient ( clientListItem* client_item, const bool b_dbsave )
 {
 	if ( client_item != nullptr )
 	{
-		updateWindowBeforeSave ();
 		if ( client_item->clientRecord ()->saveRecord ( false, b_dbsave ) )
 		{
 			client_item->setAction ( ACTION_READ, true ); // now we can change indexes
@@ -361,7 +360,7 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 {
 	// This function is called by user interaction and programatically. When called programatically, item may be nullptr
 	if ( client_item )
-	{	
+	{
 		//ui->tabMain->setCurrentIndex ( 0 );
 		if ( client_item->loadData () )
 		{
@@ -749,7 +748,8 @@ void MainWindow::setUpJobButtons ( const QString& path )
 				menuJobPdf->clear ();
 			if ( menuJobXls != nullptr )
 				menuJobXls->clear ();
-			if ( subMenuJobPdfView != nullptr ) {
+			if ( subMenuJobPdfView != nullptr )
+			{
 				subMenuJobPdfView->clear ();
 				subMenuJobPdfEMail->clear ();
 			}
@@ -1015,10 +1015,9 @@ void MainWindow::controlJobPictureControls ()
 }
 
 bool MainWindow::saveJob ( jobListItem* job_item, const bool b_dbsave )
-{	
+{
 	if ( job_item )
 	{
-		updateWindowBeforeSave ();
 		ui->txtJobReport->saveContents ( true, true ); // force committing the newest text to the buffers. Avoid depending on Qt's signals, which might occur later than when reaching here
 		Job* job ( job_item->jobRecord () );
 		if ( job->saveRecord ( false, b_dbsave ) ) // do not change indexes just now. Wait for dbCalendar actions
@@ -2004,20 +2003,14 @@ void MainWindow::setupPayPanel ()
 	ui->txtPayTotalPrice->setTextType ( vmLineEdit::TT_PRICE );
 	ui->txtPayTotalPrice->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtPayTotalPrice_textAltered ( sender->text () ); } );
-	ui->txtPayTotalPrice->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return payKeyPressedSelector ( ke ); } );
 
 	savePayWidget ( ui->txtPayTotalPaid, FLD_PAY_TOTALPAID );
 	ui->txtPayTotalPaid->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtPay_textAltered ( sender ); } );
-	ui->txtPayTotalPaid->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return payKeyPressedSelector ( ke ); } );
 
 	savePayWidget ( ui->txtPayObs, FLD_PAY_OBS );
 	ui->txtPayObs->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtPay_textAltered ( sender ); } );
-	ui->txtPayObs->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return payKeyPressedSelector ( ke ); } );
 
 	ui->chkPayOverdue->setLabel ( TR_FUNC ( "Ignore if overdue" ) );
 	ui->chkPayOverdue->setCallbackForContentsAltered ( [&] ( const bool checked ) {
@@ -2043,8 +2036,6 @@ void MainWindow::setupPayPanel ()
 	ui->tablePayments->setUtilitiesPlaceLayout ( ui->layoutPayTableUtility );
 	ui->tablePayments->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 		return interceptPaymentCellChange ( item ); } );
-	ui->tablePayments->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return payKeyPressedSelector ( ke ); } );
 	
 	static_cast<void>( connect ( ui->tabPaysLists, &QTabWidget::currentChanged, this, [&] ( const int index ) { return tabPaysLists_currentChanged ( index ); } ) );
 	
@@ -2684,17 +2675,6 @@ void MainWindow::updatePayTotalPaidValue ()
 	setRecValue ( mPayCurItem->payRecord (), FLD_PAY_TOTALPAID, total_paid.toPrice () ); // now we can update the record
 }
 
-void MainWindow::payKeyPressedSelector ( const QKeyEvent* ke )
-{
-	if ( ke->key () == Qt::Key_Escape )
-		static_cast<void>( cancelPay ( mPayCurItem ) );
-	else
-	{
-		ui->clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
-		static_cast<void>( savePay ( mPayCurItem ) );
-	}
-}
-
 // Delay loading lists until they are necessary
 void MainWindow::tabPaysLists_currentChanged ( const int index )
 {
@@ -2858,40 +2838,28 @@ void MainWindow::setupBuyPanel ()
 	ui->txtBuyTotalPrice->setTextType ( vmLineEdit::TT_PRICE );
 	ui->txtBuyTotalPrice->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtBuy_textAltered ( sender ); } );
-	ui->txtBuyTotalPrice->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	saveBuyWidget ( ui->txtBuyTotalPaid->lineControl (), FLD_BUY_TOTALPAID );
 	ui->txtBuyTotalPaid->lineControl ()->setTextType ( vmLineEdit::TT_PRICE );
 	ui->txtBuyTotalPaid->setButtonType ( vmLineEditWithButton::LEBT_CALC_BUTTON );
 	ui->txtBuyTotalPaid->lineControl ()->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtBuy_textAltered ( sender ); } );
-	ui->txtBuyTotalPaid->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	saveBuyWidget ( ui->txtBuyNotes, FLD_BUY_NOTES );
 	ui->txtBuyNotes->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtBuy_textAltered ( sender ); } );
-	ui->txtBuyNotes->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	saveBuyWidget ( ui->txtBuyDeliveryMethod, FLD_BUY_DELIVERMETHOD );
 	ui->txtBuyDeliveryMethod->setCompleter ( APP_COMPLETERS ()->getCompleter ( vmCompleters::DELIVERY_METHOD ) );
 	ui->txtBuyDeliveryMethod->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return txtBuy_textAltered ( sender ); } );
-	ui->txtBuyDeliveryMethod->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	saveBuyWidget ( ui->dteBuyDate, FLD_BUY_DATE );
 	ui->dteBuyDate->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return dteBuy_dateAltered ( sender ); } );
-	ui->dteBuyDate->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 	saveBuyWidget ( ui->dteBuyDeliveryDate, FLD_BUY_DELIVERDATE );
 	ui->dteBuyDeliveryDate->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 		return dteBuy_dateAltered ( sender ); } );
-	ui->dteBuyDeliveryDate->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	saveBuyWidget ( ui->cboBuySuppliers, FLD_BUY_SUPPLIER );
 	ui->cboBuySuppliers->setCompleter ( vmCompleters::SUPPLIER );
@@ -2900,8 +2868,6 @@ void MainWindow::setupBuyPanel ()
 		return cboBuySuppliers_textAltered ( sender->text () ); } );
 	ui->cboBuySuppliers->setCallbackForIndexChanged ( [&] ( const int index ) {
 		return cboBuySuppliers_indexChanged ( index ); } );
-	ui->cboBuySuppliers->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	( void ) vmTableWidget::createPurchasesTable ( ui->tableBuyItems );
 	ui->tableBuyItems->setKeepModificationRecords ( false );
@@ -2911,8 +2877,6 @@ void MainWindow::setupBuyPanel ()
 		return interceptBuyItemsCellChange ( item ); } );
 	ui->tableBuyItems->setCallbackForMonitoredCellChanged ( [&] ( const vmTableItem* const item ) {
 		return ui->txtBuyTotalPrice->setText ( item->text (), true ); } );
-	ui->tableBuyItems->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	( void ) vmTableWidget::createPayHistoryTable ( ui->tableBuyPayments, this, PHR_METHOD );
 	ui->tableBuyPayments->setKeepModificationRecords ( false );
@@ -2920,11 +2884,8 @@ void MainWindow::setupBuyPanel ()
 	ui->tableBuyPayments->setUtilitiesPlaceLayout ( ui->layoutTableBuyPaysUtility );
 	ui->tableBuyPayments->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) {
 		return interceptBuyPaymentCellChange ( item ); } );
-	ui->tableBuyPayments->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return buyKeyPressedSelector ( ke ); } );
 
 	static_cast<void>( connect ( ui->btnShowSuppliersDlg, &QToolButton::clicked, this, [&] () { return SUPPLIERS ()->displaySupplier ( ui->cboBuySuppliers->currentText (), true ); } ) );	
-	static_cast<void>( connect ( ui->btnBuyCopyRows, &QToolButton::clicked, this, [&] () { return on_btnBuyCopyRows_clicked (); } ) );
 	
 	ui->splitterBuyInfo->setSizes ( QList<int> () << static_cast<int>( 3* screen_width / 8 ) << static_cast<int>( 5 * screen_width / 8 ) );
 }
@@ -3055,7 +3016,7 @@ bool MainWindow::saveBuy ( buyListItem* buy_item, const bool b_dbsave )
 			mCal->updateCalendarWithBuyInfo ( buy );
 			buy_item->setAction ( ACTION_READ, true ); // now we can change indexes
 			
-			dbSupplies sup_rec;
+			dbSupplies sup_rec ( true );
 			ui->tableBuyItems->exportPurchaseToSupplies ( buy, &sup_rec );
 			ui->tableBuyPayments->setTableUpdated ();
 			updateBuyTotalPriceWidgets ( buy_item );
@@ -3244,7 +3205,7 @@ void MainWindow::loadBuyInfo ( const Buy* const buy )
 		ui->txtBuyDeliveryMethod->setText ( emptyString );
 		ui->dteBuyDate->setText ( emptyString );
 		ui->dteBuyDeliveryDate->setText ( emptyString );
-		ui->cboBuySuppliers->clearEditText ();
+		ui->cboBuySuppliers->setText ( emptyString );
 	}
 	
 	ui->tableBuyItems->setEditable ( bIsEditable );
@@ -3409,17 +3370,6 @@ void MainWindow::updateBuyTotalPaidValue ()
 	setRecValue ( mBuyCurItem->buyRecord (), FLD_BUY_TOTALPAID, total.toPrice () );
 }
 
-void MainWindow::buyKeyPressedSelector ( const QKeyEvent* ke )
-{
-	if ( ke->key () == Qt::Key_Escape )
-		static_cast<void>(cancelBuy ( mBuyCurItem ));
-	else
-	{
-		ui->clientsList->setFocus (); // trigger any pending editing_Finished or textAltered event
-		saveBuy ( mBuyCurItem );
-	}
-}
-
 void MainWindow::getPurchasesForSuppliers ( const QString& supplier )
 {
 	ui->lstBuySuppliers->clear ();
@@ -3472,7 +3422,7 @@ void MainWindow::buyExternalChange ( const uint id, const RECORD_ACTION action )
 	{	
 		buyListItem* buy_item ( getBuyItem ( client_parent, id ) );
 		if ( buy_item->buyRecord () != nullptr )
-			buy_item->buyRecord ()->setRefreshFromDatabase ( true ); // if job has been loaded before, tell it to ignore the cache and to load data from the database upon next read
+			buy_item->buyRecord ()->setRefreshFromDatabase ( true ); // if buy has been loaded before, tell it to ignore the cache and to load data from the database upon next read
 		buy_item->update ();
 		if ( id == mBuyCurItem->dbRecID () )
 			displayBuy ( buy_item );
@@ -3986,7 +3936,9 @@ bool MainWindow::execRecordAction ( const int key )
 	switch ( key )
 	{
 		case Qt::Key_S:
-			func_Save ( activeRecord ); break;
+			updateWindowBeforeSave ();
+			func_Save ( activeRecord ); 
+		break;
 		case Qt::Key_A:
 			activeRecord = func_Add (); break;
 		case Qt::Key_E:
@@ -4006,12 +3958,12 @@ void MainWindow::setupTabNavigationButtons ()
 	mBtnNavPrev = new QToolButton;
 	mBtnNavPrev->setIcon ( ICON ( "go-previous" ) );
 	mBtnNavPrev->setEnabled ( false );
-	connect ( mBtnNavPrev, &QToolButton::clicked, this, [&] () { return navigatePrev (); } );
+	static_cast<void>( connect ( mBtnNavPrev, &QToolButton::clicked, this, [&] () { return navigatePrev (); } ) );
 	mBtnNavNext = new QToolButton;
 	mBtnNavNext->setIcon ( ICON ( "go-next" ) );
 	mBtnNavNext->setEnabled ( false );
-	connect ( mBtnNavNext, &QToolButton::clicked, this, [&] () { return navigateNext (); } );
-	
+	static_cast<void>( connect ( mBtnNavNext, &QToolButton::clicked, this, [&] () { return navigateNext (); } ) );
+
 	QHBoxLayout* lButtons ( new QHBoxLayout );
 	lButtons->setMargin ( 1 );
 	lButtons->setSpacing ( 1 );
@@ -4041,7 +3993,7 @@ void MainWindow::setupCalendarMethods ()
 				return tboxCalPays_currentChanged ( index ); } ) );
 	static_cast<void>( connect ( ui->tboxCalBuys, &QToolBox::currentChanged, this, [&] ( const int index ) {
 				return tboxCalBuys_currentChanged ( index ); } ) );
-	
+
 	ui->lstCalJobsDay->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return displayJobFromCalendar ( item ); } );
 	ui->lstCalJobsWeek->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return displayJobFromCalendar ( item ); } );
 	ui->lstCalJobsMonth->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return displayJobFromCalendar ( item ); } );
@@ -4370,31 +4322,6 @@ void MainWindow::tabMain_currentTabChanged ( const int tab_idx )
 	}
 }
 
-void MainWindow::selectBuysItems ( const PROCESS_STEPS step )
-{
-	ui->btnBuyCopyRows->setEnabled ( step == PS_PREPARE );
-	ui->tabWorkFlow->setEnabled ( true );
-
-	switch ( step )
-	{
-		case PS_PREPARE:
-			//ui->tabMain->setCurrentIndex ( BUYS_TAB );
-			ui->buysList->setFocus ();
-		break;
-		case PS_EXEC:
-		{
-			const uint n_copied_items ( QUICK_PROJECT ()->copyItemsFromTable ( ui->tableBuyItems ) );
-			ui->statusbar->showMessage ( QString ( TR_FUNC ( "%1 rows were copied to the project table!" ).arg ( n_copied_items ) ), 5000 );
-			QUICK_PROJECT ()->selectDone ();
-		}
-		break;
-		case PS_FINISH:
-		case PS_CANCEL:
-			QUICK_PROJECT ()->selectDone ();
-		break;
-	}
-}
-
 void MainWindow::navigatePrev ()
 {
 	static_cast<void>( navItems.prev () );
@@ -4551,22 +4478,19 @@ void MainWindow::saveEditItems ()
 	delete dlgSaveEditItems;
 }
 //---------------------------------------------SESSION----------------------------------------------------------
-
-void MainWindow::receiveWidgetBack ( QWidget* widget )
+void MainWindow::receiveWidgetBack ( QLayout* layout )
 {
 	// if the UI changes, the widget positions might change too, se we always need to check back against ui_mainwindow.h to see if those numbers match
 	// Still easier than having a function to query the layouts for the rows, columns and spans for the widgets: the UI does not change that often
-	if ( widget == ui->txtJobReport )
+	if ( layout == ui->layoutTxtJobUtilities )
 	{
 		ui->btnJobSeparateReportWindow->setChecked ( false );
-		ui->gLayoutJobExtraInfo->addWidget ( ui->txtJobReport, 1, 6, 6, 3 ); // line copied from ui_mainwindow.h
+		ui->layoutJobReport->addLayout ( ui->layoutTxtJobUtilities );
 		ui->txtJobReport->show ();
 	}
-	else if ( widget == ui->jobImageViewer )
+	else if ( layout == ui->layoutJobPicturePanel )
 	{
-		ui->gLayoutJobExtraInfo->addWidget ( ui->frmJobPicturesControls, 8, 1, 1, 8 ); // line copied from ui_mainwindow.h
-		ui->frmJobPicturesControls->show ();
-		ui->hLayoutImgViewer->insertWidget ( 1, ui->jobImageViewer, 2 ); // insert after the first horizontal spacer to centralize it
+		ui->frmJobPicturesControls->setLayout ( ui->layoutJobPicturePanel );
 		ui->jobImageViewer->show ();
 	}
 }
@@ -4757,6 +4681,7 @@ void MainWindow::notifyExternalChange ( const uint id, const uint table_id, cons
 		case JOB_TABLE:			jobExternalChange ( id, action );		break;
 		case PAYMENT_TABLE:		payExternalChange ( id, action );		break;
 		case PURCHASE_TABLE:	buyExternalChange ( id, action );		break;
+		case SUPPLIES_TABLE:	dbSupplies::notifyDBChange ( id );		break;
 	}
 }
 
@@ -4983,9 +4908,8 @@ void MainWindow::showJobImageInWindow ( const bool maximized )
 {
 	if ( sepWin_JobPictures == nullptr )
 	{
-		sepWin_JobPictures = new separateWindow ( ui->jobImageViewer );
-		sepWin_JobPictures->addToolBar ( ui->frmJobPicturesControls );
-		sepWin_JobPictures->setCallbackForReturningToParent ( [&] ( QWidget* wdgt ) { return receiveWidgetBack ( wdgt ); } );
+		sepWin_JobPictures = new separateWindow ( ui->layoutJobPicturePanel );
+		sepWin_JobPictures->setCallbackForReturningToParent ( [&] ( QLayout* layout ) { return receiveWidgetBack ( layout ); } );
 	}
 	sepWin_JobPictures->showSeparate ( ui->jobImageViewer->imageFileName (), false, maximized ? Qt::WindowMaximized : Qt::WindowNoState );
 	if ( !ui->btnJobSeparatePicture->isChecked () )
@@ -4996,8 +4920,8 @@ void MainWindow::btnJobSeparateReportWindow_clicked ( const bool checked )
 {
 	if ( sepWin_JobReport == nullptr )
 	{
-		sepWin_JobReport = new separateWindow ( ui->txtJobReport );
-		sepWin_JobReport->setCallbackForReturningToParent ( [&] ( QWidget* wdgt ) { return receiveWidgetBack ( wdgt ); } );
+		sepWin_JobReport = new separateWindow ( ui->layoutTxtJobUtilities );
+		sepWin_JobReport->setCallbackForReturningToParent ( [&] ( QLayout* layout ) { return receiveWidgetBack ( layout ); } );
 	}
 	if ( checked )
 	{
@@ -5012,10 +4936,3 @@ void MainWindow::btnJobSeparateReportWindow_clicked ( const bool checked )
 		sepWin_JobReport->returnToParent ();
 }
 //--------------------------------------------JOB------------------------------------------------------------
-
-//--------------------------------------------BUY------------------------------------------------------------
-void MainWindow::on_btnBuyCopyRows_clicked ()
-{
-	selectBuysItems ( PS_EXEC );
-}
-//-------------------------------------------BUY------------------------------------------------------------

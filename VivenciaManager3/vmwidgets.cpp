@@ -614,14 +614,15 @@ void vmLineEdit::setText ( const QString& text, const bool b_notify )
 	else
 		QLineEdit::setText ( text );
 
-	setToolTip ( isEditable () ? emptyString : QLineEdit::text () );
-	setCursorPosition ( isEditable () ? QLineEdit::text ().count () - 1 : 0 );
 	if ( text != mCurrentText )
 	{
 		if ( b_notify && contentsAltered_func )
 			contentsAltered_func ( this ); // call before updating mCurrentText, so that the callee might use the old value
 		mCurrentText = text;
 	}
+	//setToolTip ( isEditable () ? emptyString : QLineEdit::text () );
+	setToolTip ( mCurrentText );
+	setCursorPosition ( isEditable () ? mCurrentText.count () - 1 : 0 );
 }
 
 void vmLineEdit::setTrackingEnabled ( const bool b_tracking )
@@ -1011,7 +1012,8 @@ void vmComboBox::currentIndexChanged_slot ( const int idx )
 
 void vmComboBox::setText ( const QString& text, const bool b_notify )
 {
-	setEditText ( text );
+	//setEditText ( text );
+	mLineEdit->setText ( text, false );
 	if ( b_notify && contentsAltered_func )
 		contentsAltered_func ( mLineEdit );
 }

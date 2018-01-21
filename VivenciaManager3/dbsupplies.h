@@ -23,6 +23,8 @@ public:
 
 	static const TABLE_INFO t_info;
 
+	static void notifyDBChange ( const uint id );
+	
 protected:
 	friend bool updateSuppliesTable ();
 

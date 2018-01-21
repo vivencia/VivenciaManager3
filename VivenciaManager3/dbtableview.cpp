@@ -474,6 +474,7 @@ void tableViewWidget::createTable ()
 	actionReload->setShortcut ( QKeySequence ( Qt::Key_F5 ) );
 	static_cast<void>( connect ( actionReload, &QAction::triggered, this, [&] ( const bool ) { return reload (); } ) );	
 	addAction ( actionReload );
+	m_table->setEditable ( true );
 }
 
 void tableViewWidget::getTableInfo ()

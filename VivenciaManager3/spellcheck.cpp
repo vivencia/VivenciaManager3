@@ -65,7 +65,7 @@ void spellCheck::updateUserDict ()
 
 /* The dictionaries files (.dic and .aff) are encoded in Western Europe's ISO-8859-15. Using
  * QString's UTF-8, local8Bit and to or from StdString(which assumes std::string::data () to be in UTF-8 format)
- * results in misinterpreted characters. Again, this behavior of QString started showing after the upgrade to
+ * results in misinterpreted characters. Again, this behavior of QString started showing after the upgrade to Qt
  * 5.9.1, the same version that prompeted errors elsewhere and had me create the QSTRING_ENCODING_FIX to overcome
  * those errors
  */

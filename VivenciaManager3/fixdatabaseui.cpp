@@ -109,8 +109,9 @@ void fixDatabaseUI::populateTable ()
 	s_row->column[1] = 1;
 	s_row->column[2] = 2;
 	s_row->column[3] = 3;
-	for ( uint i ( 0 ); i <= TABLES_IN_DB; ++i ) {
-		s_row->row = i;
+	for ( uint i ( 0 ); i <= TABLES_IN_DB; ++i )
+	{
+		s_row->row = static_cast<int>( i );
 		s_row->field_value[0] = VDB ()->tableInfo ( i - 1 )->table_name;
 		s_row->field_value[1] = tr ( "Unchecked" );
 		s_row->field_value[2] = tr ( "Unknown" );
@@ -125,11 +126,15 @@ void fixDatabaseUI::doCheck ()
 {
 	if ( !m_fdb )
 		m_fdb = new fixDatabase;
-	if ( m_fdb->checkDatabase () ) {
+	if ( m_fdb->checkDatabase () )
+	{
 		m_fdb->badTables ( m_tables );
-		for ( uint i_row ( 1 ); i_row <= unsigned ( tablesView->rowCount () ); ++i_row ) {
-			for ( uint i ( 0 ); i < m_tables.count (); ++i ) {
-				if ( tablesView->sheetItem ( i_row, 0 )->text () == m_tables.at ( i )->table ) {
+		for ( uint i_row ( 1 ); i_row <= unsigned ( tablesView->rowCount () ); ++i_row )
+		{
+			for ( uint i ( 0 ); i < m_tables.count (); ++i )
+			{
+				if ( tablesView->sheetItem ( i_row, 0 )->text () == m_tables.at ( i )->table )
+				{
 					tablesView->sheetItem ( i, 1 )->setData ( Qt::DecorationRole, QVariant ( *dbTableStateIcon ( m_tables.at ( i )->result ) ) );
 					tablesView->sheetItem ( i, 1 )->setData ( Qt::WhatsThisRole, QVariant ( m_tables.at ( i )->result ) );
 					tablesView->sheetItem ( i_row, 2 )->setText ( m_tables.at ( i )->err, false, false );
@@ -146,9 +151,10 @@ void fixDatabaseUI::doFix ()
 	if ( tablesView->tableChanged () )
 		m_fdb->fixTables ();
 	else {
-		for ( uint i ( 0 ); i < unsigned ( tablesView->rowCount () ); ++i ) {
+		for ( uint i ( 0 ); i < unsigned ( tablesView->rowCount () ); ++i )
+		{
 			if ( tablesView->sheetItem ( i, 3 )->data ( Qt::WhatsThisRole ).toInt () >= fixDatabase::CR_TABLE_CORRUPTED )
-				m_fdb->fixTables ( tablesView->item ( i, 0 )->text () );
+				m_fdb->fixTables ( tablesView->item ( static_cast<int>( i ), 0 )->text () );
 		}
 		tablesView->setTableUpdated ();
 	}

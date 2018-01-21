@@ -13,15 +13,11 @@ constexpr DB_FIELD_TYPE INVENTORY_FIELDS_TYPE[INVENTORY_FIELD_COUNT] =
 	DBTYPE_LIST, DBTYPE_SHORTTEXT
 };
 
-#undef TABLE_UPDATE_AVAILABLE
-
-#ifdef TABLE_UPDATE_AVAILABLE
+#ifdef INVENTORY_TABLE_UPDATE_AVAILABLE
 #include "companypurchases.h"
-#endif
 
 bool updateInvetory ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->deleteTable ( "INVENTORY" );
 	VDB ()->createTable ( &Inventory::t_info );
 	companyPurchases cp_rec;
@@ -35,12 +31,8 @@ bool updateInvetory ()
 	}
 	VDB ()->optimizeTable ( &Inventory::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &Inventory::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
-
+#endif //INVENTORY_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Inventory::t_info =
 {
@@ -53,7 +45,12 @@ const TABLE_INFO Inventory::t_info =
 	" varchar ( 8 ) DEFAULT NULL, | varchar ( 80 ) DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, |"
 	" varchar ( 20 ) DEFAULT NULL, | varchar ( 50 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, |" ),
 	QCoreApplication::tr ( "ID|Item name|Brand|Quantity|Unity|Type/Category|Income date|Purchase price|Supplier|Place|" ),
-	INVENTORY_FIELDS_TYPE, TABLE_VERSION, INVENTORY_FIELD_COUNT, TABLE_INVENTORY_ORDER, &updateInvetory
+	INVENTORY_FIELDS_TYPE, TABLE_VERSION, INVENTORY_FIELD_COUNT, TABLE_INVENTORY_ORDER,
+	#ifdef INVENTORY_TABLE_UPDATE_AVAILABLE
+	&updateInvetory
+	#else
+	nullptr
+	#endif //INVENTORY_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif

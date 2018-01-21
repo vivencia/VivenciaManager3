@@ -56,8 +56,6 @@ private:
 	friend void deleteCompletersInstance ();
 	void loadCompleters ();
 
-	completerRecord* cr_rec;
-
 	PointersList<QCompleter*> completersList;
 };
 

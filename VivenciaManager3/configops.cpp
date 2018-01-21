@@ -241,7 +241,7 @@ const QString configOps::kdesu ( const QString& message )
 	if ( ret.isEmpty () )
 	{
 		ret = QStringLiteral ( "/etc/alternatives/kdesu" );
-		if ( !fileOps::fileOps::exists ( ret ).isOn () )
+		if ( !fileOps::fileOps::exists ( ret ).isOn () ) // no kdesudo/kdesu? try gksu. The important thing is to use a sudo program
 			return gksu ( message, emptyString );
 	}
 	ret += QLatin1String ( " --comment \"" ) + message + QLatin1String ( "\" -n -d -c " );
@@ -253,6 +253,8 @@ const QString configOps::gksu ( const QString& message, const QString& appname )
 	QString ret ( fileOps::appPath ( QStringLiteral ( "gksu" ) ) );
 	if ( !ret.isEmpty () )
 		ret += QLatin1String ( " -m \"" ) + message + QLatin1String ( "\" -D " ) + appname + QLatin1String ( " -g -k " );
+	else
+		return kdesu ( message ); // no gksu? try kdesudo/kdesu. The important thing is to use a sudo program
 	return ret;
 }
 

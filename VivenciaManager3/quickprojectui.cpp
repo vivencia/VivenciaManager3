@@ -63,10 +63,6 @@ void quickProjectUI::setupUI ()
 	static_cast<void>(connect ( btnCancel, &QPushButton::clicked, this, [&] () { return cancelEdit (); } ));
 	//--------------------------------CONTROL-BUTTONS--------------------------------------
 
-	btnCopyPurchasesLists = new QPushButton ( TR_FUNC ( "Copy &purchases lists" ) );
-	btnCopyPurchasesLists->setFixedSize ( 150, 30 );
-	static_cast<void>(connect ( btnCopyPurchasesLists, &QPushButton::clicked, this, [&] () { return btnCopyPurchasesLists_clicked (); } ));
-
 	btnClose = new QPushButton ( TR_FUNC ( "&Close" ) );
 	btnClose->setFixedSize ( 100, 30 );
 	static_cast<void>(connect ( btnClose, &QPushButton::clicked, this, [&] () { return closeClicked (); } ));
@@ -76,7 +72,6 @@ void quickProjectUI::setupUI ()
 	hLayout1->setSpacing ( 2 );
 	hLayout1->addWidget ( btnEditTable, 1 );
 	hLayout1->addWidget ( btnCancel, 1 );
-	hLayout1->addWidget ( btnCopyPurchasesLists, 1 );
 	hLayout1->addWidget ( btnClose, 1 );
 
 	m_table = new vmTableWidget;
@@ -190,12 +185,9 @@ bool quickProjectUI::loadData ( const QString& jobid , const bool force )
 
 QString quickProjectUI::getJobIDFromQPString ( const QString& qpIDstr ) const
 {
-	//if ( !qpIDstr.isEmpty () )
-	//{
-		const int idx ( qpIDstr.indexOf ( CHR_HYPHEN ) );
-		if ( idx != -1 )
-			return qpIDstr.right ( qpIDstr.count () - idx - 1 );
-	//}
+	const int idx ( qpIDstr.indexOf ( CHR_HYPHEN ) );
+	if ( idx != -1 )
+		return qpIDstr.right ( qpIDstr.count () - idx - 1 );
 	return QStringLiteral ( "-1" );
 }
 
@@ -249,7 +241,6 @@ bool quickProjectUI::rowRemoved ( const uint row )
 		rowRec.removeField ( row );
 		setRecValue ( qp_rec, i, rowRec.toString () );
 	}
-	//mbQPChanged |= qp_rec->saveRecord ();
 	mbQPChanged = true;
 	return true;
 }
@@ -259,7 +250,6 @@ void quickProjectUI::enableControls ( const bool enable )
 	m_table->setEditable ( enable );
 	btnCancel->setEnabled ( enable );
 	btnClose->setEnabled ( !enable );
-	btnCopyPurchasesLists->setEnabled ( !enable );
 	btnEditTable->setText ( enable ? TR_FUNC ( "&Save" ) : TR_FUNC ( "&Edit" ) );
 }
 
@@ -296,37 +286,6 @@ void quickProjectUI::getHeadersText ( spreadRow* row ) const
 {
 	for ( uint i_col ( 0 ); i_col < unsigned ( m_table->columnCount () ); ++i_col )
 		row->field_value.append ( m_table->sheetItem ( 0, i_col )->text () );
-}
-
-uint quickProjectUI::copyItemsFromTable ( const vmTableWidget* const table )
-{
-	if ( table->selectedRowsCount () > 0 )
-	{
-		uint i_row ( 0 );
-		uint m_table_lastrow ( static_cast<uint>(m_table->lastUsedRow ()) + 1 );
-		for ( ; i_row <= static_cast<uint>(table->lastUsedRow ()); ++i_row, ++m_table_lastrow )
-		{
-			if ( table->isRowSelectedAndNotEmpty ( i_row ) )
-			{
-				m_table->sheetItem ( m_table_lastrow, QP_GUI_ITEM )->setText ( table->sheetItem ( i_row, ISR_NAME )->text (), false, true );
-				m_table->sheetItem ( m_table_lastrow, QP_GUI_PURCHASE_QUANTITY )->setText ( CHR_ONE, false, true );
-				m_table->sheetItem ( m_table_lastrow, QP_GUI_PURCHASE_UNIT_PRICE )->setText ( table->sheetItem ( i_row, ISR_UNIT_PRICE )->text (), false, true );
-			}
-		}
-		return ( i_row - 1 );
-	}
-	return 0;
-}
-
-void quickProjectUI::btnCopyPurchasesLists_clicked ()
-{
-	//emit temporarilyHide ();
-	MAINWINDOW ()->selectBuysItems ( PS_PREPARE );
-}
-
-void quickProjectUI::selectDone ()
-{
-	//emit showAgain ();
 }
 
 void quickProjectUI::closeClicked ()

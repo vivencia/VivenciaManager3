@@ -14,11 +14,6 @@ enum VMColors
 	vmWhite = Qt::white
 };
 
-enum PROCESS_STEPS
-{
-	PS_PREPARE, PS_EXEC, PS_FINISH, PS_CANCEL
-};
-
 static const unsigned int TABLES_IN_DB ( 15 );
 
 enum TABLE_ORDER

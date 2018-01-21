@@ -11,16 +11,13 @@ constexpr DB_FIELD_TYPE SUPPLIER_FIELDS_TYPE[SUPPLIER_FIELD_COUNT] =
 	DBTYPE_SHORTTEXT, DBTYPE_PHONE, DBTYPE_SHORTTEXT
 };
 
+#ifdef SUPPLIER_TABLE_UPDATE_AVAILABLE
 bool updateSupplierTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &supplierRecord::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &supplierRecord::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //SUPPLIER_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO supplierRecord::t_info =
 {
@@ -34,7 +31,12 @@ const TABLE_INFO supplierRecord::t_info =
 	" varchar ( 50 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 50 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, |varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Name|Street|Number|District|City|Phones|E-mail|" ),
-	SUPPLIER_FIELDS_TYPE, TABLE_VERSION, SUPPLIER_FIELD_COUNT, TABLE_SUPPLIER_ORDER, &updateSupplierTable
+	SUPPLIER_FIELDS_TYPE, TABLE_VERSION, SUPPLIER_FIELD_COUNT, TABLE_SUPPLIER_ORDER,
+	#ifdef SUPPLIER_TABLE_UPDATE_AVAILABLE
+	&updateSupplierTable
+	#else
+	nullptr
+	#endif //SUPPLIER_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif
@@ -87,7 +89,7 @@ void supplierRecord::insertIfSupplierInexistent ( const QString& supplier )
 	{
 		if ( query.isActive () && query.next () )
 			return;
-		supplierRecord sup_rec;
+		supplierRecord sup_rec ( true );
 		sup_rec.setAction ( ACTION_ADD );
 		sup_rec.setValue ( FLD_SUPPLIER_NAME, supplier );
 		sup_rec.saveRecord ();

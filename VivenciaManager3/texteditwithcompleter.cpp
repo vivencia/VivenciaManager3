@@ -22,8 +22,8 @@
 
 //------------------------------------------------TEXT-EDIT-COMPLETER--------------------------------------------
 
-//static const QString eow ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\-=" ); // end of word
-static const QString eow ( QLatin1String ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\=" ) ); // end of word
+//static const QString eow                ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\-=" ); // end of word
+static const QString eow ( QStringLiteral ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\=" ) ); // end of word
 
 textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	: QTextEdit ( parent ), vmWidget ( WT_TEXTEDIT ),

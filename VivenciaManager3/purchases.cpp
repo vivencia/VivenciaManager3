@@ -14,16 +14,13 @@ constexpr DB_FIELD_TYPE BUYS_FIELDS_TYPE[BUY_FIELD_COUNT] = {
 	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
 };
 
+#ifdef PURCHASE_TABLE_UPDATE_AVAILABLE
 bool updatePurchaseTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &Buy::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &Buy::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //PURCHASE_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Buy::t_info =
 {
@@ -38,7 +35,12 @@ const TABLE_INFO Buy::t_info =
 	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, |" ),
 	QStringLiteral ( "ID|Client ID|Job ID|Purchase date|Delivery date|Price|Price paid|Number of payments|Delivery method|Supplier|Notes|Report|Pay info" ),
 	BUYS_FIELDS_TYPE,
-	TABLE_VERSION, BUY_FIELD_COUNT, TABLE_BUY_ORDER, &updatePurchaseTable
+	TABLE_VERSION, BUY_FIELD_COUNT, TABLE_BUY_ORDER,
+	#ifdef PURCHASE_TABLE_UPDATE_AVAILABLE
+	&updatePurchaseTable
+	#else
+	nullptr
+	#endif //PURCHASE_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif

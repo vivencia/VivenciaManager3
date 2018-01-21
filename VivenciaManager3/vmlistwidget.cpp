@@ -170,18 +170,6 @@ void vmListWidget::removeRow_list ( const uint row, const uint n, const bool bDe
 
 void vmListWidget::setAlwaysEmitCurrentItemChanged ( const bool b_emit )
 {
-	if ( b_emit )
-	{
-		static_cast<void>( connect ( this, &QTableWidget::cellActivated, this, [&] ( const int row, const int )
-			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } ) );
-		static_cast<void>( connect ( this, &QTableWidget::cellClicked, this, [&] ( const int row, const int )
-			  { return rowSelected ( row, mCurrentItem ? mCurrentItem->row () : -1 ); } ) );
-	}
-	else
-	{
-		static_cast<void>( disconnect ( this, &QTableWidget::cellClicked, nullptr, nullptr ) );
-		static_cast<void>( disconnect ( this, &QTableWidget::cellActivated, nullptr, nullptr ) );
-	}
 	if ( !isIgnoringChanges () )
 		mbForceEmit = b_emit ;
 }
@@ -202,6 +190,10 @@ void vmListWidget::rowSelected ( const int row, const int prev_row )
 	{
 		if ( mCurrentItemChangedFunc )
 			mCurrentItemChangedFunc ( mCurrentItem );
+		// Borrow the activated function callback from the parent class. vmTableWidget has a switch to ignore
+		// this function if it is a list object
+		if ( rowActivated_func )
+			rowActivated_func ( mCurrentItem->row () );
 	}
 }
 

@@ -108,7 +108,7 @@ void contactsManagerWidget::cbo_textAltered ( const QString& text )
 	if ( m_contact_type == CMW_EMAIL )
 	{
 		if ( isEmailAddress ( text ) )
-			cboInfoData->setEditText ( text.toLower () );
+			cboInfoData->setText ( text.toLower () );
 			//new_text = text.toLower ();
 	}
 	//if ( input_ok )
@@ -209,7 +209,7 @@ void contactsManagerWidget::decodePhones ( const stringRecord& phones, const boo
 		phones.first ();
 		vmNumber phone ( phones.curValue (), VMNT_PHONE, 1 );
 		cboInfoData->setIgnoreChanges ( true );
-		cboInfoData->setEditText ( phone.toPhone () );
+		cboInfoData->setText ( phone.toPhone () );
 		do
 		{
 			cboInfoData->addItem ( phone.toPhone () );
@@ -231,6 +231,7 @@ void contactsManagerWidget::decodeEmails ( const stringRecord& emails, const boo
 	if ( emails.first () )
 	{
 		cboInfoData->setIgnoreChanges ( true );
+		cboInfoData->setText ( emails.curValue () );
 		do
 		{
 			cboInfoData->addItem ( emails.curValue () );
@@ -270,7 +271,7 @@ void contactsManagerWidget::clearAll ()
 {
 	cboInfoData->setIgnoreChanges ( true );
 	cboInfoData->clear ();
-	cboInfoData->clearEditText ();
+	cboInfoData->setText ( emptyString );
 	if ( btnExtra )
 		btnExtra->setEnabled ( false );
 	cboInfoData->setIgnoreChanges ( false );

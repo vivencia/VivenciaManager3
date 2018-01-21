@@ -9,16 +9,13 @@ constexpr DB_FIELD_TYPE SERVICES_FIELDS_TYPES[SERVICES_FIELD_COUNT] =
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
 
+#ifdef SP_TABLE_UPDATE_AVAILABLE
 bool updateServicesOffered ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &servicesOffered::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &servicesOffered::t_info );
-	return false;
-#endif
 }
+#endif //SP_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO servicesOffered::t_info =
 {
@@ -30,7 +27,12 @@ const TABLE_INFO servicesOffered::t_info =
 	QStringLiteral ( " int(9) NOT NULL, | varchar(150) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar(10) DEFAULT NULL, | varchar(20) DEFAULT NULL, |"
 	" varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, | varchar(20) DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Service type|Basic unit|Price per unit|Last update|Execution average time|Discount from (units)|Discount factor|" ),
-	SERVICES_FIELDS_TYPES, TABLE_VERSION, SERVICES_FIELD_COUNT, TABLE_SERVICES_ORDER, &updateServicesOffered
+	SERVICES_FIELDS_TYPES, TABLE_VERSION, SERVICES_FIELD_COUNT, TABLE_SERVICES_ORDER,
+	#ifdef SP_TABLE_UPDATE_AVAILABLE
+	&updateServicesOffered
+	#else
+	nullptr
+	#endif //SP_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif

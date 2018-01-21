@@ -11,16 +11,13 @@ constexpr DB_FIELD_TYPE PAYS_FIELDS_TYPE[PAY_FIELD_COUNT] = {
 	DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD, DBTYPE_YESNO, DBTYPE_PRICE
 };
 
+#ifdef PAYMENT_TABLE_UPDATE_AVAILABLE
 bool updatePaymentTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &Payment::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &Payment::t_info );
-	return false;
-#endif
 }
+#endif //PAYMENT_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Payment::t_info =
 {
@@ -33,7 +30,12 @@ const TABLE_INFO Payment::t_info =
 	" varchar ( 30 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, | varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" longtext COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 4 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Client ID|Job ID|Price|Number of payments|Total paid|Observations|Info|Overdue|Overdue value|" ),
-	PAYS_FIELDS_TYPE, TABLE_VERSION, PAY_FIELD_COUNT, TABLE_PAY_ORDER, &updatePaymentTable
+	PAYS_FIELDS_TYPE, TABLE_VERSION, PAY_FIELD_COUNT, TABLE_PAY_ORDER, 
+	#ifdef PAYMENT_TABLE_UPDATE_AVAILABLE
+	&updatePaymentTable
+	#else
+	nullptr
+	#endif //PAYMENT_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif

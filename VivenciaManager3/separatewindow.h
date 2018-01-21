@@ -14,16 +14,17 @@ class separateWindow : public QDialog
 {
 
 public:
-	explicit separateWindow ( QWidget* child );
+	explicit separateWindow ( QWidget* w_child );
+	explicit separateWindow ( QLayout* l_child );
 
-	void addChild ( QWidget* child );
-	void addToolBar ( QWidget* toolbar );
+	void setCallbackForReturningToParent ( const std::function<void ( QWidget*)>& func ) { w_funcReturnToParent = func; }
+	void setCallbackForReturningToParent ( const std::function<void ( QLayout*)>& func ) { l_funcReturnToParent = func; }
 
-	void setCallbackForReturningToParent ( const std::function<void ( QWidget*)>& func ) { funcReturnToParent = func; }
 	void showSeparate ( const QString& window_title, const bool b_exec = false, const Qt::WindowStates w_state = Qt::WindowActive );
 	void returnToParent ();
 
 protected:
+	void initCommon ();
 	void closeEvent ( QCloseEvent* e ) override;
 	bool eventFilter ( QObject* o, QEvent* e ) override;
 
@@ -41,13 +42,13 @@ protected:
 
 private:
 	QWidget* m_child;
-	QWidget* m_toolbar;
-	QHBoxLayout* mToolBarLayout;
+	QLayout* m_layout;
 	QVBoxLayout* mainLayout;
 	QPushButton* btnReturn;
 	bool mb_Active, mb_Visible;
 
-	std::function<void ( QWidget*)> funcReturnToParent;
+	std::function<void ( QWidget*)> w_funcReturnToParent;
+	std::function<void ( QLayout*)> l_funcReturnToParent;
 };
 
 #endif // SEPARATEWINDOW_H

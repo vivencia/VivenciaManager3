@@ -259,11 +259,12 @@ void VivenciaDB::doPreliminaryWork ()
 			else
 				b_version_mismatch = true;
 			
-			if ( b_version_mismatch )
-			{
-				static_cast<void>( ( *table_info[i-1]->update_func ) () );
+			if ( b_version_mismatch ) // update the GENERAL_TABLE with the current table version
 				gen_rec.insertOrUpdate ( table_info[i-1] );
-			}
+			
+			// regardless of a new version, if there is an update function, call it. Some maintanance work must sometimes be made
+			if ( table_info[i-1]->update_func )
+				static_cast<void>( ( *table_info[i-1]->update_func ) () );
 		}
 	}
 }

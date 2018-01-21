@@ -19,8 +19,8 @@ public:
 	completerRecord ();
 	virtual ~completerRecord ();
 
-	void loadCompleterStrings ( QStringList& completer_strings, const vmCompleters::COMPLETER_CATEGORIES );
-	void loadCompleterStringsForProductsAndServices ( QStringList& completer_strings, QStringList& completer_strings_2 );
+	static void loadCompleterStrings ( QStringList& completer_strings, const vmCompleters::COMPLETER_CATEGORIES );
+	static void loadCompleterStringsForProductsAndServices ( QStringList& completer_strings, QStringList& completer_strings_2 );
 	void updateTable ( const vmCompleters::COMPLETER_CATEGORIES category, const QString& str, const bool b_reset_search = true );
 	void batchUpdateTable ( vmCompleters::COMPLETER_CATEGORIES category, const QStringList& str_list );
 
@@ -32,8 +32,7 @@ protected:
 	void ( *helperFunction[CR_FIELD_COUNT] ) ( const DBRecord* );
 
 private:
-	QSqlQuery query;
-	void runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates = false );
+	static void runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates = false );
 };
 
 #endif // COMPLETERRECORD_H

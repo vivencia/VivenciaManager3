@@ -13,7 +13,7 @@
 #include "dbrecord.h"
 
 #include <QLabel>
-#include <QMouseEvent>
+#include <QKeyEvent>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QMenu>
@@ -38,7 +38,7 @@ vmTableWidget::vmTableWidget ( QWidget* parent )
 	: QTableWidget ( parent ), vmWidget ( WT_TABLE ),
 	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ), m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
 	  mTableChanged ( false ), mb_TableInit ( true ), mbKeepModRec ( true ), mbPlainTable ( false ), mbUseWidgets ( true ), mbTableIsList ( false ), 
-	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), mbColumnAutoResize ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), mbColumnAutoResize ( false ), mbIgnoreChanges ( true ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( 10 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ), m_filterPanel ( nullptr ),
@@ -52,7 +52,7 @@ vmTableWidget::vmTableWidget ( const uint rows, QWidget* parent )
 	: QTableWidget ( static_cast<int>(rows) + 1, 0, parent ), vmWidget ( WT_TABLE, static_cast<int>(rows) ),
 	  mCols ( nullptr ), mTotalsRow ( -1 ), m_lastUsedRow ( -1 ),m_nVisibleRows ( 0 ), m_ncols ( 0 ), mAddedItems ( 0 ),
 	  mTableChanged ( false ), mb_TableInit ( true ), mbKeepModRec ( true ), mbPlainTable ( false ), mbUseWidgets ( true ), mbTableIsList ( false ), 
-	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), mbColumnAutoResize ( false ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
+	  mIsPurchaseTable ( false ), mbDoNotUpdateCompleters ( false ), mbColumnAutoResize ( false ), mbIgnoreChanges ( true ), readOnlyColumnsMask ( 0 ), modifiedRows ( 0, 10 ),
 	  mMonitoredCells ( 2 ), m_highlightedCells ( 5 ), m_itemsToReScan ( rows + 1 ), mSearchList ( 10 ),
 	  mContextMenu ( nullptr ), mOverrideFormulaAction ( nullptr ), mSetFormulaAction ( nullptr ),
 	  mFormulaTitleAction ( nullptr ), mParentLayout ( nullptr ), m_searchPanel ( nullptr ), m_filterPanel ( nullptr ),
@@ -596,15 +596,47 @@ void vmTableWidget::clear ( const bool force )
 	}
 }
 
+void vmTableWidget::setIgnoreChanges ( const bool b_ignore )
+{
+	rowActivatedConnection ( !(mbIgnoreChanges = b_ignore) );
+	if ( !b_ignore )
+	{
+		if ( isPlainTable () )
+		{
+			static_cast<void>( connect ( this, &QTableWidget::itemChanged, this, [&] ( QTableWidgetItem *item ) { 
+					return ( cellModified ( static_cast<vmTableItem*>( item ) ) ); } ) );
+		}
+		if ( cellNavigation_func != nullptr )
+		{
+			static_cast<void>( connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
+				return cellNavigation_func ( static_cast<uint>( row ), static_cast<uint>( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } ) );
+		}
+		if ( mIsPurchaseTable )
+		{
+			static_cast<void>( connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
+					  static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
+					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
+			} ) ) );
+		}
+	}
+	else
+	{
+		static_cast<void>( this->disconnect ( nullptr, nullptr, nullptr ) );
+	}
+}
+
 void vmTableWidget::rowActivatedConnection ( const bool b_activate )
 {
-	if ( rowActivated_func )
+	// Lists have their own functions to handle item activation
+	if ( !isList () && rowActivated_func )
 	{
 		if ( b_activate )
-			static_cast<void>( connect ( this, &QTableWidget::itemClicked, this, [&] ( QTableWidgetItem* current ) {
-				return rowActivated_func ( current->row () ); } ) );
+		{
+			static_cast<void>( connect ( this, &QTableWidget::itemActivated, this, [&] ( QTableWidgetItem* current ) {
+				rowActivated_func ( current->row () ); } ) );
+		}
 		else
-			static_cast<void>( disconnect ( this, &QTableWidget::itemClicked, this, nullptr ) );
+			static_cast<void>( disconnect ( this, &QTableWidget::itemActivated, nullptr, nullptr ) );
 	}
 }
 
@@ -946,9 +978,6 @@ void vmTableWidget::setIsPlainTable ( const bool b_usewidgets )
  */
 void vmTableWidget::setEditable ( const bool editable )
 {
-	//if ( isEditable () == editable )
-	//	return;
-
 	uint i_row ( 0 );
 	uint i_col ( 0 );
 	for ( ; static_cast<int>( i_row ) < totalsRow (); ++i_row )
@@ -959,31 +988,7 @@ void vmTableWidget::setEditable ( const bool editable )
 				sheetItem ( i_row, i_col )->setEditable ( editable );
 		}
 	}
-
-	if ( editable )
-	{
-		if ( isPlainTable () )
-		{
-			static_cast<void>( connect ( this, &QTableWidget::itemChanged, this, [&] ( QTableWidgetItem *item ) { 
-					return ( cellModified ( static_cast<vmTableItem*>( item ) ) ); } ) );
-		}
-		if ( cellNavigation_func != nullptr )
-		{
-			static_cast<void>( connect ( this, &QTableWidget::currentCellChanged, this, [&] ( const int row, const int col, const int prev_row, const int prev_col ) {
-				return cellNavigation_func ( static_cast<uint>( row ), static_cast<uint>( col ), static_cast<uint> ( prev_row ), static_cast<uint> ( prev_col ) ); } ) );
-		}
-		if ( mIsPurchaseTable )
-		{
-			static_cast<void>( connect ( APP_COMPLETERS ()->getCompleter ( vmCompleters::PRODUCT_OR_SERVICE ),
-					  static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
-					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
-			} ) ) );
-		}
-	}
-	else
-	{
-		static_cast<void>( this->disconnect ( nullptr, nullptr, nullptr ) );
-	}
+	setIgnoreChanges ( !editable );
 	vmWidget::setEditable ( editable );
 }
 

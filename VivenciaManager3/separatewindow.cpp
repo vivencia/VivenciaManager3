@@ -5,62 +5,31 @@
 #include <QPushButton>
 #include <QCloseEvent>
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 
-separateWindow::separateWindow ( QWidget* child )
-	: QDialog (), m_child ( child ), m_toolbar ( nullptr ),
-	  mToolBarLayout ( new QHBoxLayout ), mainLayout ( new QVBoxLayout ),
+separateWindow::separateWindow ( QWidget *w_child )
+	: QDialog (), m_child ( w_child ), m_layout ( nullptr ), mainLayout ( new QVBoxLayout ),
+	  mb_Active ( false ), mb_Visible ( false ), w_funcReturnToParent ( nullptr ), l_funcReturnToParent ( nullptr )
+{
+	initCommon ();
+}
+
+separateWindow::separateWindow ( QLayout *l_child )
+	: QDialog (), m_child ( nullptr ), m_layout ( l_child ), mainLayout ( new QVBoxLayout ),
 	  mb_Active ( false ), mb_Visible ( false )
+{
+	initCommon ();
+}
+
+void separateWindow::initCommon ()
 {
 	btnReturn = new QPushButton ( tr ( "Return" ), this );
 	connect ( btnReturn, &QPushButton::clicked, this, [&] () { return returnToParent (); } );
 
-	mToolBarLayout->addWidget ( btnReturn, 0, Qt::AlignRight );
-	mainLayout->addLayout ( mToolBarLayout, 0 );
-
 	setLayout ( mainLayout );
-	resize ( m_child->sizeHint () );
+	resize ( mainLayout->sizeHint () );
 	MAINWINDOW ()->installEventFilter ( this );
-}
 
-void separateWindow::addChild ( QWidget* child )
-{
-	if ( child )
-	{
-		if ( child != m_child )
-		{
-			if ( m_child )
-				mainLayout->removeWidget ( m_child );
-			m_child = child;
-			if ( mb_Active )
-			{
-				QDialog::hide ();
-				mb_Active = false;
-				showSeparate ( windowTitle () ); // cannot be in exec mode if this function was called because the program runs single threaded
-			}
-		}
-	}
-}
-
-void separateWindow::addToolBar ( QWidget* toolbar )
-{
-	if ( toolbar )
-	{
-		if ( toolbar != m_toolbar )
-		{
-			QDialog::hide ();
-			if ( m_toolbar )
-				mToolBarLayout->removeWidget ( m_toolbar );
-			m_toolbar = toolbar;
-			mToolBarLayout->removeWidget ( btnReturn ); // a return button must be implemented in the toolbar, otherwise the interface becomes clunky
-			btnReturn->hide ();
-			if ( mb_Active )
-			{
-				mb_Active = false;
-				showSeparate ( windowTitle () ); // cannot be in exec mode if this function was called because the program runs single threaded
-			}
-		}
-	}
+	mainLayout->addWidget ( btnReturn, 0, Qt::AlignRight );
 }
 
 void separateWindow::closeEvent ( QCloseEvent* e )
@@ -152,17 +121,20 @@ void separateWindow::showSeparate ( const QString& window_title, const bool b_ex
 	if ( !mb_Active )
 	{
 		mb_Active = true;
-		if ( m_toolbar )
-		{
-			mToolBarLayout->insertWidget ( 0, m_toolbar );
-			m_toolbar->show ();
-		}
 		if ( m_child )
 		{
 			mainLayout->addWidget ( m_child, 2 );
 			m_child->show ();
 			m_child->setFocus ();
 		}
+		if ( m_layout )
+		{
+			if ( m_layout->parentWidget () )
+				m_layout->parentWidget ()->setLayout ( nullptr );
+			
+			mainLayout->addLayout ( m_layout, 2 );
+		}
+
 		mb_Visible = true;
 		setWindowTitle ( window_title );
 	}
@@ -204,12 +176,18 @@ void separateWindow::returnToParent ()
 	{
 		mb_Active = false;
 		setResult ( QDialog::Accepted );
-		if ( m_toolbar )
-			mToolBarLayout->removeWidget ( m_toolbar );
 		if ( m_child )
+		{
 			mainLayout->removeWidget ( m_child );
-		if ( funcReturnToParent )
-			funcReturnToParent ( m_child );
+			if ( w_funcReturnToParent )
+				w_funcReturnToParent ( m_child );
+		}
+		if ( m_layout )
+		{
+			mainLayout->removeItem ( m_layout );
+			if ( l_funcReturnToParent )
+				l_funcReturnToParent ( m_layout );
+		}
 		hide ();
 	}
 }

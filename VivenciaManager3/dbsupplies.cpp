@@ -14,16 +14,13 @@ constexpr DB_FIELD_TYPE SUPPLIES_FIELDS_TYPE[SUPPLIES_FIELD_COUNT] =
 	DBTYPE_LIST, DBTYPE_SHORTTEXT
 };
 
+#ifdef SUPPLIES_TABLE_UPDATE_AVAILABLE
 bool updateSuppliesTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &dbSupplies::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &dbSupplies::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //SUPPLIES_TABLE_UPDATE_AVAILABLE
 
 void updateSuppliesISRUnitCompleter ( const DBRecord* db_rec )
 {
@@ -74,7 +71,12 @@ const TABLE_INFO dbSupplies::t_info =
 	" varchar ( 8 ) DEFAULT NULL, | varchar ( 80 ) DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, |"
 	" varchar ( 20 ) DEFAULT NULL, | varchar ( 50 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, |" ),
 	QCoreApplication::tr ( "ID|Item name|Brand|Stock quantity|Unity|Type/Category|Income date|Purchase price|Supplier|Place|" ),
-	SUPPLIES_FIELDS_TYPE, TABLE_VERSION, SUPPLIES_FIELD_COUNT, TABLE_SUPPLIES_ORDER, &updateSuppliesTable
+	SUPPLIES_FIELDS_TYPE, TABLE_VERSION, SUPPLIES_FIELD_COUNT, TABLE_SUPPLIES_ORDER,
+	#ifdef SUPPLIES_TABLE_UPDATE_AVAILABLE
+	&updateSuppliesTable
+	#else
+	nullptr
+	#endif //SUPPLIES_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif
@@ -138,4 +140,14 @@ uint dbSupplies::isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) con
 		break;
 	}
 	return rec_field;
+}
+
+void dbSupplies::notifyDBChange ( const uint id )
+{
+	dbSupplies sup_rec ( true );
+	if ( sup_rec.readRecord ( id ) )
+	{
+		sup_rec.setAllModified ( true );
+		sup_rec.saveRecord ( true, false );
+	}
 }

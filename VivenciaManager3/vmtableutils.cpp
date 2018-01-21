@@ -154,12 +154,12 @@ vmTableFilterPanel::vmTableFilterPanel ( const vmTableWidget * const table )
 	m_btnClose = new QToolButton;
 	m_btnClose->setIcon ( ICON ( "stylepanel/panelCloseOver" ) );
 	connect ( m_btnClose, &QToolButton::clicked, this, [&] () { return hide (); } );
-	
+
 	QLabel* lblFilter ( new QLabel ( TR_FUNC ( "Filter:" ) ) );
 	m_txtFilter = new vmLineFilter;
 	m_txtFilter->setEditable ( true );
 	m_txtFilter->setCallbackForValidKeyEntered ( [&] ( const triStateType level, const int startlevel ) { return doFilter ( level, startlevel ); } );
-	
+
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 2 );
 	mainLayout->setSpacing ( 2 );
@@ -167,7 +167,7 @@ vmTableFilterPanel::vmTableFilterPanel ( const vmTableWidget * const table )
 	mainLayout->addWidget ( m_txtFilter, 2 );
 	mainLayout->addWidget ( m_btnClose );
 	setLayout ( mainLayout );
-	
+
 	setMaximumHeight ( 30 );
 }
 

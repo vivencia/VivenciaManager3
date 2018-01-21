@@ -18,26 +18,26 @@ void deleteEmailConfigInstance ()
 
 namespace ui
 {
-vmComboBox* cboProfiles ( nullptr );
-vmLineEdit* txtAddress ( nullptr );
-vmLineEdit* txtSubject ( nullptr );
-vmLineEdit* txtAttach ( nullptr );
-vmLineEdit* txtBody ( nullptr );
-vmLineEdit* txtSeparator ( nullptr );
-vmCheckBox* chkDefault ( nullptr );
-vmLineEdit* txtProgram ( nullptr );
-QToolButton* btnChooseApp ( nullptr );
-QPushButton* btnAddProfile ( nullptr );
-QPushButton* btnEditProfile ( nullptr );
-QPushButton* btnSaveProfile ( nullptr );
-QPushButton* btnCancelProfile ( nullptr );
-QPushButton* btnClose ( nullptr );
+static vmComboBox* cboProfiles ( nullptr );
+static vmLineEdit* txtAddress ( nullptr );
+static vmLineEdit* txtSubject ( nullptr );
+static vmLineEdit* txtAttach ( nullptr );
+static vmLineEdit* txtBody ( nullptr );
+static vmLineEdit* txtSeparator ( nullptr );
+static vmCheckBox* chkDefault ( nullptr );
+static vmLineEdit* txtProgram ( nullptr );
+static QToolButton* btnChooseApp ( nullptr );
+static QPushButton* btnAddProfile ( nullptr );
+static QPushButton* btnEditProfile ( nullptr );
+static QPushButton* btnSaveProfile ( nullptr );
+static QPushButton* btnCancelProfile ( nullptr );
+static QPushButton* btnClose ( nullptr );
 }
 
 struct KMAIL_OPTS : public emailOpts
 {
-	KMAIL_OPTS ()
-		:	emailOpts () {
+	KMAIL_OPTS () :	emailOpts ()
+	{
 		emailOpts::fancy_name = QStringLiteral ( "KMail" );
 		emailOpts::app_name = QStringLiteral ( "kmail" );
 		emailOpts::addrs_switch = QStringLiteral ( "" );
@@ -53,8 +53,8 @@ static const KMAIL_OPTS kmail;
 
 struct THUNDERBIRD_OPTS : public emailOpts
 {
-	THUNDERBIRD_OPTS ()
-		:	emailOpts () {
+	THUNDERBIRD_OPTS () : emailOpts ()
+	{
 		fancy_name = QStringLiteral ( "Mozilla Thunderbird" );
 		app_name = QStringLiteral ( "thunderbird" );
 		addrs_switch = QStringLiteral ( "-compose to=" );

@@ -12,11 +12,12 @@
 #include "purchases.h"
 #include "generaltable.h"
 
-#ifdef TABLE_UPDATE_AVAILABLE
+#ifdef COMPLETER_TABLE_UPDATE_AVAILABLE
 #include "vmnotify.h"
+#include "job.h"
 #endif
 
-const unsigned int TABLE_VERSION ( 'A' );
+const unsigned int TABLE_VERSION ( 'B' );
 
 constexpr DB_FIELD_TYPE CR_FIELDS_TYPE[CR_FIELD_COUNT] =
 {
@@ -25,9 +26,9 @@ constexpr DB_FIELD_TYPE CR_FIELDS_TYPE[CR_FIELD_COUNT] =
 	DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
 
+#ifdef COMPLETER_TABLE_UPDATE_AVAILABLE
 bool updateCompleterRecordTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	//VDB ()->optimizeTable ( &completerRecord::t_info );
 	//return true;
 	vmNotify* pBox ( nullptr );
@@ -147,11 +148,8 @@ bool updateCompleterRecordTable ()
 	}
 	VDB ()->optimizeTable( &completerRecord::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &completerRecord::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //COMPLETER_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO completerRecord::t_info =
 {
@@ -165,7 +163,12 @@ const TABLE_INFO completerRecord::t_info =
 	"varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 50 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 50 ) COLLATE utf8_unicode_ci DEFAULT NULL, | "
 	"varchar ( 50 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|Product or service|Brand|Type|Place|Payment method|Address|Delivery method|Account|Job type|Machine Name|Machine Event" ),
-	CR_FIELDS_TYPE, TABLE_VERSION, CR_FIELD_COUNT, TABLE_COMPLETER_RECORDS_ORDER, &updateCompleterRecordTable
+	CR_FIELDS_TYPE, TABLE_VERSION, CR_FIELD_COUNT, TABLE_COMPLETER_RECORDS_ORDER, 
+	#ifdef COMPLETER_TABLE_UPDATE_AVAILABLE
+	&updateCompleterRecordTable
+	#else
+	nullptr
+	#endif //COMPLETER_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif
@@ -219,7 +222,7 @@ void completerRecord::updateTable ( const vmCompleters::COMPLETER_CATEGORIES cat
 	bool b_needadd ( true );
 	clearAll ( !b_reset_search );
 	
-	// When we are instructed to continue from the last used recored ( !b_reset_search ) the first moment must be a reading from the first
+	// When we are instructed to continue from the last used record ( !b_reset_search ) the first moment must be a reading from the first
 	// record, and only the subsequent readings will continue from the current index
 	if ( b_reset_search ? readFirstRecord () : readNextRecord () )
 	{
@@ -252,6 +255,7 @@ void completerRecord::batchUpdateTable ( vmCompleters::COMPLETER_CATEGORIES cate
 
 void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates )
 {
+	QSqlQuery query;
 	if ( VDB ()->runSelectLikeQuery (
 				QLatin1String ( "SELECT " ) + VivenciaDB::getTableColumnName ( t_info, field ) +
 				QLatin1String ( " FROM " ) + t_info->table_name, query ) )

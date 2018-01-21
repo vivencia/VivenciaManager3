@@ -110,6 +110,8 @@ public:
 		insertRow ( isPlainTable () ? m_nVisibleRows : static_cast<uint>( totalsRow () ) );
 	}
 
+	virtual void setIgnoreChanges ( const bool b_ignore );
+	virtual inline bool isIgnoringChanges () const { return mbIgnoreChanges; } 
 	void rowActivatedConnection ( const bool b_activate );
 	void enableQtListenerToSimpleTableItemEdition ( const bool b_enable );
 	void setCellValue ( const QString& value, const uint row, const uint col );
@@ -203,11 +205,6 @@ public:
 
 	inline void callRowActivated_func ( const int row ) const { if ( rowActivated_func ) rowActivated_func ( row ); }
 	
-protected:
-	void keyPressEvent ( QKeyEvent* k ) override;
-	inline void setVisibleRows ( const uint n ) { m_nVisibleRows = n; }
-	inline void resetLastUsedRow () { m_lastUsedRow = -1; }
-
 private:
 	void initList ();
 	void initTable2 ();
@@ -254,6 +251,7 @@ private:
 	bool mIsPurchaseTable;
 	bool mbDoNotUpdateCompleters;
 	bool mbColumnAutoResize;
+	bool mbIgnoreChanges;
 
 	// Because of the mask, the maximum number of columns is limited to 32
 	uint readOnlyColumnsMask; // columns set here do not receive user input
@@ -277,13 +275,20 @@ private:
 	vmTableItem* mContextMenuCell;
 
 	static QString defaultBGColor;
+	
+protected:
+	void keyPressEvent ( QKeyEvent* k ) override;
+	inline void setVisibleRows ( const uint n ) { m_nVisibleRows = n; }
+	inline void resetLastUsedRow () { m_lastUsedRow = -1; }
 
+	// These member function objects are protected so that any derived class can override their use
 	std::function<void ( const vmTableItem* const item )> cellChanged_func;
 	std::function<void ( const uint row, const uint col, const uint prev_row, const uint prev_col )> cellNavigation_func;
 	std::function<void ( const vmTableItem* const item )> monitoredCellChanged_func;
 	std::function<bool ( const uint row )> rowRemoved_func;
 	std::function<void ( const uint row )> rowInserted_func;
 	std::function<void ( const int row )> rowActivated_func;
+
 };
 
 #endif // VMTABLEWIDGET_H

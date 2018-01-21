@@ -31,7 +31,6 @@ public:
 	void prepareToShow ( const Job* const job = nullptr );
 	bool loadData ( const QString& jobid, const bool force = false );
 	QString getJobIDFromQPString ( const QString& qpIDstr ) const;
-	void selectDone ();
 
 	inline void setCallbackForDialogClosed ( const std::function<void ()>& func ) { funcClosed = func; }
 	inline QString jobID () const { return recStrValue ( qp_rec, FLD_QP_JOB_ID ); }
@@ -41,7 +40,6 @@ public:
 	inline QString qpString () const { return m_qpString; }
 
 	void getHeadersText ( spreadRow* row ) const;
-	uint copyItemsFromTable ( const vmTableWidget* const table );
 
 	inline bool qpChanged () const { return mbQPChanged; }
 	//void temporarilyHide ();
@@ -54,7 +52,6 @@ private:
 	void completeItem ( const QModelIndex& );
 	void editTable ( const bool checked );
 	void cancelEdit ();
-	void btnCopyPurchasesLists_clicked ();
 	void closeClicked ();
 	bool rowRemoved ( const uint row );
 
@@ -73,7 +70,6 @@ private:
 
 	QPushButton* btnEditTable;
 	QPushButton* btnCancel;
-	QPushButton* btnCopyPurchasesLists;
 	QPushButton* btnClose;
 
 	std::function<void ()> funcClosed;

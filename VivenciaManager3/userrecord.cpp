@@ -8,18 +8,15 @@ constexpr DB_FIELD_TYPE USERS_FIELDS_TYPE[USERS_FIELD_COUNT] =
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT
 };
 
+#ifdef USER_TABLE_UPDATE_AVAILABLE
 bool updateUsersTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	//VDB ()->deleteTable ( &userRecord::t_info );
 	//VDB ()->createTable ( &userRecord::t_info );
 	VDB ()->optimizeTable ( &userRecord::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &userRecord::t_info );
-	return false;
-#endif
 }
+#endif //USER_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO userRecord::t_info =
 {
@@ -31,7 +28,12 @@ const TABLE_INFO userRecord::t_info =
 	QStringLiteral ( " int ( 4 ) NOT NULL, | varchar ( 200 ) NOT NULL, |"
 	" int ( 32 ) UNSIGNED NOT NULL, | varchar ( 50 ) DEFAULT NULL, | longtext COLLATE utf8_unicode_ci DEFAULT NULL, |" ),
 	QStringLiteral ( "ID|User name|Password|Privileges|Location|Logged Users|" ),
-	USERS_FIELDS_TYPE, USERS_FIELD_TABLE_VERSION, USERS_FIELD_COUNT, TABLE_USERS_ORDER, &updateUsersTable
+	USERS_FIELDS_TYPE, USERS_FIELD_TABLE_VERSION, USERS_FIELD_COUNT, TABLE_USERS_ORDER,
+	#ifdef USER_TABLE_UPDATE_AVAILABLE
+	&updateUsersTable
+	#else
+	nullptr
+	#endif //USER_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif

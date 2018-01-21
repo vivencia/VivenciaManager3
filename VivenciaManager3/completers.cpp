@@ -18,7 +18,7 @@ void deleteCompletersInstance ()
 }
 
 vmCompleters::vmCompleters ()
-	: cr_rec ( nullptr ), completersList ( COMPLETERS_COUNT + 1 )
+	: completersList ( COMPLETERS_COUNT + 1 )
 {
 	QCompleter* completer ( nullptr );
 	QStandardItemModel* item_model ( nullptr );
@@ -40,20 +40,18 @@ vmCompleters::vmCompleters ()
 
 vmCompleters::~vmCompleters ()
 {
-	heap_del ( cr_rec );
 	completersList.clear ( true );
 }
 
 void vmCompleters::loadCompleters ()
 {
-	cr_rec = new completerRecord;
 	QStringList completer_strings;
 	QStandardItemModel* item_model ( nullptr );
 	QStandardItemModel* model_all ( static_cast<QStandardItemModel*> ( completersList.at ( ALL_CATEGORIES )->model () ) );
 
 	for ( int i ( 2 ), x ( 0 ), str_count ( 0 ); i < static_cast<int>( COMPLETERS_COUNT ); ++i )
 	{
-		cr_rec->loadCompleterStrings ( completer_strings, static_cast<COMPLETER_CATEGORIES>( i ) );
+		completerRecord::loadCompleterStrings ( completer_strings, static_cast<COMPLETER_CATEGORIES>( i ) );
 		str_count = completer_strings.count ();
 		if ( str_count > 0 )
 		{
@@ -68,7 +66,7 @@ void vmCompleters::loadCompleters ()
 	}
 
 	QStringList completer_strings_2;
-	cr_rec->loadCompleterStringsForProductsAndServices ( completer_strings, completer_strings_2 );
+	completerRecord::loadCompleterStringsForProductsAndServices ( completer_strings, completer_strings_2 );
 	const int str_count ( static_cast<int> ( qMin ( completer_strings.count (), completer_strings_2.count () ) ) );
 	if ( str_count > 0 )
 	{
@@ -104,7 +102,8 @@ void vmCompleters::updateCompleter ( const QString& str, const COMPLETER_CATEGOR
 			item_model->appendRow ( new QStandardItem ( str ) );
 			QStandardItemModel* model_all ( static_cast<QStandardItemModel*>( completersList.at ( ALL_CATEGORIES )->model () ) );
 			model_all->appendRow ( new QStandardItem ( str ) );
-			cr_rec->updateTable ( type, str );
+			completerRecord cr_rec;
+			cr_rec.updateTable ( type, str );
 		}
 	}
 }
@@ -188,10 +187,8 @@ void vmCompleters::encodeCompleterISRForSpreadSheet ( const DBRecord* dbrec )
 			const QModelIndex index ( model->index ( row, 1 ) );
 			model->setData ( index, info.toString () );
 		}
-		cr_rec->setAction ( row == -1 ? ACTION_ADD : ACTION_EDIT );
-		setRecValue ( cr_rec, FLD_CR_PRODUCT_OR_SERVICE_1, compositItemName );
-		setRecValue ( cr_rec, FLD_CR_PRODUCT_OR_SERVICE_2, info.toString () );
-		
-		const_cast<DBRecord*> ( dbrec )->setCompleterUpdated ( cr_rec->saveRecord () );
+		completerRecord cr_rec;
+		cr_rec.updateTable ( vmCompleters::ALL_CATEGORIES, compositItemName );
+		cr_rec.updateTable ( vmCompleters::PRODUCT_OR_SERVICE, info.toString () );
 	}
 }

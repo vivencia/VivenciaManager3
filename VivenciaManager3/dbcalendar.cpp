@@ -50,17 +50,14 @@ inline void DBWeekNumberToDate ( const uint dbweek, vmNumber& date )
 	date.setDate ( ( static_cast<int>(DBWeekNumberToWeekNumber ( dbweek ) * 7) ) - 2, 1, static_cast<int>(year + 2009) );
 }
 
-#define TABLE_UPDATE_AVAILABLE
-#ifdef TABLE_UPDATE_AVAILABLE
+#ifdef CALENDAR_TABLE_UPDATE_AVAILABLE
 #include "vivenciadb.h"
 #include "calculator.h"
 #include "stringrecord.h"
 #include "vmnotify.h"
-#endif
 
 bool updateCalendarTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	( void )VDB ()->database ()->exec ( QStringLiteral ( "RENAME TABLE `CALENDAR` TO `OLD_CALENDAR`" ) );
 	VDB ()->createTable ( &dbCalendar::t_info );
 
@@ -110,11 +107,8 @@ bool updateCalendarTable ()
 	VDB ()->optimizeTable ( &dbCalendar::t_info );
 	VDB ()->deleteTable ( "OLD_CALENDAR" );
 	return true;	
-#else
-	VDB ()->optimizeTable ( &dbCalendar::t_info );
-	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
+#endif //CALENDAR_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO dbCalendar::t_info = {
 	CALENDAR_TABLE,
@@ -132,7 +126,12 @@ const TABLE_INFO dbCalendar::t_info = {
 	QCoreApplication::tr ( "ID|Date|Week Number|Month|Jobs|Payments|Deposit date|Purchases|"
 	"Purchase pay date|Scheduled amount to receive|Amount actually receive|"
 	"Purchases made|Purchases paid|" ),
-	CALENDAR_FIELDS_TYPE, TABLE_VERSION, CALENDAR_FIELD_COUNT, TABLE_CALENDAR_ORDER, &updateCalendarTable
+	CALENDAR_FIELDS_TYPE, TABLE_VERSION, CALENDAR_FIELD_COUNT, TABLE_CALENDAR_ORDER,
+	#ifdef CALENDAR_TABLE_UPDATE_AVAILABLE
+	&updateCalendarTable
+	#else
+	nullptr
+	#endif //CALENDAR_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif

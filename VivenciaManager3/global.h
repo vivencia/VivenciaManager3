@@ -32,11 +32,6 @@
 //#define TRANSITION_PERIOD
 #endif
 
-#ifndef TABLE_UPDATE_AVAILABLE
-// Uncomment when there is a table update. This compiler switch is used - generally - within the updateXXXTable functions
-//#define TABLE_UPDATE_AVAILABLE
-#endif
-
 #ifdef TRANSLATION_ENABLED
 #define TR_FUNC tr
 #define APP_TR_FUNC QApplication::tr
@@ -108,9 +103,9 @@ constexpr const QLatin1String PROGRAM_NAME ( "VivenciaManager3", 16 );
 
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 4
-#define VERSION_REVISION -alpha
-constexpr const QLatin1String VERSION_APPEND ( "The End (of the year) is Near", 29 );
-constexpr const QLatin1String VERSION_DATE ( "2017-12-09", 10 );
+#define VERSION_REVISION 0
+constexpr const QLatin1String VERSION_APPEND ( "Starting slowly", 15 );
+constexpr const QLatin1String VERSION_DATE ( "2018-01-14", 10 );
 
 static const QString PROGRAM_VERSION (
 	QUOTEME(VERSION_MAJOR) + CHR_DOT +

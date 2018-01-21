@@ -533,7 +533,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>7</number>
+       <number>6</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -3483,7 +3483,7 @@ p, li { white-space: pre-wrap; }
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_12">
+                 <layout class="QVBoxLayout" name="layoutJobReport">
                   <property name="spacing">
                    <number>2</number>
                   </property>
@@ -3544,7 +3544,13 @@ p, li { white-space: pre-wrap; }
                   <item>
                    <layout class="QVBoxLayout" name="layoutTxtJobUtilities">
                     <property name="spacing">
-                     <number>2</number>
+                     <number>5</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>5</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>5</number>
                     </property>
                     <item>
                      <widget class="textEditWithCompleter" name="txtJobReport">
@@ -3582,7 +3588,7 @@ p, li { white-space: pre-wrap; }
              <property name="lineWidth">
               <number>3</number>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0">
+             <layout class="QVBoxLayout" name="layoutJobPicturePanel" stretch="0,0">
               <property name="spacing">
                <number>2</number>
               </property>
@@ -4245,47 +4251,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="6" column="3">
-             <layout class="QHBoxLayout" name="horizontalLayout_9">
-              <item>
-               <spacer name="horizontalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnBuyCopyRows">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Copy list to quick project</string>
-                </property>
-                <property name="layoutDirection">
-                 <enum>Qt::LeftToRight</enum>
-                </property>
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="icon">
-                 <iconset resource="resources.qrc">
-                  <normaloff>:/resources/copy_buy_to_qp.png</normaloff>:/resources/copy_buy_to_qp.png</iconset>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <layout class="QHBoxLayout" name="horizontalLayout_9"/>
             </item>
             <item row="10" column="0">
              <widget class="QLabel" name="lblBuyTotalPrice">
@@ -4581,7 +4547,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>btnJobCancelDelDay</tabstop>
   <tabstop>txtJobTotalDayTime</tabstop>
   <tabstop>txtJobTotalAllDaysTime</tabstop>
-  <tabstop>txtJobReport</tabstop>
   <tabstop>tabPaysLists</tabstop>
   <tabstop>paysList</tabstop>
   <tabstop>txtClientPayTotals</tabstop>
@@ -4598,7 +4563,6 @@ p, li { white-space: pre-wrap; }
   <tabstop>buysJobList</tabstop>
   <tabstop>txtBuyDeliveryMethod</tabstop>
   <tabstop>txtBuyNotes</tabstop>
-  <tabstop>btnBuyCopyRows</tabstop>
   <tabstop>tableBuyItems</tabstop>
   <tabstop>txtBuyTotalPrice</tabstop>
   <tabstop>tableBuyPayments</tabstop>

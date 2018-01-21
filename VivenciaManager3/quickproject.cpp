@@ -10,16 +10,13 @@ constexpr DB_FIELD_TYPE QP_FIELDS_TYPE[QUICK_PROJECT_FIELD_COUNT] =
 	DBTYPE_PRICE, DBTYPE_NUMBER, DBTYPE_PRICE, DBTYPE_PRICE, DBTYPE_PRICE
 };
 
+#ifdef QP_TABLE_UPDATE_AVAILABLE
 bool updateQuickProjectTable ()
 {
-#ifdef TABLE_UPDATE_AVAILABLE
 	VDB ()->optimizeTable ( &quickProject::t_info );
 	return true;
-#else
-	VDB ()->optimizeTable ( &quickProject::t_info );
-	return false;
-#endif
 }
+#endif //QP_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO quickProject::t_info =
 {
@@ -33,7 +30,12 @@ const TABLE_INFO quickProject::t_info =
 	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, |"
 	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, |" ),
 	QStringLiteral ( "ID|Project ID|Item|Quantity|Selling price (un)|Selling price (total)|Purchase quantity|Purchase price (un)|Purchase price (total)|Result|" ),
-	QP_FIELDS_TYPE, TABLE_VERSION, QUICK_PROJECT_FIELD_COUNT, TABLE_QP_ORDER, &updateQuickProjectTable
+	QP_FIELDS_TYPE, TABLE_VERSION, QUICK_PROJECT_FIELD_COUNT, TABLE_QP_ORDER,
+	#ifdef QP_TABLE_UPDATE_AVAILABLE
+	&updateQuickProjectTable
+	#else
+	nullptr
+	#endif //QP_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, false
 	#endif
