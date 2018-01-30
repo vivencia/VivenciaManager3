@@ -186,7 +186,7 @@ QStringList DB_Image::imagesList () const
 		QStringList imageNameList;
 		const PointersList<fileOps::st_fileInfo*> &files ( images_array.current ()->files );
 		for ( uint i ( 0 ); i < files.count (); ++i )
-			imageNameList.append ( files.at ( i )->filename );
+			static_cast<void>( VM_LIBRARY_FUNCS::insertStringListItem ( imageNameList, files.at ( i )->filename ) );
 		return imageNameList;
 	}
 	return QStringList ();
@@ -316,9 +316,9 @@ void DB_Image::scaleImage ( const double factor )
 							  qMin ( static_cast<double>( width () ) , imgSize.width () ), qMax ( static_cast<double>( height () ), imgSize.height () ) ).toRect () );
 	
 	// Try to avoid scrollbars
-	if ( ( imgSize.width () + 10.0 ) > scrollArea->width () )
+	if ( ( imgSize.width () ) >= scrollArea->width () )
 		imgSize.setWidth ( scrollArea->width () - 10.0 );
-	if ( ( imgSize.height () + 10.0 ) > scrollArea->height () )
+	if ( ( imgSize.height () ) >= scrollArea->height () )
 		imgSize.setHeight ( scrollArea->height () - 10.0 );
 	imageViewer->resize ( imgSize.toSize () );
 }

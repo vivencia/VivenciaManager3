@@ -15,16 +15,11 @@ class separateWindow : public QDialog
 
 public:
 	explicit separateWindow ( QWidget* w_child );
-	explicit separateWindow ( QLayout* l_child );
-
-	void setCallbackForReturningToParent ( const std::function<void ( QWidget*)>& func ) { w_funcReturnToParent = func; }
-	void setCallbackForReturningToParent ( const std::function<void ( QLayout*)>& func ) { l_funcReturnToParent = func; }
-
+	void setCallbackForReturningToParent ( const std::function<void (QWidget*)>& func ) { w_funcReturnToParent = func; }
 	void showSeparate ( const QString& window_title, const bool b_exec = false, const Qt::WindowStates w_state = Qt::WindowActive );
 	void returnToParent ();
 
 protected:
-	void initCommon ();
 	void closeEvent ( QCloseEvent* e ) override;
 	bool eventFilter ( QObject* o, QEvent* e ) override;
 
@@ -42,13 +37,11 @@ protected:
 
 private:
 	QWidget* m_child;
-	QLayout* m_layout;
 	QVBoxLayout* mainLayout;
 	QPushButton* btnReturn;
 	bool mb_Active, mb_Visible;
 
 	std::function<void ( QWidget*)> w_funcReturnToParent;
-	std::function<void ( QLayout*)> l_funcReturnToParent;
 };
 
 #endif // SEPARATEWINDOW_H

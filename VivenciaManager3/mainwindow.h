@@ -275,7 +275,7 @@ public:
 //--------------------------------------------CALENDAR-----------------------------------------------------------
 	void setupCalendarMethods ();
 	void calMain_activated ( const QDate& date, const bool bUserAction = true );
-	void updateCalendarView ( const uint year, const uint month );
+	void updateCalendarView ( const uint year, const uint month, const bool bUserAction = true );
 	void tboxCalJobs_currentChanged ( const int index );
 	void tboxCalPays_currentChanged ( const int index );
 	void tboxCalBuys_currentChanged ( const int index );
@@ -418,7 +418,7 @@ private:
 //----------------------------------------------CURRENT-DATE-BTNS-------------------------------------------
 
 //--------------------------------------------SLOTS---------------------------------------------------------
-	void receiveWidgetBack ( QLayout* layout );
+	void receiveWidgetBack ( QWidget* widget );
 	void btnReportGenerator_clicked ();
 	void btnBackupRestore_clicked ();
 	void btnCalculator_clicked ();

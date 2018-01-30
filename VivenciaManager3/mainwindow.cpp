@@ -361,7 +361,6 @@ bool MainWindow::displayClient ( clientListItem* client_item, const bool b_selec
 	// This function is called by user interaction and programatically. When called programatically, item may be nullptr
 	if ( client_item )
 	{
-		//ui->tabMain->setCurrentIndex ( 0 );
 		if ( client_item->loadData () )
 		{
 			if ( client_item != mClientCurItem )
@@ -872,6 +871,9 @@ void MainWindow::displayJobFromCalendar ( vmListItem* cal_item )
 			displayJob ( static_cast<jobListItem*>( cal_item->relatedItem ( RLI_CALENDARITEM ) ), true );
 		
 		ui->lstJobDayReport->setCurrentRow ( cal_item->data ( Qt::UserRole ).toInt () - 1, true, true ); // select pertinent day
+		// We do not want to simply call displayJob (), we want to redirect the user to view that job. Unlike notifyExternalChange (),
+		// which merely has to update the display but the workflow must remain within DB_TABLE_VIEW
+		ui->lblCurInfoJob->callLabelActivatedFunc ();
 	}
 }
 
@@ -1142,7 +1144,6 @@ void MainWindow::displayJob ( jobListItem* job_item, const bool b_select, buyLis
 	{
 		if ( job_item->loadData () )
 		{
-			//ui->tabMain->setCurrentIndex ( 0 );
 			if ( job_item != mJobCurItem )
 			{
 				if ( b_select )
@@ -2060,6 +2061,9 @@ void MainWindow::displayPayFromCalendar ( vmListItem* cal_item )
 			displayJob ( static_cast<jobListItem*>( cal_item->relatedItem ( RLI_JOBPARENT ) ), true );
 		
 		ui->tablePayments->setCurrentCell ( cal_item->data ( Qt::UserRole ).toInt () - 1, 0 );
+		// We do not want to simply call displayPay (), we want to redirect the user to view that payment. Unlike notifyExternalChange (),
+		// which merely has to update the display but the workflow must remain within DB_TABLE_VIEW
+		ui->lblCurInfoPay->callLabelActivatedFunc ();
 	}
 }
 
@@ -2346,7 +2350,6 @@ void MainWindow::displayPay ( payListItem* pay_item, const bool b_select )
 	{
 		if ( pay_item->loadData () )
 		{
-			//ui->tabMain->setCurrentIndex ( 0 );
 			if ( pay_item != mPayCurItem )
 			{
 				if ( b_select )
@@ -2901,6 +2904,9 @@ void MainWindow::displayBuyFromCalendar ( vmListItem* cal_item )
 			displayJob ( static_cast<jobListItem*>( cal_item->relatedItem ( RLI_JOBPARENT ) ), true, static_cast<buyListItem*>( cal_item ) );
 		
 		ui->tableBuyPayments->setCurrentCell ( cal_item->data ( Qt::UserRole ).toInt () - 1, 0 );
+		// We do not want to simply call displayBuy (), we want to redirect the user to view that buy. Unlike notifyExternalChange (),
+		// which merely has to update the display but the workflow must remain within DB_TABLE_VIEW
+		ui->lblCurInfoBuy->callLabelActivatedFunc ();
 	}
 }
 
@@ -2909,9 +2915,9 @@ void MainWindow::buysListWidget_currentItemChanged ( vmListItem* item )
 	if ( item )
 	{
 		if ( static_cast<jobListItem*> ( item->relatedItem ( RLI_JOBPARENT ) ) != mJobCurItem )
-			displayJob ( static_cast<jobListItem*> ( item->relatedItem ( RLI_JOBPARENT ) ), true, static_cast<buyListItem*>( item ) );
+			displayJob ( static_cast<jobListItem*>( item->relatedItem ( RLI_JOBPARENT ) ), true, static_cast<buyListItem*>( item ) );
 		else
-			displayBuy ( static_cast<buyListItem*> ( item ) );
+			displayBuy ( static_cast<buyListItem*>( item ) );
 	}
 	else
 		displayBuy ( nullptr );
@@ -3144,7 +3150,6 @@ void MainWindow::displayBuy ( buyListItem* buy_item, const bool b_select )
 {
 	if ( buy_item && buy_item->loadData () )
 	{
-		//ui->tabMain->setCurrentIndex ( 0 );
 		if ( buy_item != mBuyCurItem )
 		{
 			if ( b_select ) // Sync both lists, but make sure no signals are emitted
@@ -3770,28 +3775,28 @@ void MainWindow::setupSectionNavigation ()
 	ui->lblCurInfoClient->setCallbackForLabelActivated ( [&] ()
 	{
 		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpClients->pos ().y () );
-		//ui->clientsList->setFocus ();
+		ui->clientsList->setFocus ();
 		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
 	} );
 
 	ui->lblCurInfoJob->setCallbackForLabelActivated ( [&] ()
 	{
 		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpJobs->pos ().y () );
-		//ui->jobsList->setFocus ();
+		ui->jobsList->setFocus ();
 		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
 	} );
 
 	ui->lblCurInfoPay->setCallbackForLabelActivated ( [&] ()
 	{
 		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpPays->pos ().y () );
-		//ui->paysList->setFocus ();
+		ui->paysList->setFocus ();
 		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
 	} );
 
 	ui->lblCurInfoBuy->setCallbackForLabelActivated ( [&] ()
 	{
 		ui->scrollWorkFlow->verticalScrollBar ()->setValue ( grpBuys->pos ().y () );
-		//ui->buysList->setFocus ();
+		ui->buysList->setFocus ();
 		ui->tabMain->setCurrentIndex ( static_cast<int>( TI_MAIN ) );
 	} );
 
@@ -3986,7 +3991,7 @@ void MainWindow::setupCalendarMethods ()
 	static_cast<void>( connect ( ui->calMain, &QCalendarWidget::clicked, this, [&] ( const QDate& date ) {
 				return calMain_activated ( date ); } ) );
 	static_cast<void>( connect ( ui->calMain, &QCalendarWidget::currentPageChanged, this, [&] ( const int year, const int month ) {
-				return updateCalendarView ( static_cast<uint>(year), static_cast<uint>(month) ); } ) );
+				return updateCalendarView ( static_cast<uint>( year ), static_cast<uint>( month ) ); } ) );
 	static_cast<void>( connect ( ui->tboxCalJobs, &QToolBox::currentChanged, this, [&] ( const int index ) {
 				return tboxCalJobs_currentChanged ( index ); } ) );
 	static_cast<void>( connect ( ui->tboxCalPays, &QToolBox::currentChanged, this, [&] ( const int index ) {
@@ -4037,11 +4042,11 @@ void MainWindow::calMain_activated ( const QDate& date, const bool bUserAction )
 	}
 }
 
-void MainWindow::updateCalendarView ( const uint year, const uint month )
+void MainWindow::updateCalendarView (const uint year, const uint month, const bool bUserAction )
 {
 	QString price;
 	vmNumber date;
-	date.setDate ( 1, static_cast<int>(month), static_cast<int>(year) );
+	date.setDate ( 1, static_cast<int>( month ), static_cast<int>( year ) );
 	const stringTable jobsPerDateList ( mCal->dateLog ( date, FLD_CALENDAR_MONTH,
 				FLD_CALENDAR_JOBS, price, FLD_CALENDAR_TOTAL_JOBPRICE_SCHEDULED, true ) );
 
@@ -4078,6 +4083,13 @@ void MainWindow::updateCalendarView ( const uint year, const uint month )
 				str_rec = &jobsPerDateList.next ();
 			} while ( str_rec->isOK () );
 		}
+	}
+	//Update lists for the different month when the user clicks on the calendar page changing button
+	if ( bUserAction )
+	{
+		//call the function below only if user clicked on the calendar (bUserAction = true). But we call it
+		//programmatically, so its bUserAction argument must be false. 
+		calMain_activated ( QDate ( static_cast<int>( year ), static_cast<int>( month ), 1 ), false );
 	}
 }
 
@@ -4303,8 +4315,13 @@ void MainWindow::tabMain_currentTabChanged ( const int tab_idx )
 	{
 		case TI_CALENDAR:
 			mActionsToolBar->hide ();
+			if ( mCalendarDate.isNull () )
+				mCalendarDate = vmNumber::currentDate;
+			updateCalendarView ( mCalendarDate.year (), mCalendarDate.month (), false );
+			// prevent unecessary execution of code by letting the function decide whether to proceed as if a user called it
+			// via UI signal. The programmatically argument bUserAction = false, would make calMain_activated use the
+			// same date the calendar has at this moment, triggering an unecessary code path
 			calMain_activated ( ui->calMain->selectedDate (), true );
-			updateCalendarView ( mCalendarDate.year (), mCalendarDate.month () );
 		break;
 		case TI_STATISTICS:
 			mActionsToolBar->hide ();
@@ -4478,21 +4495,21 @@ void MainWindow::saveEditItems ()
 	delete dlgSaveEditItems;
 }
 //---------------------------------------------SESSION----------------------------------------------------------
-void MainWindow::receiveWidgetBack ( QLayout* layout )
+void MainWindow::receiveWidgetBack ( QWidget* widget )
 {
 	// if the UI changes, the widget positions might change too, se we always need to check back against ui_mainwindow.h to see if those numbers match
 	// Still easier than having a function to query the layouts for the rows, columns and spans for the widgets: the UI does not change that often
-	if ( layout == ui->layoutTxtJobUtilities )
+	if ( widget == ui->frmJobReport )
 	{
+		ui->splitterJobDaysInfo->addWidget ( ui->frmJobReport );
 		ui->btnJobSeparateReportWindow->setChecked ( false );
-		ui->layoutJobReport->addLayout ( ui->layoutTxtJobUtilities );
-		ui->txtJobReport->show ();
 	}
-	else if ( layout == ui->layoutJobPicturePanel )
+	else if ( widget == ui->frmJobPicturesControls )
 	{
-		ui->frmJobPicturesControls->setLayout ( ui->layoutJobPicturePanel );
-		ui->jobImageViewer->show ();
+		ui->gLayoutJobExtraInfo->addWidget ( ui->frmJobPicturesControls );
+		ui->btnJobSeparatePicture->setChecked ( false );
 	}
+	widget->show ();
 }
 
 inline void MainWindow::btnReportGenerator_clicked ()
@@ -4908,8 +4925,8 @@ void MainWindow::showJobImageInWindow ( const bool maximized )
 {
 	if ( sepWin_JobPictures == nullptr )
 	{
-		sepWin_JobPictures = new separateWindow ( ui->layoutJobPicturePanel );
-		sepWin_JobPictures->setCallbackForReturningToParent ( [&] ( QLayout* layout ) { return receiveWidgetBack ( layout ); } );
+		sepWin_JobPictures = new separateWindow ( ui->frmJobPicturesControls );
+		sepWin_JobPictures->setCallbackForReturningToParent ( [&] ( QWidget* widget ) { return receiveWidgetBack ( widget ); } );
 	}
 	sepWin_JobPictures->showSeparate ( ui->jobImageViewer->imageFileName (), false, maximized ? Qt::WindowMaximized : Qt::WindowNoState );
 	if ( !ui->btnJobSeparatePicture->isChecked () )
@@ -4920,8 +4937,8 @@ void MainWindow::btnJobSeparateReportWindow_clicked ( const bool checked )
 {
 	if ( sepWin_JobReport == nullptr )
 	{
-		sepWin_JobReport = new separateWindow ( ui->layoutTxtJobUtilities );
-		sepWin_JobReport->setCallbackForReturningToParent ( [&] ( QLayout* layout ) { return receiveWidgetBack ( layout ); } );
+		sepWin_JobReport = new separateWindow ( ui->frmJobReport );
+		sepWin_JobReport->setCallbackForReturningToParent ( [&] ( QWidget* widget ) { return receiveWidgetBack ( widget ); } );
 	}
 	if ( checked )
 	{

@@ -7,29 +7,14 @@
 #include <QVBoxLayout>
 
 separateWindow::separateWindow ( QWidget *w_child )
-	: QDialog (), m_child ( w_child ), m_layout ( nullptr ), mainLayout ( new QVBoxLayout ),
-	  mb_Active ( false ), mb_Visible ( false ), w_funcReturnToParent ( nullptr ), l_funcReturnToParent ( nullptr )
-{
-	initCommon ();
-}
-
-separateWindow::separateWindow ( QLayout *l_child )
-	: QDialog (), m_child ( nullptr ), m_layout ( l_child ), mainLayout ( new QVBoxLayout ),
-	  mb_Active ( false ), mb_Visible ( false )
-{
-	initCommon ();
-}
-
-void separateWindow::initCommon ()
+	: QDialog (), m_child ( w_child ), mainLayout ( new QVBoxLayout ),
+	  mb_Active ( false ), mb_Visible ( false ), w_funcReturnToParent ( nullptr )
 {
 	btnReturn = new QPushButton ( tr ( "Return" ), this );
 	connect ( btnReturn, &QPushButton::clicked, this, [&] () { return returnToParent (); } );
-
-	setLayout ( mainLayout );
-	resize ( mainLayout->sizeHint () );
-	MAINWINDOW ()->installEventFilter ( this );
-
 	mainLayout->addWidget ( btnReturn, 0, Qt::AlignRight );
+	setLayout ( mainLayout );
+	MAINWINDOW ()->installEventFilter ( this );
 }
 
 void separateWindow::closeEvent ( QCloseEvent* e )
@@ -40,7 +25,7 @@ void separateWindow::closeEvent ( QCloseEvent* e )
 // Hides and shows this windows whenever the parent window is minimized/hidden or visible/shown
 bool separateWindow::eventFilter ( QObject* o, QEvent* e )
 {
-	if ( MAINWINDOW () && ( o == MAINWINDOW () ) )
+	if ( o == MAINWINDOW () )
 	{
 		switch ( e->type () )
 		{
@@ -123,20 +108,14 @@ void separateWindow::showSeparate ( const QString& window_title, const bool b_ex
 		mb_Active = true;
 		if ( m_child )
 		{
-			mainLayout->addWidget ( m_child, 2 );
+			mainLayout->insertWidget ( 0, m_child, 2 );
+			//mainLayout->insertStretch ( 1, 1 );
 			m_child->show ();
 			m_child->setFocus ();
+			resize ( mainLayout->sizeHint () );
+			mb_Visible = true;
+			setWindowTitle ( window_title );
 		}
-		if ( m_layout )
-		{
-			if ( m_layout->parentWidget () )
-				m_layout->parentWidget ()->setLayout ( nullptr );
-			
-			mainLayout->addLayout ( m_layout, 2 );
-		}
-
-		mb_Visible = true;
-		setWindowTitle ( window_title );
 	}
 	//toggle state. The first if check makes sure that w_state is different from current windowState (),
 	// so now we only have to toggle it
@@ -182,12 +161,7 @@ void separateWindow::returnToParent ()
 			if ( w_funcReturnToParent )
 				w_funcReturnToParent ( m_child );
 		}
-		if ( m_layout )
-		{
-			mainLayout->removeItem ( m_layout );
-			if ( l_funcReturnToParent )
-				l_funcReturnToParent ( m_layout );
-		}
+		mainLayout->removeWidget ( btnReturn );
 		hide ();
 	}
 }

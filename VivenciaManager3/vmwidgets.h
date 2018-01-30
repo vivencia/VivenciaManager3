@@ -53,6 +53,8 @@ public:
 	inline QString text () const override { return QToolButton::text (); }
 
 	void setCallbackForLabelActivated ( const std::function<void ()>& func );
+	// Programmatically call the callback generally called via user input
+	inline void callLabelActivatedFunc () { if ( labelActivated_func ) labelActivated_func (); }
 	QSize sizeHint () const override;
 	QSize minimumSizeHint () const override;
 

@@ -3146,7 +3146,7 @@ p, li { white-space: pre-wrap; }
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="1">
+             <layout class="QHBoxLayout" name="layoutJobDayInfo" stretch="1">
               <property name="spacing">
                <number>2</number>
               </property>
@@ -3476,7 +3476,7 @@ p, li { white-space: pre-wrap; }
                   </item>
                  </layout>
                 </widget>
-                <widget class="QFrame" name="frame_10">
+                <widget class="QFrame" name="frmJobReport">
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
@@ -3588,9 +3588,9 @@ p, li { white-space: pre-wrap; }
              <property name="lineWidth">
               <number>3</number>
              </property>
-             <layout class="QVBoxLayout" name="layoutJobPicturePanel" stretch="0,0">
+             <layout class="QVBoxLayout" name="layoutJobPicturePanel" stretch="0,0,4">
               <property name="spacing">
-               <number>2</number>
+               <number>6</number>
               </property>
               <property name="leftMargin">
                <number>2</number>
@@ -3606,6 +3606,9 @@ p, li { white-space: pre-wrap; }
               </property>
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_21">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
                 <item>
                  <widget class="QLabel" name="lblJobPictures">
                   <property name="text">
@@ -3624,6 +3627,9 @@ p, li { white-space: pre-wrap; }
               </item>
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_20">
+                <property name="spacing">
+                 <number>2</number>
+                </property>
                 <item>
                  <widget class="QToolButton" name="btnJobAddPictures">
                   <property name="text">
@@ -3826,60 +3832,60 @@ p, li { white-space: pre-wrap; }
                 </item>
                </layout>
               </item>
+              <item>
+               <layout class="QHBoxLayout" name="hLayoutImgViewer" stretch="1,2,1">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <item>
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="DB_Image" name="jobImageViewer">
+                  <property name="minimumSize">
+                   <size>
+                    <width>300</width>
+                    <height>300</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Plain</enum>
+                  </property>
+                  <property name="lineWidth">
+                   <number>2</number>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_4">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
              </layout>
             </widget>
-           </item>
-           <item row="6" column="0" colspan="5">
-            <layout class="QHBoxLayout" name="hLayoutImgViewer" stretch="1,0,1">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <spacer name="horizontalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="DB_Image" name="jobImageViewer">
-               <property name="minimumSize">
-                <size>
-                 <width>300</width>
-                 <height>300</height>
-                </size>
-               </property>
-               <property name="frameShape">
-                <enum>QFrame::NoFrame</enum>
-               </property>
-               <property name="frameShadow">
-                <enum>QFrame::Plain</enum>
-               </property>
-               <property name="lineWidth">
-                <number>2</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_4">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
            </item>
           </layout>
          </widget>
