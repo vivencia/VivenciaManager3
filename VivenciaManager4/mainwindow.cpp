@@ -1344,6 +1344,8 @@ void MainWindow::fixJobDaysList ( jobListItem* const job_item )
 		{
 			if ( day_item->data ( JILUR_ADDED ).toBool () )
 				daysList->remove ( day, true );
+			if ( day_item->data ( JILUR_EDITED ).toBool () )
+				day_item->setData ( JILUR_EDITED, false );
 			else
 			{
 				if ( day_item->data ( JILUR_REMOVED ).toBool () )
@@ -4751,7 +4753,7 @@ void MainWindow::updateWindowBeforeSave ()
 void MainWindow::updateProgramDate ()
 {
 	vmNumber::updateCurrentDate ();
-	ui->dteJobAddDate->updateDateButtonsMenu ();
+	vmDateEdit::updateDateButtonsMenu ();
 	ui->dteJobAddDate->setDate ( vmNumber::currentDate );
 	if ( timerUpdate == nullptr )
 	{

@@ -304,22 +304,25 @@ public:
 	vmCheckBox ( const QString& text, QWidget* parent = nullptr );
 	virtual ~vmCheckBox ();
 
-	inline QLatin1String qtClassName () const { return QLatin1String ( "QCheckBox" ); }
-	QString defaultStyleSheet () const;
+	inline QLatin1String qtClassName () const override { return QLatin1String ( "QCheckBox" ); }
+	QString defaultStyleSheet () const override;
 
 	inline void setChecked ( const bool checked, const bool b_notify = false )
 	{
 		setText ( checked ? CHR_ONE : CHR_ZERO, b_notify );
 	}
 	
-	void setText ( const QString& text, const bool b_notify = false );
+	void setText ( const QString& text, const bool b_notify = false ) override;
 
-	inline QString text () const { return isChecked () ? CHR_ONE : CHR_ZERO; }
-	void setEditable ( const bool editable );
+	inline QString text () const override { return isChecked () ? CHR_ONE : CHR_ZERO; }
+	void setEditable ( const bool editable ) override;
 
 	// Qt's uic calls setText, which render the controle labelless because we use the same function name, which trumps the base's name.
 	// Every controler used in the source must call setLabel if created by Qt's UI tools. Otherwise, set the label in the constructor
 	inline void setLabel ( const QString& label ) { QCheckBox::setText ( label ); }
+	
+protected:
+	void focusInEvent ( QFocusEvent* ) override;
 };
 //------------------------------------------------VM-CHECK-BOX------------------------------------------------
 

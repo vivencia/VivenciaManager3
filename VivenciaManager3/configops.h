@@ -254,7 +254,6 @@ private:
 	friend configOps* CONFIG ();
 	friend void deleteConfigInstance ();
 
-	const QString& getConfigValue ( const CFG_FIELDS field, const bool use_default ) const;
 	const QString& setApp ( const CFG_FIELDS field, const QString& app );
 	const QString& setDir ( const CFG_FIELDS field, const QString& dir );
 

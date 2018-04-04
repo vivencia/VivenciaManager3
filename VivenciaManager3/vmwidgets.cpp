@@ -1203,12 +1203,28 @@ void vmCheckBox::setText ( const QString& text, const bool b_notify )
 
 void vmCheckBox::setEditable ( const bool editable )
 {
-	if ( editable )
+	if ( editable && contentsAltered_func )
 		static_cast<void>( connect ( this, static_cast<void (QCheckBox::*)(const bool)>( &QCheckBox::clicked ), this, [&] ( const bool ) {
 			return contentsAltered_func ( this ); } ) ); // clicked means mouse clicked, keyboard activated (enter, space bar) or shutcut activated
 	else
 		static_cast<void>( disconnect ( this, nullptr, nullptr, nullptr ) );
 	setEnabled ( editable );
 	vmWidget::setEditable ( editable );
+}
+
+void vmCheckBox::focusInEvent ( QFocusEvent* e )
+{
+	if ( isEditable () && e->reason () != Qt::ActiveWindowFocusReason )
+	{
+		if ( ownerItem () )
+		{
+			vmTableWidget* table ( static_cast<vmListWidget*>( const_cast<vmTableItem*>( ownerItem () )->table () ) );
+			table->setCurrentItem ( const_cast<vmTableItem*>( ownerItem () ) );
+		}
+		e->setAccepted ( true );
+		QCheckBox::focusInEvent ( e );
+	}
+	else
+		e->setAccepted ( false );
 }
 //------------------------------------------------VM-CHECK-BOX------------------------------------------------

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>641</width>
-    <height>483</height>
+    <height>449</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -67,7 +67,7 @@
        <property name="checked">
         <bool>false</bool>
        </property>
-       <layout class="QGridLayout" name="gLayoutProgramOptions" columnstretch="1,0,0,0,0,0,0,0">
+       <layout class="QGridLayout" name="gLayoutProgramOptions" columnstretch="0,1,0,0,0,1,0,0">
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -83,8 +83,25 @@
         <property name="spacing">
          <number>2</number>
         </property>
-        <item row="3" column="0">
-         <widget class="QLabel" name="lblCfgPictureViewer">
+        <item row="6" column="1">
+         <widget class="vmLineEdit" name="txtCfgDocEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="4">
+         <widget class="QLabel" name="lblCfgDocumentViewer">
           <property name="enabled">
            <bool>true</bool>
           </property>
@@ -96,14 +113,24 @@
            </font>
           </property>
           <property name="text">
-           <string>Picture viewer:</string>
+           <string>Document viewer:</string>
           </property>
           <property name="textInteractionFlags">
            <set>Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="9" column="5" colspan="3">
+         <widget class="QPushButton" name="btnClose">
+          <property name="text">
+           <string>Close</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <widget class="vmLineEdit" name="txtCfgScheme"/>
+        </item>
+        <item row="0" column="1">
          <widget class="vmLineEdit" name="txtCfgFileManager">
           <property name="minimumSize">
            <size>
@@ -120,7 +147,24 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
+        <item row="2" column="5">
+         <widget class="vmLineEdit" name="txtCfgPictureEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
          <widget class="QLabel" name="lblCfgJobsPrefix">
           <property name="enabled">
            <bool>true</bool>
@@ -146,236 +190,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="3">
-         <widget class="QToolButton" name="btnCfgUseDefaultConfigFile">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QToolButton" name="btnCfgChoosePictureViewer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="image">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="5">
-         <widget class="vmLineEdit" name="txtCfgDocumentViewer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="6">
-         <widget class="QToolButton" name="btnCfgChooseDocViewer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="okular">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="5">
-         <widget class="vmLineEdit" name="txtCfgPictureEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="5">
-         <widget class="vmLineEdit" name="txtCfgDropbox"/>
-        </item>
-        <item row="7" column="3">
-         <widget class="QToolButton" name="btnCfgUseDefaultDocEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="4">
-         <widget class="QLabel" name="lblCfgDropboxDir">
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Dropbox folder</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="6">
-         <widget class="QToolButton" name="btnCfgChooseDropboxDir">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="folder-open">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultDropboxDir">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="6">
-         <widget class="QToolButton" name="btnCfgChooseEstimatesDir">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="folder-documents">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="5">
-         <widget class="vmLineEdit" name="txtCfgEstimate">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="vmLineEdit" name="txtCfgConfigFile">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="4">
+        <item row="2" column="4">
          <widget class="QLabel" name="lblCfgPictureEditor">
           <property name="enabled">
            <bool>true</bool>
@@ -395,580 +210,7 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="6">
-         <widget class="QToolButton" name="btnCfgChooseDataFolder">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="folder">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="6">
-         <widget class="QToolButton" name="btnCfgChooseBaseDir">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="folder-open">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="5">
-         <widget class="vmLineEdit" name="txtCfgDataFolder">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QToolButton" name="btnCfgChooseConfigFile">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="text-plain">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultEstimatesDir">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="4">
-         <widget class="QLabel" name="lblCfgDataFolder">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Data folder:</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="2">
-         <widget class="QToolButton" name="btnCfgChooseDocEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="x-office-document">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QToolButton" name="btnCfgUseDefaultFileManager">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QToolButton" name="btnCfgChooseFileManager">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="system-file-manager">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultDataFolder">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="vmLineEdit" name="txtCfgJobsPrefix">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0">
-         <widget class="QLabel" name="lblCfgDocApp">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>MS Document editor:</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="4">
-         <widget class="QLabel" name="lblCfgDocumentViewer">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Document viewer:</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultPictureEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultBaseDir">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="3">
-         <widget class="QToolButton" name="btnCfgUseDefaultPictureViewer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="1">
-         <widget class="vmLineEdit" name="txtCfgDocEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="6">
-         <widget class="QToolButton" name="btnCfgChoosePictureEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Browse ...</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="gimp">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="vmLineEdit" name="txtCfgPictureViewer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QLabel" name="lblCfgConfigFile">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Config file:</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultDocumentViewer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="toolTip">
-           <string>Use default</string>
-          </property>
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="lblCfgFileManager">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>File manager</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="4">
-         <widget class="QLabel" name="lblCfgESTIMATE">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Estimates directory:</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="5" colspan="3">
-         <widget class="QPushButton" name="btnClose">
-          <property name="text">
-           <string>Close</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="lblCfgXlsApp">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Spreadsheet editor:</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
-         <widget class="vmLineEdit" name="txtCfgXlsEditor">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="2">
+        <item row="4" column="2">
          <widget class="QToolButton" name="btnCfgChooseXlsEditor">
           <property name="minimumSize">
            <size>
@@ -995,7 +237,556 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="3">
+        <item row="7" column="6">
+         <widget class="QToolButton" name="btnCfgChooseEstimatesDir">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="folder-documents">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="7">
+         <widget class="QToolButton" name="btnCfgUseDefaultReportsDir">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="7">
+         <widget class="QToolButton" name="btnCfgUseDefaultPictureEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Use default</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="lblCfgScheme">
+          <property name="text">
+           <string>Appearance scheme:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="2">
+         <widget class="QToolButton" name="btnCfgChooseDocEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Browse ...</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="x-office-document">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="vmLineEdit" name="txtCfgXlsEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="5">
+         <widget class="vmLineEdit" name="txtCfgJobsPrefix">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="vmLineEdit" name="txtCfgPictureViewer">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="7">
+         <widget class="QToolButton" name="btnCfgUseDefaultDocumentViewer">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Use default</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="6">
+         <widget class="QToolButton" name="btnCfgChooseBaseDir">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Browse ...</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="folder-open">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="lblCfgDocApp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>MS Document editor:</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QToolButton" name="btnCfgChoosePictureViewer">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Browse ...</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="image">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="7">
+         <widget class="QToolButton" name="btnCfgUseDefaultBaseDir">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Use default</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="4">
+         <widget class="QLabel" name="lblCfgReports">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Reports directory</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QToolButton" name="btnCfgUseDefaultFileManager">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Use default</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="6">
+         <widget class="QToolButton" name="btnCfgChooseReportsDir">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="folder-documents">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="3">
+         <widget class="QToolButton" name="btnCfgUseDefaultDocEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Use default</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="lblCfgPictureViewer">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Picture viewer:</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QToolButton" name="btnCfgChooseFileManager">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Browse ...</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="system-file-manager">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="lblCfgXlsApp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Spreadsheet editor:</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="4">
+         <widget class="QLabel" name="lblCfgESTIMATE">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Estimates directory:</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="6">
+         <widget class="QToolButton" name="btnCfgChooseDocViewer">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Browse ...</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="okular">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="2">
+         <widget class="QToolButton" name="btnCfgScheme">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset theme="preferences-desktop-theme">
+            <normaloff>.</normaloff>.</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="5">
+         <widget class="vmLineEdit" name="txtCfgEstimate">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QToolButton" name="btnCfgUseDefaultPictureViewer">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Use default</string>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="7">
+         <widget class="QToolButton" name="btnCfgUseDefaultEstimatesDir">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="5">
+         <widget class="vmLineEdit" name="txtCfgReports"/>
+        </item>
+        <item row="4" column="3">
          <widget class="QToolButton" name="btnCfgUseDefaultXlsEditor">
           <property name="minimumSize">
            <size>
@@ -1022,42 +813,8 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="6">
-         <widget class="QToolButton" name="btnCfgChooseReportsDir">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="folder-documents">
-            <normaloff>.</normaloff>.</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="5">
-         <widget class="vmLineEdit" name="txtCfgReports"/>
-        </item>
-        <item row="7" column="4">
-         <widget class="QLabel" name="lblCfgReports">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="font">
-           <font>
-            <weight>50</weight>
-            <bold>false</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Reports directory</string>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::TextSelectableByMouse</set>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="7">
-         <widget class="QToolButton" name="btnCfgUseDefaultReportsDir">
+        <item row="4" column="5">
+         <widget class="vmLineEdit" name="txtCfgDocumentViewer">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -1071,17 +828,40 @@
             <underline>false</underline>
            </font>
           </property>
+         </widget>
+        </item>
+        <item row="2" column="6">
+         <widget class="QToolButton" name="btnCfgChoosePictureEditor">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="toolTip">
+           <string>Browse ...</string>
+          </property>
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset resource="resources.qrc">
-            <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
+           <iconset theme="gimp">
+            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="lblCfgHTML">
+        <item row="0" column="0">
+         <widget class="QLabel" name="lblCfgFileManager">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="font">
            <font>
             <weight>50</weight>
@@ -1090,56 +870,52 @@
            </font>
           </property>
           <property name="text">
-           <string>HTML Database folder</string>
+           <string>File manager</string>
           </property>
           <property name="textInteractionFlags">
            <set>Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
-        <item row="8" column="1">
-         <widget class="vmLineEdit" name="txtCfgHtmlDir"/>
+        <item row="7" column="0">
+         <widget class="QLabel" name="lblCfgDropboxDir">
+          <property name="font">
+           <font>
+            <weight>50</weight>
+            <bold>false</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Dropbox folder</string>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::TextSelectableByMouse</set>
+          </property>
+         </widget>
         </item>
-        <item row="8" column="2">
-         <widget class="QToolButton" name="btnCfgChooseHtmlDir">
+        <item row="7" column="1">
+         <widget class="vmLineEdit" name="txtCfgDropbox"/>
+        </item>
+        <item row="7" column="2">
+         <widget class="QToolButton" name="btnCfgChooseDropboxDir">
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="html">
+           <iconset theme="folder-open">
             <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>
-        <item row="8" column="3">
-         <widget class="QToolButton" name="btnCfgHtmlDefault">
+        <item row="7" column="3">
+         <widget class="QToolButton" name="btnCfgUseDefaultDropboxDir">
           <property name="text">
            <string>...</string>
           </property>
           <property name="icon">
            <iconset resource="resources.qrc">
             <normaloff>:/resources/fill_default.png</normaloff>:/resources/fill_default.png</iconset>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="0">
-         <widget class="QLabel" name="lblCfgScheme">
-          <property name="text">
-           <string>Appearance scheme:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1">
-         <widget class="vmLineEdit" name="txtCfgScheme"/>
-        </item>
-        <item row="9" column="2">
-         <widget class="QToolButton" name="btnCfgScheme">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset theme="preferences-desktop-theme">
-            <normaloff>.</normaloff>.</iconset>
           </property>
          </widget>
         </item>

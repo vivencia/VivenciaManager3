@@ -381,16 +381,21 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 		uint i_col ( 0 );
 		QString new_formula;
 		vmTableItem* sheet_item ( nullptr ), *new_SheetItem ( nullptr );
-		
+
+		if ( !mb_TableInit )
+		{
+			m_nVisibleRows += n;
+			mTotalsRow += n;
+		}
+
 		for ( ; i_row < n; ++i_row )
 		{
 			QTableWidget::insertRow ( static_cast<int>( row + i_row ) );
 			for ( i_col = 0; i_col < colCount (); ++i_col )
 			{
 				new_SheetItem = new vmTableItem ( mCols[i_col].wtype, mCols[i_col].text_type, mCols[i_col].default_value, this );
-				new_SheetItem->setEditable ( isEditable () );
 				setItem ( static_cast<int>( row + i_row ), static_cast<int>( i_col ), new_SheetItem );
-				
+
 				if ( mbUseWidgets )
 				{
 					new_SheetItem->setButtonType ( mCols[i_col].button_type );
@@ -404,6 +409,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 					if ( !mCols[i_col].formula.isEmpty () )
 						new_SheetItem->setFormula ( mCols[i_col].formula, QString::number ( row + i_row ) );
 				}
+				new_SheetItem->setEditable ( isEditable () );
 			}
 			if ( rowInserted_func )
 				rowInserted_func ( row + i_row );
@@ -411,8 +417,6 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 		if ( !mb_TableInit )
 		{
-			m_nVisibleRows += n;
-			mTotalsRow += n;
 			if ( isPlainTable () )
 				return;
 
@@ -1753,13 +1757,13 @@ void vmTableWidget::textWidgetChanged ( const vmWidget* const sender )
 {
 	vmTableItem* const item ( const_cast<vmTableItem*>( sender->ownerItem () ) );
 	item->setText ( sender->text (), false, true );
-	if ( !mbDoNotUpdateCompleters )
-	{
+	//if ( !mbDoNotUpdateCompleters )
+	//{
 		// Update the runtime completers to make the entered text available for the current session, if not already in the model
 		// The runtime completer will, in turn, update the database. TODO: not only for the completers table, but all tables: a
 		// way to alter the data manually
-		APP_COMPLETERS ()->updateCompleter ( sender->text (), item->completerType () );
-	}
+	//	APP_COMPLETERS ()->updateCompleter ( sender->text (), item->completerType () );
+	//}
 	cellContentChanged ( item );
 }
 

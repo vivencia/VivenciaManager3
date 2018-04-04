@@ -109,7 +109,6 @@ void separateWindow::showSeparate ( const QString& window_title, const bool b_ex
 		if ( m_child )
 		{
 			mainLayout->insertWidget ( 0, m_child, 2 );
-			//mainLayout->insertStretch ( 1, 1 );
 			m_child->show ();
 			m_child->setFocus ();
 			resize ( mainLayout->sizeHint () );

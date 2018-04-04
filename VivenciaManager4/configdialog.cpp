@@ -28,8 +28,6 @@ void configDialog::setupUi ()
 	ui->setupUi ( this );
 	getAppSchemes ();
 
-	static_cast<void>( connect ( ui->btnCfgChooseDataFolder, &QToolButton::clicked, this, [&] () { return on_btnCfgChooseDataFolder_clicked (); } ) );
-	static_cast<void>( connect ( ui->btnCfgUseDefaultDataFolder, &QToolButton::clicked, this, [&] () { return on_btnCfgUseDefaultDataFolder_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnCfgChooseFileManager, &QToolButton::clicked, this, [&] () { return on_btnCfgChooseFileManager_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnCfgUseDefaultFileManager, &QToolButton::clicked, this, [&] () { return on_btnCfgUseDefaultFileManager_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnCfgChoosePictureViewer, &QToolButton::clicked, this, [&] () { return on_btnCfgChoosePictureViewer_clicked (); } ) );
@@ -50,12 +48,7 @@ void configDialog::setupUi ()
 	static_cast<void>( connect ( ui->btnCfgUseDefaultReportsDir, &QToolButton::clicked, this, [&] () { return on_btnCfgUseDefaultReportsDir_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnCfgChooseDropboxDir, &QToolButton::clicked, this, [&] () { return on_btnCfgChooseDropBoxDir_clicked (); } ) );
 	static_cast<void>( connect ( ui->btnCfgUseDefaultDropboxDir, &QToolButton::clicked, this, [&] () { return on_btnCfgUseDefaultDropBoxDir_clicked (); } ) );
-			
-			
-	ui->txtCfgConfigFile->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
-			return CONFIG ()->setAppConfigFile ( txtWidget->text () ); } );
-	ui->txtCfgDataFolder->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
-			return CONFIG ()->setAppDataDir ( txtWidget->text () ); } );
+
 	ui->txtCfgFileManager->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
 			return CONFIG ()->setFileManager ( txtWidget->text () ); } );
 	ui->txtCfgPictureViewer->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
@@ -74,15 +67,11 @@ void configDialog::setupUi ()
 			return CONFIG ()->setEstimatesDir ( txtWidget->text () ); } );
 	ui->txtCfgReports->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
 			return CONFIG ()->setReportsDir ( txtWidget->text () ); } );
-	ui->txtCfgHtmlDir->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
-			return CONFIG ()->setHTMLDir ( txtWidget->text () ); } );
 	ui->txtCfgDropbox->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
 			return CONFIG ()->setDropboxDir ( txtWidget->text () ); } );
 	ui->txtCfgScheme->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
 			return CONFIG ()->setAppScheme ( txtWidget->text () ); } );
 	
-	ui->txtCfgConfigFile->setEditable ( true );
-	ui->txtCfgDataFolder->setEditable ( true );
 	ui->txtCfgFileManager->setEditable ( true );
 	ui->txtCfgPictureViewer->setEditable ( true );
 	ui->txtCfgPictureEditor->setEditable ( true );
@@ -92,7 +81,6 @@ void configDialog::setupUi ()
 	ui->txtCfgJobsPrefix->setEditable ( true );
 	ui->txtCfgEstimate->setEditable ( true );
 	ui->txtCfgReports->setEditable ( true );
-	ui->txtCfgHtmlDir->setEditable ( true );
 	ui->txtCfgDropbox->setEditable ( true );
 	ui->txtCfgScheme->setEditable ( true );
 	
@@ -101,8 +89,6 @@ void configDialog::setupUi ()
 
 void configDialog::fillForms ()
 {
-	ui->txtCfgConfigFile->setText ( CONFIG ()->appConfigFile () );
-	ui->txtCfgDataFolder->setText ( CONFIG ()->appDataDir () );
 	ui->txtCfgFileManager->setText ( CONFIG ()->fileManager () );
 	ui->txtCfgPictureViewer->setText ( CONFIG ()->pictureViewer () );
 	ui->txtCfgPictureEditor->setText ( CONFIG ()->pictureEditor () );
@@ -112,7 +98,6 @@ void configDialog::fillForms ()
 	ui->txtCfgJobsPrefix->setText ( CONFIG ()->projectsBaseDir () );
 	ui->txtCfgEstimate->setText ( CONFIG ()->estimatesDirSuffix () );
 	ui->txtCfgReports->setText ( CONFIG ()->reportsDirSuffix () );
-	ui->txtCfgHtmlDir->setText ( CONFIG ()->HTMLDir () );
 	ui->txtCfgDropbox->setText ( CONFIG ()->dropboxDir () );
 	ui->txtCfgScheme->setText ( CONFIG ()->appScheme () );
 }
@@ -132,7 +117,7 @@ void configDialog::getAppSchemes ()
 			[&] () { return setAppScheme ( ActionPanelScheme::PanelStyleStr[ActionPanelScheme::PANEL_XP_1] ); } );
 	schemes_menu->addAction ( ActionPanelScheme::PanelStyleStr[ActionPanelScheme::PANEL_XP_2], this, 
 			[&] () { return setAppScheme ( ActionPanelScheme::PanelStyleStr[ActionPanelScheme::PANEL_XP_2] ); } );
-	
+
 	ui->btnCfgScheme->setMenu ( schemes_menu );
 }
 
@@ -140,36 +125,6 @@ void configDialog::setAppScheme ( const QString& style )
 {
 	ui->txtCfgScheme->setText ( style, true );
 	MAINWINDOW ()->changeSchemeStyle ( style );
-}
-
-void configDialog::on_btnCfgChooseConfigFile_clicked ()
-{
-	const QString filename = fileOps::getSaveFileName ( CONFIG ()->defaultConfigDir (), "*.*" );
-	if ( !filename.isEmpty () ) {
-		ui->txtCfgConfigFile->setText ( filename );
-		ui->txtCfgConfigFile->setFocus (); // use setFocus () for force a editingFinished () signal when the user does clicks away from the form
-	}
-}
-
-void configDialog::on_btnCfgUseDefaultConfigFile_clicked ()
-{
-	ui->txtCfgConfigFile->setText ( CONFIG ()->appConfigFile ( true ), true );
-	ui->txtCfgConfigFile->setFocus ();
-}
-
-void configDialog::on_btnCfgChooseDataFolder_clicked ()
-{
-	const QString dir ( fileOps::getExistingDir ( CONFIG ()->appDataDir ( true ) ) );
-	if ( !dir.isEmpty () ) {
-		ui->txtCfgDataFolder->setText ( dir, true );
-		ui->txtCfgDataFolder->setFocus ();
-	}
-}
-
-void configDialog::on_btnCfgUseDefaultDataFolder_clicked ()
-{
-	ui->txtCfgDataFolder->setText ( CONFIG ()->appDataDir ( true ), true );
-	ui->txtCfgDataFolder->setFocus ();
 }
 
 void configDialog::on_btnCfgChooseFileManager_clicked ()

@@ -82,14 +82,6 @@ configOps::~configOps ()
 	heap_del ( m_cfgFile );
 }
 
-const QString& configOps::getConfigValue ( const CFG_FIELDS field, const bool use_default ) const
-{
-	if ( use_default )
-		return DEFAULT_OPTS[field];
-	else
-		return readConfigFile ( field );
-}
-
 const QString& configOps::setApp ( const CFG_FIELDS field, const QString& app )
 {
 	mRetString = app.contains ( CHR_F_SLASH ) ? app : fileOps::appPath ( app );

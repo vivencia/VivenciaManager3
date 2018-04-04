@@ -40,21 +40,21 @@ restoreManager* Sys_Init::restore_instance ( nullptr );
 
 void deleteInstances ()
 {
-	heap_del ( Sys_Init::completers_instance );
-	heap_del ( Sys_Init::vdb_instance );
-	heap_del ( Sys_Init::config_instance );
-	heap_del ( Sys_Init::notify_instance );
-	heap_del ( Sys_Init::passwd_instance );
-	heap_del ( Sys_Init::editor_instance );
 	heap_del ( Sys_Init::mainwindow_instance );
+	heap_del ( Sys_Init::editor_instance );
+	heap_del ( Sys_Init::configdlg_instance );
 	heap_del ( Sys_Init::cp_instance );
 	heap_del ( Sys_Init::sup_instance );
 	heap_del ( Sys_Init::estimates_instance );
-	heap_del ( Sys_Init::calc_instance );
-	heap_del ( Sys_Init::configdlg_instance );
 	heap_del ( Sys_Init::qp_instance );
+	heap_del ( Sys_Init::calc_instance );
+	heap_del ( Sys_Init::completers_instance );
+	heap_del ( Sys_Init::vdb_instance );
 	heap_del ( Sys_Init::backup_instance );
 	heap_del ( Sys_Init::restore_instance );
+	heap_del ( Sys_Init::passwd_instance );
+	heap_del ( Sys_Init::notify_instance );
+	heap_del ( Sys_Init::config_instance );
 }
 //--------------------------------------STATIC-HELPER-FUNCTIONS---------------------------------------------
 
@@ -115,7 +115,7 @@ DB_ERROR_CODES Sys_Init::checkLocalSetup ()
 		}
 		else
 		{
-			const QString dataDir ( CONFIG ()->appDataDir ( true ) ); // the first time, use the default data dir. Later, the user might change it
+			const QString dataDir ( CONFIG ()->appDataDir () ); // the first time, use the default data dir. Later, the user might change it
 			fileOps::createDir ( dataDir );
 			fileOps::copyFile ( dataDir, installedDir + CHR_F_SLASH + STR_PROJECT_DOCUMENT_FILE );
 			fileOps::copyFile ( dataDir, installedDir + CHR_F_SLASH + STR_PROJECT_SPREAD_FILE );
@@ -137,7 +137,7 @@ void Sys_Init::checkSetup ()
 	if ( err_code != NO_ERR )
 		deInit ( err_code );
 
-	err_code = VDB ()->checkDatabase ();
+	err_code = VivenciaDB::checkDatabase ( VDB () );
 
 	switch ( err_code )
 	{
@@ -161,6 +161,7 @@ void Sys_Init::checkSetup ()
 void Sys_Init::init ( const QString& cmd )
 {
 	APP_START_CMD = cmd;
+	configOps::setAppName ( PROGRAM_NAME );
 	vmNumber::updateCurrentDate ();
 
 	config_instance = new configOps;
@@ -173,6 +174,7 @@ void Sys_Init::init ( const QString& cmd )
 	DBRecord::setCompleterManager ( completers_instance );
 	documentEditor::setCompleterManager ( completers_instance );
 	dbListItem::appStartingProcedures ();
+	vmDateEdit::appStartingProcedures ();
 
 	checkSetup ();
 	VDB ()->doPreliminaryWork ();
@@ -194,9 +196,12 @@ void Sys_Init::deInit ( int err_code )
 	
 	EXITING_PROGRAM = true;
 	dbListItem::appExitingProcedures ();
+	vmDateEdit::appExitingProcedures ();
 	BackupDialog::doDayBackup ();
 	deleteInstances ();
 	qApp->exit ( err_code );
+	// When the main event loop is not running, the above function does nothing, so we must actually exit, then
+	::exit ( err_code );
 }
 
 void Sys_Init::loadDataIntoMemory ()

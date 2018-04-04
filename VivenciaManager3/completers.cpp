@@ -177,18 +177,32 @@ void vmCompleters::encodeCompleterISRForSpreadSheet ( const DBRecord* dbrec )
 			info.fastAppendValue ( dbrec->isrValue ( static_cast<ITEMS_AND_SERVICE_RECORD> ( i ) ) );
 
 		const int row ( inList ( compositItemName, PRODUCT_OR_SERVICE ) );
+		completerRecord cr_rec;
+		bool ok ( false );
+		
 		if ( row == -1 )
 		{
 			model->appendRow ( new QStandardItem ( compositItemName ) );
 			model->setItem ( model->rowCount () - 1, 1, new QStandardItem ( info.toString () ) );
+			cr_rec.setAction ( ACTION_ADD );
+			setRecValue ( &cr_rec, FLD_CR_PRODUCT_OR_SERVICE_1, compositItemName );
+			ok = true;
 		}
 		else
 		{
 			const QModelIndex index ( model->index ( row, 1 ) );
 			model->setData ( index, info.toString () );
+			if ( cr_rec.readRecord  ( FLD_CR_PRODUCT_OR_SERVICE_1, compositItemName, false ) )
+			{
+				cr_rec.setAction ( ACTION_EDIT );
+				ok = true;
+			}
 		}
-		completerRecord cr_rec;
-		cr_rec.updateTable ( vmCompleters::ALL_CATEGORIES, compositItemName );
-		cr_rec.updateTable ( vmCompleters::PRODUCT_OR_SERVICE, info.toString () );
+		if ( ok )
+		{
+			setRecValue ( &cr_rec, FLD_CR_PRODUCT_OR_SERVICE_2, info.toString () );
+			cr_rec.saveRecord ();
+			const_cast<DBRecord*>(dbrec)->setCompleterUpdated ( true );
+		}
 	}
 }

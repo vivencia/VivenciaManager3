@@ -228,6 +228,8 @@ void MainWindow::setupClientPanel ()
 
 	saveClientWidget ( ui->chkClientActive, FLD_CLIENT_STATUS );
 	ui->chkClientActive->setLabel ( TR_FUNC ( "Currently active" ) );
+	ui->chkClientActive->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) { 
+		return txtClient_textAltered ( sender ); } );
 }
 
 void MainWindow::clientsListWidget_currentItemChanged ( vmListItem* item )
@@ -4042,7 +4044,7 @@ void MainWindow::calMain_activated ( const QDate& date, const bool bUserAction )
 	}
 }
 
-void MainWindow::updateCalendarView (const uint year, const uint month, const bool bUserAction )
+void MainWindow::updateCalendarView ( const uint year, const uint month, const bool bUserAction )
 {
 	QString price;
 	vmNumber date;
@@ -4057,9 +4059,8 @@ void MainWindow::updateCalendarView (const uint year, const uint month, const bo
 		{
 			uint jobid ( 0 );
 			Job job;
-			QString tooltip, day;
+			QString tooltip;
 			QTextCharFormat dateChrFormat;
-			ui->calMain->setDateTextFormat ( QDate ( 0, 0 ,0 ), QTextCharFormat () );
 
 			do
 			{
@@ -4067,18 +4068,20 @@ void MainWindow::updateCalendarView (const uint year, const uint month, const bo
 				if ( job.readRecord ( jobid ) )
 				{
 					date.fromTrustedStrDate ( str_rec->fieldValue ( 3 ), vmNumber::VDF_DB_DATE );
-					day = str_rec->fieldValue ( 2 );
 					dateChrFormat = ui->calMain->dateTextFormat ( date.toQDate () );
 					tooltip = dateChrFormat.toolTip ();
-					tooltip +=  QLatin1String ( "<br>Job ID: " ) + recStrValue ( &job, FLD_JOB_ID ) +
+					if ( !tooltip.contains ( QLatin1String ( "Job ID: " ) + recStrValue ( &job, FLD_JOB_ID ) ) )
+					{
+						tooltip +=  QLatin1String ( "<br>Job ID: " ) + recStrValue ( &job, FLD_JOB_ID ) +
 								QLatin1String ( "<br>Client: " ) + Client::clientName ( recStrValue ( &job, FLD_JOB_CLIENTID ) ) +
 								QLatin1String ( "<br>Job type: " ) + recStrValue ( &job, FLD_JOB_TYPE ) +
 								QLatin1String ( " (Day " ) + str_rec->fieldValue ( 2 ) + CHR_R_PARENTHESIS + QLatin1String ( "<br>" );
 
-					dateChrFormat.setForeground ( Qt::white );
-					dateChrFormat.setBackground ( QBrush ( Qt::darkBlue ) );
-					dateChrFormat.setToolTip ( tooltip );
-					ui->calMain->setDateTextFormat ( date.toQDate (), dateChrFormat );
+						dateChrFormat.setForeground ( Qt::white );
+						dateChrFormat.setBackground ( QBrush ( Qt::darkBlue ) );
+						dateChrFormat.setToolTip ( tooltip );
+						ui->calMain->setDateTextFormat ( date.toQDate (), dateChrFormat );
+					}
 				}
 				str_rec = &jobsPerDateList.next ();
 			} while ( str_rec->isOK () );
@@ -4513,7 +4516,7 @@ void MainWindow::receiveWidgetBack ( QWidget* widget )
 }
 
 inline void MainWindow::btnReportGenerator_clicked ()
-{ 
+{
 	if ( !EDITOR ()->isVisible () )
 		EDITOR ()->show ();
 

@@ -17,7 +17,7 @@
 #include "job.h"
 #endif
 
-const unsigned int TABLE_VERSION ( 'B' );
+const unsigned int TABLE_VERSION ( 'C' );
 
 constexpr DB_FIELD_TYPE CR_FIELDS_TYPE[CR_FIELD_COUNT] =
 {

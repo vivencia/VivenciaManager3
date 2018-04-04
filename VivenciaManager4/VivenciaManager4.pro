@@ -56,7 +56,8 @@ HEADERS += \
 	searchui.h \
 	separatewindow.h \
 	suppliersdlg.h \
-	system_init.h
+	system_init.h \
+    global.h
 
 FORMS += \
         mainwindow.ui \

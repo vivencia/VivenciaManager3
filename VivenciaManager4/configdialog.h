@@ -23,11 +23,7 @@ public:
 private:
 	void getAppSchemes ();
 	void setAppScheme ( const QString& style );
-	
-	void on_btnCfgChooseConfigFile_clicked ();
-	void on_btnCfgUseDefaultConfigFile_clicked ();
-	void on_btnCfgChooseDataFolder_clicked ();
-	void on_btnCfgUseDefaultDataFolder_clicked ();
+
 	void on_btnCfgChooseFileManager_clicked ();
 	void on_btnCfgUseDefaultFileManager_clicked ();
 	void on_btnCfgChoosePictureViewer_clicked ();
