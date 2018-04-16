@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	cfg1a.setIgnoreEvents ( true );
 	cfg1a.setFileName ( "/home/guilherme/Documents/VivenciaManager/Test vm components/TestConfigFile/cfg1.cfg" );
 	cfg1a.load ( true );
-	if ( !cfg1a.setWorkingSection ( "CFG1-SECTION2" ) )
+	if ( !cfg1a.setWorkingSection ( "CFG1-SECTION3" ) )
 	{
 		cfg1a.insertNewSection ( "CFG1-SECTION3" );
 		cfg1a.insertField ( "FIELD31", "VALUE1" );

@@ -1,5 +1,4 @@
 #include "stringrecord.h"
-#include "global.h"
 
 static const stringRecord emptyStringRecord;
 static const stringTable emptyStringTable;
@@ -304,7 +303,7 @@ const QString stringRecord::section ( const uint start_field, int end_field ) co
 		const int right ( idx );
 		return mData.mid ( left, right - left );
 	}
-	return emptyString;
+	return QString ();
 }
 
 
@@ -329,7 +328,7 @@ const QString stringRecord::fieldValue ( uint field ) const
 		} while ( true );
 		return mData.mid ( idx, idx2 - idx );
 	}
-	return emptyString;
+	return QString ();
 }
 
 void stringRecord::fastAppendValue ( const QString& value )
@@ -382,7 +381,7 @@ const QString stringRecord::fieldValue ( const QString& str_record, const uint f
 				idx = idx2 + 1;
 		}
 		else
-			return emptyString;
+			return QString ();
 	} while ( --fld >= 0 );
 	return str_record.mid ( idx, idx2 - idx );
 }

@@ -49,7 +49,7 @@ crashRestore::crashRestore ( const QString& str_id )
 	: m_statepos ( -1 ), mbInfoLoaded ( false )
 {
 	configOps config;
-	m_filename = config.appDataDir () + str_id + QLatin1String ( ".crash" );
+	m_filename = configOps::appDataDir () + str_id + QLatin1String ( ".crash" );
 	fileCrash = new dataFile ( m_filename );
 	// by using different separators we make sure there is no conflict with the data saved
 	fileCrash->setRecordSeparationChar ( public_table_sep, public_rec_sep );
@@ -77,7 +77,7 @@ bool crashRestore::needRestore ()
 	{
 		if ( fileOps::exists ( m_filename ).isOn () )
 		{
-			if ( fileCrash->load ( false ).isOn () )
+			if ( fileCrash->load ().isOn () )
 				ret = ( fileCrash->recCount () > 0 );
 		}
 		if ( ret )

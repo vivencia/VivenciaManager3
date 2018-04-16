@@ -16,7 +16,7 @@ const QString cfgSectionName ( QStringLiteral ( "SPELLCHECK" ) );
 const QString cfgFieldLanguage ( QStringLiteral ( "LANG" ) );
 
 spellCheck::spellCheck ()
-	: mChecker ( nullptr ), m_config ( new configOps ), mMenu ( nullptr ), menuEntrySelected_func ( nullptr )
+	: mChecker ( nullptr ), m_config ( new configOps ( configOps::appConfigFile (), "SpellCheckConfig" ) ), mMenu ( nullptr ), menuEntrySelected_func ( nullptr )
 {
 	getDictionariesPath ();
 	setDictionaryLanguage ( m_config->getValue ( cfgSectionName, cfgFieldLanguage ) );
@@ -169,7 +169,7 @@ void spellCheck::createDictionaryInterface ()
 
 bool spellCheck::setUserDictionary ()
 {
-	mUserDict = m_config->appDataDir () + QLatin1String ( "User_" ) + fileOps::fileNameWithoutPath ( mDictionary );
+	mUserDict = configOps::appDataDir () + QLatin1String ( "User_" ) + fileOps::fileNameWithoutPath ( mDictionary );
 	QFile file ( mUserDict );
 	if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
 	{

@@ -162,9 +162,8 @@ void Sys_Init::init ( const QString& cmd )
 {
 	APP_START_CMD = cmd;
 	configOps::setAppName ( PROGRAM_NAME );
-	vmNumber::updateCurrentDate ();
 
-	config_instance = new configOps;
+	config_instance = new configOps ( configOps::appConfigFile (), "MainWindowConfig" );
 	vdb_instance = new VivenciaDB;
 	completers_instance = new vmCompleters;
 	mainwindow_instance = new MainWindow;

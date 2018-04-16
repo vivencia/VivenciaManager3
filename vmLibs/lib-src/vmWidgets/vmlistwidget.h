@@ -44,11 +44,13 @@ public:
 	void setAlwaysEmitCurrentItemChanged ( const bool b_emit );
 	inline bool alwaysEmitCurrentItemChanged () const { return mbForceEmit; }
 	inline void setCallbackForCurrentItemChanged ( const std::function<void( vmListItem* current )>& func ) { mCurrentItemChangedFunc = func; }
+	inline void setCallbackForWidgetGettingFocus ( const std::function<void()>& func ) { mGotFocusFunc = func; }
 
 protected:
 	void resizeEvent ( QResizeEvent* e ) override;
+	void focusInEvent ( QFocusEvent* e ) override;
 	inline void setCurrentItem ( vmListItem* new_current_item ) { mPrevItem = mCurrentItem; mCurrentItem = new_current_item; }
-	
+
 private:
 	void rowSelected ( const int row, const int prev_row );
 	
@@ -56,6 +58,7 @@ private:
 	int mPrevRow;
 	vmListItem* mCurrentItem, *mPrevItem;
 	std::function<void( vmListItem* current )> mCurrentItemChangedFunc;
+	std::function<void()> mGotFocusFunc;
 };
 
 #endif // VMLISTWIDGET_H

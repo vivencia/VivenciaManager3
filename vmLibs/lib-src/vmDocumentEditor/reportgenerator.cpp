@@ -957,7 +957,7 @@ void reportGenerator::getPaidPayments ( const uint n_months_past, const uint mat
 	mCursor.movePosition ( QTextCursor::Up, QTextCursor::MoveAnchor, 1 );
 	TEXT_EDITOR_TOOLBAR ()->btnInsertBulletList_cliked ();
 	
-	vmNumber startDate ( vmNumber::currentDate );
+	vmNumber startDate ( vmNumber::currentDate () );
 	startDate.setDate ( 0, static_cast<int>(0 - n_months_past), 0, true );
 	dbCalendar* cal ( new dbCalendar );
 	const stringTable* paysList ( nullptr );
@@ -1116,7 +1116,7 @@ void reportGenerator::insertPaymentStubText ()
 	vmNumber total_paid ( 0.0 );
 	if ( job.readRecord ( static_cast<uint>( recIntValue ( rgPay, FLD_PAY_JOBID ) ) ) )
 	{
-		const int n_months ( vmNumber::currentDate.monthsSinceDate ( job.date ( FLD_JOB_ENDDATE ) ) );
+		const int n_months ( vmNumber::currentDate ().monthsSinceDate ( job.date ( FLD_JOB_ENDDATE ) ) );
 		if ( n_months < 0 )
 			return; // maybe issue an error message. But will only happen if job end date is in the future, and that is not supported yet
 		getPaidPayments ( static_cast<uint>( n_months ), static_cast<uint>( recIntValue ( rgPay, FLD_PAY_ID ) ), &total_paid );
@@ -1153,7 +1153,7 @@ void reportGenerator::insertPaymentStubText ()
 		mCursor.insertBlock ();
 		mCursor.insertText ( Job::jobAddress ( &job ) );
 		mCursor.insertBlock ();
-		mCursor.insertText ( vmNumber::currentDate.toDate ( vmNumber::VDF_LONG_DATE ) );
+		mCursor.insertText ( vmNumber::currentDate ().toDate ( vmNumber::VDF_LONG_DATE ) );
 		mCursor.insertBlock ();
 		mCursor.insertBlock ();
 		mCursor.insertText ( QStringLiteral ( "Para clareza, firmo o presente" ) );

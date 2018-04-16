@@ -5,7 +5,8 @@
 
 vmListWidget::vmListWidget ( QWidget* parent, const uint nRows )
 	: vmTableWidget ( parent ), mbIgnore ( true ), mbDestroyDelete ( false ), mbForceEmit ( false ), 
-	  mPrevRow ( -2 ), mCurrentItem ( nullptr ), mPrevItem ( nullptr ), mCurrentItemChangedFunc ( nullptr )
+	  mPrevRow ( -2 ), mCurrentItem ( nullptr ), mPrevItem ( nullptr ), mCurrentItemChangedFunc ( nullptr ),
+	  mGotFocusFunc ( nullptr )
 {
 	setIsList ();
 	static_cast<void>( createColumns ( 1 ) );
@@ -200,4 +201,11 @@ void vmListWidget::resizeEvent ( QResizeEvent* e )
 {
 	setColumnWidth ( 0, width () );
 	e->accept ();
+}
+
+void vmListWidget::focusInEvent ( QFocusEvent* e )
+{
+	e->accept ();
+	if ( mGotFocusFunc )
+		mGotFocusFunc ();
 }

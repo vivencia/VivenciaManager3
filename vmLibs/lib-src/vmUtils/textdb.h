@@ -32,7 +32,7 @@ public:
 	inline bool isEmpty () const { return m_file.size () <= 0; }
 
 	void clear ();
-	triStateType load ( const bool b_force );
+	triStateType load ();
 	void commit ();
 
 	void setText ( const QString& new_file_text );
@@ -56,6 +56,7 @@ protected:
 
 	bool m_open;
 	bool m_needsaving;
+	bool mb_needRechecking;
 	int64_t m_headerSize;
 	uint m_buffersize;
 	TF_TYPE m_type;
@@ -90,7 +91,7 @@ class configFile : public textFile
 
 public:
 	explicit configFile ();
-	configFile ( const QString& filename );
+	configFile ( const QString& filename, const QString& object_name );
 	virtual ~configFile ();
 
 	bool setWorkingSection ( const QString& section_name );
@@ -118,6 +119,7 @@ protected:
 private:
 	struct configFile_st;
 	PointersList<configFile_st*> cfgData;
+	QString m_objectName;
 };
 //--------------------------------------------CONFIG-FILE--------------------------------
 

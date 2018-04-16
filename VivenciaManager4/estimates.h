@@ -18,7 +18,7 @@ class estimateDlg : public QDialog
 
 public:
 	explicit estimateDlg ( QWidget* parent = nullptr );
-	virtual ~estimateDlg ();
+	virtual ~estimateDlg () override;
 	void showWindow ( const QString& client_name );
 
 private:

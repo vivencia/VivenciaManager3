@@ -2,14 +2,15 @@
 #define DOCUMENTEDITOR_H
 
 #include "documenteditorwindow.h"
-#include <vmStringRecord/stringrecord.h>
 
+#include <vmStringRecord/stringrecord.h>
 #include <QtWidgets/QMainWindow>
 
 class textEditor;
 class reportGenerator;
 class vmAction;
 class vmCompleters;
+class configOps;
 
 class QToolBar;
 class QTabWidget;
@@ -20,7 +21,7 @@ class documentEditor : public QMainWindow
 
 public:
 	explicit documentEditor ( QWidget* parent = nullptr );
-	virtual ~documentEditor ();
+	virtual ~documentEditor () override;
 	textEditor* startNewTextEditor ( textEditor* editor = nullptr );
 	reportGenerator* startNewReport ( const bool b_windowless = false );
 											
@@ -90,6 +91,8 @@ private:
 
 	bool mb_ClosingAllTabs;
 	stringRecord recentFilesList;
+
+	configOps* m_config;
 
 	static vmCompleters* completer_manager;
 	std::function<void()> editorWindowClosed_func;

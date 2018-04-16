@@ -10,10 +10,9 @@ class configDialog;
 
 enum CFG_FIELDS
 {
-	MAINWINDOW_GEOMETRY = 0, HOME_DIR, LAST_LOGGED_USER,
-	FILEMANAGER, PICTURE_VIEWER, PICTURE_EDITOR, DOC_VIEWER,
+	HOME_DIR = 0, LAST_LOGGED_USER, FILEMANAGER, PICTURE_VIEWER, PICTURE_EDITOR, DOC_VIEWER,
 	DOC_EDITOR, XLS_EDITOR, BASE_PROJECT_DIR, ESTIMATE_DIR, REPORT_DIR,
-	BACKUP_DIR, DROPBOX_DIR, APP_SCHEME, EMAIL_ADDRESS
+	BACKUP_DIR, DROPBOX_DIR, EMAIL_ADDRESS
 };
 
 static const QLatin1String STR_VIVENCIA_LOGO ( "vivencia.jpg" );
@@ -23,13 +22,13 @@ static const QLatin1String STR_PROJECT_SPREAD_FILE ( "spreadsheet.xlsx" );
 static const QLatin1String STR_PROJECT_PDF_FILE ( "projeto.pdf" );
 static const QString XDG_OPEN ( QStringLiteral ( "xdg-open" ) );
 
-constexpr const int CFG_CATEGORIES ( 16 );
+constexpr const int CFG_CATEGORIES ( 14 );
 
 class configOps
 {
 
 public:
-	explicit configOps ();
+	explicit configOps ( const QString& filename = QString (), const QString& object_name = QString () );
 	~configOps ();
 
 	/* IMPORTANT: setAppName () must be called early on any program startup routine. appName () must not
@@ -38,11 +37,10 @@ public:
 	inline static void setAppName ( const QString& app_name ) { configOps::_appName = app_name; }
 	inline static const QString& appName () { return configOps::_appName; }
 
-	const QString& getValue ( const QString& section_name, const QString& category_name ) const;
+	static inline void setDefaultSectionName ( const QString& name ) { configOps::m_defaultSectionName = name; }
+	static inline const QString& defaultSectionName () { return configOps::m_defaultSectionName; }
+	const QString& getValue ( const QString& section_name, const QString& category_name );
 	void setValue ( const QString& section_name, const QString& category_name, const QString& value );
-
-	void geometryFromConfigFile ( int* coords, const QString& windowName = QString (), const QString& sessionName = QString () );
-	void saveGeometry ( const int* coords, const QString& windowName = QString (), const QString& sessionName = QString () );
 
 	static const QString kdesu ( const QString& message );
 	static const QString gksu ( const QString& message, const QString& appname );
@@ -56,12 +54,12 @@ public:
 
 	inline const QString& loggedUser () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[LAST_LOGGED_USER] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[LAST_LOGGED_USER] );
 	}
 
 	inline const QString& backupDir () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[BACKUP_DIR] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[BACKUP_DIR] );
 	}
 
 	inline const QString& setBackupDir ( const QString& str )
@@ -71,7 +69,7 @@ public:
 
 	inline const QString& dropboxDir () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[DROPBOX_DIR] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[DROPBOX_DIR] );
 	}
 
 	inline const QString& setDropboxDir ( const QString& str )
@@ -79,20 +77,9 @@ public:
 		return setDir ( DROPBOX_DIR, str );
 	}
 
-	inline const QString& appScheme () const
-	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[APP_SCHEME] );
-	}
-
-	inline const QString& setAppScheme ( const QString& str )
-	{
-		setValue ( defaultSecsionName, configDefaultFieldsNames[APP_SCHEME], str );
-		return str;
-	}
-
 	inline const QString& fileManager () const
-	{//TODO
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[FILEMANAGER] );
+	{
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[FILEMANAGER] );
 	}
 
 	inline const QString& setFileManager ( const QString& str )
@@ -102,7 +89,7 @@ public:
 
 	inline const QString& pictureViewer () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[PICTURE_VIEWER] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[PICTURE_VIEWER] );
 	}
 
 	inline const QString& setPictureViewer ( const QString& str )
@@ -112,7 +99,7 @@ public:
 
 	inline const QString& pictureEditor () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[PICTURE_EDITOR] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[PICTURE_EDITOR] );
 	}
 
 	inline const QString& setPictureEditor ( const QString& str )
@@ -122,7 +109,7 @@ public:
 
 	inline const QString& universalViewer () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[DOC_VIEWER] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[DOC_VIEWER] );
 	}
 
 	inline const QString& setUniversalViewer ( const QString& str )
@@ -132,7 +119,7 @@ public:
 
 	inline const QString& docEditor () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[DOC_EDITOR] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[DOC_EDITOR] );
 	}
 
 	inline const QString& setDocEditor ( const QString& str )
@@ -142,7 +129,7 @@ public:
 
 	inline const QString& xlsEditor () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[XLS_EDITOR] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[XLS_EDITOR] );
 	}
 
 	inline const QString& setXlsEditor ( const QString& str )
@@ -152,7 +139,7 @@ public:
 
 	inline const QString& projectsBaseDir () const
 	{
-		return getValue ( defaultSecsionName, configDefaultFieldsNames[BASE_PROJECT_DIR] );
+		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[BASE_PROJECT_DIR] );
 	}
 
 	inline const QString& setProjectsBaseDir ( const QString& str )
@@ -210,6 +197,9 @@ public:
 		return QLatin1String ( ".txt" );
 	}
 
+	void getWindowGeometry ( QWidget* window, const QString& section_name, const QString& category_name );
+	void saveWindowGeometry ( QWidget* window, const QString& section_name, const QString& category_name );
+
 private:
 	friend const QString& getDefaultFieldValuesByCategoryName ( const QString& category_name );
 
@@ -220,7 +210,7 @@ private:
 	configFile* m_cfgFile;
 
 	static QString _appName;
-	static const QString defaultSecsionName;
+	static QString m_defaultSectionName;
 	static const QString configDefaultFieldsNames[CFG_CATEGORIES];
 };
 

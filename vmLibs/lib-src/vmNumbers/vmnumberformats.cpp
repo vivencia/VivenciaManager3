@@ -1108,7 +1108,7 @@ unsigned int vmNumber::daysInMonth ( const unsigned int month, const unsigned in
 
 const vmNumber& vmNumber::currentDate ()
 {
-	const time_t t ( time ( 0 ) );   // get time now
+	const time_t t ( time ( nullptr ) );   // get time now
 	const struct tm* __restrict now ( localtime( &t ) );
 	vmCurrentDateTime.nbr_upart[VM_IDX_DAY] = static_cast<unsigned int>( now->tm_mday );
 	vmCurrentDateTime.nbr_upart[VM_IDX_MONTH] = static_cast<unsigned int>( now->tm_mon + 1 );
@@ -1777,7 +1777,7 @@ const QString& vmNumber::formatTime ( const int hour, const int min, const int s
 
 const vmNumber& vmNumber::currentTime ()
 {
-	const time_t t ( time ( 0 ) );   // get time now
+	const time_t t ( time ( nullptr ) );   // get time now
 	const struct tm* __restrict now ( localtime( &t ) );
 	vmCurrentDateTime.nbr_part[VM_IDX_HOUR] = now->tm_hour;
 	vmCurrentDateTime.nbr_part[VM_IDX_MINUTE] = now->tm_min;

@@ -139,7 +139,7 @@ void dbStatisticsWorker::clientsPerYear ( const bool b_start )
 	{
 		vmNumber date, db_date;
 		uint year ( 2005 );
-		podList<uint> count_years ( 0, vmNumber::currentDate.year () - year + 1 );
+		podList<uint> count_years ( 0, vmNumber::currentDate ().year () - year + 1 );
 		do
 		{
 			date.setDate ( 1, 1, year = 2005 );
@@ -147,7 +147,7 @@ void dbStatisticsWorker::clientsPerYear ( const bool b_start )
 			do {
 				if ( date.year () == db_date.year () )
 				{
-					if ( year == vmNumber::currentDate.year () )
+					if ( year == vmNumber::currentDate ().year () )
 					{
 						if ( !b_start )
 						{
@@ -159,14 +159,14 @@ void dbStatisticsWorker::clientsPerYear ( const bool b_start )
 					break;
 				}
 				date.setDate ( 1, 1, static_cast<int>( ++year ), false );
-			} while ( year <= vmNumber::currentDate.year () );
+			} while ( year <= vmNumber::currentDate ().year () );
 		} while ( queryRes.next () );
 		
 		EMIT_INFO ( b_start ? TR_FUNC ( "\nNumber of new clients per year since 2005:\n" ) : TR_FUNC ( "\nNumber of lost clients per year since 2005:\n" ) );
 		const QString strtemplate ( b_start ? TR_FUNC ( "\t%1: %2 new additions;" ) : TR_FUNC ( "\t%1: %2 clients lost;" ) );
 		year = 2005;
 		uint count ( count_years.first () );
-		while ( year <= vmNumber::currentDate.year () )
+		while ( year <= vmNumber::currentDate ().year () )
 		{
 			
 			EMIT_INFO ( strtemplate.arg ( HTML_BOLD_FONT_11.arg ( QString::number ( year ) ), HTML_BOLD_ITALIC_UNDERLINE_11.arg ( QString::number ( count ) ) ) );
@@ -182,7 +182,7 @@ void dbStatisticsWorker::activeClientsPerYear ()
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT BEGINDATE,ENDDATE FROM CLIENTS" ), queryRes ) )
 	{
 		vmNumber date, start_date, end_date;
-		podList<uint> count_clients ( 0, vmNumber::currentDate.year () - 2005 + 1 );
+		podList<uint> count_clients ( 0, vmNumber::currentDate ().year () - 2005 + 1 );
 		do
 		{
 			start_date.fromTrustedStrDate ( queryRes.value ( 0 ).toString (), vmNumber::VDF_DB_DATE, false );
@@ -202,7 +202,7 @@ void dbStatisticsWorker::activeClientsPerYear ()
 		const QString strtemplate ( TR_FUNC ( "\t%1: %2;" ) );
 		uint year ( 2005 );
 		uint count ( count_clients.first () );
-		while ( year <= vmNumber::currentDate.year () )
+		while ( year <= vmNumber::currentDate ().year () )
 		{
 			
 			EMIT_INFO ( strtemplate.arg ( HTML_BOLD_FONT_11.arg ( QString::number ( year ) ), HTML_BOLD_ITALIC_UNDERLINE_11.arg ( QString::number ( count ) ) ) );
@@ -255,7 +255,7 @@ void dbStatisticsWorker::countJobs ()
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT STARTDATE,TIME,REPORT FROM JOBS" ), queryRes ) )
 	{
 		vmNumber db_date;
-		podList<uint> count_years ( 0, vmNumber::currentDate.year () - 2009 + 1 );
+		podList<uint> count_years ( 0, vmNumber::currentDate ().year () - 2009 + 1 );
 		VMList<vmNumber> count_hours ( vmNumber (), count_years.preallocNumber () );
 		podList<uint> count_days ( 0, count_years.preallocNumber () );
 		do
@@ -270,7 +270,7 @@ void dbStatisticsWorker::countJobs ()
 		EMIT_INFO ( TR_FUNC ( "\nNumber of jobs per year since 2009:\n" ) );
 		const QString strtemplate ( TR_FUNC ( "\tJobs in %1: %2. Total number of worked hours: %3 ( %4 ). Worked days: %5;" ) );
 		uint year ( 2009 );
-		while ( year <= vmNumber::currentDate.year () )
+		while ( year <= vmNumber::currentDate ().year () )
 		{
 			
 			EMIT_INFO ( strtemplate.arg ( HTML_BOLD_FONT_11.arg ( QString::number ( year ) ), 
@@ -289,7 +289,7 @@ void dbStatisticsWorker::jobPrices ()
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT STARTDATE,PRICE FROM JOBS" ), queryRes ) )
 	{
 		vmNumber db_date, price, total_income;
-		podList<uint> count_jobs ( 0, vmNumber::currentDate.year () - 2009 + 1 );
+		podList<uint> count_jobs ( 0, vmNumber::currentDate ().year () - 2009 + 1 );
 		VMList<vmNumber> count_price ( vmNumber (), count_jobs.preallocNumber () );
 		
 		do
@@ -308,7 +308,7 @@ void dbStatisticsWorker::jobPrices ()
 		
 		const QString strtemplate ( TR_FUNC ( "\tEstimated Income for the year %1: %2, in a total of %3 jobs:" ) );
 		uint year ( 2009 );
-		while ( year <= vmNumber::currentDate.year () )
+		while ( year <= vmNumber::currentDate ().year () )
 		{
 			
 			EMIT_INFO ( strtemplate.arg ( HTML_BOLD_FONT_11.arg ( QString::number ( year ) ), 
@@ -367,7 +367,7 @@ void dbStatisticsWorker::countPayments ()
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT INFO FROM PAYMENTS" ), queryRes ) )
 	{
 		vmNumber db_date, price, total_income;
-		VMList<vmNumber> count_price ( vmNumber (), vmNumber::currentDate.year () - 2009 + 1 );
+		VMList<vmNumber> count_price ( vmNumber (), vmNumber::currentDate ().year () - 2009 + 1 );
 		stringTable payInfo;
 		stringRecord* payRecord ( nullptr );
 		uint n_pays ( 0 );
@@ -395,7 +395,7 @@ void dbStatisticsWorker::countPayments ()
 		
 		const QString strtemplate ( TR_FUNC ( "\tActual income for the year %1: %2" ) );
 		uint year ( 2009 );
-		while ( year <= vmNumber::currentDate.year () )
+		while ( year <= vmNumber::currentDate ().year () )
 		{
 			
 			EMIT_INFO ( strtemplate.arg ( HTML_BOLD_FONT_11.arg ( QString::number ( year ) ), 

@@ -887,69 +887,92 @@ void vmLineEdit::focusOutEvent ( QFocusEvent* e )
 //------------------------------------------------VM-LINE-EDIT-BUTTON-----------------------------------------------
 vmLineEditWithButton::vmLineEditWithButton ( QWidget* parent )
 	: QWidget ( parent ), vmWidget ( WT_LINEEDIT_WITH_BUTTON ), mLineEdit ( new vmLineEdit ),
-	  mButton ( new QToolButton ), mCalc ( nullptr ), buttonClicked_func ( nullptr )
+	  mCalc ( nullptr ), buttonsList ( 1 )
 {
 	setWidgetPtr ( static_cast<QWidget*>( this ) );
-	QHBoxLayout *mainLayout ( new QHBoxLayout );
+	mainLayout = new QHBoxLayout;
 	mainLayout->setMargin ( 0 );
 	mainLayout->setSpacing ( 1 );
 	mainLayout->addWidget ( mLineEdit, 1 );
-	mainLayout->addWidget ( mButton );
 	setLayout ( mainLayout );
+	buttonsList.setAutoDeleteItem ( true );
 }
 
 vmLineEditWithButton::~vmLineEditWithButton ()
 {
 	delete mLineEdit;
-	delete mButton;
 	heap_del ( mCalc );
 }
 
-void vmLineEditWithButton::setButtonType ( const LINE_EDIT_BUTTON_TYPE type )
+void vmLineEditWithButton::setButtonType ( const uint btn_idx, const LINE_EDIT_BUTTON_TYPE type )
 {
-	mBtnType = type;
-	switch ( mBtnType )
+	buttons_st* button ( addButton ( btn_idx ) );
+
+	button->mBtnType = type;
+	switch ( type )
 	{
 		case LEBT_CALC_BUTTON: 
-			mButton->setIcon ( ICON ( "accessories-calculator" ) ); 
-			mButton->setToolTip ( TR_FUNC ( "Use calculator" ) );
+			button->mButton->setIcon ( ICON ( "accessories-calculator" ) );
+			button->mButton->setToolTip ( TR_FUNC ( "Use calculator" ) );
 		break;
 		case LEBT_DIALOG_BUTTON: 
-			mButton->setIcon ( ICON ( "folder-templates" ) );
-			mButton->setToolTip ( TR_FUNC ( "Select File" ) );
+			button->mButton->setIcon ( ICON ( "folder-templates" ) );
+			button->mButton->setToolTip ( TR_FUNC ( "Select File" ) );
 		break;
 		case LEBT_NO_BUTTON:
 		case LEBT_CUSTOM_BUTTOM:
 		break;
 	}
-	static_cast<void>( connect ( mButton, &QToolButton::clicked, this, [&] () { return execButtonAction (); } ) );
-	//mButton->setEnabled ( isEditable () );
+	static_cast<void>( connect ( button->mButton, &QToolButton::clicked, this, [&,button] ( const uint ) { return execButtonAction ( button->idx ); } ) );
+}
+
+void vmLineEditWithButton::setButtonIcon ( const uint btn_idx, const QIcon& icon )
+{
+	buttons_st* button ( addButton ( btn_idx ) );
+	button->mButton->setIcon ( icon );
+}
+
+void vmLineEditWithButton::setButtonTooltip ( const uint btn_idx, const QString& str_tip )
+{
+	buttons_st* button ( addButton ( btn_idx ) );
+	button->mButton->setToolTip ( str_tip );
+}
+
+void vmLineEditWithButton::setCallbackForButtonClicked ( const uint btn_idx, const std::function<void()>& func )
+{
+	buttons_st* button ( addButton ( btn_idx ) );
+	button->buttonClicked_func = func;
 }
 
 void vmLineEditWithButton::setEditable ( const bool editable )
 {
 	mLineEdit->setEditable ( editable );
-	mButton->setEnabled ( editable );
 	vmWidget::setEditable ( editable );
+	for ( uint i ( 0 ); i < buttonsList.count (); ++i )
+		buttonsList.at ( i )->mButton->setEnabled ( editable );
 }
 
-void vmLineEditWithButton::execButtonAction ()
+void vmLineEditWithButton::execButtonAction ( const uint i )
 {
 	mLineEdit->mbButtonClicked = true;
-	if ( buttonClicked_func != nullptr )
+	buttons_st* button ( buttonsList.at ( i ) );
+	if ( button == nullptr )
+		return;
+
+	if ( button->buttonClicked_func != nullptr )
 	{
-		buttonClicked_func ();
+		button->buttonClicked_func ();
 		return;
 	}
 	
-	switch ( mBtnType )
+	switch ( button->mBtnType )
 	{
 		case LEBT_CALC_BUTTON:
 		{
 			vmNumber price ( mLineEdit->text (), VMNT_DOUBLE );
 			if ( mCalc == nullptr )
 				mCalc = new simpleCalculator;
-			mCalc->showCalc ( price.toStrDouble (), mButton->mapToGlobal ( mButton->pos () ), mLineEdit, nullptr );
+			mCalc->showCalc ( price.toStrDouble (), button->mButton->mapToGlobal ( button->mButton->pos () ), mLineEdit, nullptr );
 		}
 		break;
 		case LEBT_DIALOG_BUTTON:
@@ -959,6 +982,20 @@ void vmLineEditWithButton::execButtonAction ()
 		case LEBT_NO_BUTTON:
 		break;
 	}
+}
+
+vmLineEditWithButton::buttons_st* vmLineEditWithButton::addButton ( const uint i )
+{
+	if ( i >= buttonsList.count () )
+	{
+		buttons_st* new_button ( new buttons_st );
+		new_button->mButton = new QToolButton;
+		new_button->mButton->setEnabled ( isEditable () );
+		mainLayout->addWidget ( new_button->mButton );
+		new_button->idx = i;
+		buttonsList.insert ( i, new_button );
+	}
+	return buttonsList.at ( i );
 }
 //------------------------------------------------VM-LINE-EDIT-BUTTON------------------------------------------------
 

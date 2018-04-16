@@ -25,7 +25,7 @@ class companyPurchasesUI : public QDialog
 
 public:
 	explicit companyPurchasesUI ( QWidget* parent = nullptr );
-	virtual ~companyPurchasesUI ();
+	virtual ~companyPurchasesUI () override;
 	void showSearchResult ( dbListItem* item, const bool bshow );
 	void showSearchResult_internal ( const bool bshow );
 

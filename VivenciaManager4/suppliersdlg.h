@@ -21,7 +21,7 @@ friend class VivenciaDB;
 
 public:
 	explicit suppliersDlg ();
-	virtual ~suppliersDlg ();
+	virtual ~suppliersDlg () override;
 
 	void displaySupplier ( const QString& supName, const bool b_showdlg );
 	static void supplierInfo ( const QString& name, QString& info );

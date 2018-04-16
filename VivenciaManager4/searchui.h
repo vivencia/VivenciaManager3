@@ -25,7 +25,7 @@ class searchUI : public QDialog
 {
 
 public:
-	virtual ~searchUI ();
+	virtual ~searchUI () override;
 
 	static void init () {
 		if ( searchUI::s_instance == nullptr )

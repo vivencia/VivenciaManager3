@@ -20,8 +20,11 @@
 #include <QtWidgets/QStatusBar>
 
 static const int MAX_RECENT_FILES ( 6 );
-static const auto CFG_FIELD_RECENT_FILES ( QStringLiteral ( "RECENT" ) );
 static const auto extSep ( QStringLiteral ( "*." ) );
+
+static const QString de_configSectionName ( QStringLiteral ( "DOCUMENT_EDITOR" ) );
+static const QString de_configCategoryWindowGeometry ( QStringLiteral ( "WINDOW_GEOMETRY" ) );
+static const QString de_configCategoryRecentFiles ( QStringLiteral ( "RECENT_FILES" ) );
 
 inline static const QString buildFilter () { return	documentEditorWindow::filter () + QLatin1String ( ";;" ) + textEditor::filter () + 
 			QLatin1String ( ";;" ) + reportGenerator::filter (); }
@@ -38,10 +41,12 @@ inline const QString configFileName ()
 documentEditor::~documentEditor ()
 {
 	static_cast<void>( disconnect () );
+	heap_del ( m_config );
 }
 
 documentEditor::documentEditor ( QWidget* parent )
-	: QMainWindow ( parent ), mb_ClosingAllTabs ( false ), recentFilesList ( QString (), MAX_RECENT_FILES )
+	: QMainWindow ( parent ), mb_ClosingAllTabs ( false ), recentFilesList ( QString (), MAX_RECENT_FILES ),
+	  m_config ( nullptr )
 {
 	editorWindowClosed_func = [] () { return; };
 	setDockNestingEnabled ( true );
@@ -54,6 +59,8 @@ documentEditor::documentEditor ( QWidget* parent )
 	static_cast<void>( connect ( tabDocuments, &QTabWidget::currentChanged, this, [&] ( const int index ) { return updateMenus ( index ); } ) );
 	static_cast<void>( connect ( tabDocuments, &QTabWidget::tabCloseRequested, this, [&] ( const int index ) { return closeTab ( index ); } ) );
 
+	m_config = new configOps;
+
 	createActions ();
 	createMenus ();
 	createToolBars ();
@@ -63,7 +70,7 @@ documentEditor::documentEditor ( QWidget* parent )
 	setWindowTitle ( configOps::appName () + TR_FUNC ( " - Document Editor" ) );
 	setWindowIcon ( ICON ( "report" ) );
 
-	resize ( 500, 450 );
+	m_config->getWindowGeometry ( this,	de_configSectionName, de_configCategoryWindowGeometry );
 }
 
 void documentEditor::addDockWindow ( Qt::DockWidgetArea area, QDockWidget* dockwidget )
@@ -168,7 +175,7 @@ void documentEditor::createMenus ()
 
 	recentFilesSubMenu = new QMenu ( TR_FUNC ( "Recent documents" ) );
 	static_cast<void>( connect ( recentFilesSubMenu, &QMenu::triggered, this, [&] ( QAction* action ) { return openRecentFile ( action ); } ) );
-	recentFilesList.fromString ( configOps::readConfig ( configFileName (), CFG_FIELD_RECENT_FILES ) );
+	recentFilesList.fromString ( m_config->getValue ( de_configSectionName, de_configCategoryRecentFiles ) );
 	if ( recentFilesList.first () )
 	{
 		do {
@@ -352,12 +359,16 @@ void documentEditor::activatePreviousTab ()
 
 void documentEditor::setCompleterManager ( vmCompleters* const completer )
 {
-	heap_del ( documentEditor::completer_manager );
-	documentEditor::completer_manager = completer;
+	if ( documentEditor::completer_manager != completer )
+	{
+		heap_del ( documentEditor::completer_manager );
+		documentEditor::completer_manager = completer;
+	}
 }
 
 void documentEditor::closeEvent ( QCloseEvent* ce )
 {
+	m_config->saveWindowGeometry ( this, de_configSectionName, de_configCategoryWindowGeometry );
 	closeAllTabs ();
 	ce->accept ();
 	editorWindowClosed_func ();
@@ -535,7 +546,7 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 	if ( b_AddToList )
 	{
 		recentFilesList.fastAppendValue ( filename );
-		configOps::writeConfig ( configFileName (), CFG_FIELD_RECENT_FILES, recentFilesList.toString () );
+		m_config->setValue ( de_configSectionName, de_configCategoryRecentFiles, recentFilesList.toString () );
 	}
 }
 

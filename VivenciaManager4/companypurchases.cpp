@@ -180,7 +180,7 @@ void companyPurchasesUI::setupUI ()
 
 	saveWidget ( ui->txtCPPayValue, FLD_CP_PAY_VALUE );
 	ui->txtCPPayValue->lineControl ()->setTextType ( vmLineEdit::TT_PRICE );
-	ui->txtCPPayValue->setButtonType ( vmLineEditWithButton::LEBT_CALC_BUTTON );
+	ui->txtCPPayValue->setButtonType ( 0, vmLineEditWithButton::LEBT_CALC_BUTTON );
 	ui->txtCPPayValue->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
 			return txtCP_textAltered ( sender ); } );
 	ui->txtCPPayValue->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {

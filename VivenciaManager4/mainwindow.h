@@ -9,6 +9,8 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QSystemTrayIcon>
 
+#include <functional>
+
 class crashRestore;
 class clientListItem;
 class jobListItem;
@@ -17,7 +19,6 @@ class payListItem;
 class buyListItem;
 class separateWindow;
 class machinesDlg;
-class vmAction;
 class vmAction;
 class vmNotify;
 class vmListWidget;
@@ -29,23 +30,21 @@ class dbListItem;
 class dbTableView;
 class dbStatistics;
 
-class QDateEdit;
 class QEvent;
 class QKeyEvent;
-class QComboBox;
 class QMenu;
 class QSystemTrayIcon;
 class QToolButton;
-class QLineEdit;
-class QFrame;
-class QLabel;
-class QListWidgetItem;
-class QTimer;
 class QTabWidget;
 class QDialog;
 
 namespace Ui
 {
+
+static const QString mw_configSectionName ( QStringLiteral ( "MAIN_WINDOW" ) );
+static const QString mw_configCategoryWindowGeometry ( QStringLiteral ( "WINDOW_GEOMETRY" ) );
+static const QString mw_configCategoryAppScheme ( QStringLiteral ( "APP_SCHEME" ) );
+
 class MainWindow;
 }
 
@@ -59,7 +58,7 @@ public:
 	enum TAB_INDEXES { TI_MAIN = 0, TI_CALENDAR, TI_STATISTICS, TI_TABLEWIEW };
 
 	explicit MainWindow ();
-	virtual ~MainWindow ();
+	virtual ~MainWindow () override;
 	
 	inline Ui::MainWindow* UserInterface () const { return ui; }
 
@@ -235,7 +234,6 @@ public:
 //----------------------------------SETUP-CUSTOM-CONTROLS-NAVIGATION--------------------------------------
 	void setupCustomControls ();
 	void restoreCrashedItems ( crashRestore* const crash, clientListItem* &client_item, jobListItem* &job_item, buyListItem* &buy_item );
-	uint lastViewedRecord ( const uint table ) const;
 	void restoreLastSession ();
 	void searchCallbackSelector ( const QKeyEvent* ke );
 	void reOrderTabSequence ();
@@ -309,7 +307,6 @@ private:
 	QString m_qpStrId;
 
 	//---------------------------CUSTOM-WIDGETS-------------------------------------
-	QTimer* timerUpdate;
 	separateWindow* sepWin_JobPictures;
 	separateWindow* sepWin_JobReport;
 
@@ -384,10 +381,6 @@ private:
 	void showJobImageInWindow ( const bool maximized );
 	void btnJobSeparateReportWindow_clicked ( const bool checked );
 //--------------------------------------------JOB-----------------------------------------------------------
-
-//-----------------------------------------------DATE-BTNS--------------------------------------------------
-	void updateProgramDate ();
-//----------------------------------------------CURRENT-DATE-BTNS-------------------------------------------
 
 //--------------------------------------------SLOTS---------------------------------------------------------
 	void receiveWidgetBack ( QWidget* widget );

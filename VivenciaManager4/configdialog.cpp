@@ -26,6 +26,7 @@ configDialog::~configDialog ()
 void configDialog::setupUi ()
 {
 	ui->setupUi ( this );
+	configOps::setDefaultSectionName ( "APP_DEFAULTS" );
 	getAppSchemes ();
 
 	static_cast<void>( connect ( ui->btnCfgChooseFileManager, &QToolButton::clicked, this, [&] () { return on_btnCfgChooseFileManager_clicked (); } ) );
@@ -70,7 +71,7 @@ void configDialog::setupUi ()
 	ui->txtCfgDropbox->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
 			return CONFIG ()->setDropboxDir ( txtWidget->text () ); } );
 	ui->txtCfgScheme->setCallbackForContentsAltered ( [&] (const vmWidget* txtWidget ) {
-			return CONFIG ()->setAppScheme ( txtWidget->text () ); } );
+			return CONFIG ()->setValue ( Ui::mw_configSectionName, Ui::mw_configCategoryAppScheme, txtWidget->text () ); } );
 	
 	ui->txtCfgFileManager->setEditable ( true );
 	ui->txtCfgPictureViewer->setEditable ( true );
@@ -84,7 +85,7 @@ void configDialog::setupUi ()
 	ui->txtCfgDropbox->setEditable ( true );
 	ui->txtCfgScheme->setEditable ( true );
 	
-	ui->btnClose->connect ( ui->btnClose, &QPushButton::clicked, this, [&] ( const bool ) { return close (); } );
+	static_cast<void>( ui->btnClose->connect ( ui->btnClose, &QPushButton::clicked, this, [&] ( const bool ) { return close (); } ) );
 }
 
 void configDialog::fillForms ()
@@ -99,7 +100,7 @@ void configDialog::fillForms ()
 	ui->txtCfgEstimate->setText ( CONFIG ()->estimatesDirSuffix () );
 	ui->txtCfgReports->setText ( CONFIG ()->reportsDirSuffix () );
 	ui->txtCfgDropbox->setText ( CONFIG ()->dropboxDir () );
-	ui->txtCfgScheme->setText ( CONFIG ()->appScheme () );
+	ui->txtCfgScheme->setText ( CONFIG ()->getValue ( Ui::mw_configSectionName, Ui::mw_configCategoryAppScheme ) );
 }
 
 void configDialog::getAppSchemes ()
@@ -139,7 +140,7 @@ void configDialog::on_btnCfgChooseFileManager_clicked ()
 
 void configDialog::on_btnCfgUseDefaultFileManager_clicked ()
 {
-	ui->txtCfgFileManager->setText ( CONFIG ()->fileManager ( true ), true );
+	ui->txtCfgFileManager->setText ( CONFIG ()->fileManager (), true );
 	ui->txtCfgFileManager->setFocus ();
 }
 
@@ -155,7 +156,7 @@ void configDialog::on_btnCfgChoosePictureViewer_clicked ()
 
 void configDialog::on_btnCfgUseDefaultPictureViewer_clicked ()
 {
-	ui->txtCfgPictureViewer->setText ( CONFIG ()->pictureViewer ( true ), true );
+	ui->txtCfgPictureViewer->setText ( CONFIG ()->pictureViewer (), true );
 	ui->txtCfgPictureViewer->setFocus ();
 }
 
@@ -171,7 +172,7 @@ void configDialog::on_btnCfgChoosePictureEditor_clicked ()
 
 void configDialog::on_btnCfgUseDefaultPictureEditor_clicked ()
 {
-	ui->txtCfgPictureEditor->setText ( CONFIG ()->pictureEditor ( true ), true );
+	ui->txtCfgPictureEditor->setText ( CONFIG ()->pictureEditor (), true );
 	ui->txtCfgPictureEditor->setFocus ();
 }
 
@@ -187,7 +188,7 @@ void configDialog::on_btnCfgChooseDocViewer_clicked ()
 
 void configDialog::on_btnCfgUseDefaultDocumentViewer_clicked ()
 {
-	ui->txtCfgDocumentViewer->setText ( CONFIG ()->universalViewer ( true ), true );
+	ui->txtCfgDocumentViewer->setText ( CONFIG ()->universalViewer (), true );
 	ui->txtCfgDocumentViewer->setFocus ();
 }
 
@@ -203,7 +204,7 @@ void configDialog::on_btnCfgChooseDocEditor_clicked ()
 
 void configDialog::on_btnCfgUseDefaultDocEditor_clicked ()
 {
-	ui->txtCfgDocEditor->setText ( CONFIG ()->docEditor ( true ), true );
+	ui->txtCfgDocEditor->setText ( CONFIG ()->docEditor (), true );
 	ui->txtCfgDocEditor->setFocus ();
 }
 
@@ -219,7 +220,7 @@ void configDialog::on_btnCfgChooseXlsEditor_clicked ()
 
 void configDialog::on_btnCfgUseDefaultXlsEditor_clicked ()
 {
-	ui->txtCfgXlsEditor->setText ( CONFIG ()->docEditor ( true ), true );
+	ui->txtCfgXlsEditor->setText ( CONFIG ()->docEditor (), true );
 	ui->txtCfgXlsEditor->setFocus ();
 }
 
@@ -235,13 +236,13 @@ void configDialog::on_btnCfgChooseBaseDir_clicked ()
 
 void configDialog::on_btnCfgUseDefaultBaseDir_clicked ()
 {
-	ui->txtCfgJobsPrefix->setText ( CONFIG ()->projectsBaseDir ( true ), true );
+	ui->txtCfgJobsPrefix->setText ( CONFIG ()->projectsBaseDir (), true );
 	ui->txtCfgJobsPrefix->setFocus ();
 }
 
 void configDialog::on_btnCfgChooseESTIMATEDir_clicked ()
 {
-	const QString dir ( fileOps::getExistingDir ( CONFIG ()->projectsBaseDir ( true ) + CONFIG ()->estimatesDirSuffix () ) );
+	const QString dir ( fileOps::getExistingDir ( CONFIG ()->projectsBaseDir () + CONFIG ()->estimatesDirSuffix () ) );
 	if ( !dir.isEmpty () )
 	{
 		ui->txtCfgEstimate->setText ( dir, true );
@@ -257,7 +258,7 @@ void configDialog::on_btnCfgUseDefaultESTIMATEDir_clicked ()
 
 void configDialog::on_btnCfgChooseReportsDir_clicked ()
 {
-	const QString dir ( fileOps::getExistingDir ( CONFIG ()->projectsBaseDir ( true ) + CONFIG ()->reportsDirSuffix () ) );
+	const QString dir ( fileOps::getExistingDir ( CONFIG ()->projectsBaseDir () + CONFIG ()->reportsDirSuffix () ) );
 	if ( !dir.isEmpty () )
 	{
 		ui->txtCfgReports->setText ( dir, true );
@@ -283,6 +284,6 @@ void configDialog::on_btnCfgChooseDropBoxDir_clicked ()
 
 void configDialog::on_btnCfgUseDefaultDropBoxDir_clicked ()
 {
-	ui->txtCfgDropbox->setText ( CONFIG ()->dropboxDir ( true ), true );
+	ui->txtCfgDropbox->setText ( CONFIG ()->dropboxDir (), true );
 	ui->txtCfgDropbox->setFocus ();
 }

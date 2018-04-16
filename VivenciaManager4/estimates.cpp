@@ -193,8 +193,8 @@ static QString getNameFromReportFile ( const QString& filename )
 
 static QString getDateFromReportFile ( const QString& filename )
 {
-	const vmNumber date ( fileOps::modifiedDate ( filename ) );
-	if ( !date.isNull () )
+	vmNumber date, time;
+	if ( fileOps::modifiedDateTime ( filename, date, time ) )
 		return date.toString ();
 	return emptyString;
 }
@@ -913,7 +913,7 @@ void estimateDlg::estimateActions ( QAction* action )
 				files.append ( f_info );
 			}
 			
-			estimateName.prepend ( vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
+			estimateName.prepend ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
 			if ( clientName == nonClientStr )
 				estimateName.prepend ( nonClientEstimatesPrefix );
 
@@ -981,7 +981,7 @@ void estimateDlg::reportActions ( QAction* action )
 			files.append ( f_info );
 		}
 
-		reportName.prepend ( vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
+		reportName.prepend ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
 		if ( clientName == nonClientStr )
 			reportName.prepend ( nonClientReportsPrefix );
 

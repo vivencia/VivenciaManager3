@@ -60,7 +60,7 @@ friend class vmLineEdit;
 public:
 	explicit vmTableWidget ( QWidget* parent = nullptr ); // constructor for promoted widgets used by QtDesigner
 	vmTableWidget ( const uint rows, QWidget* parent = nullptr );
-	virtual ~vmTableWidget ();
+	virtual ~vmTableWidget () override;
 
 	vmTableColumn* createColumns ( const uint nCols );
 	void initTable ( const uint rows );

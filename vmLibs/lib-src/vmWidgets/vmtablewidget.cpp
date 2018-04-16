@@ -275,7 +275,7 @@ void vmTableWidget::insertRow ( const uint row, const uint n )
 
 void vmTableWidget::removeRow ( const uint row, const uint n )
 {
-	if ( static_cast<int>( row ) < totalsRow () )
+	if ( static_cast<int>( row ) < rowCount () )
 	{
 		uint actual_n ( 0 );
 		uint i_row ( 0 );
@@ -288,6 +288,9 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 				if ( !rowRemoved_func ( row ) )
 					continue;
 			}
+			if ( !isPlainTable () && row >= static_cast<uint>( totalsRow () ) )
+				continue;
+
 			QTableWidget::removeRow ( static_cast<int>( row ) );
 			actual_n++;
 		}
@@ -295,10 +298,12 @@ void vmTableWidget::removeRow ( const uint row, const uint n )
 		if ( actual_n > 0 )
 		{
 			m_nVisibleRows -= actual_n;
-			if ( static_cast<int>( row + actual_n ) >= lastUsedRow () )
-				setLastUsedRow ( static_cast<int>( row - 1 ) );
+			if ( static_cast<int>( row ) <= lastUsedRow () )
+				m_lastUsedRow -= actual_n;
+			//if ( static_cast<int>( row + actual_n ) >= lastUsedRow () )
+			//	setLastUsedRow ( static_cast<int>( row - 1 ) );
 			
-			if ( !mbPlainTable )
+			if ( !isPlainTable () )
 			{
 				mTotalsRow -= actual_n;
 				vmTableItem* sheet_item ( nullptr );
@@ -691,7 +696,7 @@ void vmTableWidget::setCellWidget ( vmTableItem* const sheet_item )
 		break;
 		case WT_LINEEDIT_WITH_BUTTON:
 			widget = new vmLineEditWithButton;
-			static_cast<vmLineEditWithButton*>( widget )->setButtonType ( sheet_item->buttonType () );
+			static_cast<vmLineEditWithButton*>( widget )->setButtonType ( 0, sheet_item->buttonType () );
 			static_cast<vmLineEditWithButton*>( widget )->lineControl ()->setTextType ( sheet_item->textType () );
 			if ( !bCellReadOnly )
 			{

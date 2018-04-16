@@ -37,7 +37,7 @@ static void msleep ( unsigned long msecs )
 
 //--------------------------------------------TEXT-FILE--------------------------------
 textFile::textFile ()
-	: m_open ( false ), m_needsaving ( false ), m_headerSize ( 0 ),
+	: m_open ( false ), m_needsaving ( false ), mb_needRechecking ( false ), m_headerSize ( 0 ),
 	  m_buffersize ( 0 ), m_type ( TF_TEXT ), m_filemonitor ( nullptr ),
 	  mb_IgnoreEvents ( false ), mUsedRes ( nullptr )
 {}
@@ -96,6 +96,7 @@ void textFile::remove ()
 	const bool b_ignore ( mb_IgnoreEvents );
 	setIgnoreEvents ( true );
 	m_needsaving = false;
+	mb_needRechecking = false;
 	fileOps::removeFile ( m_filename );
 	clear ();
 	setIgnoreEvents ( b_ignore );
@@ -108,6 +109,7 @@ void textFile::clear ()
 	m_file.close ();
 	m_open = false;
 	m_needsaving = false;
+	mb_needRechecking = false;
 }
 
 bool textFile::open ()
@@ -188,7 +190,7 @@ void textFile::readType ()
 	}
 }
 
-triStateType textFile::load ( const bool )
+triStateType textFile::load ()
 {
 	const bool b_ignore ( mb_IgnoreEvents );
 	setIgnoreEvents ( true );
@@ -225,7 +227,7 @@ triStateType textFile::load ( const bool )
 		if ( mUsedRes->b_inUse )
 		{
 			msleep ( 300 );
-			return load ( false );
+			return load ();
 		}
 	}
 
@@ -282,18 +284,20 @@ void textFile::fileExternallyAltered ( const QString&, const uint event )
 	{
 		if ( event & VM_IN_DELETE )
 		{
-			const bool b_ignore ( mb_IgnoreEvents );
-			setIgnoreEvents ( true );
-			m_needsaving = true;
-			commit ();
-			setIgnoreEvents ( b_ignore );
+			mb_needRechecking = true;
+			//const bool b_ignore ( mb_IgnoreEvents );
+			//setIgnoreEvents ( true );
+			//m_needsaving = true;
+			//commit ();
+			//setIgnoreEvents ( b_ignore );
 		}
 		if ( event & VM_IN_MODIFY )
 		{
-			const bool b_ignore ( mb_IgnoreEvents );
-			setIgnoreEvents ( true );
-			recheckData ();
-			setIgnoreEvents ( b_ignore );
+			mb_needRechecking = true;
+			//const bool b_ignore ( mb_IgnoreEvents );
+			//setIgnoreEvents ( true );
+			//recheckData ();
+			//setIgnoreEvents ( b_ignore );
 		}
 	}
 }
@@ -310,6 +314,8 @@ void textFile::commit ()
 	}
 
 	if ( mUsedRes->modified_counter > 0 && mUsedRes->modifierInstance != this )
+		mb_needRechecking = true;
+	if ( mb_needRechecking )
 	{
 		if ( recheckData () )
 			mUsedRes->modified_counter--;
@@ -390,6 +396,7 @@ bool textFile::recheckData ( const bool b_userInteraction )
 	if ( open2 () )
 	{
 		readType ();
+		mb_needRechecking = false;
 		return true;
 	}
 	return false;
@@ -413,8 +420,8 @@ configFile::configFile ()
 	m_type = TF_CONFIG;
 }
 
-configFile::configFile ( const QString& filename )
-	: textFile ( filename ), cfgData ( 30 )
+configFile::configFile ( const QString& filename, const QString& object_name )
+	: textFile ( filename ), cfgData ( 30 ), m_objectName ( object_name )
 {
 	m_type = TF_CONFIG;
 }
@@ -453,6 +460,9 @@ const QString& configFile::fieldValue ( const QString& field_name ) const
 	}
 
 	if ( mUsedRes->modified_counter > 0 && mUsedRes->modifierInstance != this )
+		const_cast<configFile*>( this )->mb_needRechecking = true;
+
+	if ( mb_needRechecking )
 	{
 		if ( const_cast<configFile*>( this )->recheckData () )
 			mUsedRes->modified_counter--;
@@ -473,6 +483,9 @@ int configFile::fieldIndex ( const QString& field_name ) const
 	}
 
 	if ( mUsedRes->modified_counter > 0 && mUsedRes->modifierInstance != this )
+		const_cast<configFile*>( this )->mb_needRechecking = true;
+
+	if ( mb_needRechecking )
 	{
 		if ( const_cast<configFile*>( this )->recheckData () )
 			mUsedRes->modified_counter--;
@@ -564,6 +577,9 @@ bool configFile::setFieldValue ( const QString& field_name, const QString& value
 	}
 
 	if ( mUsedRes->modified_counter > 0 && mUsedRes->modifierInstance != this )
+		mb_needRechecking = true;
+
+	if ( mb_needRechecking )
 	{
 		if ( recheckData () )
 			mUsedRes->modified_counter--;
@@ -637,7 +653,7 @@ int configFile::findSection ( const QString& section_name ) const
 
 bool configFile::parseConfigFile ( const bool b_reload )
 {
-	qint64 buf_size ( m_buffersize * sizeof ( char ) );
+	quint64 buf_size ( m_buffersize * sizeof ( char ) );
 	char* __restrict buf ( new char[buf_size] );
 	int64_t n_chars ( -1 );
 	int idx ( -1 ), idx2 ( -1 ), section_idx ( -1 );
@@ -649,7 +665,7 @@ bool configFile::parseConfigFile ( const bool b_reload )
 	{
 		if ( !b_skiplineread )
 		{
-			n_chars = m_file.readLine ( buf, buf_size );
+			n_chars = m_file.readLine ( buf, static_cast<qint64>( buf_size ) );
 			if ( n_chars <= 2 ) continue;
 			line = QString::fromLocal8Bit ( buf );
 		}
@@ -738,6 +754,18 @@ void dataFile::insertRecord ( const int pos, const stringRecord& rec )
 
 void dataFile::changeRecord ( const int pos, const stringRecord& rec )
 {
+	if ( mUsedRes->b_inUse )
+	{
+		msleep ( 300 );
+		return changeRecord ( pos, rec );
+	}
+
+	if ( mUsedRes->modified_counter > 0 && mUsedRes->modifierInstance != this )
+	{
+		if ( recheckData () )
+			mUsedRes->modified_counter--;
+	}
+
 	if ( pos >= 0 && pos < static_cast<int>( recData.countRecords () ) )
 	{
 		recData.changeRecord ( static_cast<uint>( pos ), rec );
@@ -768,6 +796,18 @@ void dataFile::appendRecord ( const stringRecord& rec )
 
 bool dataFile::getRecord ( stringRecord& rec, const int pos ) const
 {
+	if ( mUsedRes->b_inUse )
+	{
+		msleep ( 300 );
+		return getRecord ( rec, pos );
+	}
+
+	if ( mUsedRes->modified_counter > 0 && mUsedRes->modifierInstance != this )
+	{
+		if ( const_cast<dataFile*>( this )->recheckData () )
+			mUsedRes->modified_counter--;
+	}
+
 	if ( pos >= 0 && static_cast<uint>( pos ) < recData.countRecords () )
 	{
 		rec = recData.readRecord ( static_cast<uint>( pos ) );
@@ -778,14 +818,7 @@ bool dataFile::getRecord ( stringRecord& rec, const int pos ) const
 
 bool dataFile::getRecord ( stringRecord& rec, const QString& value, const uint field ) const
 {
-	const int row ( recData.findRecordRowByFieldValue ( value, field ) );
-	if ( row >= 0 )
-	{
-		rec = recData.readRecord ( static_cast<uint>( row ) );
-		return rec.isOK ();
-	}
-	else
-		return false;
+	return getRecord ( rec, recData.findRecordRowByFieldValue ( value, field ) );
 }
 
 void dataFile::clearData ()

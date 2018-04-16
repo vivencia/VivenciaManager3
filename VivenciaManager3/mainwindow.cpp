@@ -3771,7 +3771,7 @@ void MainWindow::setupSectionNavigation ()
 	
 	clientSectionPos = grpClients->pos ().y () + grpClients->height () - 100;
 	jobSectionPos = grpJobs->pos ().y () + grpJobs->height () - 100;
-	paySectionPos = grpPays->pos ().y () + grpPays->height () - 200;
+	paySectionPos = grpPays->pos ().y () + grpPays->height ();
 	buySectionPos = grpBuys->pos ().y () + grpBuys->height () - 100;
 
 	ui->lblCurInfoClient->setCallbackForLabelActivated ( [&] ()

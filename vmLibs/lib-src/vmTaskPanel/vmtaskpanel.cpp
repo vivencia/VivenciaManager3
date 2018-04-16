@@ -4,16 +4,11 @@
 
 #include <vmWidgets/vmwidgets.h>
 
-#include <vmUtils/configops.h>
-
 vmTaskPanel::vmTaskPanel ( const QString& title, QWidget* parent )
 	: QFrame ( parent ), mScheme ( nullptr ), mTitle ( nullptr ), mGroups ( 8 )
 {
 	setProperty ( "class", QStringLiteral ( "panel" ) );
 	setSizePolicy ( QSizePolicy::Expanding, QSizePolicy::Expanding );
-
-	configOps config;
-	setScheme ( config.appScheme () );
 
 	mLayout = new QVBoxLayout;
 	mLayout->setMargin ( 5 );

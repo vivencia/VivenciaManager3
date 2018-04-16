@@ -67,7 +67,7 @@ void BackupDialog::setupConnections ()
 	connect ( ui->btnDefaultFilename, &QToolButton::clicked, this, [&] () {
 		return ui->txtBackupFilename->setText ( standardDefaultBackupFilename () ); } );
 	connect ( ui->btnDefaultPrefix, &QToolButton::clicked, this, [&] () {
-		return ui->txtExportPrefix->setText ( vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( "-Table_" ) ); } );
+		return ui->txtExportPrefix->setText ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( "-Table_" ) ); } );
 	connect ( ui->btnChooseBackupFolder, &QToolButton::clicked, this, [&] () {
 		return ui->txtBackupFolder->setText ( fileOps::getExistingDir ( CONFIG ()->backupDir () ) ); } );
 	connect ( ui->btnChooseExportFolder, &QToolButton::clicked, this, [&] () {

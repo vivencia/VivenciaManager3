@@ -26,7 +26,7 @@ class BackupDialog : public QDialog
 
 public:
 	explicit BackupDialog ();
-	virtual ~BackupDialog ();
+	virtual ~BackupDialog () override;
 
 	void showWindow ();
 	static bool doBackup ( const QString& filename, const QString& path, const bool bUserInteraction = false );
@@ -42,7 +42,7 @@ public:
 	inline bool actionSuccess () const { return mb_success; }
 
 	static inline QString standardDefaultBackupFilename () {
-		return QLatin1String ( "vmdb-" ) + vmNumber::currentDate.toDate ( vmNumber::VDF_FILE_DATE ); }
+		return QLatin1String ( "vmdb-" ) + vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ); }
 
 private:
 	enum AFTER_CLOSE_ACTION

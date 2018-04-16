@@ -21,7 +21,7 @@ class machinesDlg : public QDialog
 
 public:
 	explicit machinesDlg ( QWidget* parent = nullptr );
-	virtual ~machinesDlg ();
+	virtual ~machinesDlg () override;
 	void showJobMachineUse ( const QString& jobid );
 
 private:

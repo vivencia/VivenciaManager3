@@ -36,6 +36,7 @@ vmFileMonitor::vmFileMonitor ()
 vmFileMonitor::~vmFileMonitor ()
 {
 	close ( m_inotifyFd );
+	m_inotifyFd = -1;
 	emit finished ();
 }
 
