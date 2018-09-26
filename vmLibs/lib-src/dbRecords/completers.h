@@ -9,6 +9,7 @@
 const uint COMPLETERS_COUNT ( 15 );
 
 class DBRecord;
+class vmWidget;
 class completerRecord;
 
 enum COMPLETER_CATEGORIES
@@ -32,6 +33,8 @@ public:
 		return completersList.at ( static_cast<int> ( type ) );
 	}
 
+	void setCompleterForWidget ( vmWidget *widget, const int completer_type );
+
 	void updateCompleter ( const DBRecord* const db_rec, const uint field, const COMPLETER_CATEGORIES type );
 	void updateCompleter ( const QString& str, const COMPLETER_CATEGORIES type );
 
@@ -45,6 +48,6 @@ private:
 	void loadCompleters ();
 	bool mbFullInit;
 
-	PointersList<QCompleter*> completersList;
+	pointersList<QCompleter*> completersList;
 };
 #endif // COMPLETERS_H

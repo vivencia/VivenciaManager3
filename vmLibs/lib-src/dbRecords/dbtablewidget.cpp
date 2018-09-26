@@ -21,31 +21,35 @@ dbTableWidget::~dbTableWidget () {}
 
 void dbTableWidget::setCompleterManager ( vmCompleters* const completer )
 {
-	if ( dbTableWidget::completer_manager )
-		delete dbTableWidget::completer_manager;
+	delete dbTableWidget::completer_manager;
 	dbTableWidget::completer_manager = completer;
 }
 
 void dbTableWidget::setIgnoreChanges ( const bool b_ignore )
 {
-	if ( !b_ignore )
+	if ( colCount () == PURCHASES_TABLE_COLS )
 	{
-		static_cast<void>( connect ( completerManager ()->getCompleter ( PRODUCT_OR_SERVICE ),
+		if ( !b_ignore )
+		{
+			static_cast<void>( connect ( completerManager ()->getCompleter ( PRODUCT_OR_SERVICE ),
 					  static_cast<void (QCompleter::*)( const QModelIndex& )>( &QCompleter::activated ),
-					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index, this );
+					this, ( [&, this] ( const QModelIndex& index ) { return interceptCompleterActivated ( index );
 			} ) ) );
+		}
+		else
+			static_cast<void>( disconnect ( completerManager ()->getCompleter ( PRODUCT_OR_SERVICE ), nullptr, nullptr, nullptr ) );
 	}
 	vmTableWidget::setIgnoreChanges ( b_ignore );
 }
 
-void dbTableWidget::interceptCompleterActivated ( const QModelIndex& index, const dbTableWidget* const table )
+void dbTableWidget::interceptCompleterActivated ( const QModelIndex& index )
 {
-	if ( table != this )
+	const QCompleter* const prod_completer ( completerManager ()->getCompleter ( PRODUCT_OR_SERVICE ) );
+	if ( prod_completer->widget ()->parentWidget ()->parentWidget () != this )
 		return;
 
 	mbDoNotUpdateCompleters = true; //avoid a call to update the item's completer because we are retrieving the values from the completer itself
-	const stringRecord record ( completerManager ()->getCompleter ( PRODUCT_OR_SERVICE )->completionModel ()->data (
-									index.sibling ( index.row (), 1 ) ).toString () );
+	const stringRecord record ( prod_completer->completionModel ()->data ( index.sibling ( index.row (), 1 ) ).toString () );
 
 	if ( record.isOK () )
 	{
@@ -53,14 +57,14 @@ void dbTableWidget::interceptCompleterActivated ( const QModelIndex& index, cons
 			setCurrentCell ( 0, 0, QItemSelectionModel::ClearAndSelect );
 		if ( currentRow () >= 0 )
 		{
-			const uint current_row ( static_cast<uint>( currentRow () ) );
+			const auto current_row ( static_cast<uint>( currentRow () ) );
 			if ( record.first () )
 			{
 				uint i_col ( 0 );
 				do
 				{
-					sheetItem ( current_row, i_col++ )->setText ( record.curValue (), true );
-				} while ( i_col < ISR_TOTAL_PRICE && record.next () );
+					sheetItem ( current_row, i_col )->setText ( record.curValue (), true );
+				} while ( (++i_col < ISR_TOTAL_PRICE) && record.next () );
 				setCurrentCell ( static_cast<int>( current_row ), ISR_QUANTITY, QItemSelectionModel::ClearAndSelect );
 			}
 		}
@@ -73,7 +77,7 @@ void dbTableWidget::exportPurchaseToSupplies ( const DBRecord* const src_dbrec, 
 	if ( !property ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER ).toBool () )
 		return;
 
-	spreadRow* s_row ( new spreadRow );
+	auto s_row ( new spreadRow );
 	s_row->column[0] = dst_dbrec->isrRecordField ( ISR_NAME );
 	s_row->column[1] = dst_dbrec->isrRecordField ( ISR_UNIT );
 	s_row->column[2] = dst_dbrec->isrRecordField ( ISR_BRAND );
@@ -175,7 +179,11 @@ dbTableWidget* dbTableWidget::createPurchasesTable ( dbTableWidget* table, QWidg
 	}
 
 	if ( table )
+	{
+		table->setCallbackForSettingCompleterForWidget ( [&] ( vmWidget* widget, const int completer_type )
+				{ return completerManager ()->setCompleterForWidget ( widget, completer_type ); } );
 		table->initTable ( 10 );
+	}
 	else
 		table = new dbTableWidget ( 10, parent );
 
@@ -227,6 +235,8 @@ dbTableWidget* dbTableWidget::createPayHistoryTable ( dbTableWidget* table, QWid
 		}
 	}
 
+	table->setCallbackForSettingCompleterForWidget ( [&] ( vmWidget* widget, const int completer_type ) {
+				return completerManager ()->setCompleterForWidget ( widget, completer_type ); } );
 	if ( table )
 		table->initTable ( 5 );
 	else
@@ -245,7 +255,7 @@ dbTableWidget* dbTableWidget::createPayHistoryTable ( dbTableWidget* table, QWid
 
 void dbTableWidget::derivedClassCellContentChanged ( const vmTableItem* const item )
 {
-	if ( !mbDoNotUpdateCompleters )
+	/*if ( !mbDoNotUpdateCompleters )
 	{
 		if ( item->completerType () >= 0 ) // TODO have a way to undo in case the text is wrong, altered, invalid, etc. Or to not have this method at all
 		{
@@ -253,10 +263,14 @@ void dbTableWidget::derivedClassCellContentChanged ( const vmTableItem* const it
 			// The runtime completer will, in turn, update the database.
 			completerManager ()->updateCompleter ( item->text (), static_cast<COMPLETER_CATEGORIES>( item->completerType () ) );
 		}
-	}
+	}*/
 
-	if ( sheetItem ( static_cast<uint>( item->row () ), PURCHASES_TABLE_REG_COL )->text () == CHR_ONE )
-		setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
+	const vmTableItem* extra_item ( sheetItem ( static_cast<uint>( item->row () ), PURCHASES_TABLE_REG_COL ) );
+	if ( extra_item ) // only purchases tables have it
+	{
+		if ( extra_item->text () == CHR_ONE )
+			setProperty ( PROPERTY_TABLE_HAS_ITEM_TO_REGISTER, true );
+	}
 }
 
 void dbTableWidget::derivedClassTableCleared ()

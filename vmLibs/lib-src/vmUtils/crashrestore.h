@@ -44,8 +44,8 @@ private:
 	QString m_filename;
 	dataFile* fileCrash;
 	triStateType crashInfoLoaded;
-	stringRecord m_stateinfo;
-	bool mbInfoLoaded;
+	mutable stringRecord m_stateinfo;
+	mutable bool mbInfoLoaded;
 	static bool bNewDBSettion;
 };
 
@@ -72,7 +72,7 @@ public:
 	inline void setNewDBSession () { mb_newDBSession = true; }
 	
 private:
-	PointersList<crashRestore*> crashInfoList;
+	pointersList<crashRestore*> crashInfoList;
 	bool mb_newDBSession;
 };
 

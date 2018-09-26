@@ -27,20 +27,20 @@ bool VMCompress::compress ( const QString& in_filename, const QString& out_filen
 	if ( !in_file.open ( QIODevice::ReadOnly|QIODevice::Text ) )
 		return false;
 
-	FILE* f_out ( NULL );
+	FILE* f_out ( nullptr );
 	f_out = ::fopen ( out_filename.toUtf8 ().constData (), "wb" );
-	if ( f_out == NULL )
+	if ( f_out == nullptr )
 	{
 		in_file.close ();
 		return false;
 	}
 
 	int bzerror ( 0 );
-	BZFILE* bzf ( NULL );
+	BZFILE* bzf ( nullptr );
 	bzf = ::BZ2_bzWriteOpen ( &bzerror, f_out, 9, 0, 30 );
 	if ( bzerror != BZ_OK )
 	{
-		::BZ2_bzWriteClose ( &bzerror, bzf, 1, NULL, NULL );
+		::BZ2_bzWriteClose ( &bzerror, bzf, 1, nullptr, nullptr );
 		::fclose ( f_out );
 		in_file.close ();
 		return false;
@@ -67,7 +67,7 @@ bool VMCompress::compress ( const QString& in_filename, const QString& out_filen
 		}
 	} while ( !in_file.atEnd () );
 
-	::BZ2_bzWriteClose ( &bzerror, bzf, 0, NULL, NULL );
+	::BZ2_bzWriteClose ( &bzerror, bzf, 0, nullptr, nullptr );
 	in_file.close ();
 	::fclose ( f_out );
 
@@ -78,14 +78,14 @@ bool VMCompress::compress ( const QString& in_filename, const QString& out_filen
 
 bool VMCompress::isCompressed ( const QString& filename )
 {
-	FILE* f = NULL;
+	FILE* f = nullptr;
 	f = ::fopen ( filename.toUtf8 ().constData (), "rb" );
-	if ( f == NULL )
+	if ( f == nullptr )
 		return false;
 
 	int bzerror ( 0 );
-	BZFILE* bzf = NULL;
-	bzf = ::BZ2_bzReadOpen ( &bzerror, f, 0, 0, NULL, 0 );
+	BZFILE* bzf = nullptr;
+	bzf = ::BZ2_bzReadOpen ( &bzerror, f, 0, 0, nullptr, 0 );
 
 	const uint max_len ( 100 );
 	char buf[max_len] = { '\0' };
@@ -101,9 +101,9 @@ bool VMCompress::decompress ( const QString& in_filename, const QString& out_fil
 	if ( !checkSomeThingsFirst ( in_filename, out_filename ) )
 		return false;
 
-	FILE* f_in = NULL;
+	FILE* f_in = nullptr;
 	f_in = ::fopen ( in_filename.toUtf8 ().constData (), "rb" );
-	if ( f_in == NULL )
+	if ( f_in == nullptr )
 		return false;
 
 	QFile out_file ( out_filename );
@@ -114,8 +114,8 @@ bool VMCompress::decompress ( const QString& in_filename, const QString& out_fil
 	}
 
 	int bzerror ( 0 );
-	BZFILE* bzf = NULL;
-	bzf = ::BZ2_bzReadOpen ( &bzerror, f_in, 0, 0, NULL, 0 );
+	BZFILE* bzf = nullptr;
+	bzf = ::BZ2_bzReadOpen ( &bzerror, f_in, 0, 0, nullptr, 0 );
 	if ( bzerror != BZ_OK )
 	{
 		::BZ2_bzReadClose ( &bzerror, bzf );
@@ -162,7 +162,7 @@ bool VMCompress::createTar ( const QString& input_dir, const QString& out_filena
 		return true;
 
 	const QString cmd ( QStringLiteral ( "tar -C %1 -cf %2 %3" ) );
-	return ( ::system ( cmd.arg ( fileOps::nthDirFromPath ( input_dir, 0 ), out_filename, fileOps::nthDirFromPath ( input_dir ) ).toLocal8Bit ().constData () ) == 0 );
+	return ( ::system ( cmd.arg ( fileOps::nthDirFromPath ( input_dir, 0 ), out_filename, fileOps::nthDirFromPath ( input_dir ) ).toUtf8 ().constData () ) == 0 );
 }
 
 bool VMCompress::addToTar ( const QString& input, const QString& tar_file, const bool create_if_not_exists )
@@ -179,5 +179,5 @@ bool VMCompress::addToTar ( const QString& input, const QString& tar_file, const
 	}
 	const QString cmd ( QStringLiteral ( "tar -C %1 -rf %2 %3" ) );
 	const QString topDir ( fileOps::nthDirFromPath ( input, 0 ) );
-	return ( ::system ( cmd.arg ( topDir, tar_file,	QString ( input ).remove ( topDir ) ).toLocal8Bit ().constData () ) == 0 );
+	return ( ::system ( cmd.arg ( topDir, tar_file,	QString ( input ).remove ( topDir ) ).toUtf8 ().constData () ) == 0 );
 }

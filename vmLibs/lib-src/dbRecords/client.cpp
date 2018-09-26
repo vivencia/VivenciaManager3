@@ -6,21 +6,27 @@
 #include "dblistitem.h"
 #include "vivenciadb.h"
 
-const unsigned char TABLE_VERSION ( 'A' );
+const unsigned char TABLE_VERSION ( 'B' );
 
 constexpr DB_FIELD_TYPE CLIENTS_FIELDS_TYPE[CLIENT_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_NUMBER, DBTYPE_LIST, DBTYPE_LIST,
 	DBTYPE_NUMBER, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_DATE, DBTYPE_DATE,
-	DBTYPE_YESNO
+	DBTYPE_YESNO, DBTYPE_YESNO
 };
 
-#ifdef CLIENT_TABLE_UPDATE_AVAILABLE
-bool updateClientTable ()
+bool updateClientTable ( const unsigned char /*current_table_version*/ )
 {
-	VDB ()->optimizeTable ( &Client::t_info );
+	/*if ( current_table_version == 'A')
+	{
+		if ( DBRecord::databaseManager ()->insertColumn ( FLD_CLIENT_LAST_VIEWED, &Client::t_info ) )
+		{
+			VivenciaDB::optimizeTable ( &Client::t_info );
+			return true;
+		}
+	}
+	return false;*/
 	return true;
 }
-#endif //CLIENT_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Client::t_info =
 {
@@ -28,19 +34,15 @@ const TABLE_INFO Client::t_info =
 	QStringLiteral ( "CLIENTS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
 	QStringLiteral ( " PRIMARY KEY ( `ID` ) , UNIQUE KEY `id` ( `ID` ) " ),
-	QStringLiteral ( "`ID`|`NAME`|`STREET`|`NUMBER`|`DISTRICT`|`CITY`|`ZIPCODE`|`PHONES`|`EMAIL`|`BEGINDATE`|`ENDDATE`|`STATUS`|" ),
+	QStringLiteral ( "`ID`|`NAME`|`STREET`|`NUMBER`|`DISTRICT`|`CITY`|`ZIPCODE`|`PHONES`|`EMAIL`|`BEGINDATE`|`ENDDATE`|`STATUS`|`LAST_VIEWED`|" ),
 	QStringLiteral ( " int ( 9 ) NOT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 6 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 20 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 200 ) COLLATE utf8_unicode_ci DEFAULT NULL, | "
-	" varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | int ( 2 ) DEFAULT NULL, |" ),
-	QStringLiteral ( "ID|Name|Street|Number|District|City|Zip code|Phones|E-mail|Client since|Client to|Active|" ),
+	" varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 60 ) COLLATE utf8_unicode_ci DEFAULT NULL, | int ( 2 ) DEFAULT NULL, | int ( 2 ) DEFAULT 0, |" ),
+	QStringLiteral ( "ID|Name|Street|Number|District|City|Zip code|Phones|E-mail|Client since|Client to|Active|Last Viewed|" ),
 	CLIENTS_FIELDS_TYPE,
 	TABLE_VERSION, CLIENT_FIELD_COUNT, TABLE_CLIENT_ORDER,
-	#ifdef CLIENT_TABLE_UPDATE_AVAILABLE
 	&updateClientTable
-	#else
-	nullptr
-	#endif //CLIENT_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	// it is actually false, but the update routine in generaltable.cpp checks for it, and is the only place in all of the code.
 	// Since the code there must not call updateIDs for the client table, this false information here is actually harmless and makes for one less conditional statement there
@@ -182,7 +184,7 @@ QString Client::concatenateClientInfo ( const Client& client )
 	info = recStrValue ( &client, FLD_CLIENT_NAME );
 	if ( !info.isEmpty () )
 	{
-		info += QLatin1String ( client.opt ( FLD_CLIENT_STATUS ) == true ? "(*)\n" : "\n" );
+		info += QLatin1String ( client.opt ( FLD_CLIENT_STATUS ) ? "(*)\n" : "\n" );
 		if ( !recStrValue ( &client, FLD_CLIENT_STREET ).isEmpty () )
 			info += recStrValue ( &client, FLD_CLIENT_STREET ) + QLatin1String ( ", " );
 
@@ -232,5 +234,5 @@ void Client::setListItem ( clientListItem* client_item )
 
 clientListItem* Client::clientItem () const
 {
-	return static_cast<clientListItem*>( DBRecord::mListItem );
+	return dynamic_cast<clientListItem*>( DBRecord::mListItem );
 }

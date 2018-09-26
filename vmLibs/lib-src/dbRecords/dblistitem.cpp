@@ -20,10 +20,10 @@ bool dbListItem::APP_EXITING ( false );
 
 QIcon* dbListItem::listIndicatorIcons[4] = { nullptr, nullptr, nullptr, nullptr };
 
-#define CLIENT_REC static_cast<Client*>( dbListItem::m_dbrec )
-#define JOB_REC static_cast<Job*>( dbListItem::m_dbrec )
-#define PAY_REC static_cast<Payment*>( dbListItem::m_dbrec )
-#define BUY_REC static_cast<Buy*>( dbListItem::m_dbrec )
+#define CLIENT_REC (dynamic_cast<Client*>( dbListItem::m_dbrec ))
+#define JOB_REC (dynamic_cast<Job*>( dbListItem::m_dbrec ))
+#define PAY_REC (dynamic_cast<Payment*>( dbListItem::m_dbrec ))
+#define BUY_REC (dynamic_cast<Buy*>( dbListItem::m_dbrec ))
 
 const Qt::GlobalColor COLORS[4] = { Qt::white, Qt::red, Qt::green, Qt::blue };
 
@@ -108,7 +108,7 @@ void dbListItem::changeAppearance ()
 	fnt.setItalic ( action () > ACTION_READ );
 	setFont ( fnt );
 
-	int startItem ( static_cast<int>( relation () >= RLI_CLIENTITEM ? lastRelation () : relation () ) );
+	const auto startItem ( static_cast<int>( relation () >= RLI_CLIENTITEM ? lastRelation () : relation () ) );
 
 	for ( int i ( startItem ); i >= RLI_CLIENTPARENT; --i )
 	{
@@ -198,10 +198,10 @@ void dbListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 			{
 				vmListWidget* parentList ( listWidget () );
 				parentList->setIgnoreChanges ( true );
-				parentList->removeItem ( this );
+				//parentList->removeItem ( this );
 				parentList->setSortingEnabled ( true );
 				parentList->setIgnoreChanges ( false );
-				addToList ( parentList );
+				//addToList ( parentList );
 			}
 		}
 		
@@ -216,7 +216,8 @@ void dbListItem::setAction ( const RECORD_ACTION action, const bool bSetDBRec, c
 		
 		n_badInputs = action == ACTION_ADD ? static_cast<int>(mTotal_badInputs) : 0;
 		for ( uint i ( 0 ); i < mTotal_badInputs; ++i )
-			badInputs_ptr[i] = action == ACTION_ADD ? false : true;
+			badInputs_ptr[i] = action != ACTION_ADD;
+			//badInputs_ptr[i] = action == ACTION_ADD ? false : true;
 		
 		// update all related items, except self. Call setAction with self_only to true so that we don't enter infinite recurssion.
 		if ( !bSelfOnly && relation () == RLI_CLIENTITEM )
@@ -256,7 +257,7 @@ void dbListItem::createDBRecord ()
 	setDBRec ( static_cast<DBRecord*>( new DBRecord ( static_cast<uint>( 0 ) ) ) );
 }
 
-bool dbListItem::loadData ()
+bool dbListItem::loadData ( const bool b_read_all_data )
 {
 	/* A generic list item cannot create a generic dbrecord. It could, if we wanted. But the
 	 * purpose of a generic list item is to carry a specific database pointer across the application. Therefore,
@@ -266,7 +267,7 @@ bool dbListItem::loadData ()
 	if ( dbRec () )
 	{
 		if ( action () == ACTION_READ )
-			return ( m_dbrec->readRecord ( static_cast<uint>( id () ) ) );
+			return ( m_dbrec->readRecord ( static_cast<uint>( id () ), b_read_all_data ) );
 		return true; // when adding or editing, do not read from the database, but use current user input
 	}
 	return false;
@@ -287,14 +288,14 @@ uint dbListItem::translatedInputFieldIntoBadInputField ( const uint field ) cons
 	return field;
 }
 
-void dbListItem::setFieldInputStatus ( const uint field, const bool ok, const vmWidget* widget )
+void dbListItem::setFieldInputStatus ( const uint field, const bool ok, const vmWidget* const widget )
 {
 	const uint bad_field ( translatedInputFieldIntoBadInputField ( field ) );
 	if ( badInputs_ptr[bad_field] != ok )
 		ok ? --n_badInputs : ++n_badInputs;
 	badInputs_ptr[bad_field] = ok;
 	if ( widget )
-		const_cast<vmWidget*>( widget )->highlight ( ok ? vmDefault_Color : vmRed );
+		const_cast<vmWidget*>(widget)->highlight ( ok ? vmDefault_Color : vmRed );
 }
 
 void dbListItem::saveCrashInfo ( crashRestore* crash )
@@ -332,7 +333,7 @@ void clientListItem::update ()
 {
 	if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
 	{
-		if ( loadData () )
+		if ( loadData ( true ) )
 		{
 			setLabel ( recStrValue ( CLIENT_REC, FLD_CLIENT_NAME ) );
 			if ( listWidget () )
@@ -347,12 +348,12 @@ void clientListItem::createDBRecord ()
 	CLIENT_REC->setListItem ( this );
 }
 
-bool clientListItem::loadData ()
+bool clientListItem::loadData ( const bool b_read_all_data )
 {
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( CLIENT_REC->readRecord ( static_cast<uint>( id () ) ) );
+		return ( CLIENT_REC->readRecord ( static_cast<uint>( id () ), b_read_all_data ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -362,9 +363,9 @@ void clientListItem::relationActions ( dbListItem* subordinateItem )
 	{
 		if ( subordinateItem == nullptr )
 		{
-			jobs = new PointersList<jobListItem*> ( 100 );
-			pays = new PointersList<payListItem*> ( 100 );
-			buys = new PointersList<buyListItem*> ( 50 );
+			jobs = new pointersList<jobListItem*> ( 100 );
+			pays = new pointersList<payListItem*> ( 100 );
+			buys = new pointersList<buyListItem*> ( 50 );
 			// No need to explicitly call clear ( true ) in the dctor
 			jobs->setAutoDeleteItem ( true );
 			pays->setAutoDeleteItem ( true );
@@ -416,18 +417,18 @@ void jobListItem::createDBRecord ()
 	JOB_REC->setListItem ( this );
 }
 
-bool jobListItem::loadData ()
+bool jobListItem::loadData ( const bool b_read_all_data )
 {
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( JOB_REC->readRecord ( static_cast<uint>( id () ) ) );
+		return ( JOB_REC->readRecord ( static_cast<uint>( id () ), b_read_all_data ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
 void jobListItem::update ()
 {
-	if ( loadData () )
+	if ( loadData ( true ) )
 	{
 		if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
 		{
@@ -444,9 +445,9 @@ void jobListItem::relationActions ( dbListItem* subordinateItem )
 	{
 		if ( subordinateItem == nullptr )
 		{
-			buys = new PointersList<buyListItem*> ( 50 );
+			buys = new pointersList<buyListItem*> ( 50 );
 			buys->setAutoDeleteItem ( true );
-			daysList = new PointersList<vmListItem*> ( 10 );
+			daysList = new pointersList<vmListItem*> ( 10 );
 			daysList->setAutoDeleteItem ( true );
 		}
 		else
@@ -484,7 +485,7 @@ payListItem::~payListItem ()
 
 void payListItem::update ()
 {
-	if ( loadData () )
+	if ( loadData ( true ) )
 	{
 		if ( relation () == RLI_CLIENTITEM ) // updates only come through via the client parent
 		{
@@ -561,12 +562,12 @@ void payListItem::createDBRecord ()
 	PAY_REC->setListItem ( this );
 }
 
-bool payListItem::loadData ()
+bool payListItem::loadData ( const bool b_read_all_data )
 {
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( PAY_REC->readRecord ( static_cast<uint>( id () ) ) );
+		return ( PAY_REC->readRecord ( static_cast<uint>( id () ), b_read_all_data ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 
@@ -608,12 +609,15 @@ buyListItem::~buyListItem ()
 		dbListItem::m_dbrec = nullptr;
 	}
 	else
-		relatedItem ( RLI_CLIENTITEM )->setRelatedItem ( relation (), nullptr );
+	{
+		if ( relatedItem ( RLI_CLIENTITEM ) )
+			relatedItem ( RLI_CLIENTITEM )->setRelatedItem ( relation (), nullptr );
+	}
 }
 
 void buyListItem::update ()
 {
-	if ( loadData () )
+	if ( loadData ( true ) )
 	{
 		const QString strBodyText ( recStrValue ( BUY_REC, FLD_BUY_DATE ) + QLatin1String ( " - " ) + 
 								recStrValue ( BUY_REC, FLD_BUY_PRICE ) + QLatin1String ( " (" ) );
@@ -662,12 +666,12 @@ void buyListItem::updateBuyCalendarItem ()
 	QString label ( recStrValue ( static_cast<clientListItem*>( relatedItem ( RLI_CLIENTPARENT ) )->clientRecord (), FLD_CLIENT_NAME ) +
 					   QLatin1String ( " - " ) + recStrValue ( buyRecord (), FLD_BUY_SUPPLIER ) );
 	
-	if ( data ( Qt::UserRole + 1 ).toBool () == true )
+	if ( data ( Qt::UserRole + 1 ).toBool () )
 	{
 		label += purchaseDateStr.arg ( recStrValue ( buyRecord (), FLD_BUY_PRICE ), recStrValue ( buyRecord (), FLD_BUY_DATE ) );
 	}
 	
-	if ( data ( Qt::UserRole + 2 ).toBool () == true )
+	if ( data ( Qt::UserRole + 2 ).toBool () )
 	{
 		const uint paynumber ( data ( Qt::UserRole ).toUInt () );
 		const stringRecord payRecord ( stringTable ( recStrValue ( buyRecord (), FLD_BUY_PAYINFO ) ).readRecord ( paynumber - 1 ) );		
@@ -687,12 +691,12 @@ void buyListItem::createDBRecord ()
 	BUY_REC->setListItem ( this );
 }
 
-bool buyListItem::loadData ()
+bool buyListItem::loadData ( const bool b_read_all_data )
 {
 	if ( !m_dbrec )
 		createDBRecord ();
 	if ( action () == ACTION_READ )
-		return ( BUY_REC->readRecord ( static_cast<uint>( id () ) ) );
+		return ( BUY_REC->readRecord ( static_cast<uint>( id () ), b_read_all_data ) );
 	return true; // when adding or editing, do not read from the database, but use current user input
 }
 

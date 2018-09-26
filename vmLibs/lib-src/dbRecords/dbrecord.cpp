@@ -87,8 +87,6 @@ DBRecord::DBRecord ( const DBRecord& other )
 	m_prevaction = other.m_prevaction;
 }
 
-DBRecord::~DBRecord () {}
-
 bool DBRecord::operator== ( const DBRecord& other ) const
 {
 	if ( other.t_info == this->t_info )
@@ -133,12 +131,18 @@ void DBRecord::callHelperFunctions ()
 
 bool DBRecord::readRecord ( const uint id, const bool load_data )
 {
-	if ( id >= 1 && ( id != static_cast<uint>( actualRecordInt ( 0 ) ) || mb_refresh ) )
+	if ( id >= 1 )
 	{
-		setIntValue ( 0, static_cast<int>( id ) );
-		setBackupValue ( 0, QString::number ( id ) );
-		setRefreshFromDatabase ( false );
-		return VDB->getDBRecord ( this, 0, load_data );
+		if ( load_data ) // By convention, if this is called with load_data = true, we retrieve the data from the db, possibly again
+			setRefreshFromDatabase ( true );
+
+		if ( id != static_cast<uint>( actualRecordInt ( 0 ) ) || mb_refresh )
+		{
+			setIntValue ( 0, static_cast<int>( id ) );
+			setBackupValue ( 0, QString::number ( id ) );
+			setRefreshFromDatabase ( false );
+			return VDB->getDBRecord ( this, 0, load_data );
+		}
 	}
 	return ( id >= 1 );
 }
@@ -346,7 +350,8 @@ void DBRecord::setAction ( const RECORD_ACTION action )
 						if ( !inSync () )
 							sync ( RECORD_FIELD::IDX_TEMP, false );
 					}
-					*const_cast<RECORD_ACTION*>( &m_action ) = ACTION_READ;
+					else
+						m_action = ACTION_READ;
 					mb_synced = true;
 					fptr_change = &DBRecord::setValue;
 					fptr_changeInt = &DBRecord::setIntValue;
@@ -409,7 +414,7 @@ void DBRecord::sync ( const int src_index, const bool b_force )
 	mb_synced = true;
 }
 
-stringRecord DBRecord::toStringRecord ( const QChar& rec_sep ) const
+stringRecord DBRecord::toStringRecord ( const QChar rec_sep ) const
 {
 	stringRecord str_rec ( rec_sep );
 	for ( uint i ( 0 ); i < fld_count; ++i )
@@ -448,8 +453,7 @@ void DBRecord::fromStringRecord ( const stringRecord& str_rec, const uint fromFi
 
 void DBRecord::setCompleterManager ( vmCompleters* const completer )
 {
-	if ( DBRecord::completer_manager )
-		delete DBRecord::completer_manager;
+	delete DBRecord::completer_manager;
 	DBRecord::completer_manager = completer;
 }
 

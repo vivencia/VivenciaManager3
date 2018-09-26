@@ -59,13 +59,13 @@ protected:
 	void hideEvent ( QHideEvent* he );
 	
 private:
-	void doFilter ( const triStateType level, const int startlevel = 0 );
+	void doFilter ( const triStateType& level, const int startlevel = 0 );
 	
 	int m_utilidx;
 	vmTableWidget* m_table;
 	vmLineFilter* m_txtFilter;
 	QToolButton* m_btnClose;
-	PointersList<podList<int>*> searchLevels;
+	pointersList<podList<int>*> searchLevels;
 };
 
 #endif // VMTABLEUTILS_H

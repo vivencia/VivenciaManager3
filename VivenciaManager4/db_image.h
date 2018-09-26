@@ -20,13 +20,13 @@ private:
 	QLabel* imageViewer;
 	QScrollArea* scrollArea;
 
-	struct RECORD_IMAGES // OPT-2
+	struct RECORD_IMAGES
 	{ 
-		PointersList<fileOps::st_fileInfo*> files;
+		pointersList<fileOps::st_fileInfo*> files;
 		QString path;
 		int rec_id;
 
-		RECORD_IMAGES () : files ( 50 ), rec_id ( -1 ) { files.setAutoDeleteItem ( true ); }
+		RECORD_IMAGES () : rec_id ( -1 ) { files.setAutoDeleteItem ( true ); }
 	};
 
 	bool findImagesByID ( const int rec_id );
@@ -44,7 +44,7 @@ private:
 	int mouse_ex, mouse_ey;
 	bool mb_fitToWindow, mb_maximized;
 	double scaleFactor;
-	PointersList <RECORD_IMAGES*> images_array;
+	pointersList <RECORD_IMAGES*> images_array;
 
 	std::function<void ( const int )> funcImageRequested;
 	std::function<void ( const bool )> funcShowMaximized;
@@ -54,7 +54,7 @@ protected:
 
 public:
 	explicit DB_Image ( QWidget* parent = nullptr );
-	virtual ~DB_Image ();
+	virtual ~DB_Image () final = default;
 
 	void showImage ( const int rec_id = -1, const QString& path = QString () );
 

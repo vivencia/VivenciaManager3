@@ -1,27 +1,32 @@
 #include "purchases.h"
 #include "vmlibs.h"
-
 #include "dblistitem.h"
 #include "supplierrecord.h"
 #include "vivenciadb.h"
 
 #include <vmStringRecord/stringrecord.h>
 
-static const unsigned int TABLE_VERSION ( 'A' );
+static const unsigned int TABLE_VERSION ( 'B' );
 
 constexpr DB_FIELD_TYPE BUYS_FIELDS_TYPE[BUY_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_ID, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_PRICE,
 	DBTYPE_PRICE, DBTYPE_NUMBER, DBTYPE_LIST, DBTYPE_LIST, DBTYPE_SHORTTEXT,
-	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
+	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_YESNO
 };
 
-#ifdef PURCHASE_TABLE_UPDATE_AVAILABLE
-bool updatePurchaseTable ()
+bool updatePurchaseTable ( const unsigned char /*current_table_version*/ )
 {
-	VDB ()->optimizeTable ( &Buy::t_info );
+	/*if ( current_table_version == 'A')
+	{
+		if ( DBRecord::databaseManager ()->insertColumn ( FLD_BUY_LAST_VIEWED, &Buy::t_info ) )
+		{
+			VivenciaDB::optimizeTable ( &Buy::t_info );
+			return true;
+		}
+	}
+	return false;*/
 	return true;
 }
-#endif //PURCHASE_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Buy::t_info =
 {
@@ -29,19 +34,15 @@ const TABLE_INFO Buy::t_info =
 	QStringLiteral ( "PURCHASES" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
 	QStringLiteral ( " PRIMARY KEY ( `ID` ), UNIQUE KEY `id` ( `ID` ) " ),
-	QStringLiteral ( "`ID`|`CLIENTID`|`JOBID`|`DATE`|`DELIVERDATE`|`PRICE`|`TOTAL_PAID`|`TOTALPAYS`|`DELIVERMETHOD`|`SUPPLIER`|`NOTES`|`REPORT`|`PAYINFO`|" ),
+	QStringLiteral ( "`ID`|`CLIENTID`|`JOBID`|`DATE`|`DELIVERDATE`|`PRICE`|`TOTAL_PAID`|`TOTALPAYS`|`DELIVERMETHOD`|`SUPPLIER`|`NOTES`|`REPORT`|`PAYINFO`|`LAST_VIEWED`|" ),
 	QStringLiteral ( " int ( 9 ) NOT NULL, | int ( 9 ) NOT NULL, | int ( 9 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, |"
 	" varchar ( 30 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, | varchar ( 10 ) DEFAULT NULL, |"
 	" varchar ( 40 ) DEFAULT NULL, | varchar ( 100 ) DEFAULT NULL, | varchar ( 200 ) DEFAULT NULL, |"
-	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, |" ),
-	QStringLiteral ( "ID|Client ID|Job ID|Purchase date|Delivery date|Price|Price paid|Number of payments|Delivery method|Supplier|Notes|Report|Pay info" ),
+	" longtext COLLATE utf8_unicode_ci, | longtext COLLATE utf8_unicode_ci, | int ( 2 ) DEFAULT 0, |" ),
+	QStringLiteral ( "ID|Client ID|Job ID|Purchase date|Delivery date|Price|Price paid|Number of payments|Delivery method|Supplier|Notes|Report|Pay info|Last Viewed|" ),
 	BUYS_FIELDS_TYPE,
 	TABLE_VERSION, BUY_FIELD_COUNT, TABLE_BUY_ORDER,
-	#ifdef PURCHASE_TABLE_UPDATE_AVAILABLE
 	&updatePurchaseTable
-	#else
-	nullptr
-	#endif //PURCHASE_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif
@@ -102,8 +103,7 @@ QString Buy::isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int sub_
 		}
 		return QString ();
 	}
-	else
-		return recStrValue ( this, rec_field );
+	return recStrValue ( this, rec_field );
 }
 
 int Buy::searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const
@@ -147,5 +147,5 @@ void Buy::setListItem ( buyListItem* buy_item )
 
 buyListItem* Buy::buyItem () const
 {
-	return static_cast<buyListItem*>( DBRecord::mListItem );
+	return dynamic_cast<buyListItem*>( DBRecord::mListItem );
 }

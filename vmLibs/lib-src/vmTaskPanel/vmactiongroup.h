@@ -21,7 +21,7 @@ class TaskGroup : public QFrame
 
 public:
 	TaskGroup ( QWidget* parent, const bool stretchContents = false );
-	virtual ~TaskGroup ();
+	virtual ~TaskGroup () = default;
 
 	void setScheme ( ActionPanelScheme *scheme );
 

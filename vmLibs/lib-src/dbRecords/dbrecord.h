@@ -70,7 +70,7 @@ public:
 		return *this;
 	}
 	
-	virtual ~DBRecord (); // if a class has virtual functions, if should have a virtual destructor
+	virtual ~DBRecord () = default; // if a class has virtual functions, if should have a virtual destructor
 
 	bool operator== ( const DBRecord& other ) const;
 	inline bool operator!= ( const DBRecord& other ) const { return !( this->operator == ( other ) ); }
@@ -178,7 +178,7 @@ public:
 	inline void setCompleterUpdated ( const bool b_updated ) { mb_completerUpdated = b_updated; }
 	inline bool completerUpdated () const { return mb_completerUpdated; }
 
-	stringRecord toStringRecord ( const QChar& rec_sep ) const;
+	stringRecord toStringRecord ( const QChar rec_sep ) const;
 	void fromStringRecord ( const stringRecord& str_rec, const uint fromField = 0 );
 
 	inline const QString& actualRecordStr ( const uint field ) const {

@@ -19,21 +19,22 @@ void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 )
 	swap ( widget1.m_type, widget2.m_type );
 	swap ( widget1.m_subtype, widget2.m_subtype );
 	swap ( widget1.m_id, widget2.m_id );
+	swap ( widget1.m_completerid, widget2.m_completerid );
 	swap ( widget1.mb_editable, widget2.mb_editable );
 	swap ( widget1.m_data, widget2.m_data );
 	swap ( widget1.mWidgetPtr, widget2.mWidgetPtr );
 	swap ( widget1.mParent, widget2.mParent );
 	swap ( widget1.m_sheetItem, widget2.m_sheetItem );
 	swap ( widget1.m_LayoutUtilities, widget2.m_LayoutUtilities );
-	PointersList<QWidget*>::vmlist_swap ( widget1.m_UtilityWidgetsList, widget2.m_UtilityWidgetsList );
+	pointersList<QWidget*>::vmList_swap ( widget1.m_UtilityWidgetsList, widget2.m_UtilityWidgetsList );
 	swap ( widget1.mTextType, widget2.mTextType );
 }
 
 vmWidget::vmWidget ()
 	: keypressed_func ( nullptr ), contentsAltered_func ( nullptr ),
-	  m_type ( WT_WIDGET_UNKNOWN ), m_subtype ( WT_WIDGET_UNKNOWN ), m_id ( -1 ), mb_editable ( false ),
-	  mWidgetPtr ( nullptr ), mParent ( nullptr ), m_sheetItem ( nullptr ), m_LayoutUtilities ( nullptr ), 
-	  m_UtilityWidgetsList ( 2 ), mTextType ( TT_TEXT )
+	  m_type ( WT_WIDGET_UNKNOWN ), m_subtype ( WT_WIDGET_UNKNOWN ), m_id ( -1 ), m_completerid ( -1 ),
+	  mb_editable ( false ), mWidgetPtr ( nullptr ), mParent ( nullptr ), m_sheetItem ( nullptr ),
+	  m_LayoutUtilities ( nullptr ), m_UtilityWidgetsList ( 2 ), mTextType ( TT_TEXT )
 {}
 
 vmWidget::vmWidget ( const int type, const int subtype, const int id )
@@ -116,13 +117,15 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 
 			QValidator* qval ( nullptr );
 			Qt::InputMethodHints imh ( Qt::ImhNone );
+			QString input_mask;
 			switch ( t_type )
 			{
 				case TT_PHONE:
-					qval = new QDoubleValidator ( 0.0, 99999999999.0, 0 );
+					input_mask = QStringLiteral ( "(DD) dD990-9999" );
 					imh = Qt::ImhDigitsOnly;
 				break;
-				case TT_NUMBER_PLUS_SYMBOL:
+				case TT_ZIPCODE:
+					input_mask = QStringLiteral ( "D9999-999" );
 					imh = Qt::ImhFormattedNumbersOnly;
 				break;
 				case TT_PRICE:
@@ -138,6 +141,7 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 					imh = Qt::ImhFormattedNumbersOnly;
 				break;
 				case TT_UPPERCASE:
+				break;
 				case TT_TEXT:
 				break;
 			}
@@ -145,6 +149,7 @@ void vmWidget::setTextType ( const TEXT_TYPE t_type )
 			{
 				line->mTextType = this->mTextType;
 				line->setValidator ( qval );
+				line->setInputMask ( input_mask );
 			}
 			widget->setInputMethodHints ( imh );
 		}
@@ -160,6 +165,8 @@ void vmWidget::setOwnerItem ( vmTableItem* const item )
 	 m_sheetItem = item;
 	 if ( m_type == WT_LINEEDIT_WITH_BUTTON )
 		 static_cast<vmLineEditWithButton*>( toQWidget () )->lineControl ()->setOwnerItem ( item );
+	 else if ( m_type == WT_DATEEDIT )
+		static_cast<vmDateEdit*> ( toQWidget() )->setOwnerItemToDateControl ( item );
 }
 
 bool vmWidget::toggleUtilityPanel ( const int widget_idx )

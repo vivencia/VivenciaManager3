@@ -43,13 +43,19 @@ vmNumber::vmNumber ( const QString& str, const VM_NUMBER_TYPE type, const int fo
 {
 	if ( type < VMNT_PHONE )
 	{
-		for ( unsigned int i ( 0 ); i < 5; ++i )
-			nbr_part[i] = 0;
+		std::fill ( nbr_part, nbr_part+5, 0 );
+		//qfor ( auto &i : nbr_part )
+		//	i = 0;
+		//for ( unsigned int i ( 0 ); i < 5; ++i )
+		//	nbr_part[i] = 0;
 	}
 	else
 	{
-		for ( unsigned int i ( 0 ); i < 5; ++i )
-			nbr_upart[i] = 0;
+		std::fill ( nbr_upart, nbr_upart+5, 0 );
+		//for ( auto &i : nbr_upart )
+		//	i = 0;
+		//for ( unsigned int i ( 0 ); i < 5; ++i )
+		//	nbr_upart[i] = 0;
 	}
 
 	switch ( type )
@@ -267,8 +273,10 @@ void vmNumber::makeOpposite ()
 		case VMNT_DOUBLE:
 		case VMNT_TIME:
 			{
-				for ( unsigned int i ( 0 ); i < 5; ++i )
-					nbr_part[i] = 0 - nbr_part[i];
+				for ( int& i : nbr_part )
+					i = 0 - i;
+				//for ( unsigned int i ( 0 ); i < 5; ++i )
+				//	nbr_part[i] = 0 - nbr_part[i];
 			}
 		break;
 		case VMNT_PHONE:
@@ -395,11 +403,9 @@ const QString& vmNumber::toStrInt () const
 		}
 		return cached_str;
 	}
-	else
-	{
-		mQString = QString::number ( toInt () );
-		return mQString;
-	}
+
+	mQString = QString::number ( toInt () );
+	return mQString;
 }
 //------------------------------------INT-unsigned int---------------------------------------
 
@@ -520,18 +526,16 @@ const QString& vmNumber::toStrDouble () const
 		}
 		return cached_str;
 	}
-	else
-	{
-		mQString = QString::number ( toDouble (), 'f', 2 );
-		return mQString;
-	}
+
+	mQString = QString::number ( toDouble (), 'f', 2 );
+	return mQString;
 }
 //-------------------------------------DOUBLE----------------------------------------
 
 //-------------------------------------DATE------------------------------------------
 void vmNumber::fixDate ()
 {
-	int m ( static_cast<int>( month () ) ), y ( static_cast<int>( year () ) );
+	auto m ( static_cast<int>( month () ) ), y ( static_cast<int>( year () ) );
 	int d ( 0 ), days_in_month ( 0 );
 	if ( nbr_part[VM_IDX_DAY] > 0 )
 	{
@@ -586,8 +590,8 @@ void vmNumber::fixDate ()
 		}
 	}
 
-	const int years_by_months ( static_cast<int>(nbr_part[VM_IDX_MONTH] / 12 ) );
-	const int remaining_months ( static_cast<int>(nbr_part[VM_IDX_MONTH] % 12) );
+	const auto years_by_months ( static_cast<int>(nbr_part[VM_IDX_MONTH] / 12 ) );
+	const auto remaining_months ( static_cast<int>(nbr_part[VM_IDX_MONTH] % 12) );
 	y += years_by_months;
 	m += remaining_months;
 
@@ -679,16 +683,19 @@ vmNumber& vmNumber::fromStrDate ( const QString& date )
 			++n;
 			nbr_upart[VM_IDX_MONTH] = date.midRef ( n, idx - n ).toUInt ();
 			if ( nbr_upart[VM_IDX_YEAR] < 100 )
+			{
 				nbr_upart[VM_IDX_YEAR] += 2000;
+			}
 
 			setType ( VMNT_DATE );
 		}
 		else
 		{
 			if ( date.contains ( QStringLiteral ( "de" ) ) )
+			{
 				return dateFromLongString ( date );
-			else
-				return dateFromFilenameDate ( date );
+			}
+			return dateFromFilenameDate ( date );
 		}
 		setCached ( false );
 	}
@@ -943,47 +950,48 @@ vmNumber& vmNumber::dateFromLongString ( const QString& date, const bool cache )
 const QString& vmNumber::toDate ( const VM_DATE_FORMAT format ) const
 {
 	if ( m_type == VMNT_UNSET )
-		const_cast<vmNumber*> ( this )->setType ( VMNT_DATE );
+		setType ( VMNT_DATE );
 
 	if ( isDate () )
 	{
 		if ( isCached () && format == nbr_upart[VM_IDX_STRFORMAT] )
 			return cached_str;
-		else
-		{
-			const QString strYear ( year () < 100 ? QStringLiteral ( "20" ) + QString::number ( year () ) : QString::number ( year () ) );
-			const QString strDay ( day () < 10 ? QStringLiteral ( "0" ) + QString::number ( day () ) : QString::number ( day () ) );
-			const QString strMonth ( month () < 10 ? QStringLiteral ( "0" ) + QString::number ( month () ) : QString::number ( month () ) );
-			const_cast<vmNumber*> ( this )->nbr_upart[VM_IDX_STRFORMAT] = format;
 
-			switch ( format )
+		const QString strYear ( year () < 100 ? QStringLiteral ( "20" ) + QString::number ( year () ) : QString::number ( year () ) );
+		const QString strDay ( day () < 10 ? QStringLiteral ( "0" ) + QString::number ( day () ) : QString::number ( day () ) );
+		const QString strMonth ( month () < 10 ? QStringLiteral ( "0" ) + QString::number ( month () ) : QString::number ( month () ) );
+		nbr_upart[VM_IDX_STRFORMAT] = format;
+
+		switch ( format )
+		{
+			case VDF_HUMAN_DATE:
+				cached_str = strDay + CHR_F_SLASH + strMonth + CHR_F_SLASH + strYear;
+			break;
+			case VDF_DB_DATE:
+				cached_str = strYear + CHR_F_SLASH + strMonth + CHR_F_SLASH + strDay;
+			break;
+			case VDF_FILE_DATE:
+				cached_str = strYear + strMonth + strDay;
+			break;
+			case VDF_LONG_DATE:
 			{
-				case VDF_HUMAN_DATE:
-					cached_str = strDay + CHR_F_SLASH + strMonth + CHR_F_SLASH + strYear;
-				break;
-				case VDF_DB_DATE:
-					cached_str = strYear + CHR_F_SLASH + strMonth + CHR_F_SLASH + strDay;
-				break;
-				case VDF_FILE_DATE:
-					cached_str = strYear + strMonth + strDay;
-				break;
-				case VDF_LONG_DATE:
-					cached_str = strDay + QLatin1String ( " de " ) + MONTHS[nbr_upart[VM_IDX_MONTH]] +
-							 QLatin1String ( " de " ) + strYear;
-				break;
-				case VDF_DROPBOX_DATE:
-				case VDF_MYSQL_DATE:
-					cached_str = strYear + CHR_HYPHEN + strMonth + CHR_HYPHEN + strDay;
-				break;
+				const auto m_month ( (month () >= 1 && month () <= 12) ? month () : 1 );
+				cached_str = strDay + QStringLiteral ( " de " ) + MONTHS[m_month] +
+						 QStringLiteral ( " de " ) + strYear;
 			}
-			setCached ( true );
-			return cached_str;
+			break;
+			case VDF_DROPBOX_DATE:
+			case VDF_MYSQL_DATE:
+				cached_str = strYear + CHR_HYPHEN + strMonth + CHR_HYPHEN + strDay;
+			break;
 		}
+		setCached ( true );
+		return cached_str;
 	}
 	return emptyString;
 }
 
-void vmNumber::fromQDate ( const QDate& date )
+void vmNumber::fromQDate ( const QDate date )
 {
 	if ( !isDate () )
 	{
@@ -996,7 +1004,7 @@ void vmNumber::fromQDate ( const QDate& date )
 	setCached ( false );
 }
 
-const QDate& vmNumber::toQDate () const
+const QDate vmNumber::toQDate () const
 {
 	if ( isDate () )
 	{
@@ -1017,9 +1025,10 @@ bool vmNumber::isDateWithinRange ( const vmNumber& checkDate, const unsigned int
 		return false;
 	tempDate = checkDate;
 	tempDate.setDate ( static_cast<int>(0 - days), static_cast<int>(0 - months), static_cast<int>(0 - years), true );
-	if ( *this < tempDate )
+	return *this >= tempDate;
+	/*if ( *this < tempDate )
 		return false;
-	return true;
+	return true;*/
 }
 
 unsigned int vmNumber::julianDay () const
@@ -1050,14 +1059,18 @@ unsigned int vmNumber::dayOfYear () const
 	return n;
 }
 
+
 // Source: http://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
 unsigned int vmNumber::dayOfWeek () const
 {
 	if ( isDate () )
 	{
+
 		const unsigned int y ( year () - ( ( year () >= 2000 ) ? 2000 : 1900 ) );
 		const unsigned int c ( ( year () >= 2000 ) ? 6 : 0 );
-		const unsigned int dow ( ( day () + static_cast<unsigned int>(months_table[month()]) + y + ( y / 4 ) + c ) % 7 );
+
+		const auto m_month ( (month () >= 1 && month () <= 12) ? month () : 1 );
+		const auto dow ( ( day () + static_cast<unsigned int>(months_table[m_month]) + y + ( y / 4 ) + c ) % 7 );
 		return dow;
 	}
 	return 0;
@@ -1128,11 +1141,16 @@ vmNumber& vmNumber::fromStrPhone ( const QString& phone )
 		unsigned int idx ( VM_IDX_PREFIX );
 		unsigned int tens ( 10 );
 		unsigned int chr ( 0 );
-		const unsigned int len ( static_cast<unsigned int>( phone.length () ) );
+		const auto len ( static_cast<unsigned int>( phone.length () ) );
+
 		do
 		{
 			if ( phone.at ( static_cast<int>( chr ) ).isDigit () )
 			{
+				if ( idx > VM_IDX_PHONE2 )
+				{
+					break;
+				}
 				nbr_upart[idx] += static_cast<unsigned int>( phone.at ( static_cast<int>( chr ) ).digitValue () ) * tens;
 				tens /= 10;
 			
@@ -1233,7 +1251,7 @@ const QString& vmNumber::toPhone () const
 		
 		case VMNT_UNSET:
 		case VMNT_PHONE:
-			const_cast<vmNumber*> ( this )->m_type = VMNT_PHONE;
+			m_type = VMNT_PHONE;
 			if ( !isCached () )
 			{
 				makeCachedStringForPhone ();
@@ -1351,7 +1369,7 @@ vmNumber& vmNumber::fromStrPrice ( const QString& price )
 		QString simple_price ( price );
 		simple_price.remove ( CHR_SPACE );
 		unsigned int chr ( 0 ), idx ( VM_IDX_TENS );
-		const unsigned int len ( static_cast<unsigned int>(simple_price.length ()) );
+		const auto len ( static_cast<unsigned int>(simple_price.length ()) );
 		QChar qchr;
 		bool is_negative ( false );
 		nbr_part[VM_IDX_TENS] = nbr_part[VM_IDX_CENTS] = 0;
@@ -1470,7 +1488,7 @@ const QString& vmNumber::toPrice () const
 		break;
 		case VMNT_UNSET:
 		case VMNT_PRICE:
-			const_cast<vmNumber*> ( this )->m_type = VMNT_PRICE;
+			m_type = VMNT_PRICE;
 			if ( !isCached () )
 			{
 				formatPrice ( cached_str, nbr_part[VM_IDX_TENS], static_cast<unsigned int>(nbr_part[VM_IDX_CENTS]) );
@@ -1604,10 +1622,10 @@ vmNumber& vmNumber::fromStrTime ( const QString& time )
 			setCached ( false );
 			return *this;
 		}
-		else
-		{
+		//else
+		//{
 			//	getTimeFromFancyTimeString ( time, mQString, true );
-		}
+		//}
 	}
 	clear ();
 	return *this;
@@ -1657,7 +1675,7 @@ vmNumber& vmNumber::fromTrustedStrTime ( const QString& time, const VM_TIME_FORM
 	return *this;
 }
 
-void vmNumber::fromQTime ( const QTime &time )
+void vmNumber::fromQTime ( const QTime time )
 {
 	if ( !isTime () )
 	{
@@ -1689,19 +1707,19 @@ const QString& vmNumber::toTime ( const VM_TIME_FORMAT format ) const
 		break;
 		case VMNT_UNSET:
 		case VMNT_TIME:
-			const_cast<vmNumber*> ( this )->m_type = VMNT_TIME;
+			m_type = VMNT_TIME;
 			if ( !isCached () || format != nbr_part[VM_IDX_STRFORMAT] )
 			{
 				cached_str = formatTime ( this->hours (), this->minutes (), this->seconds (), format );
 				setCached ( true );
-				const_cast<vmNumber*> ( this )->nbr_part[VM_IDX_STRFORMAT] = format;
+				nbr_part[VM_IDX_STRFORMAT] = format;
 			}
 			return cached_str;
 	}
 	return formatTime ( hours, minutes, 0, format );
 }
 
-const QTime& vmNumber::toQTime () const
+const QTime vmNumber::toQTime () const
 {
 	if ( isTime () )
 		mQTime.setHMS ( hours (), minutes (), seconds () );
@@ -1712,10 +1730,10 @@ const QTime& vmNumber::toQTime () const
 
 const QString& vmNumber::formatTime ( const int hour, const int min, const int sec, const VM_TIME_FORMAT format ) const
 {
-	unsigned int abs_hour ( static_cast<unsigned int>( ::fabs ( static_cast<double>( hour ) ) ) );
+	auto abs_hour ( static_cast<unsigned int>( ::fabs ( static_cast<double>( hour ) ) ) );
 	abs_hour += static_cast<unsigned int>( ( min / 60 ) );
-	const unsigned int abs_min ( min - ( min / 60 ) * 60 );
-	const unsigned int abs_sec ( sec - ( sec / 60 ) * 60 );
+	const int abs_min ( min - ( min / 60 ) * 60 );
+	const int abs_sec ( sec - ( sec / 60 ) * 60 );
 	QString str_hour, str_min, str_sec;
 	str_hour.setNum ( abs_hour );
 	str_min.setNum ( abs_min );
@@ -1754,13 +1772,13 @@ const QString& vmNumber::formatTime ( const int hour, const int min, const int s
 				abs_hour %= 24;
 				str_hour.setNum ( abs_hour );
 				mQString.setNum ( abs_days );
-				mQString += QLatin1String ( " days, ") + str_hour + QLatin1String ( " hours, ")
-									+ str_min + QLatin1String ( " minutes, and " ) + str_sec + QLatin1String ( " seconds" );
+				mQString += QStringLiteral ( " days, ") + str_hour + QStringLiteral ( " hours, ")
+									+ str_min + QStringLiteral ( " minutes, and " ) + str_sec + QStringLiteral ( " seconds" );
 			}
 			else
 			{
-				mQString = str_hour + QLatin1String ( " hours, ") + str_min + QLatin1String ( " minutes, and " ) 
-									+ str_sec + QLatin1String ( " seconds" );
+				mQString = str_hour + QStringLiteral ( " hours, ") + str_min + QStringLiteral ( " minutes, and " )
+									+ str_sec + QStringLiteral ( " seconds" );
 			}
 		break;
 	}
@@ -1789,7 +1807,7 @@ const vmNumber& vmNumber::currentTime ()
 //-------------------------------------TIME------------------------------------------
 
 //-------------------------------------OPERATORS------------------------------------------
-vmNumber& vmNumber::operator= ( const QDate& date )
+vmNumber& vmNumber::operator= ( const QDate date )
 {
 	static_cast<void>(fromQDate ( date ));
 	return *this;
@@ -2027,7 +2045,7 @@ bool vmNumber::operator<= ( const vmNumber& vmnumber ) const
 		break;
 		case VMNT_DATE:
 		case VMNT_PHONE:
-			if ( ( vmnumber.m_type == VMNT_DATE ) || ( vmnumber.m_type == VMNT_DATE ) )
+			if ( ( vmnumber.m_type == VMNT_DATE ) || ( vmnumber.m_type == VMNT_PHONE ) )
 			{
 				if ( nbr_upart[2] <= vmnumber.nbr_upart[2] )
 				{
@@ -2253,7 +2271,7 @@ bool vmNumber::operator> ( const vmNumber& vmnumber ) const
 		break;
 		case VMNT_DATE:
 		case VMNT_PHONE:
-			if ( ( vmnumber.m_type == VMNT_DATE ) || ( vmnumber.m_type == VMNT_DATE ) )
+			if ( ( vmnumber.m_type == VMNT_DATE ) || ( vmnumber.m_type == VMNT_PHONE ) )
 			{
 				if ( nbr_upart[2] >= vmnumber.nbr_upart[2] )
 				{
@@ -2499,7 +2517,7 @@ vmNumber& vmNumber::operator+= ( const double number )
 		case VMNT_DOUBLE:
 		case VMNT_PRICE:
 		{
-			const int tens ( static_cast<int>( number ) );
+			const auto tens ( static_cast<int>( number ) );
 			const double cents ( ( number - static_cast<double>( number ) ) * 100.111 );
 			setPrice ( tens, static_cast<int>( cents ), true );
 		}
@@ -2574,11 +2592,11 @@ vmNumber& vmNumber::operator/= ( const vmNumber& vmnumber )
 				break;
 				case VMNT_DOUBLE:
 					if ( ( vmnumber.nbr_part[0] ) != 0 && ( vmnumber.nbr_part[1] != 0 ) )
-						fromTrustedStrDouble ( useCalc ( vmnumber, *this, QLatin1String ( " / " ) ) );
+						fromTrustedStrDouble ( useCalc ( vmnumber, *this, QStringLiteral ( " / " ) ) );
 				break;
 				case VMNT_PRICE:
 					if ( ( vmnumber.nbr_part[0] ) != 0 && ( vmnumber.nbr_part[1] != 0 ) )
-						fromStrPrice ( useCalc ( vmnumber, *this, QLatin1String ( " / " ) ) );
+						fromStrPrice ( useCalc ( vmnumber, *this, QStringLiteral ( " / " ) ) );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2624,10 +2642,10 @@ vmNumber& vmNumber::operator/= ( const int number )
 			nbr_part[0] /= number;
 		break;
 		case VMNT_DOUBLE:
-			fromTrustedStrDouble ( useCalc ( vmNumber ( number ), *this, QLatin1String ( " / " ) ) );
+			fromTrustedStrDouble ( useCalc ( vmNumber ( number ), *this, QStringLiteral ( " / " ) ) );
 		break;
 		case VMNT_PRICE:
-			fromStrPrice ( useCalc ( vmNumber ( number ), *this, QLatin1String ( " / " ) ) );
+			fromStrPrice ( useCalc ( vmNumber ( number ), *this, QStringLiteral ( " / " ) ) );
 		break;
 		case VMNT_TIME:
 			setTime ( 0, 0, (hours () + minutes () + seconds ()) / number, false, true );
@@ -2688,10 +2706,10 @@ vmNumber& vmNumber::operator*= ( const vmNumber& vmnumber )
 					nbr_part[1] *= static_cast<int> ( vmnumber.nbr_upart[1] );
 				break;
 				case VMNT_PRICE:
-					fromStrPrice ( useCalc ( vmnumber, *this, QLatin1String ( " / " ) ) );
+					fromStrPrice ( useCalc ( vmnumber, *this, QStringLiteral ( " / " ) ) );
 				break;
 				case VMNT_DOUBLE:
-					fromTrustedStrDouble ( useCalc ( vmnumber, *this, QLatin1String ( " / " ) ) );
+					fromTrustedStrDouble ( useCalc ( vmnumber, *this, QStringLiteral ( " / " ) ) );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -2734,10 +2752,10 @@ vmNumber& vmNumber::operator*= ( const int number )
 			nbr_part[0] *= number;
 		break;
 		case VMNT_PRICE:
-			fromStrPrice ( useCalc ( vmNumber ( number ), *this, QLatin1String ( " * " ) ) );
+			fromStrPrice ( useCalc ( vmNumber ( number ), *this, QStringLiteral ( " * " ) ) );
 		break;
 		case VMNT_DOUBLE:
-			fromTrustedStrDouble ( useCalc ( vmNumber ( number ), *this, QLatin1String ( " * " ) ) );
+			fromTrustedStrDouble ( useCalc ( vmNumber ( number ), *this, QStringLiteral ( " * " ) ) );
 		break;
 		case VMNT_DATE:
 			setDate ( static_cast<int>(nbr_upart[VM_IDX_DAY]) * number,
@@ -2918,10 +2936,10 @@ vmNumber vmNumber::operator+ ( const vmNumber& vmnumber ) const
 					}
 				break;
 				case VMNT_PRICE:
-					ret.fromStrPrice ( useCalc ( vmnumber, ret, QLatin1String ( " + " ) ) );
+					ret.fromStrPrice ( useCalc ( vmnumber, ret, QStringLiteral ( " + " ) ) );
 				break;
 				case VMNT_DOUBLE:
-					ret.fromTrustedStrDouble ( useCalc ( vmnumber, ret, QLatin1String ( " + " ) ) );
+					ret.fromTrustedStrDouble ( useCalc ( vmnumber, ret, QStringLiteral ( " + " ) ) );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -3016,10 +3034,10 @@ vmNumber vmNumber::operator/ ( const vmNumber& vmnumber ) const
 					}
 				break;
 				case VMNT_PRICE:
-					ret.fromStrPrice ( useCalc ( vmnumber, ret, QLatin1String ( " / " ) ) );
+					ret.fromStrPrice ( useCalc ( vmnumber, ret, QStringLiteral ( " / " ) ) );
 				break;
 				case VMNT_DOUBLE:
-					ret.fromTrustedStrDouble ( useCalc ( vmnumber, ret, QLatin1String ( " / " ) ) );
+					ret.fromTrustedStrDouble ( useCalc ( vmnumber, ret, QStringLiteral ( " / " ) ) );
 				break;
 				case VMNT_UNSET:
 				case VMNT_PHONE:
@@ -3080,7 +3098,9 @@ vmNumber vmNumber::operator/ ( const int number ) const
 vmNumber vmNumber::operator/ ( const unsigned int number ) const
 {
 	if ( number > INT_MAX )
+	{
 		return emptyNumber;
+	}
 	return operator/ ( static_cast<int>(number) );
 }
 

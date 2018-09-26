@@ -8,17 +8,18 @@ constexpr DB_FIELD_TYPE GENERAL_FIELDS_TYPE[GENERAL_FIELD_COUNT] =
 	DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_SHORTTEXT, DBTYPE_NUMBER, DBTYPE_FILE, DBTYPE_SHORTTEXT
 };
 
-bool updateGeneralTable ()
+bool updateGeneralTable ( const unsigned char /*current_table_version*/	)
 {
-#ifdef TABLE_UPDATE_AVAILABLE
-	VDB ()->deleteTable ( generalTable::t_info.table_name );
-	VDB ()->createTable ( &generalTable::t_info );
-	VDB ()->optimizeTable ( &generalTable::t_info );
-	return true;
-#else
-	VivenciaDB::optimizeTable ( &generalTable::t_info );
 	return false;
-#endif
+//#ifdef TABLE_UPDATE_AVAILABLE
+//	VDB ()->deleteTable ( generalTable::t_info.table_name );
+//	VDB ()->createTable ( &generalTable::t_info );
+//	VDB ()->optimizeTable ( &generalTable::t_info );
+//	return true;
+//#else
+//	VivenciaDB::optimizeTable ( &generalTable::t_info );
+//	return false;
+//#endif
 }
 
 const TABLE_INFO generalTable::t_info =

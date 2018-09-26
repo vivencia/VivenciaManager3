@@ -25,7 +25,7 @@ DB_Image::DB_Image ( QWidget* parent )
 	imageViewer = new QLabel;
 	imageViewer->setScaledContents ( true );
 	imageViewer->setFocusPolicy ( Qt::WheelFocus );
-	imageViewer->setToolTip ( "Zoom in (+)\nZoom out (-)\nToggle on/off Fit to Window (F)" );
+	imageViewer->setToolTip ( TR_FUNC ( "Zoom in (+)\nZoom out (-)\nToggle on/off Fit to Window (F)" ) );
 
 	scrollArea = new QScrollArea ( this );
 	scrollArea->setBackgroundRole ( QPalette::Dark );
@@ -40,8 +40,6 @@ DB_Image::DB_Image ( QWidget* parent )
 
 	images_array.setAutoDeleteItem ( true );
 }
-
-DB_Image::~DB_Image () {}
 
 void DB_Image::showImage ( const int rec_id, const QString& path )
 {
@@ -134,6 +132,10 @@ bool DB_Image::findImagesByPath ( const QString& path )
 
 inline void DB_Image::reloadInternal ( RECORD_IMAGES* ri, const QString& path )
 {
+	const int list_size ( fileOps::fileCount ( path ) );
+	if ( list_size <= 0 )
+		return;
+	ri->files.reserve (	static_cast<uint>( list_size ) );
 	fileOps::lsDir ( ri->files, path, name_filters );
 }
 
@@ -142,7 +144,7 @@ bool DB_Image::hookUpDir ( const int rec_id, const QString& path )
 	if ( !fileOps::exists ( path ).isOn () )
 		return false;
 
-	RECORD_IMAGES* ri ( new RECORD_IMAGES );
+	auto ri ( new RECORD_IMAGES );
 	ri->rec_id = ( rec_id != -1 ) ? rec_id : -2;
 	ri->path = path;
 	reloadInternal ( ri, path );
@@ -184,9 +186,10 @@ void DB_Image::addImagesList ( vmComboBox* combo ) const
 {
 	if ( images_array.currentIndex () >= 0 )
 	{
-		const PointersList<fileOps::st_fileInfo*> &files ( images_array.current ()->files );
+		const pointersList<fileOps::st_fileInfo*> &files ( images_array.current ()->files );
 		for ( uint i ( 0 ); i < files.count (); ++i )
-			combo->insertItemSorted ( files.at ( i )->filename );
+			//combo->insertItemSorted ( files.at ( i )->filename );
+			combo->insertItem ( files.at ( i )->filename, -1, false );
 	}
 }
 
@@ -203,8 +206,7 @@ void DB_Image::showSpecificImage ( const int index )
 		funcImageRequested ( index );
 		return;
 	}
-	else
-		loadImage ( emptyString );
+	loadImage ( emptyString );
 }
 
 int DB_Image::showFirstImage ()
@@ -398,7 +400,7 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 			break;
 		case QEvent::KeyPress:
 		{
-			const QKeyEvent* k ( static_cast<QKeyEvent*>( e ) );
+			const auto k ( static_cast<QKeyEvent*>( e ) );
 			switch  ( k->key () )
 			{
 				default:
@@ -437,7 +439,7 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 		case  QEvent::MouseButtonPress:
 			if ( images_array.currentIndex () >= 0 )
 			{
-				const QMouseEvent* m ( static_cast<QMouseEvent*> ( e ) );
+				const auto m ( static_cast<QMouseEvent*> ( e ) );
 				if ( m->button () == Qt::LeftButton )
 				{
 					setCursor ( Qt::ClosedHandCursor );
@@ -455,7 +457,7 @@ bool DB_Image::eventFilter ( QObject* o, QEvent* e )
 		case QEvent::MouseMove:
 			if ( images_array.currentIndex () >= 0 )
 			{
-				const QMouseEvent* m ( static_cast<QMouseEvent*>(e) );
+				const auto m ( static_cast<QMouseEvent*>(e) );
 				if ( m->buttons () & Qt::LeftButton )
 				{
 					scrollBy ( mouse_ex - m->x (), mouse_ey - m->y () );

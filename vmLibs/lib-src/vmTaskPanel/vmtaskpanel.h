@@ -16,7 +16,7 @@ class vmTaskPanel : public QFrame
 
 public:
 	explicit vmTaskPanel ( const QString& title = nullptr, QWidget* parent = nullptr );
-	virtual ~vmTaskPanel ();
+	virtual ~vmTaskPanel () = default;
 
 	void setTitle ( const QString& new_title );
 	/** Adds a widget \a w to the vmTaskPanel's vertical layout.
@@ -66,7 +66,7 @@ protected:
 	QVBoxLayout* mLayout;
 	
 private:
-	PointersList<vmActionGroup*> mGroups;
+	pointersList<vmActionGroup*> mGroups;
 };
 
 #endif // VMTASKPANEL_H

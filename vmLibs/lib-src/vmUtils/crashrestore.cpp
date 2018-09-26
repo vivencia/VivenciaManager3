@@ -2,10 +2,9 @@
 #include "vmlibs.h"
 #include "heapmanager.h"
 
-#include "textdb.h"
-
-#include <vmUtils/fileops.h>
-#include <vmUtils/configops.h>
+#include "vmtextfile.h"
+#include "fileops.h"
+#include "configops.h"
 
 bool crashRestore::bNewDBSettion ( false );
 
@@ -20,9 +19,9 @@ restoreManager::~restoreManager ()
 
 void restoreManager::appExitingProcedures ()
 {
-	PointersList<fileOps::st_fileInfo*> temp_files;
+	pointersList<fileOps::st_fileInfo*> temp_files;
 	configOps config;
-	fileOps::lsDir ( temp_files, config.appDataDir (), QStringList () << QLatin1String ( ".crash" ) );
+	fileOps::lsDir ( temp_files, config.appDataDir (), QStringList () << QStringLiteral ( ".crash" ) );
 	for ( uint i ( 0 ); i < temp_files.count (); ++i )
 	{
 		if ( fileOps::fileSize ( temp_files.at ( i )->fullpath ) <= 0 )
@@ -48,11 +47,10 @@ void restoreManager::saveSession ()
 crashRestore::crashRestore ( const QString& str_id )
 	: m_statepos ( -1 ), mbInfoLoaded ( false )
 {
-	configOps config;
-	m_filename = configOps::appDataDir () + str_id + QLatin1String ( ".crash" );
+	m_filename = configOps::appDataDir () + str_id + QStringLiteral ( ".crash" );
 	fileCrash = new dataFile ( m_filename );
 	// by using different separators we make sure there is no conflict with the data saved
-	fileCrash->setRecordSeparationChar ( public_table_sep, public_rec_sep );
+	fileCrash->setRecordSeparationChar ( recordSeparatorForTable (), fieldSeparatorForRecord () );
 }
 
 crashRestore::~crashRestore ()
@@ -72,24 +70,9 @@ bool crashRestore::needRestore ()
 	if ( crashRestore::newDBSession () )
 		return false;
 	
-	bool ret ( false );
 	if ( crashInfoLoaded.isUndefined () )
-	{
-		if ( fileOps::exists ( m_filename ).isOn () )
-		{
-			if ( fileCrash->load ().isOn () )
-				ret = ( fileCrash->recCount () > 0 );
-		}
-		if ( ret )
-			crashInfoLoaded.setOn ();
-		else {
-			crashInfoLoaded.setOff ();
-			done ();
-		}
-	}
-	else
-		ret = crashInfoLoaded.isOn ();
-	return ret;
+		crashInfoLoaded = fileCrash->load ();
+	return crashInfoLoaded.isOn ();
 }
 
 int crashRestore::commitState ( const int id, const stringRecord& value )
@@ -101,7 +84,17 @@ int crashRestore::commitState ( const int id, const stringRecord& value )
 		fileCrash->appendRecord ( value );
 	}
 	else
-		fileCrash->changeRecord ( id, value );
+	{
+		stringRecord temp_rec;
+		temp_rec.setFieldSeparationChar ( fieldSeparatorForRecord () );
+		if ( fileCrash->getRecord ( temp_rec, id ) )
+		{
+			if ( temp_rec.toString () != value.toString () )
+				fileCrash->changeRecord ( id, value );
+		}
+		else
+			fileCrash->insertRecord ( id, value );
+	}
 	fileCrash->commit ();
 	if ( fileCrash->recCount () > 0 )
 		crashInfoLoaded.setOn ();
@@ -128,11 +121,10 @@ const stringRecord& crashRestore::restoreState () const
 {
 	if ( crashInfoLoaded.isOn () )
 	{
-		fileCrash->getRecord ( const_cast<crashRestore*> ( this )->m_stateinfo, m_statepos );
+		fileCrash->getRecord ( m_stateinfo, m_statepos );
 		return m_stateinfo;
 	}
-	else
-		return emptyStrRecord;
+	return emptyStrRecord;
 }
 
 const stringRecord& crashRestore::restoreFirstState () const
@@ -149,7 +141,7 @@ const stringRecord& crashRestore::restoreNextState () const
 		restoreState ();
 		if ( m_stateinfo.isOK () )
 		{
-			const_cast<crashRestore*>( this )->mbInfoLoaded = ( static_cast<uint>( m_statepos ) == fileCrash->recCount () - 1 );
+			mbInfoLoaded = ( static_cast<uint>( m_statepos ) == fileCrash->recCount () - 1 );
 			return m_stateinfo;
 		}
 	}

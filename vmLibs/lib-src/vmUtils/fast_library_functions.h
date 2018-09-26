@@ -14,7 +14,6 @@ namespace VM_LIBRARY_FUNCS
 	{
 		QApplication::clipboard ()->setText ( str, QClipboard::Clipboard );
 	}
-	//int insertStringListItem ( QStringList& list, const QString& text );
 }
 
 template <typename T>
@@ -73,11 +72,6 @@ int insertStringIntoContainer ( const T& list, const QString& text,
 	for ( ; static_cast<uint>( i ) < n_list_items; ++i )
 	{
 		str = get_func ( i );
-		/*if ( !b_insert_if_exists )
-		{
-			if ( text.compare ( str, Qt::CaseInsensitive ) == 0 )
-				return i; // item already in list, do nothing
-		}*/
 		// Insert item alphabetically
 		for ( x = 0; x < text.count (); ++x )
 		{
@@ -88,10 +82,14 @@ int insertStringIntoContainer ( const T& list, const QString& text,
 				else
 					break;
 			}
-			if ( text.at ( x ) > str.at ( x ) )
+			if ( text.at ( x ).toLower () > str.at ( x ).toLower () )
+			{
 				break;
-			else if ( text.at ( x ) == str.at ( x ) )
+			}
+			else if ( text.at ( x ).toLower () == str.at ( x ).toLower () )
+			{
 				continue;
+			}
 			else
 			{
 				insert_func ( i, text );

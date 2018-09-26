@@ -6,10 +6,11 @@
 #include <QtCore/QMutex>
 #include <QtCore/QWaitCondition>
 
+#include <climits>
+
 extern "C"
 {
 	#include <sys/inotify.h>
-	#include <limits.h>
 	#include <unistd.h>
 }
 
@@ -37,7 +38,7 @@ vmFileMonitor::~vmFileMonitor ()
 {
 	close ( m_inotifyFd );
 	m_inotifyFd = -1;
-	emit finished ();
+	//emit finished ();
 }
 
 bool vmFileMonitor::paused () const
@@ -51,8 +52,7 @@ bool vmFileMonitor::paused () const
 		mutex.unlock ();
 		return paused ();
 	}
-	else
-		return false;
+	return false;
 }
 
 void vmFileMonitor::startWorks ()
@@ -67,6 +67,12 @@ void vmFileMonitor::startWorks ()
 	for (;;)
 	{
 		numRead = read ( m_inotifyFd, buf, BUF_LEN );
+
+		if ( numRead == -1 )
+		{
+			DBG_OUT ( "read() from inotify fd returned ", numRead, true, true )
+			break;
+		}
 		/*if ( numRead == 0 )
 		{
 			DBG_OUT ( "read() from inotify fd returned 0", true, true )
@@ -108,7 +114,7 @@ void vmFileMonitor::startMonitoring ( const QString& filename, const uint event 
 		m_inotifyFd = inotify_init ();
 		if ( m_inotifyFd == -1 )
 		{
-			DBG_OUT ( "inotify instance creation error", true, true )
+			DBG_OUT ( "inotify instance creation error", "", false, true )
 			return;
 		}
 	}
@@ -118,15 +124,15 @@ void vmFileMonitor::startMonitoring ( const QString& filename, const uint event 
 		return;
 
 	const QString dir ( fileOps::dirFromPath ( filename ) );
-	const int wd ( inotify_add_watch ( m_inotifyFd, dir.toLocal8Bit ().constData(), IN_ALL_EVENTS ) );
+	const int wd ( inotify_add_watch ( m_inotifyFd, dir.toUtf8 ().constData(), IN_ALL_EVENTS ) );
 	if ( wd == -1 )
 	{
-		DBG_OUT ( "inotify add watch failed: " + filename, true, true )
+		DBG_OUT ( "inotify add watch failed: ", filename, true, true )
 		return;
 	}
 
 	qDebug () << "inotify add watch succeeded. wd == " << wd;
-	watched_files* new_watch = new watched_files;
+	auto new_watch = new watched_files;
 	new_watch->filename = fileOps::fileNameWithoutPath ( filename );
 	new_watch->wd = wd;
 	new_watch->event = event;
@@ -141,7 +147,7 @@ void vmFileMonitor::stopMonitoring ( const QString& filename )
 	{
 		if ( inotify_rm_watch ( m_inotifyFd, filesList.at ( idx )->wd ) == -1 )
 		{
-			DBG_OUT ( "inotify rm watch failed: " + filename, true, true )
+			DBG_OUT ( "inotify rm watch failed: ", filename, true, true )
 			emit finished ();
 		}
 		else
@@ -166,5 +172,5 @@ void vmFileMonitor::handleInotifyEvent ( struct inotify_event* i_ev )
 		return;
 
 	//if ( i_ev->mask & w_file->event )
-		m_eventFunc ( w_file->filename, i_ev->mask );
+	m_eventFunc ( w_file->filename, i_ev->mask );
 }

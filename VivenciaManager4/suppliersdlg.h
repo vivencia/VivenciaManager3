@@ -33,10 +33,10 @@ private:
 
 	void saveWidget ( vmWidget* widget, const int id );
 	void setupUI ();
-	void retrieveInfo ();
+	void retrieveInfo ( const QString& name );
 	void controlForms ();
 	void keyPressedSelector ( const QKeyEvent* ke );
-	void clearForms ( const bool b_clear_supname = false );
+	void clearForms ();
 	void txtSupplier_textAltered ( const vmWidget* const sender );
 	void contactsAdd ( const QString& info, const vmWidget* const sender );
 	void contactsDel ( const int idx, const vmWidget* const sender );
@@ -47,9 +47,7 @@ private:
 	void btnCopyToEditorClicked ();
 	void btnCopyAllToEditorClicked ();
 
-	bool m_supchanged, m_bEditing;
-
-	PointersList<vmWidget*> widgetList;
+	pointersList<vmWidget*> widgetList;
 	vmLineEdit* txtSupID;
 	vmLineEdit* txtSupName;
 	vmLineEdit* txtSupStreet;

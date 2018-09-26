@@ -96,7 +96,7 @@ void documentEditor::createActions ()
 	newAct->setStatusTip ( TR_FUNC ( "Create a new document" ) );
 	static_cast<void>( connect ( newAct, &QAction::triggered, this, [&] ( const bool ) { return startNewTextEditor ()->show (); } ) );
 
-	newReportAct = new vmAction ( -1, ( ICON ( "report" ) ), TR_FUNC ( "New &Report" ), this );
+	newReportAct = new vmAction ( -1, ( ICON ( "documentation" ) ), TR_FUNC ( "New &Report" ), this );
 	newReportAct->setShortcut ( QKeySequence::Refresh );
 	newReportAct->setStatusTip ( TR_FUNC ( "Create a new report" ) );
 	static_cast<void>( connect ( newReportAct, &QAction::triggered, this, [&] ( const bool ) { return startNewReport ()->show (); } ) );
@@ -131,7 +131,7 @@ void documentEditor::createActions ()
 	pasteAct->setStatusTip ( TR_FUNC ( "Paste the clipboard's contents into the current selection" ) );
 	static_cast<void>( connect ( pasteAct, &QAction::triggered, this, [&] ( const bool ) { if ( activeDocumentWindow () ) return activeDocumentWindow ()->paste (); } ) );
 
-	closeAct = new vmAction ( -1, ICON ( "close-active-window" ), TR_FUNC ( "Cl&ose" ), this );
+	closeAct = new vmAction ( -1, ICON ( "document-close" ), TR_FUNC ( "Cl&ose" ), this );
 	closeAct->setShortcut ( QKeySequence::Close );
 	closeAct->setStatusTip ( TR_FUNC ( "Close the active window" ) );
 	static_cast<void>( connect ( closeAct, &QAction::triggered, this, [&] ( const bool ) { return closeTab ( tabDocuments->currentIndex () ); } ) );
@@ -160,10 +160,13 @@ void documentEditor::createActions ()
 
 	calcAct = new vmAction ( -1, ICON ( "calc" ), TR_FUNC ( "Show calculator" ), this );
 	calcAct->setStatusTip ( TR_FUNC ( "Show the calculator window" ) );
-	static_cast<void>( connect ( calcAct, &QAction::triggered, this, [&] ( const bool ) {
-		simpleCalculator* calc ( new simpleCalculator );
-		calc->setAttribute ( Qt::WA_DeleteOnClose );
-		return calc->showCalc ( mapToGlobal ( pos () ), nullptr, this ); } ) );
+	static_cast<void>( connect ( calcAct, &QAction::triggered, this, [&] ( const bool )
+		{
+			auto calc ( new simpleCalculator );
+			calc->setAttribute ( Qt::WA_DeleteOnClose );
+			return calc->showCalc ( mapToGlobal ( pos () ), nullptr, this );
+		}
+	) );
 }
 
 void documentEditor::createMenus ()
@@ -243,13 +246,13 @@ void documentEditor::updateMenus ( const int tab_index )
 
 	if ( hasMdiChild )
 	{
-		documentEditorWindow* dew ( static_cast<documentEditorWindow*>( tabDocuments->widget ( tab_index ) ) );
+		auto dew ( dynamic_cast<documentEditorWindow*>( tabDocuments->widget ( tab_index ) ) );
 		if ( dew != nullptr )
 		{
 			if ( dew->editorType () & TEXT_EDITOR_SUB_WINDOW )
-				TEXT_EDITOR_TOOLBAR ()->setCurrentWindow ( static_cast<textEditor*> ( dew ) );
+				TEXT_EDITOR_TOOLBAR ()->setCurrentWindow ( dynamic_cast<textEditor*> ( dew ) );
 			if ( dew->editorType () & REPORT_GENERATOR_SUB_WINDOW )
-				static_cast<reportGenerator*>( dew )->makeCurrentWindow ();
+				dynamic_cast<reportGenerator*>( dew )->makeCurrentWindow ();
 			saveAct->setEnabled ( dew->isModified () );
 		}
 	}
@@ -265,7 +268,7 @@ void documentEditor::updateWindowMenu ()
 	windowMenu->addAction ( previousAct );
 	windowMenu->addAction ( separatorAct );
 
-	const uint open_tabs ( static_cast<uint>( tabDocuments->count () ) );
+	const auto open_tabs ( static_cast<uint>( tabDocuments->count () ) );
 	separatorAct->setVisible ( open_tabs > 0 );
 
 	if ( open_tabs > 0 )
@@ -275,11 +278,11 @@ void documentEditor::updateWindowMenu ()
 
 		for ( uint i = 0; i < open_tabs; ++i )
 		{
-			child = static_cast<documentEditorWindow*>(tabDocuments->widget ( static_cast<int>( i ) ));
+			child = dynamic_cast<documentEditorWindow*>(tabDocuments->widget ( static_cast<int>( i ) ));
 			if ( child )
 			{
 				text =  (i < 9 ? TR_FUNC ( "&%1 %2" ) : TR_FUNC ( "%1 %2" )).arg ( i + 1 ).arg ( child->title () );
-				vmAction* action ( new vmAction ( static_cast<int>( i ), text, this ) );
+				auto action ( new vmAction ( static_cast<int>( i ), text, this ) );
 				action->setCheckable ( true );
 				action->setChecked ( child == activeDocumentWindow () );
 				windowMenu->addAction ( action );
@@ -290,7 +293,7 @@ void documentEditor::updateWindowMenu ()
 
 void documentEditor::makeWindowActive ( QAction* action )
 {
-	const int window_id ( static_cast<vmAction*>( action )->id () );
+	const int window_id ( dynamic_cast<vmAction*>( action )->id () );
 	if ( window_id < 0 )
 		return;
 	tabDocuments->setCurrentIndex ( window_id );
@@ -313,7 +316,7 @@ void documentEditor::closeTab ( int tab_index )
 	}
 	if ( tab_index < tabDocuments->count () )
 	{
-		if ( static_cast<documentEditorWindow*>( tabDocuments->widget ( tab_index ) )->canClose () )
+		if ( dynamic_cast<documentEditorWindow*>( tabDocuments->widget ( tab_index ) )->canClose () )
 		{
 			QWidget* doc ( tabDocuments->widget ( tab_index ) );
 			tabDocuments->removeTab ( tab_index );
@@ -389,7 +392,7 @@ textEditor* documentEditor::startNewTextEditor ( textEditor* editor )
 
 reportGenerator* documentEditor::startNewReport ( const bool b_windowless )
 {
-	reportGenerator* report ( new reportGenerator ( this ) );
+	auto report ( new reportGenerator ( this ) );
 	if ( !b_windowless )
 	{
 		static_cast<void>( startNewTextEditor ( report ) );
@@ -539,7 +542,7 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 		recentFilesSubMenu->removeAction ( recentFilesSubMenu->actions ().at ( n_menus - 1 ) );
 		recentFilesList.removeField ( static_cast<uint>(n_menus) - 1 );
 	}
-	vmAction* filemenu ( new vmAction ( -1, menuText ) );
+	auto filemenu ( new vmAction ( -1, menuText ) );
 	filemenu->setData ( filename );
 	recentFilesSubMenu->addAction ( filemenu );
 
@@ -552,6 +555,6 @@ void documentEditor::addToRecentFiles ( const QString& filename, const bool b_Ad
 
 void documentEditor::openRecentFile ( QAction* selectedMenu )
 {
-	const vmAction* action ( static_cast<vmAction*>( selectedMenu ) );
+	const vmAction* action ( dynamic_cast<vmAction*>( selectedMenu ) );
 	openDocument ( action->data ().toString () );
 }

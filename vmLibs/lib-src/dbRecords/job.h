@@ -7,14 +7,15 @@
 class Client;
 class jobListItem;
 
-const uint JOB_FIELD_COUNT ( 13 );
+const uint JOB_FIELD_COUNT ( 14 );
 const uint JOB_REPORT_FIELDS_COUNT ( 5 );
 
 enum
 {
 	FLD_JOB_ID = 0, FLD_JOB_CLIENTID = 1, FLD_JOB_TYPE = 2, FLD_JOB_STARTDATE = 3, FLD_JOB_ENDDATE = 4,
 	FLD_JOB_TIME = 5, FLD_JOB_PRICE = 6, FLD_JOB_PROJECT_PATH = 7, FLD_JOB_PROJECT_ID = 8,
-	FLD_JOB_PICTURE_PATH = 9, FLD_JOB_ADDRESS = 10, FLD_JOB_KEYWORDS = 11, FLD_JOB_REPORT = 12
+	FLD_JOB_PICTURE_PATH = 9, FLD_JOB_ADDRESS = 10, FLD_JOB_KEYWORDS = 11, FLD_JOB_REPORT = 12,
+	FLD_JOB_LAST_VIEWED = 13
 };
 
 class Job : public DBRecord
@@ -34,10 +35,10 @@ public:
 	};
 
 	explicit Job ( const bool connect_helper_funcs = false );
-	virtual ~Job ();
+	virtual ~Job () override;
 
-	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const;
-	void copySubRecord ( const uint subrec_field, const stringRecord& subrec );
+	int searchCategoryTranslate ( const SEARCH_CATEGORIES sc ) const override;
+	void copySubRecord ( const uint subrec_field, const stringRecord& subrec ) override;
 
 	inline const QString projectIDTemplate () const
 	{
@@ -62,7 +63,7 @@ public:
 	static const TABLE_INFO t_info;
 
 protected:
-	friend bool updateJobTable ();
+	friend bool updateJobTable ( const unsigned char current_table_version );
 
 	RECORD_FIELD m_RECFIELDS[JOB_FIELD_COUNT];
 	void ( *helperFunction[JOB_FIELD_COUNT] ) ( const DBRecord* );

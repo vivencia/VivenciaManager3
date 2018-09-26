@@ -25,7 +25,7 @@ public:
 	void insertOrUpdate ( const TABLE_INFO* const t_info );
 	
 protected:
-	friend bool updateGeneralTable ();
+	friend bool updateGeneralTable ( const unsigned char current_table_version );
 	static const TABLE_INFO t_info;
 
 	RECORD_FIELD m_RECFIELDS[GENERAL_FIELD_COUNT];

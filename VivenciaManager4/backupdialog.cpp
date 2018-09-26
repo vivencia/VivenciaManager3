@@ -10,18 +10,19 @@
 #include <vmNotify/vmnotify.h>
 #include <vmWidgets/vmwidgets.h>
 
-#include <vmUtils/textdb.h>
+#include <vmUtils/vmtextfile.h>
 #include <vmUtils/vmcompress.h>
 #include <vmUtils/fileops.h>
 #include <vmUtils/configops.h>
 #include <vmUtils/crashrestore.h>
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QDesktopWidget>
 
 const uint BACKUP_IDX ( 0 );
 const uint RESTORE_IDX ( 1 );
@@ -67,7 +68,7 @@ void BackupDialog::setupConnections ()
 	connect ( ui->btnDefaultFilename, &QToolButton::clicked, this, [&] () {
 		return ui->txtBackupFilename->setText ( standardDefaultBackupFilename () ); } );
 	connect ( ui->btnDefaultPrefix, &QToolButton::clicked, this, [&] () {
-		return ui->txtExportPrefix->setText ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( "-Table_" ) ); } );
+		return ui->txtExportPrefix->setText ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QStringLiteral ( "-Table_" ) ); } );
 	connect ( ui->btnChooseBackupFolder, &QToolButton::clicked, this, [&] () {
 		return ui->txtBackupFolder->setText ( fileOps::getExistingDir ( CONFIG ()->backupDir () ) ); } );
 	connect ( ui->btnChooseExportFolder, &QToolButton::clicked, this, [&] () {
@@ -115,11 +116,9 @@ bool BackupDialog::canDoRestore () const
 				VivenciaDB::restoreApp () + TR_FUNC ( " must be installed to restore a database" ) );
 		return false;
 	}
-	else
-	{
-		NOTIFY ()->notifyMessage ( TR_FUNC ( "Restore - Next step" ), ( ui->restoreList->count () > 0 )
-			? TR_FUNC ( "Choose restore method" ) : TR_FUNC ( "Choose a file containing a saved database to be restored" ) );
-	}
+
+	NOTIFY ()->notifyMessage ( TR_FUNC ( "Restore - Next step" ), ( ui->restoreList->count () > 0 )
+		? TR_FUNC ( "Choose restore method" ) : TR_FUNC ( "Choose a file containing a saved database to be restored" ) );
 	return true;
 }
 
@@ -160,7 +159,7 @@ void BackupDialog::fillTable ()
 			disconnect ( ui->tablesList, nullptr, nullptr, nullptr );
 		}
 
-		QListWidgetItem* widgetitem ( new QListWidgetItem ( ui->tablesList ) );
+		auto widgetitem ( new QListWidgetItem ( ui->tablesList ) );
 		widgetitem->setText ( TR_FUNC ( "Select all " ) );
 		widgetitem->setFlags ( Qt::ItemIsEnabled|Qt::ItemIsTristate|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable );
 		widgetitem->setCheckState ( Qt::Checked );
@@ -190,10 +189,10 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 		return false;
 	}
 
-	QString backupFile ( path + filename + QLatin1String ( ".sql" ) );
+	QString backupFile ( path + filename + QStringLiteral ( ".sql" ) );
 
 	bool ok ( false );
-	if ( Sys_Init::EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QLatin1String ( ".bz2" ), bUserInteraction ) )
+	if ( Sys_Init::EXITING_PROGRAM || checkThatFileDoesNotExist ( backupFile + QStringLiteral ( ".bz2" ), bUserInteraction ) )
 	{
 		QString tables;
 		if ( bUserInteraction )
@@ -229,10 +228,10 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 
 		if ( ok )
 		{
-			if ( VMCompress::compress ( backupFile, backupFile + QLatin1String ( ".bz2" ) ) )
+			if ( VMCompress::compress ( backupFile, backupFile + QStringLiteral ( ".bz2" ) ) )
 			{
 				fileOps::removeFile ( backupFile );
-				backupFile += QLatin1String ( ".bz2" );
+				backupFile += QStringLiteral ( ".bz2" );
 				if ( bUserInteraction )
 					BACKUP ()->incrementProgress ();
 
@@ -246,7 +245,7 @@ bool BackupDialog::doBackup ( const QString& filename, const QString& path, cons
 		if ( bUserInteraction )
 		{
 			NOTIFY ()->notifyMessage ( TR_FUNC ( "Backup" ), TR_FUNC ( "Standard backup to file %1 was %2" ).arg (
-							filename, QLatin1String ( ok ? " successfull" : " unsuccessfull" ) ) );
+							filename, ( ok ? QStringLiteral ( " successfull" ) : QStringLiteral ( " unsuccessfull" ) ) ) );
 		}
 		if ( ok )
 			BackupDialog::addToRestoreList ( backupFile, bUserInteraction ? BACKUP () : nullptr );
@@ -393,7 +392,7 @@ void BackupDialog::addToRestoreList ( const QString& filepath, BackupDialog* bDl
 	}
 	else
 	{
-		dataFile* df ( new dataFile ( CONFIG ()->appDataDir () + QLatin1String ( "/backups.db" ) ) );
+		dataFile* df ( new dataFile ( CONFIG ()->appDataDir () + QStringLiteral ( "/backups.db" ) ) );
 		df->load ();
 		df->appendRecord ( filepath );
 		df->commit ();
@@ -404,7 +403,7 @@ void BackupDialog::addToRestoreList ( const QString& filepath, BackupDialog* bDl
 void BackupDialog::readFromBackupList ()
 {
 	if ( !tdb )
-		tdb = new dataFile ( CONFIG ()->appDataDir () + QLatin1String ( "/backups.db" ) );
+		tdb = new dataFile ( CONFIG ()->appDataDir () + QStringLiteral ( "/backups.db" ) );
 	if ( tdb->load ().isOn () )
 	{
 		stringRecord files;
@@ -459,7 +458,7 @@ int BackupDialog::showNoDatabaseOptionsWindow ()
 		btnProceed->setDefault ( true );
 		static_cast<void>( connect ( btnProceed, &QPushButton::clicked, this, [&] () { return btnNoDBProceed_clicked (); } ) );
 
-		QVBoxLayout* layout ( new QVBoxLayout );
+		auto layout ( new QVBoxLayout );
 		layout->addWidget ( lblExplanation, 1, Qt::AlignJustify );
 		layout->addWidget ( rdImport, 1, Qt::AlignLeft );
 		layout->addWidget ( rdStartNew, 1, Qt::AlignLeft );
@@ -470,7 +469,8 @@ int BackupDialog::showNoDatabaseOptionsWindow ()
 		layout->setSpacing ( 1 );
 		dlgNoDB->adjustSize ();
 		dlgNoDB->setLayout ( layout );
-		const QRect desktopGeometry ( qApp->desktop ()->availableGeometry ( -1 ) );
+
+		const QRect desktopGeometry ( QGuiApplication::primaryScreen ()->availableGeometry () );
 		dlgNoDB->move ( ( desktopGeometry.width () - width () ) / 2, ( desktopGeometry.height () - height () ) / 2  );
 	}
 	dlgNoDB->exec ();
@@ -484,7 +484,7 @@ void BackupDialog::btnNoDBProceed_clicked ()
 		ui->toolBox->setCurrentIndex ( 1 );
 		ui->toolBox->setEnabled ( true );
 		ui->toolBox->widget ( 0 )->setEnabled ( false );
-		crashRestore::setNewDatabaseSession ( true );;
+		crashRestore::setNewDatabaseSession ( true );
 
 		if ( VDB ()->createDatabase () )
 		{
@@ -628,8 +628,8 @@ bool BackupDialog::getSelectedItems ( QString& selected )
 		}
 		return true;
 	}
-	else
-		NOTIFY ()->notifyMessage ( TR_FUNC ( "Restore - Error" ), TR_FUNC ( "No file selected" ) );
+
+	NOTIFY ()->notifyMessage ( TR_FUNC ( "Restore - Error" ), TR_FUNC ( "No file selected" ) );
 	return false;
 }
 

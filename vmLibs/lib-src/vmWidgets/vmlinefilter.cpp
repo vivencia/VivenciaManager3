@@ -92,10 +92,8 @@ vmLineFilter::vmLineFilter ( QWidget* parent, QWidget* ownerWindow )
 	: vmLineEdit ( parent, ownerWindow ), validkey_func ( nullptr )
 {
 	static_cast<void>( connect ( this, &QLineEdit::textEdited, this, [&] ( const QString& text ) 
-		{ if ( text.isEmpty () ) return textCleared (); } ) );
+		{ if ( text.isEmpty () ) textCleared (); } ) );
 }
-
-vmLineFilter::~vmLineFilter () {}
 
 bool vmLineFilter::matches ( const QString& haystack ) const
 {
@@ -135,16 +133,14 @@ bool vmLineFilter::matches ( const QString& haystack ) const
 				}
 				break;
 			}
-			else
+
+			if ( iMatch > 0 )
 			{
-				if ( iMatch > 0 )
-				{
-					// This haystack character is incorrect in the sequence but might be the beggining of needle starting with it
-					// Therefore we must not move the haystack iterator further and reset the needle to compare those 
-					bResetNeedle = true; 
-					iMatch = 0;
-					break;
-				}
+				// This haystack character is incorrect in the sequence but might be the beggining of needle starting with it
+				// Therefore we must not move the haystack iterator further and reset the needle to compare those
+				bResetNeedle = true;
+				iMatch = 0;
+				break;
 			}
 		}
 		if ( iMatch == 0 && !bResetNeedle ) // Haystack ended without a match. There is no need to continue searching needle
@@ -156,7 +152,7 @@ bool vmLineFilter::matches ( const QString& haystack ) const
 void vmLineFilter::keyPressEvent ( QKeyEvent* const ke )
 {
 	ke->accept ();
-	QLineEdit::keyPressEvent ( ke );
+	vmLineEdit::keyPressEvent ( ke );
 	
 	if ( text ().isEmpty () )
 	{

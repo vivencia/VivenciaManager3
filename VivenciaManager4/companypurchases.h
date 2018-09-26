@@ -67,7 +67,7 @@ private:
 	QString mSearchTerm;
 	bool mbSearchIsOn;
 	companyPurchases* cp_rec;
-	PointersList<vmWidget*> widgetList;
+	pointersList<vmWidget*> widgetList;
 	podList<uint> mFoundFields;
 	stringTable mTableContents;
 };

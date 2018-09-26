@@ -19,7 +19,7 @@ spellCheck::spellCheck ()
 	: mChecker ( nullptr ), m_config ( new configOps ( configOps::appConfigFile (), "SpellCheckConfig" ) ), mMenu ( nullptr ), menuEntrySelected_func ( nullptr )
 {
 	getDictionariesPath ();
-	setDictionaryLanguage ( m_config->getValue ( cfgSectionName, cfgFieldLanguage ) );
+	setDictionaryLanguage ( m_config->getValue ( cfgSectionName, cfgFieldLanguage, false ) );
 	createDictionaryInterface ();
 	setUserDictionary ();
 }
@@ -66,10 +66,12 @@ bool spellCheck::suggestionsList ( const QString& word, QStringList& wordList )
 	if ( checkWord ( word ).isFalse () )
 	{
 		std::vector<std::string> suggestList ( mChecker->suggest ( word.toLatin1 ().constData () ) );
-		if ( suggestList.size () > 0 )
+		if ( !suggestList.empty () )
 		{
-			for ( size_t i ( 0 ); i < suggestList.size (); ++i )
-				wordList.append ( QString::fromLatin1 ( suggestList.at ( i ).data () ) );
+			for ( const std::string& suggestion : suggestList )
+				wordList.append ( QString::fromUtf8 ( suggestion.data () ) );
+			//for ( size_t i ( 0 ); i < suggestList.size (); ++i )
+			//	wordList.append ( QString::fromLatin1 ( suggestList.at ( i ).data () ) );
 			suggestList.clear ();
 			return true;
 		}
@@ -98,7 +100,7 @@ QMenu* spellCheck::menuAvailableDicts ()
 		// any dictionary on the system, we must create a menu to pass to it. A bug, in my opinion.
 		mMenu = new QMenu ( APP_TR_FUNC ( "Choose spell language" ) );
 		
-		PointersList<fileOps::st_fileInfo*> dics;
+		pointersList<fileOps::st_fileInfo*> dics;
 		fileOps::lsDir ( dics, mDicPath, QStringList () << QStringLiteral ( ".dic" ), QStringList (), fileOps::LS_FILES );
 		if ( !dics.isEmpty () )
 		{
@@ -145,14 +147,14 @@ void spellCheck::getDictionariesPath ()
 inline void spellCheck::setDictionaryLanguage ( const QString& localeString )
 {
 	const QString locale ( localeString.isEmpty() ? QLocale::system ().name () : localeString );
-	mDictionary = mDicPath + locale + QLatin1String ( ".dic" );
+	mDictionary = mDicPath + locale + QStringLiteral ( ".dic" );
 	m_config->setValue ( cfgSectionName, cfgFieldLanguage, locale );
 }
 
 #define AFF_STR_LEN 4
 inline void spellCheck::getDictionaryAff ( QString& dicAff ) const
 {
-	dicAff = mDictionary.left ( mDictionary.length () - AFF_STR_LEN ) + QLatin1String ( ".aff" );
+	dicAff = mDictionary.left ( mDictionary.length () - AFF_STR_LEN ) + QStringLiteral ( ".aff" );
 }
 
 void spellCheck::createDictionaryInterface ()
@@ -169,7 +171,7 @@ void spellCheck::createDictionaryInterface ()
 
 bool spellCheck::setUserDictionary ()
 {
-	mUserDict = configOps::appDataDir () + QLatin1String ( "User_" ) + fileOps::fileNameWithoutPath ( mDictionary );
+	mUserDict = configOps::appDataDir () + QStringLiteral ( "User_" ) + fileOps::fileNameWithoutPath ( mDictionary );
 	QFile file ( mUserDict );
 	if ( file.open ( QIODevice::ReadOnly | QIODevice::Text ) )
 	{

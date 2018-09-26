@@ -42,7 +42,7 @@ public:
 	inline bool actionSuccess () const { return mb_success; }
 
 	static inline QString standardDefaultBackupFilename () {
-		return QLatin1String ( "vmdb-" ) + vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ); }
+		return QStringLiteral ( "vmdb-" ) + vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ); }
 
 private:
 	enum AFTER_CLOSE_ACTION
@@ -54,7 +54,6 @@ private:
 	dataFile* tdb;
 
 	bool b_IgnoreItemListChange, mb_success, mb_nodb;
-	uint temp_progress_bar_steps, final_progress_bar_steps;
 
 	QRadioButton* rdImport;
 	QRadioButton* rdStartNew;

@@ -238,7 +238,7 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	btnReload->setIcon ( QIcon::fromTheme ( QStringLiteral ( "view-refresh" ) ) );
 	connect ( btnReload, &QToolButton::pressed, this, [&] () { return scanDir (); } );
 
-	QVBoxLayout* vLayout1 ( new QVBoxLayout );
+	auto vLayout1 ( new QVBoxLayout );
 	vLayout1->setMargin ( 1 );
 	vLayout1->setSpacing ( 1 );
 	vLayout1->addWidget ( btnDoc );
@@ -261,7 +261,7 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	connect ( treeView, &QTreeWidget::itemSelectionChanged, this, [&] () { updateButtons (); } );
 	connect ( treeView, &QTreeWidget::itemDoubleClicked, this, [&] ( QTreeWidgetItem* item, int ) { return openWithDoubleClick ( item ); } );
 
-	QHBoxLayout* hLayout2 ( new QHBoxLayout );
+	auto hLayout2 ( new QHBoxLayout );
 	hLayout2->setMargin ( 2 );
 	hLayout2->setSpacing ( 2 );
 	hLayout2->addWidget ( treeView, 2 );
@@ -279,7 +279,7 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	btnClose = new QPushButton ( TR_FUNC ( "Close" ) );
 	connect ( btnClose, &QPushButton::clicked, this, [&] () { b_inItemSelectionMode ? cancelItemSelection () : static_cast<void>( close () ); } );
 
-	QHBoxLayout* hLayout3 ( new QHBoxLayout );
+	auto hLayout3 ( new QHBoxLayout );
 	hLayout3->setMargin ( 2 );
 	hLayout3->setSpacing ( 2 );
 	hLayout3->addWidget ( btnProject, 1, Qt::AlignCenter );
@@ -287,7 +287,7 @@ estimateDlg::estimateDlg ( QWidget* parent )
 	hLayout3->addWidget ( btnReport, 1, Qt::AlignCenter );
 	hLayout3->addWidget ( btnClose, 1, Qt::AlignCenter );
 
-	QVBoxLayout* mainLayout ( new QVBoxLayout );
+	auto mainLayout ( new QVBoxLayout );
 	mainLayout->setMargin ( 2 );
 	mainLayout->setSpacing ( 0 );
 	mainLayout->addLayout ( hLayout2, 2 );
@@ -392,7 +392,7 @@ void estimateDlg::setupActions ()
 
 void estimateDlg::scanDir ()
 {
-	PointersList<fileOps::st_fileInfo*> filesFound;
+	pointersList<fileOps::st_fileInfo*> filesFound;
 
 	const QStringList nameFilter ( QStringList () <<
 								   configOps::projectDocumentFormerExtension () <<
@@ -401,8 +401,8 @@ void estimateDlg::scanDir ()
 								   configOps::projectReportExtension () );
 
 	const QStringList exclude_dirs ( QStringList () <<
-									 QStringLiteral ( "Pictures" ) <<
-									 QStringLiteral ( "Serviços simples" ) );
+									 QStringLiteral ( u"Pictures" ) <<
+									 QStringLiteral ( u"Serviços simples" ) );
 	
 	treeView->clear ();
 	QString clientName;
@@ -414,8 +414,10 @@ void estimateDlg::scanDir ()
 		clientName = Client::clientName ( c_id );
 		if ( !clientName.isEmpty () )
 		{
+			if ( clientName.startsWith( "Marta" ) )
+				qDebug () << "break";
 			dirName = CONFIG ()->getProjectBasePath ( clientName );
-			fileOps::lsDir ( filesFound, dirName, nameFilter, exclude_dirs, fileOps::LS_ALL, 2 );
+			fileOps::lsDir ( filesFound, dirName, nameFilter, exclude_dirs, fileOps::LS_ALL, 2, false );
 			addToTree ( filesFound, clientName );
 		}
 	}
@@ -424,14 +426,14 @@ void estimateDlg::scanDir ()
 	dirName = CONFIG ()->projectsBaseDir () + nonClientStr + CHR_F_SLASH;
 	if ( fileOps::exists ( dirName ).isOn () )
 	{
-		fileOps::lsDir ( filesFound, dirName, nameFilter, exclude_dirs, fileOps::LS_ALL, 1 );
+		fileOps::lsDir ( filesFound, dirName, nameFilter, exclude_dirs, fileOps::LS_ALL, 1, false );
 		addToTree ( filesFound, clientName, TYPE_ESTIMATE_ITEM );
 	}
 	if ( treeView->topLevelItemCount () > 0 )
 		treeView->setCurrentItem ( treeView->topLevelItem ( 0 ) );
 }
 
-void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const QString& clientName, const int newItemType )
+void estimateDlg::addToTree ( pointersList<fileOps::st_fileInfo*>& files, const QString& clientName, const int newItemType )
 {
 	QTreeWidgetItem* topLevelItem ( nullptr ), *child_dir ( nullptr ), *child_file ( nullptr );
 	for ( int i ( 0 ); i < treeView->topLevelItemCount (); ++i )
@@ -449,6 +451,7 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 		topLevelItem->setBackground ( 0, QBrush ( Qt::darkCyan ) );
 		topLevelItem->setForeground ( 0, QBrush ( Qt::white ) );
 		topLevelItem->setData ( 0, ROLE_ITEM_TYPE, TYPE_CLIENT_TOPLEVEL );
+		topLevelItem->setData ( 0, ROLE_ITEM_FILENAME, CONFIG ()->getProjectBasePath ( clientName ) );
 		topLevelItem->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName );
 		treeView->addTopLevelItem ( topLevelItem );
 	}
@@ -464,27 +467,23 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 			filename = files.at ( i )->filename;
 			if ( files.at ( i )->is_dir )
 			{
-				//if ( filename != QStringLiteral ( "Pictures" ) && filename != QStringLiteral ( "Serviços simples" ) )
-				//if ( !files.at ( i )->fullpath.contains ( QStringLiteral ( "Pictures" ) ) )
+				child_dir = new QTreeWidgetItem ( topLevelItem );
+				child_dir->setText ( 0, filename );
+				if ( filename == CONFIG ()->estimatesDirSuffix () )
+					dirType = TYPE_ESTIMATE_DIR;
+				else if ( filename == CONFIG ()->reportsDirSuffix () )
+					dirType = TYPE_REPORT_DIR;
+				else
 				{
-					child_dir = new QTreeWidgetItem ( topLevelItem );
-					child_dir->setText ( 0, filename );
-					if ( filename == CONFIG ()->estimatesDirSuffix () )
-						dirType = TYPE_ESTIMATE_DIR;
-					else if ( filename == CONFIG ()->reportsDirSuffix () )
-						dirType = TYPE_REPORT_DIR;
-					else
-					{
-						dirType = TYPE_PROJECT_DIR;
-						child_dir->setText ( 2, getDateFromProjectDir ( filename ) );
-					}
-					if ( newItemType == -1 )
-						itemType = dirType - 3;
-					child_dir->setText ( 1, itemTypeStr[dirType] );
-					child_dir->setData ( 0, ROLE_ITEM_TYPE, dirType );
-					child_dir->setData ( 0, ROLE_ITEM_FILENAME, files.at ( i )->fullpath );
-					child_dir->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName );
+					dirType = TYPE_PROJECT_DIR;
+					child_dir->setText ( 2, getDateFromProjectDir ( filename ) );
 				}
+				if ( newItemType == -1 )
+					itemType = dirType - 3;
+				child_dir->setText ( 1, itemTypeStr[dirType] );
+				child_dir->setData ( 0, ROLE_ITEM_TYPE, dirType );
+				child_dir->setData ( 0, ROLE_ITEM_FILENAME, files.at ( i )->fullpath );
+				child_dir->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName );
 			}
 			else
 			{
@@ -513,15 +512,15 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 				switch ( itemType )
 				{
 					case TYPE_PROJECT_ITEM:
-						child_file->setText ( 0, getNameFromProjectFile ( filename ) + QLatin1String ( " (" ) + fileOps::fileExtension ( filename ) + CHR_R_PARENTHESIS );
+						child_file->setText ( 0, getNameFromProjectFile ( filename ) + QStringLiteral ( " (" ) + fileOps::fileExtension ( filename ) + CHR_R_PARENTHESIS );
 						child_file->setText ( 2, getDateFromProjectFile ( filename ) );
 					break;
 					case TYPE_ESTIMATE_ITEM:
-						child_file->setText ( 0, getNameFromEstimateFile ( filename ) + QLatin1String ( " (" ) + fileOps::fileExtension ( filename ) + CHR_R_PARENTHESIS );
+						child_file->setText ( 0, getNameFromEstimateFile ( filename ) + QStringLiteral ( " (" ) + fileOps::fileExtension ( filename ) + CHR_R_PARENTHESIS );
 						child_file->setText ( 2, getDateFromEstimateFile ( filename ) );
 					break;
 					case TYPE_REPORT_ITEM:
-						child_file->setText ( 0, getNameFromReportFile ( filename ) + QLatin1String ( " (" ) + fileOps::fileExtension ( filename ) + CHR_R_PARENTHESIS );
+						child_file->setText ( 0, getNameFromReportFile ( filename ) + QStringLiteral ( " (" ) + fileOps::fileExtension ( filename ) + CHR_R_PARENTHESIS );
 						child_file->setText ( 2, getDateFromReportFile ( CONFIG ()->reportsDir ( clientName ) + filename ) );
 					break;
 				}
@@ -531,7 +530,7 @@ void estimateDlg::addToTree ( PointersList<fileOps::st_fileInfo*>& files, const 
 				child_file->setData ( 0, ROLE_ITEM_FILENAME, files.at ( i )->fullpath );
 				child_file->setData ( 0, ROLE_ITEM_CLIENTNAME, clientName != nonClientStr ? clientName : emptyString );
 			}
-		} while ( ++i < unsigned ( files.count () ) );
+		} while ( ++i < files.count () );
 		files.clearButKeepMemory ( true );
 	}
 }
@@ -540,14 +539,13 @@ uint estimateDlg::actionIndex ( const QString& filename ) const
 {
 	if ( filename.contains ( CONFIG ()->projectDocumentFormerExtension () ) )
 		return FILETYPE_DOC;
-	else if ( filename.contains ( CONFIG ()->projectSpreadSheetFormerExtension () ) )
+	if ( filename.contains ( CONFIG ()->projectSpreadSheetFormerExtension () ) )
 		return FILETYPE_XLS;
-	else if ( filename.contains ( CONFIG ()->projectPDFExtension () ) )
+	if ( filename.contains ( CONFIG ()->projectPDFExtension () ) )
 		return FILETYPE_PDF;
-	else if ( filename.contains ( CONFIG ()->projectReportExtension () ) )
+	if ( filename.contains ( CONFIG ()->projectReportExtension () ) )
 		return FILETYPE_VMR;
-	else
-		return FILETYPE_UNKNOWN;
+	return FILETYPE_UNKNOWN;
 }
 
 void estimateDlg::updateButtons ()
@@ -664,7 +662,7 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 	QString project_name;	
 	bool bProceed ( false );
 	fileOps::st_fileInfo* f_info ( nullptr );
-	PointersList<fileOps::st_fileInfo*> files;
+	pointersList<fileOps::st_fileInfo*> files;
 	files.setAutoDeleteItem ( true );
 	jobListItem* jobItem ( nullptr );
 	
@@ -683,7 +681,7 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 			f_info->is_dir = true;
 			f_info->is_file = false;
 			files.append ( f_info );
-			(void) fileOps::createDir ( targetPath + QLatin1String ( "Pictures/" ) );
+			(void) fileOps::createDir ( targetPath + QStringLiteral ( "Pictures/" ) );
 			jobItem = m_npdlg->jobItem ();
 		}
 	}
@@ -699,10 +697,10 @@ void estimateDlg::convertToProject ( QTreeWidgetItem* item )
 	}
 	
 	//const QString baseFilename ( fileOps::fileNameWithoutPath ( fileOps::filePathWithoutExtension ( item->data ( 0, ROLE_ITEM_FILENAME ).toString () ) ) );
-	fileOps::lsDir ( files, srcPath, QStringList () << item->text ( 0 ).left ( item->text ( 0 ).indexOf	( CHR_L_PARENTHESIS ) - 1 ) );
+	fileOps::lsDir ( files, srcPath, QStringList () << item->text ( 0 ).left ( item->text ( 0 ).indexOf ( CHR_L_PARENTHESIS ) - 1 ) );
 	for ( uint i ( 1 ); i < files.count (); ++i )
 	{
-		auto final_name = [] ( const QString& source ) -> QString { return ( source.endsWith ( CONFIG ()->projectSpreadSheetExtension () ) ? QLatin1String ( "Planilhas-" ) : QLatin1String ( "Projeto-" ) ) + source; };
+		auto final_name = [] ( const QString& source ) -> QString { return ( source.endsWith ( CONFIG ()->projectSpreadSheetExtension () ) ? QStringLiteral ( "Planilhas-" ) : QStringLiteral ( "Projeto-" ) ) + source; };
 		static_cast<void> ( fileOps::copyFile ( targetPath + final_name ( files.at ( i )->filename ), files.at ( i )->fullpath ) );
 	}
 
@@ -753,10 +751,10 @@ void estimateDlg::projectActions ( QAction *action )
 			msgBody[1] = tr ( "Project " ) + item->text ( 0 ) + tr ( " was renamed to " ) + strProjectPath;
 		break;
 		case PA_REMOVE:
-			bProceed = removeDir ( item, true );
 			msgTitle = TR_FUNC ( "Project Removal - ");
 			msgBody[0] = tr ( "Project " ) + item->text ( 0 ) + tr ( " could not be removed! Check the the error logs." );
 			msgBody[1] = tr ( "Project " ) + item->text ( 0 ) + tr ( " was removed." );
+			bProceed = removeDir ( item, true );
 		break;
 		case PA_ADD_DOC:
 			bAddDoc = true;
@@ -771,7 +769,7 @@ void estimateDlg::projectActions ( QAction *action )
 			msgBody[1] = tr ( "A new spreadsheet file was added to project " ) + item->text ( 0 );
 		break;
 	}
-	PointersList<fileOps::st_fileInfo*> files;
+	pointersList<fileOps::st_fileInfo*> files;
 	files.setAutoDeleteItem ( true );
 	jobListItem* jobItem ( nullptr );
 
@@ -799,10 +797,12 @@ void estimateDlg::projectActions ( QAction *action )
 					f_info->is_dir = true;
 					f_info->is_file = false;
 					files.append ( f_info );
-					static_cast<void>( fileOps::createDir ( strProjectPath + QLatin1String ( "Pictures" ) ) );
+					static_cast<void>( fileOps::createDir ( strProjectPath + QStringLiteral ( "Pictures" ) ) );
 					addFilesToDir ( bAddDoc, bAddXls, strProjectPath, strProjectID, files );
 					bAddDoc = bAddXls = false;
 				}
+				else
+					delete f_info;
 			}
 		}
 		else if ( bGetJobOnly )
@@ -860,11 +860,11 @@ void estimateDlg::changeJobData ( jobListItem* const jobItem, const QString& str
 {
 	if ( jobItem != nullptr ) 
 	{	
-		jobItem->loadData ();
+		jobItem->loadData ( true );
 		jobItem->setAction ( ACTION_EDIT, true );
 		Job* job ( jobItem->jobRecord () );
 		setRecValue ( job, FLD_JOB_PROJECT_PATH, strProjectPath );
-		setRecValue ( job, FLD_JOB_PICTURE_PATH, strProjectPath + QLatin1String ( "Pictures/" ) );
+		setRecValue ( job, FLD_JOB_PICTURE_PATH, strProjectPath + QStringLiteral ( "Pictures/" ) );
 		setRecValue ( job, FLD_JOB_PROJECT_ID, strProjectID );
 		job->saveRecord ();
 		jobItem->setAction ( job->action () );
@@ -898,7 +898,7 @@ void estimateDlg::estimateActions ( QAction* action )
 			if ( estimateName.isEmpty () )
 				return;
 
-			PointersList<fileOps::st_fileInfo*> files;
+			pointersList<fileOps::st_fileInfo*> files;
 			fileOps::st_fileInfo* f_info ( nullptr );
 			
 			if ( fileOps::exists ( basePath ).isOff () )
@@ -913,7 +913,7 @@ void estimateDlg::estimateActions ( QAction* action )
 				files.append ( f_info );
 			}
 			
-			estimateName.prepend ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
+			estimateName.prepend ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QStringLiteral ( " - " ) );
 			if ( clientName == nonClientStr )
 				estimateName.prepend ( nonClientEstimatesPrefix );
 
@@ -966,7 +966,7 @@ void estimateDlg::reportActions ( QAction* action )
 		if ( reportName.isEmpty () )
 			return;
 
-		PointersList<fileOps::st_fileInfo*> files;
+		pointersList<fileOps::st_fileInfo*> files;
 		fileOps::st_fileInfo* f_info ( nullptr );
 		
 		if ( fileOps::exists ( basePath ).isOff () )
@@ -981,7 +981,7 @@ void estimateDlg::reportActions ( QAction* action )
 			files.append ( f_info );
 		}
 
-		reportName.prepend ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QLatin1String ( " - " ) );
+		reportName.prepend ( vmNumber::currentDate ().toDate ( vmNumber::VDF_FILE_DATE ) + QStringLiteral ( " - " ) );
 		if ( clientName == nonClientStr )
 			reportName.prepend ( nonClientReportsPrefix );
 
@@ -1059,7 +1059,8 @@ void estimateDlg::removeFiles ( QTreeWidgetItem* item, const bool bSingleFile, c
 
 bool estimateDlg::removeDir ( QTreeWidgetItem *item, const bool bAsk )
 {
-	if ( bAsk ) {
+	if ( bAsk )
+	{
 		if ( NOTIFY ()->questionBox ( TR_FUNC ( "Question" ), TR_FUNC ( "Are you sure you want to delete project " )
 					+ item->text ( 0 ) + TR_FUNC ( " and all its contents?" ) ) )
 		{
@@ -1095,7 +1096,7 @@ bool estimateDlg::renameDir ( QTreeWidgetItem *item, QString &strNewName )
 }
 
 void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, QString& projectid,
-								  PointersList<fileOps::st_fileInfo*>& files )
+								  pointersList<fileOps::st_fileInfo*>& files )
 {
 	QString fileName, fileNameComplete;
 	QString sub_version ( QLatin1Char ( 'A' ) );
@@ -1103,7 +1104,7 @@ void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const 
 	bool b_ok ( false );
 	if ( bAddDoc )
 	{
-		fileName = QLatin1String ( "Projeto-" ) + projectid + QLatin1String ( "-%1" ) + CONFIG ()->projectDocumentExtension ();
+		fileName = QStringLiteral ( "Projeto-" ) + projectid + QStringLiteral ( "-%1" ) + CONFIG ()->projectDocumentExtension ();
 		do
 		{
 			fileNameComplete = projectpath + fileName.arg ( sub_version );
@@ -1114,7 +1115,7 @@ void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const 
 		} while ( true );
 		if ( fileOps::copyFile ( fileNameComplete, CONFIG ()->projectDocumentFile () ) )
 		{
-			fileOps::st_fileInfo* f_info ( new fileOps::st_fileInfo );
+			auto f_info ( new fileOps::st_fileInfo );
 			f_info->filename = fileName.arg ( sub_version );
 			f_info->fullpath = fileNameComplete;
 			files.append ( f_info );
@@ -1123,7 +1124,7 @@ void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const 
 	}
 	if ( bAddXls )
 	{
-		fileName = QLatin1String ( "Planilhas-" ) + projectid + QLatin1String ( "-%1") + CONFIG ()->projectSpreadSheetExtension ();
+		fileName = QStringLiteral ( "Planilhas-" ) + projectid + QStringLiteral ( "-%1") + CONFIG ()->projectSpreadSheetExtension ();
 		do
 		{
 			fileNameComplete = projectpath + fileName.arg ( sub_version );
@@ -1134,7 +1135,7 @@ void estimateDlg::addFilesToDir ( const bool bAddDoc, const bool bAddXls, const 
 		} while ( true );
 		if ( fileOps::copyFile ( fileNameComplete, CONFIG ()->projectSpreadSheetFile () ) )
 		{
-			fileOps::st_fileInfo* f_info ( new fileOps::st_fileInfo );
+			auto f_info ( new fileOps::st_fileInfo );
 			f_info->filename = fileName.arg ( sub_version );
 			f_info->fullpath = fileNameComplete;
 			files.append ( f_info );

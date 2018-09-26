@@ -10,21 +10,61 @@
 
 #include <vmStringRecord/stringrecord.h>
 
-static const unsigned int TABLE_VERSION ( 'B' );
+static const unsigned int TABLE_VERSION ( 'D' );
 
 constexpr DB_FIELD_TYPE JOBS_FIELDS_TYPE[JOB_FIELD_COUNT] = {
 	DBTYPE_ID, DBTYPE_ID, DBTYPE_SHORTTEXT, DBTYPE_DATE, DBTYPE_DATE, DBTYPE_TIME,
-	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_SUBRECORD, DBTYPE_SUBRECORD
+	DBTYPE_PRICE, DBTYPE_FILE, DBTYPE_SHORTTEXT, DBTYPE_FILE, DBTYPE_SHORTTEXT,
+	DBTYPE_SUBRECORD, DBTYPE_SUBRECORD, DBTYPE_YESNO
 };
 
-#ifdef JOB_TABLE_UPDATE_AVAILABLE
-bool updateJobTable ()
+bool updateJobTable ( const unsigned char /*current_table_version*/ )
 {
-	VDB ()->insertColumn ( FLD_JOB_KEYWORDS, &Job::t_info );
-	VDB ()->optimizeTable ( &Job::t_info );
+/*	if ( current_table_version == 'C')
+	{
+		Job job;
+		const QString old_path ( QStringLiteral ( "/home/guilherme/Documents/Vivencia/" ) );
+		const QString old_path_2 ( QStringLiteral ( "/home/guilherme/Documentos/Vivencia/" ) );
+		QString new_path;
+		if ( job.readFirstRecord () )
+		{
+			do
+			{
+				new_path = recStrValue ( &job, FLD_JOB_PICTURE_PATH );
+				if ( new_path.startsWith ( QStringLiteral ( "/home" ) ) )
+				{
+					job.setAction ( ACTION_EDIT );
+					new_path.replace ( old_path, QString () );
+					setRecValue ( &job, FLD_JOB_PICTURE_PATH, new_path );
+					job.saveRecord ();
+				}
+				if ( !recStrValue ( &job, FLD_JOB_PROJECT_PATH ).isEmpty () )
+				{
+					job.setAction ( ACTION_EDIT );
+					new_path = recStrValue ( &job, FLD_JOB_PROJECT_PATH );
+					if ( new_path.contains ( QStringLiteral ( "/Documents/" ) ) )
+						new_path.replace ( old_path, QString () );
+					else if ( new_path.contains ( QStringLiteral ( "/Documentos/" ) ) )
+						new_path.replace ( old_path_2, QString () );
+					setRecValue ( &job, FLD_JOB_PROJECT_PATH, new_path );
+
+					new_path = recStrValue ( &job, FLD_JOB_PICTURE_PATH );
+					if ( new_path.contains ( QStringLiteral ( "/Documents/" ) ) )
+						new_path.replace ( old_path, QString () );
+					else if ( new_path.contains ( QStringLiteral ( "/Documentos/" ) ) )
+						new_path.replace ( old_path_2, QString () );
+					setRecValue ( &job, FLD_JOB_PICTURE_PATH, new_path );
+
+					job.saveRecord ();
+				}
+			} while ( job.readNextRecord () );
+			VivenciaDB::optimizeTable ( &Job::t_info );
+			return true;
+		}
+	}
+	return false;*/
 	return true;
 }
-#endif //JOB_TABLE_UPDATE_AVAILABLE
 
 const TABLE_INFO Job::t_info =
 {
@@ -32,18 +72,14 @@ const TABLE_INFO Job::t_info =
 	QStringLiteral ( "JOBS" ),
 	QStringLiteral ( " ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ),
 	QStringLiteral ( " PRIMARY KEY ( `ID` ) , UNIQUE KEY `id` ( `ID` ) " ),
-	QStringLiteral ( "`ID`|`CLIENTID`|`TYPE`|`STARTDATE`|`ENDDATE`|`TIME`|`PRICE`|`PROJECTPATH`|`PROJECTID`|`IMAGEPATH`|`JOB_ADDRESS`|`KEYWORDS`|`REPORT`|" ),
+	QStringLiteral ( "`ID`|`CLIENTID`|`TYPE`|`STARTDATE`|`ENDDATE`|`TIME`|`PRICE`|`PROJECTPATH`|`PROJECTID`|`IMAGEPATH`|`JOB_ADDRESS`|`KEYWORDS`|`REPORT`|`LAST_VIEWED`|" ),
 	QStringLiteral ( " int ( 9 ) NOT NULL, | int ( 9 ) NOT NULL, | varchar ( 100 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, |"
 	" varchar ( 20 ) DEFAULT NULL, | varchar ( 20 ) DEFAULT NULL, | varchar ( 20 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
 	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | varchar ( 30 ) DEFAULT NULL, | varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, |"
-	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | longtext COLLATE utf8_unicode_ci, |longtext COLLATE utf8_unicode_ci, |" ),
-	QStringLiteral ( "ID|Client ID|Type|Start date|Finish date|Worked hours|Price|Project path|Project ID|Image path|Job Address|Job Keywords|Report|" ),
+	" varchar ( 255 ) COLLATE utf8_unicode_ci DEFAULT NULL, | longtext COLLATE utf8_unicode_ci, |longtext COLLATE utf8_unicode_ci, | int ( 2 ) DEFAULT 0, |" ),
+	QStringLiteral ( "ID|Client ID|Type|Start date|Finish date|Worked hours|Price|Project path|Project ID|Image path|Job Address|Job Keywords|Report|Last Viewed|" ),
 	JOBS_FIELDS_TYPE, TABLE_VERSION, JOB_FIELD_COUNT, TABLE_JOB_ORDER,
-	#ifdef JOB_TABLE_UPDATE_AVAILABLE
 	&updateJobTable
-	#else
-	nullptr
-	#endif //JOB_TABLE_UPDATE_AVAILABLE
 	#ifdef TRANSITION_PERIOD
 	, true
 	#endif
@@ -207,7 +243,7 @@ void Job::setListItem ( jobListItem* job_item )
 
 jobListItem* Job::jobItem () const
 {
-	return static_cast<jobListItem*>( DBRecord::mListItem );
+	return dynamic_cast<jobListItem*>( DBRecord::mListItem );
 }
 
 void Job::fillJobTypeList ( QStringList& jobList, const QString& clientid )

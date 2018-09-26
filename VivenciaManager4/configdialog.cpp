@@ -105,7 +105,7 @@ void configDialog::fillForms ()
 
 void configDialog::getAppSchemes ()
 {
-	QMenu* schemes_menu ( new QMenu );
+	auto schemes_menu ( new QMenu );
 	schemes_menu->addAction ( ActionPanelScheme::PanelStyleStr[ActionPanelScheme::PANEL_NONE], this, 
 			[&] () { return setAppScheme ( ActionPanelScheme::PanelStyleStr[ActionPanelScheme::PANEL_NONE] ); } );
 	schemes_menu->addAction ( ActionPanelScheme::PanelStyleStr[ActionPanelScheme::PANEL_DEFAULT], this, 

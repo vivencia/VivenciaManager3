@@ -28,6 +28,8 @@ public:
 		bool is_file;
 
 		st_fileInfo () : is_dir ( false ), is_file ( true ) {}
+
+		const st_fileInfo& operator= ( const st_fileInfo& fi2 ) noexcept;
 	};
 
 	enum DesktopEnvironment
@@ -51,6 +53,7 @@ public:
 	static triStateType isLink ( const QString& param );
 	static triStateType isFile ( const QString& param );
 	static long int fileSize ( const QString& filepath );
+	static int fileCount ( const QString& path, const QStringList& name_filters = QStringList () );
 
 	static bool modifiedDateTime ( const QString& path, vmNumber& modDate, vmNumber& modTime );
 
@@ -71,9 +74,9 @@ public:
 	static const QString filePathWithoutExtension ( const QString& filepath );
 	static const QString replaceFileExtension ( const QString& filepath, const QString& new_ext );
 
-	static void lsDir ( PointersList<st_fileInfo*>& result, const QString& baseDir, 
+	static void lsDir ( pointersList<st_fileInfo*>& result, const QString& baseDir,
 						const QStringList& name_filters = QStringList (), const QStringList& exclude_filter = QStringList (),
-						const int filter = LS_FILES, const int follow_into = 0 );
+						const int filter = LS_FILES, const int follow_into = 0, const bool b_insert_sorted = true );
 
 	static bool rmDir ( const QString& baseDir, const QStringList& name_filters,
 						const int filter = LS_FILES, const int follow_into = 0 );
@@ -95,3 +98,5 @@ public:
 };
 
 #endif // FILEOPS_H
+
+extern bool operator!= ( fileOps::st_fileInfo fi1, fileOps::st_fileInfo fi2 );

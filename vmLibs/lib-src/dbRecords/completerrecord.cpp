@@ -237,7 +237,7 @@ void completerRecord::updateTable ( const COMPLETER_CATEGORIES category, const Q
 	saveRecord ();
 }
 
-void completerRecord::batchUpdateTable ( const COMPLETER_CATEGORIES category, const QStringList& str_list )
+void completerRecord::batchUpdateTable ( const COMPLETER_CATEGORIES category, QStringList& str_list )
 {
 	QStringList::const_iterator itr ( str_list.constBegin () );
 	const QStringList::const_iterator itr_end ( str_list.constEnd () );
@@ -247,7 +247,7 @@ void completerRecord::batchUpdateTable ( const COMPLETER_CATEGORIES category, co
 		for ( ; itr != itr_end; ++itr )
 			updateTable ( category, *itr, false ); // subsequent writes, continue from the last
 	}
-	const_cast<QStringList*>( &str_list )->clear ();
+	str_list.clear ();
 }
 
 void completerRecord::runQuery ( QStringList& results, const TABLE_INFO* t_info, const uint field, const bool b_check_duplicates )

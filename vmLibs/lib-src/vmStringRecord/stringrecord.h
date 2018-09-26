@@ -9,8 +9,8 @@
 #include <QtCore/QChar>
 #include <QtCore/QStringMatcher>
 
-static const QChar record_separator ( 30 );
-static const QChar table_separator ( 29 );
+static const QLatin1Char record_separator ( 30 );
+static const QLatin1Char table_separator ( 29 );
 static const QLatin1Char public_rec_sep ( 31 );
 static const QLatin1Char public_table_sep ( 28 );
 //------------------------------------------------------RECORD-----------------------------------------------
@@ -27,7 +27,7 @@ public:
 	}
 	
 	stringRecord ( const stringRecord& other );
-	stringRecord ( const QString& str, const QChar& sep = record_separator );
+	stringRecord ( const QString& str, const QChar sep = record_separator );
 	
 	inline const stringRecord& operator= ( stringRecord other )
 	{
@@ -82,7 +82,7 @@ public:
 		return mData;
 	}
 
-	static const QString fieldValue ( const QString& str_record, const uint field, const QChar& rec_sep = record_separator );
+	static const QString fieldValue ( const QString& str_record, const uint field, const QChar rec_sep = record_separator );
 
 	/* Do not rely on curValue () alone after calling any of these functions, rather rely on
 	 * their return value. In order to speed things up I will not clear mCurValue if a result is
@@ -121,13 +121,22 @@ public:
 		return mState.isUndefined ();
 	}
 
+	/* This function corrects the misbehavior of stringRecords that are read from a dataFile. Because that class
+	 * uses stringRecords to transfer information and because those stringRecords may contain sub-stringRecords, it changes
+	 * the separator of its internal stringRecord object. When a stringRecord is retrieved from dataFile it contains the
+	 * original structure plus a terminating separator that was introduced by dataFile. We remove this separator, and correct other
+	 * information that were skewed. The arguments are provided for further flexibility, but anything different from the defaults
+	 * was not tested
+	 */
+	void fixFieldsAndSeparators ( const QLatin1Char correct_sep, const QLatin1Char wrong_sep );
+
 private:
 	QChar record_sep;
 	QStringMatcher recsep_matcher;
 	QString mData;
 	mutable QString mCurValue;
 	uint mFields;
-	int mFastIdx;
+	mutable int mFastIdx;
 	triStateType mState;
 };
 
@@ -154,7 +163,7 @@ public:
 	}
 	
 	stringTable ( const stringTable& other );
-	stringTable ( const QString& str, const QChar& sep = table_separator );
+	stringTable ( const QString& str, const QChar sep = table_separator );
 	
 	inline stringTable ( stringTable&& other ) : stringTable ()
 	{
@@ -242,7 +251,7 @@ private:
 	mutable stringRecord mRecord;
 	mutable QString mCurRecord;
 	uint nRecords;
-	int mFastIdx;
+	mutable int mFastIdx;
 	mutable int mCurIdx;
 };
 //------------------------------------------------------TABLE------------------------------------------------

@@ -247,8 +247,8 @@ void searchUI::search ( const uint search_start, const uint search_end )
 		if ( !colsList.isEmpty () )
 		{
 			colsList.chop ( 1 );
-			const QString query_cmd ( QLatin1String ( bhas_clientid ? "SELECT ID,CLIENTID FROM " : "SELECT ID FROM " ) + dbrec->tableInfo ()->table_name + QLatin1String ( " WHERE MATCH (" ) +
-					colsList + QLatin1String ( ") AGAINST (\"" ) + mSearchTerm + QLatin1String ( "\" IN BOOLEAN MODE)" ) );
+			const QString query_cmd ( (bhas_clientid ? QStringLiteral ( "SELECT ID,CLIENTID FROM " ) : QStringLiteral ( "SELECT ID FROM " )) + dbrec->tableInfo ()->table_name + QStringLiteral ( " WHERE MATCH (" ) +
+					colsList + QStringLiteral ( ") AGAINST (\"" ) + mSearchTerm + QStringLiteral ( "\" IN BOOLEAN MODE)" ) );
 			if ( VDB ()->runSelectLikeQuery ( query_cmd, query ) )
 			{
 				const uint fld_max ( dbrec->tableInfo ()->field_count );
@@ -281,7 +281,7 @@ void searchUI::search ( const uint search_start, const uint search_end )
 						{
 							// Sometimes, MySQL does not find exactly what we searched for, and we need to
 							// filter its results
-							if ( item->loadData () )
+							if ( item->loadData ( true ) )
 							{
 								for ( fld = 0; fld < fld_max; ++fld )
 								{
@@ -327,7 +327,7 @@ void searchUI::fillList ()
 {
 	mFoundList->rowActivatedConnection ( false );
 	dbListItem* item ( mFoundItems.first () );
-	VMList<QString> strInfo;
+	vmList<QString> strInfo;
 	uint row ( 0 );
 
 	while ( item != nullptr )
@@ -423,7 +423,7 @@ void searchUI::setupUI ()
 	mBtnClose = new QPushButton ( APP_TR_FUNC ( "Close" ) );
 	connect ( mBtnClose, &QPushButton::clicked, this, [&] () { return hide (); } );
 	
-	QHBoxLayout* hLayout ( new QHBoxLayout );
+	auto hLayout ( new QHBoxLayout );
 	hLayout->setSpacing ( 1 );
 	hLayout->setMargin ( 0 );
 	hLayout->addWidget ( mBtnPrev, 0, Qt::AlignLeft );
@@ -431,7 +431,7 @@ void searchUI::setupUI ()
 	hLayout->addStretch ( 2 );
 	hLayout->addWidget ( mBtnClose, 1, Qt::AlignRight );
 
-	QVBoxLayout* vLayout ( new QVBoxLayout );
+	auto vLayout ( new QVBoxLayout );
 	vLayout->setMargin ( 2 );
 	vLayout->setSpacing ( 2 );
 	vLayout->addWidget ( mFoundList, 2 );
@@ -561,14 +561,14 @@ dbListItem* searchUI::getOtherItem ( const uint typeID, const uint id ) const
 			return nullptr;
 	}
 	dbrec->readRecord ( id );
-	dbListItem* item ( new dbListItem ( typeID ) );
+	auto item ( new dbListItem ( typeID ) );
 	item->setDBRecID ( id );
 	item->setRelation ( RLI_CLIENTITEM );
 	item->setDBRec ( dbrec, true );
 	return item;
 }
 
-void searchUI::getClientInfo ( const clientListItem* const client_item, VMList<QString>& cellData )
+void searchUI::getClientInfo ( const clientListItem* const client_item, vmList<QString>& cellData )
 {
 	cellData[COL_CLIENT-1] = recStrValue ( client_item->clientRecord (), FLD_CLIENT_NAME );
 	//cellData[COL_JOB-1] = emptyString;
@@ -579,9 +579,9 @@ void searchUI::getClientInfo ( const clientListItem* const client_item, VMList<Q
 	}
 }
 
-bool searchUI::getJobInfo ( jobListItem* job_item, VMList<QString>& cellData )
+bool searchUI::getJobInfo ( jobListItem* job_item, vmList<QString>& cellData )
 {
-	if ( job_item->loadData () )
+	if ( job_item->loadData ( true ) )
 	{
 		const clientListItem* client ( static_cast<clientListItem*> ( job_item->relatedItem ( RLI_CLIENTPARENT ) ) );
 		if ( client )
@@ -614,17 +614,17 @@ bool searchUI::getJobInfo ( jobListItem* job_item, VMList<QString>& cellData )
 	return false;
 }
 
-bool searchUI::getPayInfo ( payListItem* pay_item, VMList<QString>& cellData )
+bool searchUI::getPayInfo ( payListItem* pay_item, vmList<QString>& cellData )
 {
-	if ( pay_item->loadData () )
+	if ( pay_item->loadData ( true ) )
 	{
 		const clientListItem* client ( static_cast<clientListItem*> ( pay_item->relatedItem ( RLI_CLIENTPARENT ) ) );
 		if ( client )
 		{
 			cellData[COL_CLIENT-1] = recStrValue ( client->clientRecord (), FLD_CLIENT_NAME );
 
-			jobListItem* job ( static_cast<jobListItem*>( pay_item->relatedItem ( RLI_JOBPARENT ) ) );
-			if ( job != nullptr && job->loadData () )
+			auto job ( static_cast<jobListItem*>( pay_item->relatedItem ( RLI_JOBPARENT ) ) );
+			if ( job != nullptr && job->loadData ( true ) )
 			{
 				cellData[COL_JOB-1] = recStrValue ( job->jobRecord (), FLD_JOB_ID ) + CHR_HYPHEN + recStrValue ( job->jobRecord (), FLD_JOB_TYPE );
 				const stringTable str_payinfo ( recStrValue ( pay_item->dbRec (), FLD_PAY_INFO ) );
@@ -649,16 +649,16 @@ bool searchUI::getPayInfo ( payListItem* pay_item, VMList<QString>& cellData )
 	return false;
 }
 
-bool searchUI::getBuyInfo ( buyListItem* buy_item, VMList<QString>& cellData )
+bool searchUI::getBuyInfo ( buyListItem* buy_item, vmList<QString>& cellData )
 {
-	if ( buy_item->loadData () )
+	if ( buy_item->loadData ( true ) )
 	{
 		const clientListItem* client ( static_cast<clientListItem*> ( buy_item->relatedItem ( RLI_CLIENTPARENT ) ) );
 		if ( client ) {
 			cellData[COL_CLIENT-1] = recStrValue ( client->clientRecord (), FLD_CLIENT_NAME );
 
-			jobListItem* job ( static_cast<jobListItem*>( buy_item->relatedItem ( RLI_JOBPARENT ) ) );
-			if ( job != nullptr && job->loadData () )
+			auto job ( static_cast<jobListItem*>( buy_item->relatedItem ( RLI_JOBPARENT ) ) );
+			if ( job != nullptr && job->loadData ( true ) )
 			{
 				cellData[COL_JOB-1] = recStrValue ( job->jobRecord (), FLD_JOB_ID ) + CHR_HYPHEN + recStrValue ( job->jobRecord (), FLD_JOB_TYPE );
 				const stringTable str_buypayinfo ( recStrValue ( buy_item->dbRec (), FLD_BUY_PAYINFO ) );
@@ -681,7 +681,7 @@ bool searchUI::getBuyInfo ( buyListItem* buy_item, VMList<QString>& cellData )
 	return false;
 }
 
-bool searchUI::getOtherInfo ( dbListItem* item, VMList<QString>& cellData )
+bool searchUI::getOtherInfo ( dbListItem* item, vmList<QString>& cellData )
 {
 	QSqlQuery query;
 	switch ( item->subType () )

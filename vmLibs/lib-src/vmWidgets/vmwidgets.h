@@ -32,7 +32,7 @@ public:
 	inline vmAction ( const int index, const QIcon &icon, const QString& text, QObject* parent = nullptr )
 		: QAction ( icon, text, parent ), vmWidget ( WT_ACTION, -1, index ) {}
 
-	virtual ~vmAction () override;
+	virtual ~vmAction () final = default;
 	
 	inline void setLabel ( const QString& text ) { QAction::setText ( text ); }
 };
@@ -47,7 +47,7 @@ public:
 	explicit vmActionLabel ( const QString& text, QWidget* parent = nullptr );
 	explicit vmActionLabel ( vmAction* action, QWidget* parent = nullptr );
 
-	virtual ~vmActionLabel () override;
+	virtual ~vmActionLabel () final = default;
 
 	inline QLatin1String qtClassName () const override { return QLatin1String ( "QToolButton" ); }
 	QString defaultStyleSheet () const override;
@@ -99,11 +99,12 @@ public:
 	void datesButtonMenuRequested ();
 
 	static void execDateButtonsMenu ( const vmAction* const action, pvmDateEdit* dte );
-	static void updateDateButtonsMenu ();
 	static void updateRecentUsedDates ( const vmNumber& date );
 	
 	inline QMenu* standardContextMenu () const override;
 	void setTabOrder ( QWidget* formOwner, QWidget* prevWidget, QWidget* nextWidget );
+
+	void setOwnerItemToDateControl ( vmTableItem* const item );
 
 private:
 	pvmDateEdit* mDateEdit;
@@ -118,7 +119,7 @@ class vmTimeEdit : public QTimeEdit, public vmWidget
 
 public:
 	vmTimeEdit ( QWidget* parent = nullptr );
-	virtual ~vmTimeEdit () override;
+	virtual ~vmTimeEdit () final = default;
 
 	inline QLatin1String qtClassName () const override { return QLatin1String ( "QTimeEdit" ); }
 	QString defaultStyleSheet () const override;
@@ -147,10 +148,11 @@ class vmLineEdit : public QLineEdit, public vmWidget
 {
 
 friend class vmLineEditWithButton;
+friend class vmComboBox;
 
 public:
 	explicit vmLineEdit ( QWidget* parent = nullptr, QWidget* ownerWindow = nullptr );
-	virtual ~vmLineEdit () override;
+	virtual ~vmLineEdit () override = default;
 
 	inline QLatin1String qtClassName () const override { return QLatin1String ( "QLineEdit" ); }
 	QString defaultStyleSheet () const override;
@@ -166,7 +168,7 @@ public:
 	QMenu* standardContextMenu () const override;
 
 	void completerClickReceived ( const QString& value );
-	void updateText ();
+	void updateText ( const bool b_notify );
 	
 	inline const QString& textBeforeChange () const { return mCurrentText; }
 	inline void setCurrentText ( const QString& text ) { mCurrentText = text; }
@@ -198,7 +200,8 @@ class vmLineEditWithButton : public QWidget, public vmWidget
 
 public:
 
-	enum LINE_EDIT_BUTTON_TYPE { LEBT_NO_BUTTON = 0, LEBT_CALC_BUTTON = 0x20, LEBT_DIALOG_BUTTON = 0x40, LEBT_CUSTOM_BUTTOM = 0x80 };
+	enum LINE_EDIT_BUTTON_TYPE { LEBT_NO_BUTTON = 0, LEBT_CALC_BUTTON = 0x20, LEBT_DIALOG_BUTTON_DIR = 0x40,
+								LEBT_DIALOG_BUTTON_FILE = 0x80, LEBT_DIALOG_BUTTON_SAVE = 0x100, LEBT_CUSTOM_BUTTOM = 0x200 };
 
 	vmLineEditWithButton ( QWidget* parent = nullptr );
 	virtual ~vmLineEditWithButton () override;
@@ -208,7 +211,7 @@ public:
 	inline void highlight ( const VMColors wm_color, const QString& str = QString () ) override { mLineEdit->highlight ( wm_color, str ); }
 	void setEditable ( const bool editable ) override;
 	inline void setText ( const QString& text, const bool b_notify = false ) override { mLineEdit->setText ( text, b_notify ); }
-	inline QString text () const override { return mLineEdit->QLineEdit::text (); }
+	inline QString text () const override { return lineControl ()->text (); }
 
 	void setButtonType ( const uint btn_idx, const LINE_EDIT_BUTTON_TYPE type );
 	void setButtonIcon ( const uint btn_idx, const QIcon& icon );
@@ -232,7 +235,7 @@ private:
 
 		buttons_st () : mButton ( nullptr ), mBtnType ( LEBT_NO_BUTTON ), buttonClicked_func ( nullptr ), idx ( 0 ) {}
 	};
-	PointersList<buttons_st*> buttonsList;
+	pointersList<buttons_st*> buttonsList;
 	QHBoxLayout* mainLayout;
 
 	void execButtonAction ( const uint i );
@@ -246,7 +249,7 @@ class vmComboBox : public QComboBox, public vmWidget
 
 public:
 	vmComboBox ( QWidget* parent = nullptr );
-	virtual ~vmComboBox () override;
+	virtual ~vmComboBox () final = default;
 
 	inline void setID ( const int id )
 	{
@@ -278,7 +281,7 @@ public:
 		mLineEdit->setCallbackForContentsAltered ( func );
 	}
 
-	inline void setCallbackForActivated ( const std::function<void ( const int )>& func ) { indexChanged_func = func; }
+	inline void setCallbackForActivated ( const std::function<void ( const int )>& func ) { activated_func = func; }
 	inline void setCallbackForIndexChanged ( const std::function<void ( const int )>& func ) { indexChanged_func = func; }
 	inline void setCallbackForEnterKeyPressed ( const std::function<void ()>& func ) { keyEnter_func = func; }
 	inline void setCallbackForEscKeyPressed ( const std::function<void ()>& func ) { keyEsc_func = func; }
@@ -316,7 +319,7 @@ class vmCheckBox : public QCheckBox, public vmWidget
 public:
 	explicit vmCheckBox ( QWidget* parent = nullptr );
 	vmCheckBox ( const QString& text, QWidget* parent = nullptr );
-	virtual ~vmCheckBox () override;
+	virtual ~vmCheckBox () final = default;
 
 	inline QLatin1String qtClassName () const override { return QLatin1String ( "QCheckBox" ); }
 	QString defaultStyleSheet () const override;

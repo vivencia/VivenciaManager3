@@ -76,10 +76,11 @@ public:
 	bool editClient ( clientListItem* client_item, const bool b_dogui = true );
 	bool delClient ( clientListItem* client_item, const bool b_ask = true );
 	bool cancelClient ( clientListItem* client_item );
-	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr );
+	bool displayClient ( clientListItem* client_item, const bool b_select = false, jobListItem* job_item = nullptr, buyListItem* buy_item = nullptr, const uint jobid = 0, const uint buyid = 0 );
 	void loadClientInfo ( const Client* const client );
 	clientListItem* getClientItem ( const uint id ) const;
-	void fillAllLists ( const clientListItem* client_item );
+	void loadClients ( clientListItem* &item );
+	void fillAllLists (const clientListItem* client_item, jobListItem* &job_item, buyListItem* &buy_item, const uint jobid = 0, const uint buyid = 0 );
 	void alterClientEndDate ( const jobListItem* const job_item );
 	void clientExternalChange ( const uint id, const RECORD_ACTION action );
 //--------------------------------------------CLIENT------------------------------------------------------------
@@ -151,6 +152,7 @@ public:
 
 //--------------------------------------------EDITING-FINISHED-JOB-----------------------------------------------------------
 	void cboJobType_textAltered ( const vmWidget* const sender );
+	void txtJobProjectPath_textAltered ( const vmWidget* const sender );
 	void txtJob_textAltered ( const vmWidget* const sender );
 	void txtJobWheather_textAltered ( const vmWidget* const sender );
 	void txtJobTotalDayTime_textAltered ( const vmWidget* const sender );
@@ -261,7 +263,9 @@ public:
 //---------------------------------------------SESSION----------------------------------------------------------
 	void showTab ( const TAB_INDEXES ti );
 	void tabMain_currentTabChanged ( const int tab_idx );
-	void saveView ();
+	void alterLastViewedRecord ( dbListItem* old_item, dbListItem* new_item );
+	uint getLastViewedRecord ( const TABLE_INFO* t_info, const uint client_id = 0, const uint job_id = 0 );
+	void changeNavLabels ();
 	void navigatePrev ();
 	void navigateNext ();
 	void insertNavItem ( dbListItem* item );
@@ -323,6 +327,7 @@ private:
 
 	vmTaskPanel* mainTaskPanel;
 
+	vmActionGroup* grpActive;
 	vmActionGroup* grpClients;
 	vmActionGroup* grpJobs;
 	vmActionGroup* grpPays;
@@ -340,12 +345,12 @@ private:
 	bool mb_jobPosActions;
 
 	vmNumber mCalendarDate;
-	PointersList<vmWidget*> clientWidgetList;
-	PointersList<vmWidget*> jobWidgetList;
-	PointersList<vmWidget*> payWidgetList;
-	PointersList<vmWidget*> buyWidgetList;
-	PointersList<dbListItem*> navItems;
-	PointersList<dbListItem*> editItems;
+	pointersList<vmWidget*> clientWidgetList;
+	pointersList<vmWidget*> jobWidgetList;
+	pointersList<vmWidget*> payWidgetList;
+	pointersList<vmWidget*> buyWidgetList;
+	pointersList<dbListItem*> navItems;
+	pointersList<dbListItem*> editItems;
 
 	clientListItem* mClientCurItem;
 	jobListItem* mJobCurItem;

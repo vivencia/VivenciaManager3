@@ -25,7 +25,6 @@ namespace Sys_Init
 {
 	extern void init ( const QString& cmd );
 	extern void deInit ( int err_code = 0 );
-	extern void loadDataIntoMemory ();
 	extern void cleanUpApp ();
 	
 	extern DB_ERROR_CODES checkSystem ( const bool bFirstPass = true );

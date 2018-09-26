@@ -25,7 +25,7 @@ static const QString eow ( QStringLiteral ( "~!@#$%^&*() _+{}|:\"<>?,./;'[]\\=" 
 
 textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	: QTextEdit ( parent ), vmWidget ( WT_TEXTEDIT ),
-	  mFirstInsertedActionPos ( 0 ), mbDocumentModified ( false ),
+	  mFirstInsertedActionPos ( 0 ), mCursorPos ( -1 ), mbDocumentModified ( false ),
 	  mCompleter ( nullptr ), m_highlighter ( nullptr ), m_searchPanel ( nullptr ), mContextMenu ( nullptr )
 {
 	setWidgetPtr ( static_cast<QWidget*> ( this ) );
@@ -47,10 +47,10 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 	misspelledWordsActs[0]->setVisible ( false );
 	misspelledWordsActs[0]->setSeparator ( true );
 	misspelledWordsActs[1] = new QAction ( this );
-	static_cast<void>( connect ( misspelledWordsActs[1], &QAction::triggered, this, [&] () { return addWord (); } ));
+	static_cast<void>( connect ( misspelledWordsActs[1], &QAction::triggered, this, [&] () { addWord (); } ));
 	misspelledWordsActs[1]->setVisible ( false );
 	misspelledWordsActs[2] = new QAction ( this );
-	static_cast<void>( connect ( misspelledWordsActs[2], &QAction::triggered, this, [&] () { return ignoreWord (); } ));
+	static_cast<void>( connect ( misspelledWordsActs[2], &QAction::triggered, this, [&] () { ignoreWord (); } ));
 	misspelledWordsActs[2]->setVisible ( false );
 	QAction* action ( nullptr );
 	for  ( uint i ( 3 ); i < WRONG_WORDS_MENUS; ++i )
@@ -58,18 +58,20 @@ textEditWithCompleter::textEditWithCompleter ( QWidget* parent )
 		misspelledWordsActs[i] = new QAction ( this );
 		misspelledWordsActs[i]->setVisible ( false );
 		action = misspelledWordsActs[i];
-		static_cast<void>( connect ( action, &QAction::triggered, [&, action] ( const bool ) { return correctWord ( action ); } ));
+		static_cast<void>( connect ( action, &QAction::triggered, this, [&, action] ( const bool ) { correctWord ( action ); } ));
 	}
 
 	createContextMenu ();
 	newest_edited_text.reserve ( 20000 );
-	static_cast<void>( connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { return (mbDocumentModified = bChanged); } ) );
+	static_cast<void>( connect ( document (), &QTextDocument::modificationChanged, this, [&] ( const bool bChanged ) { mbDocumentModified = bChanged; } ) );
 }
 
 textEditWithCompleter::~textEditWithCompleter ()
 {
-	for  ( uint i = 0; i < WRONG_WORDS_MENUS; ++i )
-		heap_del ( misspelledWordsActs[i] );
+	for ( QAction* act : misspelledWordsActs )
+		heap_del ( act );
+	//for  ( uint i = 0; i < WRONG_WORDS_MENUS; ++i )
+	//	heap_del ( misspelledWordsActs[i] );
 	heap_del ( mContextMenu );
 	heap_del ( m_searchPanel );
 	heap_del ( m_highlighter );
@@ -113,10 +115,10 @@ void textEditWithCompleter::createContextMenu ()
 	mContextMenu->addSeparator ();
 	mContextMenu->addMenu ( mSpellChecker->menuAvailableDicts () );
 	mSpellChecker->setCallbackForMenuEntrySelected ( [&] ( const bool b_spell_enabled ) {
-		return m_highlighter->enableSpellChecking ( b_spell_enabled ); } );
+		m_highlighter->enableSpellChecking ( b_spell_enabled ); } );
 	mContextMenu->addSeparator ();
-	QAction* findAction ( new QAction ( TR_FUNC ( "Find... (CTRL+F)" ), nullptr ) );
-	static_cast<void>( connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { return showhideUtilityPanel (); } ) );
+	auto findAction ( new QAction ( TR_FUNC ( "Find... (CTRL+F)" ), nullptr ) );
+	static_cast<void>( connect ( findAction, &QAction::triggered, this, [&] ( const bool ) { showhideUtilityPanel (); } ) );
 	mContextMenu->addAction ( findAction );
 	mContextMenu->addSeparator ();
 }
@@ -227,9 +229,8 @@ QString textEditWithCompleter::defaultStyleSheet () const
 		colorstr = QStringLiteral ( " ( 255, 255, 255 ) }" );
 	else
 	{
-		const QTextEdit* edt ( new QTextEdit ( parentWidget () ) );
-		colorstr = QLatin1String ( " ( " ) + edt->palette ().color ( edt->backgroundRole () ).name ()
-				   + QLatin1String ( " ) }" );
+		const auto edt ( new QTextEdit ( parentWidget () ) );
+		colorstr = QLatin1String ( " ( " ) + edt->palette ().color ( edt->backgroundRole () ).name () + QLatin1String ( " ) }" );
 		delete edt;
 	}
 	return ( QLatin1String ( "QTextEdit { background-color: hex" ) + colorstr );
@@ -332,7 +333,7 @@ void textEditWithCompleter::keyPressEvent ( QKeyEvent* e )
 	QTextEdit::keyPressEvent ( e );
 
 	const QString completionPrefix ( textUnderCursor () );
-	const bool hasModifier = e->modifiers () != Qt::NoModifier;
+	const bool hasModifier ( e->modifiers () != Qt::NoModifier );
 	if  ( hasModifier || e->text().isEmpty () || completionPrefix.length () < 3 || eow.contains ( e->text ().right ( 1 ) ) )
 	{
 		mCompleter->popup ()->hide ();
@@ -385,11 +386,11 @@ void textEditWithCompleter::mousePressEvent ( QMouseEvent* e )
 		// context of the document ()'s caret
 		if ( e->button () == Qt::RightButton )
 		{
-			QMouseEvent* e_press ( new QMouseEvent ( e->type (), e->pos (), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
+			auto e_press ( new QMouseEvent ( e->type (), e->pos (), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
 			e_press->setAccepted ( true );
 			QTextEdit::mousePressEvent ( e_press );
 
-			QMouseEvent* e_release ( new QMouseEvent ( QMouseEvent::MouseButtonRelease, e->pos (), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
+			auto e_release ( new QMouseEvent ( QMouseEvent::MouseButtonRelease, e->pos (), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier ) );
 			e_release->setAccepted ( true );
 			QTextEdit::mouseReleaseEvent ( e_release );
 
@@ -414,9 +415,10 @@ void textEditWithCompleter::contextMenuEvent ( QContextMenuEvent* e )
 		int n ( mContextMenu->actions ().count () - 1 );
 		vmAction* action ( nullptr );
 		bool enableWhenReadonly ( false );
+
 		do
 		{
-			action = static_cast<vmAction*>( mContextMenu->actions ().at ( n ) );
+			action = dynamic_cast<vmAction*>( mContextMenu->actions ().at ( n ) );
 			if ( action != nullptr )
 			{
 				enableWhenReadonly = action->data ().toBool ();
@@ -467,7 +469,7 @@ void textEditWithCompleter::setCompleter ( QCompleter* const completer )
 	{
 		mCompleter->setWidget ( this );
 		static_cast<void>( connect ( mCompleter, static_cast<void (QCompleter::*)( const QString& )>( &QCompleter::activated ),
-			this, [&, this] ( const QString& text ) { return insertCompletion ( text ); } ) );
+			this, [&, this] ( const QString& text ) { insertCompletion ( text ); } ) );
 	}
 }
 
@@ -508,7 +510,7 @@ void textEditWithCompleter::insertCompletion ( const QString& completion )
 						b_can_change = false;
 						break;
 					}
-					else if ( chr.isSpace () )
+					if ( chr.isSpace () )
 						b_is_space = true;
 					else
 					{
@@ -570,15 +572,15 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	searchField = new vmLineEdit;
 	searchField->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return searchField_textAltered ( sender->text () ); } );
+		searchField_textAltered ( sender->text () ); } );
 	searchField->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return searchField_keyPressed ( ke ); } );
+		searchField_keyPressed ( ke ); } );
 	searchField->setEditable ( true );
 
 	btnSearchStart = new QToolButton;
 	btnSearchStart->setEnabled ( false );
 	btnSearchStart->setIcon ( ICON ( "search" ) );
-	static_cast<void>( connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { return searchStart (); } ) );
+	static_cast<void>( connect ( btnSearchStart, &QToolButton::clicked, this, [&] () { searchStart (); } ) );
 
 	btnSearchPrev = new QToolButton;
 	btnSearchPrev->setEnabled ( false );
@@ -594,19 +596,19 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 
 	btnClose = new QToolButton;
 	btnClose->setIcon ( ICON ( "cancel" ) );
-	static_cast<void>( connect ( btnClose, &QToolButton::clicked, this, [&] () { return searchCancel ( false ); } ) );
+	static_cast<void>( connect ( btnClose, &QToolButton::clicked, this, [&] () { searchCancel ( false ); } ) );
 
 	replaceField = new vmLineEdit;
 	replaceField->setCallbackForContentsAltered ( [&] ( const vmWidget* const sender ) {
-		return replaceField_textAltered ( sender->text () ); } );
+		replaceField_textAltered ( sender->text () ); } );
 	replaceField->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
-		return replaceField_keyPressed ( ke ); } );
+		replaceField_keyPressed ( ke ); } );
 
 	btnRplcWord = new QToolButton;
 	btnRplcWord->setEnabled ( false );
 	btnRplcWord->setIcon ( ICON ( "find-service" ) );
 	btnRplcWord->setToolTip ( QString ( tr ( "Replace currently selected occurence" ) + QLatin1String ( HTML_BOLD_ITALIC_UNDERLINE_11 ) ).replace ( CHR_PERCENT, QLatin1String ( "F4" ) ) );
-	static_cast<void>( connect ( btnRplcWord, &QToolButton::clicked, this, [&] () { return replaceWord (); } ) );
+	static_cast<void>( connect ( btnRplcWord, &QToolButton::clicked, this, [&] () { replaceWord (); } ) );
 
 	btnRplcAll = new QToolButton;
 	btnRplcAll->setEnabled ( false );
@@ -638,7 +640,7 @@ searchWordPanel::searchWordPanel ( textEditWithCompleter* tewc )
 	setMaximumHeight ( sizeHint ().height () );
 	if ( tewc && tewc->layout () != nullptr )
 	{
-		QVBoxLayout* bLayout ( static_cast<QVBoxLayout*>( m_texteditor->layout () ) );
+		auto bLayout ( dynamic_cast<QVBoxLayout*>( m_texteditor->layout () ) );
 		bLayout->insertWidget ( 0, this );
 	}
 }

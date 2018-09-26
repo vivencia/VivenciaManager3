@@ -56,22 +56,23 @@ unix {
     INSTALLS += target
 }
 
-DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS
+DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS QT_NO_DEBUG
+
 QMAKE_CXXFLAGS_RELEASE += -O3 -march=native -fomit-frame-pointer -funroll-loops -Ofast
 QMAKE_CXXFLAGS_DEBUG += -g
-QMAKE_CXXFLAGS += -Werror -Wall -Wextra -pedantic -std=c++14
+QMAKE_CXXFLAGS += -Werror -Wall -Wextra -pedantic -std=c++14 -finput-charset=UTF-8 -fexec-charset=UTF-8
 
 INCLUDEPATH += -I/usr/include $$PWD/../../common $$PWD/../../lib-src
 LIBS += -L/usr/lib -lhunspell
 
-unix:!macx: LIBS += -L$$PWD/../../../build-vmCalculator-Desktop-Debug/ -lvmCalculator
+unix:!macx: LIBS += -L$$PWD/../build-vmCalculator-Desktop-Debug/ -lvmCalculator
 DEPENDPATH += $$PWD/../vmCalculator
 
-unix:!macx: LIBS += -L$$PWD/../../../build-vmNumbers-Desktop-Debug/ -lvmNumbers
+unix:!macx: LIBS += -L$$PWD/../build-vmNumbers-Desktop-Debug/ -lvmNumbers
 DEPENDPATH += $$PWD/../vmNumbers
 
-unix:!macx: LIBS += -L$$PWD/../../../build-vmStringRecord-Desktop-Debug/ -lvmStringRecord
+unix:!macx: LIBS += -L$$PWD/../build-vmStringRecord-Desktop-Debug/ -lvmStringRecord
 DEPENDPATH += $$PWD/../vmStringRecord
 
-unix:!macx: LIBS += -L$$PWD/../../../build-vmUtils-Desktop-Debug/ -lvmUtils
+unix:!macx: LIBS += -L$$PWD/../build-vmUtils-Desktop-Debug/ -lvmUtils
 DEPENDPATH += $$PWD/../vmUtils

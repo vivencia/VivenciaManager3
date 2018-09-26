@@ -1,4 +1,5 @@
 #include "calculator.h"
+#include "vmlibs.h"
 #include "heapmanager.h"
 
 #include <QtCore/QStack>
@@ -10,7 +11,7 @@
 class Tokens : public QVector<Token>
 {
 public:
-	inline Tokens () : QVector<Token> () , m_valid ( true ) {}
+	Tokens () = default;
 	inline Tokens ( const Tokens& t ) : QVector<Token> ( t ), m_valid ( t.valid () ) {}
 	inline ~Tokens () {	this->clear (); }
 
@@ -18,14 +19,14 @@ public:
 	inline void setValid ( const bool v ) {	m_valid = v; }
 
 protected:
-	bool m_valid;
+	bool m_valid {true};
 };
 
 class TokenStack: public QVector<Token>
 {
 public:
 
-	explicit inline TokenStack (): QVector<Token> (), topIndex ( 0 ) {}
+	TokenStack () = default;
 
 	inline bool isEmpty () const { return topIndex == 0; }
 	inline uint itemCount () const { return topIndex; }
@@ -49,7 +50,7 @@ private:
 		if ( static_cast<int>(topIndex) >= size () )
 			resize ( static_cast<int>(topIndex) + 10 );
 	}
-	uint topIndex;
+	uint topIndex { 0 };
 };
 
 const Token Token::null;
@@ -107,12 +108,12 @@ struct Opcode
 {
 	enum Operation { Nop = 0, Load, Add, Sub, Mul, Div, Neg };
 
-	unsigned int type;
-	unsigned int index;
+	unsigned int type { Operation::Nop };
+	int index { 0 };
 
-	Opcode (): type ( Operation::Nop ) , index ( 0 ) {}
-	explicit Opcode ( const Operation t ): type ( t ) , index ( 0 ) {}
-	Opcode ( const Operation t, unsigned int i ): type ( t ) , index ( i ) {}
+	Opcode () = default;
+	explicit Opcode ( const Operation t ): type ( t ) {}
+	Opcode ( const Operation t, int i ): type ( t ) , index ( i ) {}
 };
 
 Token::Token ( const TokenType type, const QString& text, const int pos )
@@ -143,10 +144,7 @@ Token& Token::operator= ( const Token& token )
 
 Token::Op Token::asOperator () const
 {
-	if ( m_text.isEmpty () )
-		return InvalidOp;
-	else
-		return isOperator () ? matchOperator ( m_text.at ( 0 ) ): InvalidOp;
+	return m_text.isEmpty () ? (InvalidOp) : (isOperator () ? matchOperator ( m_text.at ( 0 ) ) : InvalidOp);
 }
 
 // helper function: return operator of given token text. e.g. "*" yields Operator::Asterisk, and so on
@@ -208,10 +206,8 @@ struct vmCalculator::Private
 	
 	QVector<Opcode> codes;
 		
-	bool dirty;
-	bool valid;
-
-	Private (): dirty ( true ) , valid ( false ) {}
+	bool dirty { true };
+	bool valid { false };
 };
 
 vmCalculator::vmCalculator ()
@@ -358,7 +354,7 @@ void vmCalculator::compile ( const Tokens &tokens ) const
 
 	TokenStack syntaxStack;
 	QStack<int> argStack;
-	uint argCount ( 1 );
+	int argCount ( 1 );
 
 	for ( int i = 0; i <= tokens.count (); ++i ) {
 		// helper token: InvalidOp is end-of-expression
@@ -553,9 +549,12 @@ QString vmCalculator::autoFix ( const QString& expr ) const
 	QString result;
 
 	// strip off all funny characters
-	for ( int c = 0; c < expr.length (); ++c ) {
+	for ( int c = 0; c < expr.length (); ++c )
+	{
 		if ( expr.at ( c ) >= QChar ( 32 ) )
+		{
 			result.append ( expr.at ( c ) );
+		}
 	}
 
 	// no extra whitespaces at the beginning and at the end
@@ -608,13 +607,13 @@ void vmCalculator::eval ( QString& result )
 		compile ( tokens );
 	}
 
-	QStack<float> stack;
-	float val1 ( 0.0 ), val2 ( 0.0 );
+	QStack<double> stack;
+	double val1 ( 0.0 ), val2 ( 0.0 );
 
 	for ( int pc = 0; pc < stc_private->codes.count (); ++pc )
 	{
 		const Opcode &opcode (stc_private->codes.at ( pc ));
-		const uint index ( opcode.index );
+		const int index ( opcode.index );
 		switch ( opcode.type )
 		{
 			// no operation
@@ -623,7 +622,7 @@ void vmCalculator::eval ( QString& result )
 
 			// load a constant, push to stack
 			case Opcode::Load:
-				val1 = stc_private->constants.at ( index ).toFloat ();
+				val1 = stc_private->constants.at ( index ).toDouble ();
 				stack.push ( val1 );
 			break;
 
@@ -700,8 +699,9 @@ void vmCalculator::eval ( QString& result )
 	}
 
 	// more than one value in stack ? unsuccesfull execution...
-	if ( stack.count () != 1 ) {
-		result = QCoreApplication::tr ( "Invalid Expression" );
+	if ( stack.count () != 1 )
+	{
+		result = APP_TR_FUNC ( "Invalid Expression" );
 		stc_private->error = result;
 	}
 	else

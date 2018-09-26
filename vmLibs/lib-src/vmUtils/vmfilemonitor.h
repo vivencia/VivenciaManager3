@@ -40,7 +40,7 @@ public:
 	}
 
 public slots:
-	void startWorks () __attribute__ ((noreturn));
+	void startWorks ();// __attribute__ ((noreturn));
 	void startMonitoring ( const QString& filename, const uint event );
 	void stopMonitoring ( const QString& filename );
 	inline void pauseMonitoring () { mb_paused = true; }
@@ -58,7 +58,7 @@ private:
 
 	QThread* workerThread;
 	struct watched_files;
-	PointersList<watched_files*> filesList;
+	pointersList<watched_files*> filesList;
 	int m_inotifyFd;
 	bool mb_paused;
 	std::function<void( const QString& filename, const uint event )> m_eventFunc;

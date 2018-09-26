@@ -9,6 +9,8 @@
 #include <vmWidgets/vmwidgets.h>
 #include <vmWidgets/texteditwithcompleter.h>
 
+#include <dbRecords/completers.h>
+
 #include <QtCore/QFile>
 #include <QtCore/QTextCodec>
 #include <QtCore/QVariant>
@@ -16,7 +18,7 @@
 #include <QtGui/QTextList>
 #include <QtGui/QTextTable>
 #include <QtGui/QPainter>
-#include <QPushButton>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QToolButton>
 #include <QtWidgets/QFontComboBox>
@@ -30,7 +32,9 @@
 #include <QtPrintSupport/QPrinter>
 #include <QtPrintSupport/QPrintPreviewDialog>
 
-QSizeF imageTextObject::intrinsicSize ( QTextDocument*, int /*posInDocument*/, const QTextFormat &format )
+imageTextObject::~imageTextObject () {}
+
+QSizeF imageTextObject::intrinsicSize ( QTextDocument* /*doc*/, int /*posInDocument*/, const QTextFormat &format )
 {
 	const QImage bufferedImage ( qvariant_cast<QImage> ( format.property ( 1 ) ) );
 	return bufferedImage.size ();
@@ -44,22 +48,17 @@ void imageTextObject::drawObject ( QPainter* painter, const QRectF& rect, QTextD
 }
 
 textEditor::textEditor ( documentEditor* mdiParent )
-	: documentEditorWindow ( mdiParent ), mPDFName ( QString () ),
-	  mb_UseHtml ( false ), mb_IgnoreCursorPos ( true ), m_ImageNumber ( 0 )
+	: documentEditorWindow ( mdiParent ), mPDFName ( QString () ), mb_UseHtml ( false ), mb_IgnoreCursorPos ( true ), m_ImageNumber ( 0 )
 {
 	setEditorType ( TEXT_EDITOR_SUB_WINDOW );
 	mDocument = new textEditWithCompleter ( nullptr );
-	//mDocument->setCompleter()
+	mDocument->setCompleter ( mdiParent->completerManager ()->getCompleter ( ALL_CATEGORIES ) );
 	mCursor = mDocument->textCursor ();
 	mCursor.movePosition ( QTextCursor::Start );
-	static_cast<void>( connect ( mDocument->document (), &QTextDocument::contentsChanged, this, [&] () { return documentWasModified (); } ) );
-	static_cast<void>( connect ( mDocument->document (), &QTextDocument::undoAvailable, this, [&] ( const bool undo ) { return documentWasModifiedByUndo ( undo ); } ) );
-	static_cast<void>( connect ( mDocument->document (), &QTextDocument::redoAvailable, this, [&] ( const bool redo ) { return documentWasModifiedByRedo ( redo ); } ) );
 	mainLayout->addWidget ( mDocument, 3 );
 	mDocument->setUtilitiesPlaceLayout ( mainLayout );
 
 	textEditorToolBar::initToolbarInstace ();
-	static_cast<void>( connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } ) );
 	TEXT_EDITOR_TOOLBAR ()->show ( mdiParent );
 	mDocument->setFocus ();
 }
@@ -68,6 +67,21 @@ textEditor::~textEditor ()
 {
 	static_cast<void>( mDocument->disconnect ());
 	delete mDocument;
+}
+
+void textEditor::setEditable ( const bool b_editable )
+{
+	if ( b_editable )
+	{
+		static_cast<void>( connect ( mDocument->document (), &QTextDocument::contentsChanged, this, [&] () { return documentWasModified (); } ) );
+		static_cast<void>( connect ( mDocument->document (), &QTextDocument::undoAvailable, this, [&] ( const bool undo ) { return documentWasModifiedByUndo ( undo ); } ) );
+		static_cast<void>( connect ( mDocument->document (), &QTextDocument::redoAvailable, this, [&] ( const bool redo ) { return documentWasModifiedByRedo ( redo ); } ) );
+		static_cast<void>( connect ( mDocument, &textEditWithCompleter::cursorPositionChanged, TEXT_EDITOR_TOOLBAR (), [&] () { return TEXT_EDITOR_TOOLBAR ()->updateControls (); } ) );
+	}
+	else
+		disconnect ( mDocument->document (), nullptr, nullptr, nullptr );
+
+	mDocument->setEditable ( b_editable );
 }
 
 void textEditor::cut ()
@@ -90,12 +104,14 @@ void textEditor::paste ()
 
 void textEditor::createNew ()
 {
+	setEditable ( false );
 	mDocument->document ()->clear ();
 	mDocument->document ()->setModified ( false );
 	mCursor = mDocument->textCursor ();
 	mapImages.clear ();
 	mDocument->setFocus ();
 	mb_IgnoreCursorPos = false;
+	setEditable ( true );
 }
 
 bool textEditor::loadFile ( const QString& filename )
@@ -140,17 +156,14 @@ bool textEditor::loadFile ( const QString& filename )
 		};
 		if ( vmNotify::criticalBox ( TR_FUNC ( "Error loading file" ), msg_err[error_num].arg ( filename ), false ) == MESSAGE_BTN_OK )
 			return loadFile ( filename );
-		else
-			return false;
+		return false;
 	}
-	else
-	{
-		mCursor = mDocument->textCursor ();
-		mDocument->document ()->setModified ( false );
-		setCurrentFile ( filename );
-		mDocument->setFocus ();
-		return true;
-	}
+
+	mCursor = mDocument->textCursor ();
+	mDocument->document ()->setModified ( false );
+	setCurrentFile ( filename );
+	mDocument->setFocus ();
+	return true;
 }
 
 bool textEditor::displayText ( const QString& text )
@@ -355,7 +368,7 @@ textEditorToolBar::textEditorToolBar ()
 	btnStrikethrough->setToolTip ( TR_FUNC ( "Strike through font" ) );
 	connect ( btnStrikethrough, &QToolButton::clicked, this, [&] ( const bool checked ) { return btnStrikethrough_clicked ( checked ); } );
 
-	QFrame* vLine2 ( new QFrame );
+	auto vLine2 ( new QFrame );
 	vLine2->setFrameStyle ( QFrame::VLine|QFrame::Raised );
 
 	btnTextColor = new QToolButton;
@@ -368,7 +381,7 @@ textEditorToolBar::textEditorToolBar ()
 	btnHighlightColor->setToolTip ( TR_FUNC ( "Font highlight color" ) );
 	connect ( btnHighlightColor, &QToolButton::clicked, this, [&] () { return btnHighlightColor_clicked (); } );
 
-	QHBoxLayout* layoutFontStyleButtons ( new QHBoxLayout );
+	auto layoutFontStyleButtons ( new QHBoxLayout );
 	layoutFontStyleButtons->setSpacing ( 1 );
 	layoutFontStyleButtons->setContentsMargins ( 1, 1, 1, 1 );
 	layoutFontStyleButtons->addWidget ( btnBold );
@@ -391,13 +404,13 @@ textEditorToolBar::textEditorToolBar ()
 	cboFontSizes->setEditable ( true );
 	cboFontSizes->setIgnoreChanges ( false );
 	
-	QGridLayout* gLayoutFontCombos ( new QGridLayout );
+	auto gLayoutFontCombos ( new QGridLayout );
 	gLayoutFontCombos->setSpacing ( 1 );
 	gLayoutFontCombos->setContentsMargins ( 1, 1, 1, 1 );
 	gLayoutFontCombos->addWidget ( new QLabel ( TR_FUNC ( "Size: " ) ), 0, 0 );
 	gLayoutFontCombos->addWidget ( cboFontSizes, 0, 1 );
 
-	QFrame* hLine2 ( new QFrame );
+	auto hLine2 ( new QFrame );
 	hLine2->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
@@ -426,7 +439,7 @@ textEditorToolBar::textEditorToolBar ()
 	btnAlignJustify->setToolTip ( TR_FUNC ( "Justify text within margins" ) );
 	connect ( btnAlignJustify, &QToolButton::clicked, this, [&] () { return btnAlignJustify_clicked (); } );
 
-	QHBoxLayout* layoutTextAlignmentButtons ( new QHBoxLayout );
+	auto layoutTextAlignmentButtons ( new QHBoxLayout );
 	layoutTextAlignmentButtons->setSpacing ( 1 );
 	layoutTextAlignmentButtons->setContentsMargins ( 1, 1, 1, 1 );
 	layoutTextAlignmentButtons->addWidget ( btnAlignLeft );
@@ -434,7 +447,7 @@ textEditorToolBar::textEditorToolBar ()
 	layoutTextAlignmentButtons->addWidget ( btnAlignCenter );
 	layoutTextAlignmentButtons->addWidget ( btnAlignJustify );
 
-	QFrame* hLine3 ( new QFrame );
+	auto hLine3 ( new QFrame );
 	hLine3->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
@@ -474,13 +487,13 @@ textEditorToolBar::textEditorToolBar ()
 	btnRemoveTable = new QPushButton ( TR_FUNC ( "Remove table" ) );
 	connect ( btnRemoveTable, &QToolButton::clicked, this, [&] () { return btnRemoveTable_clicked (); } );
 
-	QHBoxLayout* layoutTableBtns ( new QHBoxLayout );
+	auto layoutTableBtns ( new QHBoxLayout );
 	layoutTableBtns->setSpacing ( 1 );
 	layoutTableBtns->setContentsMargins ( 1, 1, 1, 1 );
 	layoutTableBtns->addWidget ( btnCreateTable, 1 );
 	layoutTableBtns->addWidget ( btnRemoveTable, 1 );
 
-	QGridLayout* gLayoutRowsAndCols ( new QGridLayout );
+	auto gLayoutRowsAndCols ( new QGridLayout );
 	gLayoutRowsAndCols->setSpacing ( 1 );
 	gLayoutRowsAndCols->setContentsMargins ( 1, 1, 1, 1 );
 	gLayoutRowsAndCols->addWidget ( new QLabel ( TR_FUNC ( "Rows:" ) ), 0, 0 );
@@ -492,7 +505,7 @@ textEditorToolBar::textEditorToolBar ()
 	gLayoutRowsAndCols->addWidget ( btnInsertTableCol, 1, 2 );
 	gLayoutRowsAndCols->addWidget ( btnRemoveTableCol, 1, 3 );
 
-	QFrame* hLine4 = new QFrame;
+	auto hLine4 = new QFrame;
 	hLine4->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
@@ -502,19 +515,19 @@ textEditorToolBar::textEditorToolBar ()
 	btnInsertNumberedList = new QPushButton ( ICON ( "numbered-list" ), TR_FUNC ( "Numbered list" ) );
 	connect ( btnInsertNumberedList, &QToolButton::clicked, this, [&] () { return btnInsertNumberedList_clicked (); } );
 
-	QHBoxLayout* layoutLists ( new QHBoxLayout );
+	auto layoutLists ( new QHBoxLayout );
 	layoutLists->setSpacing ( 1 );
 	layoutLists->setContentsMargins ( 1, 1, 1, 1 );
 	layoutLists->addWidget ( btnInsertBulletList, 1 );
 	layoutLists->addWidget ( btnInsertNumberedList, 1 );
 
-	QFrame* hLine5 = new QFrame;
+	auto hLine5 = new QFrame;
 	hLine5->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
 	btnInsertImage = new QPushButton ( ICON ( "insert-image" ), TR_FUNC ( "Insert image" ) );
 	connect ( btnInsertImage, &QToolButton::clicked, this, [&] () { return btnInsertImage_clicked (); } );
-	QFrame* hLine6 = new QFrame;
+	auto hLine6 = new QFrame;
 	hLine6->setFrameStyle ( QFrame::HLine|QFrame::Raised );
 	//----------------------------------------------------------------------------------------
 
@@ -533,7 +546,7 @@ textEditorToolBar::textEditorToolBar ()
 	btnExportToPDF->setToolTip ( TR_FUNC ( "Export to PDF" ) );
 	connect ( btnExportToPDF, &QToolButton::clicked, this, [&] () { return btnExportToPDF_clicked (); } );
 
-	QHBoxLayout* layoutPrint = new QHBoxLayout;
+	auto layoutPrint = new QHBoxLayout;
 	layoutPrint->setSpacing ( 1 );
 	layoutPrint->setContentsMargins ( 1, 1, 1, 1 );
 	layoutPrint->addWidget ( btnPrint );
@@ -542,7 +555,7 @@ textEditorToolBar::textEditorToolBar ()
 
 	//----------------------------------------------------------------------------------------
 
-	QVBoxLayout* layoutMainToolBar ( new QVBoxLayout );
+	auto layoutMainToolBar ( new QVBoxLayout );
 	layoutMainToolBar->setSpacing ( 1 );
 	layoutMainToolBar->setContentsMargins ( 1, 1, 1, 1 );
 
@@ -561,7 +574,7 @@ textEditorToolBar::textEditorToolBar ()
 	layoutMainToolBar->addWidget ( hLine6, 1 );
 	layoutMainToolBar->addLayout ( layoutPrint, 1 );
 
-	QFrame* frmMainToolBar ( new QFrame );
+	auto frmMainToolBar ( new QFrame );
 	frmMainToolBar->setFrameStyle ( QFrame::Raised | QFrame::StyledPanel );
 	frmMainToolBar->setLayout ( layoutMainToolBar );
 
@@ -893,7 +906,7 @@ void textEditorToolBar::btnPrint_clicked ()
 	mEditorWindow->mDocument->setPreview ( true );
 	QPrinter printer ( QPrinter::ScreenResolution );
 	preparePrinterDevice ( &printer );
-	QPrintDialog* printerDlg ( new QPrintDialog ( &printer, this ) );
+	auto printerDlg ( new QPrintDialog ( &printer, this ) );
 	if ( mEditorWindow->mDocument->textCursor ().hasSelection () )
 		printerDlg->addEnabledOption ( QAbstractPrintDialog::PrintSelection );
 	printerDlg->setWindowTitle ( TR_FUNC ( "Print document" ) );

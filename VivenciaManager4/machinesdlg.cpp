@@ -569,7 +569,7 @@ void machinesDlg::btnSave_clicked ()
 		if ( cboType->insertItemSorted ( cboType->text () ) != -1 )
 			COMPLETERS ()->updateCompleter ( cboType->text (), STOCK_TYPE );
 		
-		uint row ( static_cast<uint>( tableMachineHistory->lastUsedRow () + 1 ) );
+		auto row ( static_cast<uint>( tableMachineHistory->lastUsedRow () + 1 ) );
 		tableMachineHistory->setCellValue ( cboEvents->text (), row, 0 );
 		tableMachineHistory->setCellValue ( dteEventDate->text (), row, 1 );
 		tableMachineHistory->setCellValue ( timeEventTime->text (), row, 2 );

@@ -19,7 +19,7 @@ friend class VivenciaDB;
 
 public:
 	explicit dbStatistics ( QObject* parent = nullptr );
-	virtual ~dbStatistics ();
+	virtual ~dbStatistics () final = default;
 
 	inline QVBoxLayout* layout () const { return mainLayout; }
 	void reload ();
@@ -43,7 +43,7 @@ Q_OBJECT
 
 public:
 	explicit dbStatisticsWorker ();
-	virtual ~dbStatisticsWorker ();
+	virtual ~dbStatisticsWorker () = default;
 	
 #ifdef USE_THREADS
 public slots:

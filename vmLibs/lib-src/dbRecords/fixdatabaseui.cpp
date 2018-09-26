@@ -87,12 +87,12 @@ void fixDatabaseUI::setupUI ()
 	btnClose = new QPushButton ( tr ( "Close" ) );
 	connect ( btnClose, &QPushButton::clicked, this, [&] () { return close (); } );
 
-	QHBoxLayout* btnsLayout = new QHBoxLayout;
+	auto btnsLayout = new QHBoxLayout;
 	btnsLayout->insertWidget ( 0, btnCheck, 1 );
 	btnsLayout->insertWidget ( 1, btnFix, 1 );
 	btnsLayout->insertWidget ( 2, btnClose, 1 );
 
-	QVBoxLayout* mainLayout = new QVBoxLayout;
+	auto mainLayout = new QVBoxLayout;
 	mainLayout->insertWidget ( 0, tablesView, 2 );
 	mainLayout->insertLayout ( 1, btnsLayout, 1 );
 	setLayout ( mainLayout );
@@ -102,7 +102,7 @@ void fixDatabaseUI::setupUI ()
 
 void fixDatabaseUI::populateTable ()
 {
-	spreadRow* s_row ( new spreadRow );
+	auto s_row ( new spreadRow );
 	s_row->column[0] = 0;
 	s_row->column[1] = 1;
 	s_row->column[2] = 2;

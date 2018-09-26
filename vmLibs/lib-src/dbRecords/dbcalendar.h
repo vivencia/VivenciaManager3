@@ -45,12 +45,12 @@ friend class VivenciaDB;
 
 public:
 	dbCalendar ();
-	virtual ~dbCalendar ();
+	virtual ~dbCalendar () final = default;
 
 	void updateCalendarWithJobInfo ( const Job* const job );
 	void updateCalendarWithPayInfo ( const Payment* const pay );
 	void updateCalendarWithBuyInfo ( const Buy* const buy );
-	void updateCalendarWithBuyPayInfo ( const Buy* const buy, PointersList<CALENDAR_EXCHANGE*>& ce_list );
+	void updateCalendarWithBuyPayInfo ( const Buy* const buy, pointersList<CALENDAR_EXCHANGE*>& ce_list );
 	
 	const stringTable& dateLog ( const vmNumber& date, const uint search_field, const uint requested_field,
 								 QString& price, const uint requested_field_price, const bool bIncludeDates = false );
@@ -61,12 +61,12 @@ public:
 	void editPrice ( const vmNumber& date, const vmNumber& new_price, const vmNumber& old_price, const uint field );
 	void delPrice ( const vmNumber& date, const vmNumber& price, const uint field );
 
-	void addCalendarExchangeRule ( PointersList<CALENDAR_EXCHANGE*>& ce_list, const CALENDAR_EXCHANGE_ACTION_ORDER action,
+	void addCalendarExchangeRule ( pointersList<CALENDAR_EXCHANGE*>& ce_list, const CALENDAR_EXCHANGE_ACTION_ORDER action,
 								   const vmNumber&date, const vmNumber& price = vmNumber::emptyNumber, const int extra_info = -1 );
 	static const TABLE_INFO t_info;
 
 protected:
-	void updateCalendarDB ( const DBRecord* dbrec, PointersList<CALENDAR_EXCHANGE *>& ce_list );
+	void updateCalendarDB ( const DBRecord* dbrec, pointersList<CALENDAR_EXCHANGE *>& ce_list );
 	friend bool updateCalendarTable ();
 
 	RECORD_FIELD m_RECFIELDS[CALENDAR_FIELD_COUNT];

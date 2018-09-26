@@ -18,7 +18,7 @@
 #include "dbcalendar.h"
 #include "fixdatabaseui.h"
 
-#include <vmUtils/textdb.h>
+#include <vmUtils/vmtextfile.h>
 #include <vmUtils/vmcompress.h>
 #include <vmUtils/fileops.h>
 #include <vmUtils/configops.h>
@@ -47,7 +47,7 @@ static const QLatin1String chrDelim2 ( "\'," );
 static const QString VMDB_PASSWORD_SERVICE ( QStringLiteral ( "vmdb_pswd_service" ) );
 static const QString VMDB_PASSWORD_SERVER_ADMIN_ID ( QStringLiteral ( "vmdb_pswd_server_admin_id" ) );
 
-const TABLE_INFO* VivenciaDB::table_info[TABLES_IN_DB] = {
+const TABLE_INFO* const VivenciaDB::table_info[TABLES_IN_DB] = {
 	&generalTable::t_info,
 	&userRecord::t_info,
 	&Client::t_info,
@@ -65,14 +65,8 @@ const TABLE_INFO* VivenciaDB::table_info[TABLES_IN_DB] = {
 };
 
 static const uint PORT ( 3306 );
-
 static const QString HOST ( QStringLiteral ( "localhost" ) );
 static const QString CONNECTION_NAME ( QStringLiteral ( "vivenciadb" ) );
-static const QString OLD_CONN_NAME ( QStringLiteral ( "vivencia" ) );
-
-static const QString OLD_DB_NAME ( QLatin1String ( "Vivencia" ) );
-static const QString OLD_USER_NAME ( QLatin1String ( "root" ) );
-
 static const QString DB_DRIVER_NAME ( QStringLiteral ( "QMYSQL3" ) );
 static const QString ROOT_CONNECTION ( QStringLiteral ( "root_connection" ) );
 
@@ -127,6 +121,16 @@ QString VivenciaDB::getTableColumnLabel ( const TABLE_INFO* __restrict t_info, u
 		sep_1 = ( sep_2 ) + 1;
 	}
 	return col_label;
+}
+
+int VivenciaDB::getTableColumnIndex ( const TABLE_INFO* t_info, const QString& column_name )
+{
+	for ( uint i ( 0 ); i < t_info->field_count; ++i )
+	{
+		if ( getTableColumnName ( t_info, i ) == column_name )
+			return static_cast<int>( i );
+	}
+	return -1;
 }
 
 QString VivenciaDB::tableName ( const TABLE_ORDER table )
@@ -214,11 +218,9 @@ bool VivenciaDB::isMySQLRunning ()
 	{
 		if ( configOps::initSystem ( SYSTEMD ) )
 			return ( static_cast<bool>( outStr.indexOf ( QStringLiteral ( "active (running)" ) ) != -1 ) );
-		else
-			return ( static_cast<bool>( outStr.indexOf ( QStringLiteral ( "start/running, process" ) ) != -1 ) );
+		return ( static_cast<bool>( outStr.indexOf ( QStringLiteral ( "start/running, process" ) ) != -1 ) );
 	}
-	else
-		return ( static_cast<bool>( outStr.indexOf ( QStringLiteral ( "OK" ) ) != -1 ) );
+	return ( static_cast<bool>( outStr.indexOf ( QStringLiteral ( "OK" ) ) != -1 ) );
 }
 
 DB_ERROR_CODES VivenciaDB::commandMySQLServer ( const QString& command, const QString& message, const bool b_do_not_exec )
@@ -251,7 +253,7 @@ DB_ERROR_CODES VivenciaDB::checkDatabase ( VivenciaDB* vdb )
 
 		if ( !vdb->openDataBase () )
 			return ERR_NO_DB;
-		else if ( vdb->databaseIsEmpty () )
+		if ( vdb->databaseIsEmpty () )
 			return ERR_DB_EMPTY;
 	}
 	else
@@ -308,25 +310,37 @@ void VivenciaDB::doPreliminaryWork ()
 	{
 		generalTable gen_rec;
 		bool b_version_mismatch ( false );
+		unsigned char current_version ( 'A' );
 		for ( uint i ( 1 ); i <= TABLES_IN_DB; ++i )
 		{
 			if ( gen_rec.readRecord ( i ) )
 			{
 				const QString& version ( recStrValue ( &gen_rec, FLD_GENERAL_TABLEVERSION ) );
 				if ( !version.isEmpty () )
-					b_version_mismatch = table_info[i-1]->version != static_cast<unsigned char>( version.at ( 0 ).toLatin1 () );
+				{
+					current_version = static_cast<unsigned char>( version.at ( 0 ).toLatin1 () );
+					b_version_mismatch = table_info[i-1]->version != current_version;
+				}
 				else
 					b_version_mismatch = true;
 			}
 			else
 				b_version_mismatch = true;
-			
-			if ( b_version_mismatch ) // update the GENERAL_TABLE with the current table version
-				gen_rec.insertOrUpdate ( table_info[i-1] );
-			
+
 			// regardless of a new version, if there is an update function, call it. Some maintanance work must sometimes be made
 			if ( table_info[i-1]->update_func )
-				static_cast<void>( ( *table_info[i-1]->update_func ) () );
+			{
+				if ( (*table_info[i-1]->update_func) ( current_version ) )
+				{
+					if ( b_version_mismatch ) // update the GENERAL_TABLE with the current table version
+						gen_rec.insertOrUpdate ( table_info[i-1] );
+				}
+			}
+			else // no update function, only fix GENERAL_TABLE
+			{
+				if ( b_version_mismatch ) // update the GENERAL_TABLE with the current table version
+					gen_rec.insertOrUpdate ( table_info[i-1] );
+			}
 		}
 	}
 }
@@ -337,39 +351,69 @@ bool VivenciaDB::createDatabase ()
 {
 	if ( !openDataBase () )
 	{
-		m_ok = false;
 		QString passwd;
-		if ( mPwdMngr->getPassword_UserInteraction ( passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID,
-			APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password to create the application's database" ) ) )
+		m_ok = mPwdMngr->getPassword_UserInteraction ( passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID,
+			APP_TR_FUNC ( "You need to provide MYSQL's root(admin) password to create the application's database" ) );
+		if ( m_ok )
 		{
-			QSqlDatabase dbRoot ( QSqlDatabase::addDatabase ( DB_DRIVER_NAME, ROOT_CONNECTION ) );
-			dbRoot.setDatabaseName ( STR_MYSQL );
-			dbRoot.setHostName ( HOST );
-			dbRoot.setUserName ( QStringLiteral ( "root" ) );
-			dbRoot.setPassword ( passwd );
-
-			if ( dbRoot.open () )
+			const QString mysqladmin_args ( QStringLiteral ( "status -u root -p'" ) + passwd + CHR_CHRMARK );
+			const QString mysqladmin_output ( fileOps::executeAndCaptureOutput ( mysqladmin_args, adminApp () ) );
+			if ( mysqladmin_output.contains ( QStringLiteral ( "error: 'Access denied for user 'root'@'localhost'" ) ) )
 			{
-				const QString str_query ( QLatin1String ( "CREATE DATABASE " ) + DB_NAME +
-									  QLatin1String ( " DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" ) );
-				QSqlQuery rootQuery ( dbRoot );
-				m_ok = rootQuery.exec ( str_query );
-				rootQuery.finish ();
-				dbRoot.commit ();
-				dbRoot.close ();
-				rootQuery.clear ();
-				if ( m_ok )
+				m_ok = false;
+				const QString btns_text[3] = {
+					APP_TR_FUNC ( "Try another password" ), APP_TR_FUNC ( "Try to set as default" ), APP_TR_FUNC ( "Cancel" ) };
+				const int answer ( vmNotify::notifyBox ( nullptr,  APP_TR_FUNC ( "Wrong password" ), APP_TR_FUNC ( "The provided password is wrong. Try again or"
+					" attempt to use it as the default root password for the mysql server?" ), vmNotify::QUESTION, btns_text ) );
+				switch ( answer )
 				{
-					static_cast<void>( mPwdMngr->savePassword ( passwordSessionManager::SavePermanment,
-						passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID ) );
+					case MESSAGE_BTN_OK:
+						return createDatabase ();
+					case MESSAGE_BTN_CUSTOM:
+						m_ok = changeRootPassword ( QString (), passwd );
+					case MESSAGE_BTN_CANCEL: break;
 				}
 			}
-			QSqlDatabase::removeDatabase ( ROOT_CONNECTION );
+
+			if ( m_ok )
+			{
+				QSqlDatabase dbRoot ( QSqlDatabase::addDatabase ( DB_DRIVER_NAME, ROOT_CONNECTION ) );
+				dbRoot.setDatabaseName ( STR_MYSQL );
+				dbRoot.setHostName ( HOST );
+				dbRoot.setUserName ( QStringLiteral ( "root" ) );
+				dbRoot.setPassword ( passwd );
+
+				if ( dbRoot.open () )
+				{
+					const QString str_query ( QLatin1String ( "CREATE DATABASE " ) + DB_NAME +
+										  QLatin1String ( " DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci" ) );
+					QSqlQuery rootQuery ( dbRoot );
+					m_ok = rootQuery.exec ( str_query );
+					rootQuery.finish ();
+					dbRoot.commit ();
+					dbRoot.close ();
+					rootQuery.clear ();
+					if ( m_ok )
+					{
+						static_cast<void>( mPwdMngr->savePassword ( passwordSessionManager::SavePermanment,
+							passwd, VMDB_PASSWORD_SERVICE, VMDB_PASSWORD_SERVER_ADMIN_ID ) );
+					}
+				}
+				QSqlDatabase::removeDatabase ( ROOT_CONNECTION );
+			}
 		}
 	}
 	if ( !m_ok )
 		vmNotify::messageBox ( nullptr, APP_TR_FUNC ( "Database error" ), APP_TR_FUNC ( "MYSQL could create the database." ) );
 	return m_ok;
+}
+
+bool VivenciaDB::changeRootPassword ( const QString& oldpasswd, const QString& newpasswd )
+{
+	const QString mysqladmin_args ( QStringLiteral ( "-u root -p'" ) + oldpasswd + QStringLiteral ( "' password " ) + newpasswd );
+	const QString mysqladmin_output ( fileOps::executeAndCaptureOutput ( mysqladmin_args, adminApp () ) );
+	qDebug () << mysqladmin_output;
+	return true;
 }
 
 bool VivenciaDB::createUser ()
@@ -463,10 +507,14 @@ bool VivenciaDB::insertColumn ( const uint column, const TABLE_INFO* __restrict 
 								QLatin1String ( " FIRST" ) )
 					  );
 	QSqlQuery query ( cmd, *database () );
-	if ( query.exec () ) {
+
+	query.exec ();
+	if ( !database ()->lastError ().isValid () )
+	{
 		mBackupSynced = false;
 		return true;
 	}
+	qDebug () << database ()->lastError ().text ();
 	return false;
 }
 
@@ -475,7 +523,9 @@ bool VivenciaDB::removeColumn ( const QString& column_name, const TABLE_INFO* t_
 	const QString cmd ( QLatin1String ( "ALTER TABLE " ) + t_info->table_name +
 						QLatin1String ( " DROP COLUMN " ) + column_name );
 	QSqlQuery query ( cmd, *database () );
-	if ( query.exec () )
+
+	query.exec ();
+	if ( !database ()->lastError ().isValid () )
 	{
 		mBackupSynced = false;
 		return true;
@@ -489,7 +539,9 @@ bool VivenciaDB::renameColumn ( const QString& old_column_name, const uint col_i
 						QLatin1String ( " CHANGE " ) + old_column_name +
 						getTableColumnName ( t_info, col_idx ) + CHR_SPACE + getTableColumnFlags ( t_info, col_idx ) );
 	QSqlQuery query ( cmd, *database () );
-	if ( query.exec () )
+
+	query.exec ();
+	if ( !database ()->lastError ().isValid () )
 	{
 		mBackupSynced = false;
 		return true;
@@ -503,7 +555,9 @@ bool VivenciaDB::changeColumnProperties ( const uint column, const TABLE_INFO* _
 						QLatin1String ( " MODIFY COLUMN " ) + getTableColumnName ( t_info, column ) +
 						getTableColumnFlags ( t_info, column ) );
 	QSqlQuery query ( cmd, *database () );
-	if ( query.exec () )
+
+	query.exec ();
+	if ( !database ()->lastError ().isValid () )
 	{
 		mBackupSynced = false;
 		return true;
@@ -513,7 +567,7 @@ bool VivenciaDB::changeColumnProperties ( const uint column, const TABLE_INFO* _
 
 void VivenciaDB::populateTable ( const TABLE_INFO* t_info, vmTableWidget* table ) const
 {
-	threadedDBOps* worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
+	auto worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
 
 #ifdef USE_THREADS
 	QThread* workerThread ( new QThread );
@@ -530,7 +584,7 @@ void VivenciaDB::populateTable ( const TABLE_INFO* t_info, vmTableWidget* table 
 
 void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const bool b_only_new ) const
 {
-	threadedDBOps* worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
+	auto worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
 	//TODO threads
 	worker->updateTable ( t_info, table, b_only_new );
 	delete worker;
@@ -538,7 +592,7 @@ void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, c
 
 void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const uint id ) const
 {
-	threadedDBOps* worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
+	auto worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
 	//TODO threads
 	worker->updateTable ( t_info, table, id );
 	delete worker;
@@ -546,7 +600,7 @@ void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, c
 
 void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const podList<uint>& ids ) const
 {
-	threadedDBOps* worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
+	auto worker ( new threadedDBOps ( const_cast<VivenciaDB*>( this ) ) );
 	//TODO threads
 	worker->updateTable ( t_info, table, ids );
 	delete worker;
@@ -554,8 +608,8 @@ void VivenciaDB::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, c
 
 bool VivenciaDB::deleteDB ( const QString& dbname )
 {
-	QSqlQuery query ( QLatin1String ( "DROP DATABASE " ) + ( dbname.isEmpty () ? DB_NAME : dbname ) );
-	return query.exec ();
+	QSqlQuery queryRes;
+	return runModifyingQuery ( QLatin1String ( "DROP DATABASE " ) + ( dbname.isEmpty () ? DB_NAME : dbname ), queryRes );
 }
 
 bool VivenciaDB::optimizeTable ( const TABLE_INFO* __restrict t_info )
@@ -591,19 +645,19 @@ bool VivenciaDB::flushAllTables ()
 
 bool VivenciaDB::deleteTable ( const QString& table_name )
 {
-	QSqlQuery query ( QLatin1String ( "DROP TABLE " ) + table_name );
+	QSqlQuery query ( QStringLiteral ( "DROP TABLE " ) + table_name );
 	return query.exec ();
 }
 
 bool VivenciaDB::clearTable ( const QString& table_name )
 {
-	QSqlQuery query ( QLatin1String ( "TRUNCATE TABLE " ) + table_name );
+	QSqlQuery query ( QStringLiteral ( "TRUNCATE TABLE " ) + table_name );
 	return query.exec ();
 }
 
 bool VivenciaDB::tableExists ( const TABLE_INFO* __restrict t_info )
 {
-	QSqlQuery query ( QLatin1String ( "SHOW TABLES LIKE '" ) + t_info->table_name + CHR_CHRMARK );
+	QSqlQuery query ( QStringLiteral ( "SHOW TABLES LIKE '" ) + t_info->table_name + CHR_CHRMARK );
 	if ( query.exec () && query.first () )
 		return query.value ( 0 ).toString () == t_info->table_name;
 	return false;
@@ -611,7 +665,7 @@ bool VivenciaDB::tableExists ( const TABLE_INFO* __restrict t_info )
 
 uint VivenciaDB::recordCount ( const TABLE_INFO* __restrict t_info )
 {
-	QSqlQuery query ( QLatin1String ( "SELECT COUNT(*) FROM " ) + t_info->table_name );
+	QSqlQuery query ( QStringLiteral ( "SELECT COUNT(*) FROM " ) + t_info->table_name );
 	if ( query.exec () && query.first () )
 		return query.value ( 0 ).toUInt ();
 	return 0;
@@ -619,7 +673,7 @@ uint VivenciaDB::recordCount ( const TABLE_INFO* __restrict t_info )
 
 bool VivenciaDB::databaseIsEmpty ()
 {
-	QSqlQuery query ( QLatin1String ( "SHOW TABLES FROM " ) + DB_NAME );
+	QSqlQuery query ( QStringLiteral ( "SHOW TABLES FROM " ) + DB_NAME );
 	if ( query.exec () )
 		return ( !query.isActive () || !query.next () );
 	return true;
@@ -630,7 +684,7 @@ uint VivenciaDB::getHighestID ( const uint table )
 	if ( VivenciaDB::currentHighestID_list.at ( table ) == 0 )
 	{
 		QSqlQuery query;
-		if ( runSelectLikeQuery ( QLatin1String ( "SELECT MAX(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
+		if ( runSelectLikeQuery ( QStringLiteral ( "SELECT MAX(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
 		{
 			if ( recordCount ( tableInfo ( table ) ) > 0 )
 				VivenciaDB::currentHighestID_list[table] = query.value ( 0 ).toUInt ();
@@ -646,7 +700,7 @@ uint VivenciaDB::getHighestID ( const uint table )
 uint VivenciaDB::getLowestID ( const uint table )
 {
 	QSqlQuery query;
-	if ( runSelectLikeQuery ( QLatin1String ( "SELECT MIN(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
+	if ( runSelectLikeQuery ( QStringLiteral ( "SELECT MIN(ID) FROM " ) + tableInfo ( table )->table_name, query ) )
 	{
 		if ( recordCount ( tableInfo ( table ) ) > 0 )
 			return query.value ( 0 ).toUInt ();
@@ -676,7 +730,7 @@ bool VivenciaDB::recordExists ( const QString& table_name, const int id )
 //-----------------------------------------COMMOM-DBRECORD-------------------------------------------
 bool VivenciaDB::insertRecord ( const DBRecord* db_rec ) const
 {
-	QString str_query ( QLatin1String ( "INSERT INTO " ) + db_rec->t_info->table_name + QLatin1String ( " VALUES ( " ) );
+	QString str_query ( QStringLiteral ( "INSERT INTO " ) + db_rec->t_info->table_name + QStringLiteral ( " VALUES ( " ) );
 	QString values;
 
 	const uint field_count ( db_rec->t_info->field_count );
@@ -684,18 +738,19 @@ bool VivenciaDB::insertRecord ( const DBRecord* db_rec ) const
 		values += CHR_CHRMARK + recStrValue ( db_rec, i ) + chrDelim2;
 	values.chop ( 1 );
 	
-	str_query += values + QLatin1String ( " )" );
+	str_query += values + QStringLiteral ( " )" );
 	database ()->exec ( str_query );
 	if ( database ()->lastError ().type () == QSqlError::NoError )
 	{
 		mBackupSynced = false;
 		return true;
 	}
-	else
-	{
-		qDebug () << QStringLiteral ( "VivenciaDB::insertRecord - " ) << database ()->lastError ().text ();
-		return false;
-	}
+
+	qDebug () << QStringLiteral ( "VivenciaDB::insertRecord - " ) << database ()->lastError ().text ();
+	qDebug () << QStringLiteral ( "--------" );
+	qDebug () << QStringLiteral ( "Query command:" );
+	qDebug () << str_query;
+	return false;
 }
 
 bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
@@ -703,14 +758,14 @@ bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
 	if ( !db_rec || !db_rec->isModified () )
 		return true;
 
-	QString str_query ( QLatin1String ( "UPDATE " ) +
-						db_rec->t_info->table_name + QLatin1String ( " SET " ) );
+	QString str_query ( QStringLiteral ( "UPDATE " ) +
+						db_rec->t_info->table_name + QStringLiteral ( " SET " ) );
 
 	int sep_1 ( ( db_rec->t_info->field_names.indexOf ( CHR_PIPE, 1 ) ) + 1 ); // skip ID field
 	int sep_2 ( 0 );
 
 	const uint field_count ( db_rec->t_info->field_count );
-	const QLatin1String chrDelim ( "=\'" );
+	const QString chrDelim ( QStringLiteral ( "=\'" ) );
 	const QChar CHR_PIPE_PTR ( CHR_PIPE );
 	const QStringMatcher sep_matcher ( &CHR_PIPE_PTR, 1 );
 
@@ -725,7 +780,7 @@ bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
 		sep_1 = sep_2 + 1;
 	}
 	str_query.chop ( 1 );
-	str_query += ( QLatin1String ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK ); // id ()
+	str_query += ( QStringLiteral ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK ); // id ()
 
 	database ()->exec ( str_query );
 
@@ -734,24 +789,21 @@ bool VivenciaDB::updateRecord ( const DBRecord* db_rec ) const
 		mBackupSynced = false;
 		return true;
 	}
-	else
-	{
-		qDebug () << QStringLiteral ( "VivenciaDB::updateRecord - " ) << database ()->lastError ().text ();
-		return false;
-	}
+	qDebug () << QStringLiteral ( "VivenciaDB::updateRecord - " ) << database ()->lastError ().text ();
+	return false;
 }
 
 bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
 {
 	if ( db_rec->actualRecordInt ( 0 ) >= 0 )
 	{
-		const QString str_query ( QLatin1String ( "DELETE FROM " ) + db_rec->t_info->table_name +
-								  QLatin1String ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK );
+		const QString str_query ( QStringLiteral ( "DELETE FROM " ) + db_rec->t_info->table_name +
+								  QStringLiteral ( " WHERE ID='" ) + db_rec->actualRecordStr ( 0 ) + CHR_CHRMARK );
 		database ()->exec ( str_query );
 
 		if ( database ()->lastError ().type () == QSqlError::NoError )
 		{
-			const uint id ( static_cast<uint>( db_rec->actualRecordInt ( 0 ) ) );
+			const auto id ( static_cast<uint>( db_rec->actualRecordInt ( 0 ) ) );
 			const uint table ( db_rec->t_info->table_order );
 			if ( id >= getHighestID ( table ) )
 				VivenciaDB::currentHighestID_list[table] = id - 1;
@@ -759,10 +811,7 @@ bool VivenciaDB::removeRecord ( const DBRecord* db_rec ) const
 			mBackupSynced = false;
 			return true;
 		}
-		else
-		{
-			qDebug () << QStringLiteral ( "VivenciaDB::removeRecord - " ) << database ()->lastError ().text ();
-		}
+		qDebug () << QStringLiteral ( "VivenciaDB::removeRecord - " ) << database ()->lastError ().text ();
 	}
 	return false;
 }
@@ -795,8 +844,8 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, const uint field, const bool lo
 	 */
 	try
 	{
-		const QString cmd ( QLatin1String ( "SELECT * FROM " ) +
-						db_rec->t_info->table_name + QLatin1String ( " WHERE " ) +
+		const QString cmd ( QStringLiteral ( "SELECT * FROM " ) +
+						db_rec->t_info->table_name + QStringLiteral ( " WHERE " ) +
 						getTableColumnName ( db_rec->t_info, field ) + CHR_EQUAL +
 						db_rec->backupRecordStr ( field )
 					  );
@@ -864,8 +913,8 @@ bool VivenciaDB::getDBRecord ( DBRecord* db_rec, DBRecord::st_Query& stquery, co
 
 			if ( stquery.str_query.isEmpty () )
 			{
-				const QString cmd ( QLatin1String ( "SELECT * FROM " ) + db_rec->t_info->table_name +
-								( stquery.field >= 0 ? QLatin1String ( " WHERE " ) +
+				const QString cmd ( QStringLiteral ( "SELECT * FROM " ) + db_rec->t_info->table_name +
+								( stquery.field >= 0 ? QStringLiteral ( " WHERE " ) +
 								  getTableColumnName ( db_rec->t_info, static_cast<uint>(stquery.field) ) + CHR_EQUAL +
 								  CHR_QUOTES + stquery.search + CHR_QUOTES : QString () )
 							  );
@@ -919,7 +968,11 @@ bool VivenciaDB::runSelectLikeQuery ( const QString& query_cmd, QSqlQuery& query
 	{
 		queryRes.setForwardOnly ( true );
 		if ( queryRes.exec ( query_cmd ) )
+		{
+			DBG_OUT ( "Query executed successfully:", query_cmd, false, true )
 			return queryRes.first ();
+		}
+		DBG_OUT ( "Query execution failed:", query_cmd, false, true )
 	}
 	return false;	
 }
@@ -947,8 +1000,8 @@ bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables )
 		if ( m_progressMaxSteps_func )
 			m_progressMaxSteps_func ( 3 );
 		m_progressStepUp_func ();
-		const QString mysqldump_args ( QLatin1String ( "--user=root --password=" ) +
-			   passwd + CHR_SPACE + DB_NAME + CHR_SPACE + tables );
+		const QString mysqldump_args ( QStringLiteral ( "--user=root --password=" ) +
+			   passwd + QStringLiteral ( " --opt --skip-set-charset --default-character-set=utf8mb4 --skip-extended-insert " ) + DB_NAME + CHR_SPACE + tables );
 
 		const QString dump ( fileOps::executeAndCaptureOutput ( mysqldump_args, backupApp () ) );
 		unlockAllTables ();
@@ -963,7 +1016,7 @@ bool VivenciaDB::doBackup ( const QString& filepath, const QString& tables )
 				out.setAutoDetectUnicode ( true );
 				out.setLocale ( QLocale::system () );
 				QString strHeader ( dump.left ( 500 ) );
-				strHeader.replace ( QStringLiteral ( "SET NAMES latin1" ), QStringLiteral ( "SET NAMES utf8" ) );
+				strHeader.replace ( QStringLiteral ( "SET NAMES latin1" ), QStringLiteral ( "SET NAMES utf8mb4" ) );
 				strHeader.append ( dump.midRef ( 500, dump.length () - 500 ) );
 				out << strHeader.toLocal8Bit ();
 				file.close ();
@@ -989,7 +1042,7 @@ bool VivenciaDB::checkDumpFile ( const QString& dumpfile )
 		QFile file ( dumpfile );
 		if ( file.open ( QIODevice::ReadOnly|QIODevice::Text ) )
 		{
-			char* __restrict line_buf ( new char [8*1024] );// OPT-6
+			auto* __restrict line_buf ( new char [8*1024] );// OPT-6
 			qint64 n_chars ( -1 );
 			QString line, searchedExpr;
 			const QString expr ( QStringLiteral ( "(%1,%2,%3," ) );
@@ -1003,11 +1056,12 @@ bool VivenciaDB::checkDumpFile ( const QString& dumpfile )
 					if ( line.contains ( QStringLiteral ( "INSERT INTO `GENERAL`" ) ) )
 					{
 						ok = true; // so far, it is
-						for ( uint i ( 0 ); i < TABLES_IN_DB; ++i )
+						for ( const TABLE_INFO* ti : table_info )
+						//for ( uint i ( 0 ); i < TABLES_IN_DB; ++i )
 						{
-							searchedExpr = expr.arg ( table_info[i]->table_order ).arg ( table_info[i]->table_name ).arg ( table_info[i]->version );
-							if ( !line.contains ( searchedExpr ) )
-							{ // one single mismatch the dump file cannot be used by mysqlimport
+							searchedExpr = expr.arg ( ti->table_order ).arg ( ti->table_name ).arg ( ti->version );
+							if ( !line.contains ( searchedExpr ) ) // one single mismatch the dump file cannot be used by mysqlimport
+							{
 								ok = false;
 								break;
 							}
@@ -1054,17 +1108,22 @@ bool VivenciaDB::doRestore ( const QString& filepath )
 		// Note that DB_NAME must refer to an unexisting database or this will fail
 		// Also I think the dump must be of a complete database, with all tables, to avoid inconsistencies
 		if ( !checkDumpFile ( uncompressed_file ) )
-		{ // some table version mismatch
-			restoreapp_args = QLatin1String ( "--user=root --default_character_set=utf8 --password=" ) + passwd + CHR_SPACE + DB_NAME;
+		{
+			// some table version mismatch
+			restoreapp_args = QStringLiteral ( "--user=root --password=" ) + passwd + QStringLiteral ( " --default_character_set=utf8mb4 " ) + DB_NAME;
 			ret = fileOps::executeWithFeedFile ( restoreapp_args, importApp (), uncompressed_file );
 		}
 		// use a previous dump from mysqldump to update or replace one or more tables in an existing database
 		// Tables will be overwritten or created. Note that DB_NAME must refer to an existing database
 		else
 		{
-			restoreapp_args = QLatin1String ( "--user=root --password=" ) + passwd + CHR_SPACE + DB_NAME + CHR_SPACE + uncompressed_file;
+			restoreapp_args = QStringLiteral ( "--user=root --password=" ) + passwd + QStringLiteral ( " --default_character_set=utf8mb4 " ) + DB_NAME + CHR_SPACE + uncompressed_file;
 			ret = fileOps::executeWait ( restoreapp_args, restoreApp () );
 		}
+		// Repair the tables for any problems that we have faced or would face
+		fileOps::executeWait ( QStringLiteral ( "--user=root --password=" ) + passwd + QStringLiteral ( " --auto-repair --optimize --all-databases" ),
+				QStringLiteral ( "mysqlcheck" ) );
+
 		m_progressStepUp_func ();
 
 		if ( bSourceCompressed ) // do not leave trash behind
@@ -1083,7 +1142,7 @@ bool VivenciaDB::doRestore ( const QString& filepath )
 
 bool VivenciaDB::importFromCSV ( const QString& filename )
 {
-	dataFile* tdb ( new dataFile ( filename ) );
+	auto tdb ( new dataFile ( filename ) );
 	if ( !tdb->load ().isOn () )
 		return false;
 	tdb->setRecordSeparationChar ( CHR_NEWLINE );
@@ -1178,6 +1237,11 @@ bool VivenciaDB::importFromCSV ( const QString& filename )
 
 bool VivenciaDB::exportToCSV ( const uint table, const QString& filename )
 {
+	static_cast<void>(fileOps::removeFile ( filename ));
+	auto* __restrict tdb ( new dataFile ( filename ) );
+	if ( tdb->load ().isOff () )
+		return false;
+
 	const TABLE_INFO* t_info ( nullptr );
 	switch ( table )
 	{
@@ -1218,10 +1282,6 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename )
 			t_info = &completerRecord::t_info;
 		break;
 	}
-	static_cast<void>(fileOps::removeFile ( filename ));
-	dataFile* __restrict tdb ( new dataFile ( filename ) );
-	if ( tdb->load ().isOff () )
-		return false;
 
 	if ( m_progressMaxSteps_func )
 		m_progressMaxSteps_func ( 4 );
@@ -1236,7 +1296,7 @@ bool VivenciaDB::exportToCSV ( const uint table, const QString& filename )
 	tdb->insertRecord ( 0, rec );
 	m_progressStepUp_func ();
 
-	const QString cmd ( QLatin1String ( "SELECT * FROM " ) + t_info->table_name );
+	const QString cmd ( QStringLiteral ( "SELECT * FROM " ) + t_info->table_name );
 
 	QSqlQuery query ( *database () );
 	query.setForwardOnly ( true );
@@ -1273,11 +1333,9 @@ threadedDBOps::threadedDBOps ( VivenciaDB* vdb )
 #endif
 	m_vdb ( vdb ), m_finishedFunc ( nullptr ) {}
 
-threadedDBOps::~threadedDBOps () {}
-
 void threadedDBOps::populateTable ( const TABLE_INFO* t_info, vmTableWidget* table )
 {
-	const QString cmd ( QLatin1String ( "SELECT * FROM " ) + t_info->table_name );
+	const QString cmd ( QStringLiteral ( "SELECT * FROM " ) + t_info->table_name );
 
 	QSqlQuery query ( *( m_vdb->database () ) );
 	query.setForwardOnly ( true );
@@ -1326,17 +1384,17 @@ void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table
 {
 	QString cmd;
 	if ( b_only_new )
-		cmd = QLatin1String ( "SELECT * FROM " ) + t_info->table_name + 
-				QLatin1String ( "WHERE ID>" ) + table->sheetItem ( static_cast<uint>( table->lastUsedRow () ), 0 )->text ();
+		cmd = QStringLiteral ( "SELECT * FROM " ) + t_info->table_name +
+				QStringLiteral ( "WHERE ID>" ) + table->sheetItem ( static_cast<uint>( table->lastUsedRow () ), 0 )->text ();
 	else
-		cmd = QLatin1String ( "SELECT * FROM " ) + t_info->table_name;
+		cmd = QStringLiteral ( "SELECT * FROM " ) + t_info->table_name;
 	updateTable ( t_info, table, cmd, b_only_new ? static_cast<uint>( table->lastUsedRow () ) + 1 : 0 );
 }
 
 void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table, const uint id )
 {
 	updateTable ( t_info, table, 
-				  QLatin1String ( "SELECT * FROM " ) + t_info->table_name + QLatin1String ( "WHERE ID=" ) + QString::number ( id ),
+				  QStringLiteral ( "SELECT * FROM " ) + t_info->table_name + QStringLiteral ( "WHERE ID=" ) + QString::number ( id ),
 				  /*Tables should be in order. A casual out of order record is OK, but more must be investigated the reason. The -10 is extrapollating*/
 				  static_cast<uint>( qMax ( static_cast<int>( id - 10 ), static_cast<int>( 0 ) ) ) );
 }
@@ -1355,6 +1413,6 @@ void threadedDBOps::updateTable ( const TABLE_INFO* t_info, vmTableWidget* table
 				break;
 		} while ( true );
 		updateTable ( t_info, table, 
-					  QLatin1String ( "SELECT * FROM " ) + t_info->table_name + QLatin1String ( "WHERE ID=" ) + id_string );
+					  QStringLiteral ( "SELECT * FROM " ) + t_info->table_name + QStringLiteral ( "WHERE ID=" ) + id_string );
 	}
 }

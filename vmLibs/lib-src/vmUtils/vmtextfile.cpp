@@ -1,4 +1,4 @@
-#include "textdb.h"
+#include "vmtextfile.h"
 #include "vmlibs.h"
 #include "heapmanager.h"
 #include "fileops.h"
@@ -14,7 +14,7 @@ static const QString HEADER_ID ( QStringLiteral ( "#!VMFILE" ) );
 static const QString CFG_TYPE_LINE ( QStringLiteral ( "@CFG,%1\n" ) );
 static const QString DATA_TYPE_LINE ( QStringLiteral ( "@CSV,%1\n" ) );
 
-PointersList<textFile::sharedResources*> textFile::sharedResList ( 3 );
+pointersList<textFile::sharedResources*> textFile::sharedResList ( 3 );
 
 textFile::sharedResources* textFile::findSharedResource ( const QString& filename )
 {
@@ -77,7 +77,7 @@ bool textFile::isTextFile ( const QString& filename, const TF_TYPE type )
 	n_chars = file.readLine ( buf, sizeof ( buf ) );
 	if ( n_chars != -1 )
 	{
-		data = QString::fromLocal8Bit ( buf, static_cast<int>(strlen ( buf ) - 1) );
+		data = QString::fromUtf8 ( buf, static_cast<int>(strlen ( buf ) - 1) );
 		if ( data.contains ( HEADER_ID ) )
 		{
 			if ( type == TF_CONFIG && data.contains ( QStringLiteral( "@CFG" ) ) )
@@ -134,11 +134,9 @@ bool textFile::open ()
 			m_file.setFileName ( QString () );
 			return open ();
 		}
-		else
-		{
-			if ( m_file.isOpen () )
-				return true;
-		}
+
+		if ( m_file.isOpen () )
+			return true;
 	}
 
 	return open2 ();
@@ -173,7 +171,7 @@ void textFile::readType ()
 		m_headerSize = m_file.readLine ( buf, sizeof ( buf ) );
 		if ( m_headerSize > 0 )
 		{
-			data = QString::fromLocal8Bit ( buf, static_cast<int>(strlen ( buf ) - 1) );
+			data = QString::fromUtf8 ( buf, static_cast<int>(strlen ( buf ) - 1) );
 			m_type = TF_TEXT;
 			if ( data.contains ( HEADER_ID ) )
 			{
@@ -265,8 +263,8 @@ void textFile::writeHeader ()
 	{
 		QString str;
 		str = HEADER_ID + ( m_type == TF_CONFIG ? CFG_TYPE_LINE : DATA_TYPE_LINE ).arg ( m_buffersize );
-		m_headerSize = qstrlen ( str.toLocal8Bit ().data () );
-		m_file.write ( str.toLocal8Bit ().data (), m_headerSize );
+		m_headerSize = qstrlen ( str.toUtf8 ().data () );
+		m_file.write ( str.toUtf8 ().data (), m_headerSize );
 		m_file.flush ();
 	}
 }
@@ -373,7 +371,7 @@ bool textFile::loadData ()
 
 bool textFile::writeData ()
 {
-	const QByteArray data ( m_data.toLocal8Bit () );
+	const QByteArray data ( m_data.toUtf8 () );
 	return ( m_file.write ( data.data (), data.count () ) > 0 );
 }
 
@@ -406,12 +404,12 @@ bool textFile::recheckData ( const bool b_userInteraction )
 //--------------------------------------------CONFIG-FILE--------------------------------
 struct configFile::configFile_st
 {
-	bool b_modified;
+	bool b_modified { false };
 	QString section_name;
-	VMList<QString> fields;
-	VMList<QString> values;
+	vmList<QString> fields;
+	vmList<QString> values;
 
-	configFile_st () : b_modified ( false ), fields ( QString (), 5 ), values ( QString (), 5 ) {}
+	configFile_st () : fields ( QString (), 5 ), values ( QString (), 5 ) {}
 };
 
 configFile::configFile ()
@@ -512,7 +510,7 @@ void configFile::insertNewSection ( const QString& section_name )
 {
 	if ( !section_name.isEmpty () )
 	{
-		configFile_st* section_info ( new configFile_st );
+		auto section_info ( new configFile_st );
 		section_info->section_name = section_name;
 		section_info->b_modified = true;
 		cfgData.append ( section_info );
@@ -619,7 +617,7 @@ bool configFile::writeData ()
 		for ( uint x ( 0 ); x < n_fields; ++x )
 			line += section_info->fields.at ( x ) + CHR_EQUAL + section_info->values.at ( x ) + CHR_NEWLINE;
 
-		written = m_file.write ( line.toLocal8Bit ().constData (), line.size () );
+		written = m_file.write ( line.toUtf8 ().constData (), line.size () );
 		if ( written > 0 )
 		{
 			section_info->b_modified = false;
@@ -653,8 +651,8 @@ int configFile::findSection ( const QString& section_name ) const
 
 bool configFile::parseConfigFile ( const bool b_reload )
 {
-	quint64 buf_size ( m_buffersize * sizeof ( char ) );
-	char* __restrict buf ( new char[buf_size] );
+	qint64 buf_size ( m_buffersize * sizeof ( char ) );
+	auto* __restrict buf ( new char[static_cast<unsigned long>(buf_size)] );
 	int64_t n_chars ( -1 );
 	int idx ( -1 ), idx2 ( -1 ), section_idx ( -1 );
 	QString line, section_name;
@@ -667,7 +665,7 @@ bool configFile::parseConfigFile ( const bool b_reload )
 		{
 			n_chars = m_file.readLine ( buf, static_cast<qint64>( buf_size ) );
 			if ( n_chars <= 2 ) continue;
-			line = QString::fromLocal8Bit ( buf );
+			line = QString::fromUtf8 ( buf );
 		}
 		else
 			b_skiplineread = false;
@@ -698,7 +696,7 @@ bool configFile::parseConfigFile ( const bool b_reload )
 					n_chars = m_file.readLine ( buf, buf_size );
 					if ( n_chars > 0 )
 					{
-						line = QString::fromLocal8Bit ( buf );
+						line = QString::fromUtf8 ( buf );
 						idx = line.indexOf ( CHR_EQUAL );
 						if ( idx != -1 )
 						{
@@ -831,7 +829,7 @@ bool dataFile::loadData ()
 	QString buf ( m_file.readAll () );
 	if ( buf.length () > 1 )
 	{
-		// buf.remove ( 0, m_headerSize ); 
+		// buf.remove ( 0, m_headerSize );
 		recData.fromString ( buf );
 	}
 	return recData.isOK ();
@@ -842,7 +840,7 @@ bool dataFile::writeData ()
 	qint64 written ( 0 );
 	if ( recData.isOK () )
 	{
-		const QByteArray data ( recData.toString ().toLocal8Bit () );
+		const QByteArray data ( recData.toString ().toUtf8 () );
 		written = m_file.write ( data, static_cast<qint64>( data.size () ) );
 	}
 	return ( written > 0 );

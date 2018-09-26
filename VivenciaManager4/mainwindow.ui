@@ -156,8 +156,8 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset theme="applications-accessories">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset resource="resources.qrc">
+            <normaloff>:/resources/estimatives.png</normaloff>:/resources/estimatives.png</iconset>
           </property>
           <property name="checkable">
            <bool>false</bool>
@@ -547,7 +547,7 @@ p, li { white-space: pre-wrap; }
        <enum>QTabWidget::East</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>6</number>
       </property>
       <property name="usesScrollButtons">
        <bool>true</bool>
@@ -810,7 +810,7 @@ p, li { white-space: pre-wrap; }
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>203</width>
+                       <width>205</width>
                        <height>143</height>
                       </rect>
                      </property>
@@ -844,9 +844,6 @@ p, li { white-space: pre-wrap; }
                           <bold>true</bold>
                          </font>
                         </property>
-                        <property name="readOnly">
-                         <bool>true</bool>
-                        </property>
                        </widget>
                       </item>
                       <item>
@@ -859,7 +856,7 @@ p, li { white-space: pre-wrap; }
                       <rect>
                        <x>0</x>
                        <y>0</y>
-                       <width>213</width>
+                       <width>216</width>
                        <height>143</height>
                       </rect>
                      </property>
@@ -896,9 +893,6 @@ p, li { white-space: pre-wrap; }
                           <bold>true</bold>
                          </font>
                         </property>
-                        <property name="readOnly">
-                         <bool>true</bool>
-                        </property>
                        </widget>
                       </item>
                       <item>
@@ -912,7 +906,7 @@ p, li { white-space: pre-wrap; }
                        <x>0</x>
                        <y>0</y>
                        <width>516</width>
-                       <height>426</height>
+                       <height>425</height>
                       </rect>
                      </property>
                      <attribute name="label">
@@ -945,9 +939,6 @@ p, li { white-space: pre-wrap; }
                           <bold>true</bold>
                          </font>
                         </property>
-                        <property name="readOnly">
-                         <bool>true</bool>
-                        </property>
                        </widget>
                       </item>
                       <item>
@@ -978,7 +969,7 @@ p, li { white-space: pre-wrap; }
                     <x>0</x>
                     <y>0</y>
                     <width>516</width>
-                    <height>426</height>
+                    <height>425</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -1005,9 +996,6 @@ p, li { white-space: pre-wrap; }
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
-                     </property>
-                     <property name="readOnly">
-                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -1050,9 +1038,6 @@ p, li { white-space: pre-wrap; }
                        <bold>true</bold>
                       </font>
                      </property>
-                     <property name="readOnly">
-                      <bool>true</bool>
-                     </property>
                     </widget>
                    </item>
                    <item>
@@ -1065,7 +1050,7 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>228</width>
+                    <width>227</width>
                     <height>144</height>
                    </rect>
                   </property>
@@ -1094,9 +1079,6 @@ p, li { white-space: pre-wrap; }
                        <bold>true</bold>
                       </font>
                      </property>
-                     <property name="readOnly">
-                      <bool>true</bool>
-                     </property>
                     </widget>
                    </item>
                    <item>
@@ -1124,7 +1106,7 @@ p, li { white-space: pre-wrap; }
                     <x>0</x>
                     <y>0</y>
                     <width>516</width>
-                    <height>426</height>
+                    <height>425</height>
                    </rect>
                   </property>
                   <attribute name="label">
@@ -1151,9 +1133,6 @@ p, li { white-space: pre-wrap; }
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
-                     </property>
-                     <property name="readOnly">
-                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -1196,9 +1175,6 @@ p, li { white-space: pre-wrap; }
                        <bold>true</bold>
                       </font>
                      </property>
-                     <property name="readOnly">
-                      <bool>true</bool>
-                     </property>
                     </widget>
                    </item>
                    <item>
@@ -1211,7 +1187,7 @@ p, li { white-space: pre-wrap; }
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>201</width>
+                    <width>199</width>
                     <height>144</height>
                    </rect>
                   </property>
@@ -1239,9 +1215,6 @@ p, li { white-space: pre-wrap; }
                        <weight>75</weight>
                        <bold>true</bold>
                       </font>
-                     </property>
-                     <property name="readOnly">
-                      <bool>true</bool>
                      </property>
                     </widget>
                    </item>
@@ -1620,11 +1593,7 @@ p, li { white-space: pre-wrap; }
                 </widget>
                </item>
                <item row="2" column="3">
-                <widget class="vmLineEdit" name="txtPayTotalPaid">
-                 <property name="readOnly">
-                  <bool>true</bool>
-                 </property>
-                </widget>
+                <widget class="vmLineEdit" name="txtPayTotalPaid"/>
                </item>
                <item row="2" column="2">
                 <widget class="QLabel" name="lblPayTotalPaid">
@@ -1655,9 +1624,6 @@ p, li { white-space: pre-wrap; }
                  </property>
                  <property name="inputMethodHints">
                   <set>Qt::ImhDigitsOnly|Qt::ImhNoPredictiveText</set>
-                 </property>
-                 <property name="readOnly">
-                  <bool>false</bool>
                  </property>
                 </widget>
                </item>
@@ -1700,17 +1666,8 @@ p, li { white-space: pre-wrap; }
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>16777215</height>
-                    </size>
-                   </property>
                    <property name="focusPolicy">
                     <enum>Qt::ClickFocus</enum>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -1990,24 +1947,6 @@ p, li { white-space: pre-wrap; }
                  <height>16777215</height>
                 </size>
                </property>
-               <property name="focusPolicy">
-                <enum>Qt::ClickFocus</enum>
-               </property>
-               <property name="acceptDrops">
-                <bool>false</bool>
-               </property>
-               <property name="accessibleDescription">
-                <string notr="true"/>
-               </property>
-               <property name="inputMask">
-                <string notr="true"/>
-               </property>
-               <property name="text">
-                <string notr="true"/>
-               </property>
-               <property name="readOnly">
-                <bool>true</bool>
-               </property>
               </widget>
              </item>
              <item row="2" column="0">
@@ -2076,9 +2015,6 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="inputMask">
                 <string notr="true"/>
-               </property>
-               <property name="readOnly">
-                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -2162,9 +2098,6 @@ p, li { white-space: pre-wrap; }
                <property name="inputMask">
                 <string notr="true"/>
                </property>
-               <property name="readOnly">
-                <bool>false</bool>
-               </property>
               </widget>
              </item>
              <item row="5" column="1">
@@ -2180,12 +2113,6 @@ p, li { white-space: pre-wrap; }
                  <width>0</width>
                  <height>0</height>
                 </size>
-               </property>
-               <property name="inputMask">
-                <string notr="true"/>
-               </property>
-               <property name="readOnly">
-                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -2208,9 +2135,6 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="inputMask">
                 <string notr="true"/>
-               </property>
-               <property name="readOnly">
-                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -2311,9 +2235,6 @@ p, li { white-space: pre-wrap; }
                <property name="inputMask">
                 <string notr="true"/>
                </property>
-               <property name="readOnly">
-                <bool>false</bool>
-               </property>
               </widget>
              </item>
              <item row="3" column="0" colspan="2">
@@ -2332,9 +2253,6 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="inputMask">
                 <string notr="true"/>
-               </property>
-               <property name="readOnly">
-                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -2556,9 +2474,6 @@ p, li { white-space: pre-wrap; }
                    <property name="focusPolicy">
                     <enum>Qt::ClickFocus</enum>
                    </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
                   </widget>
                  </item>
                  <item row="1" column="1">
@@ -2677,15 +2592,12 @@ p, li { white-space: pre-wrap; }
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="vmLineEdit" name="txtJobProjectPath">
+                  <widget class="vmLineEditWithButton" name="txtJobProjectPath">
                    <property name="minimumSize">
                     <size>
                      <width>0</width>
                      <height>0</height>
                     </size>
-                   </property>
-                   <property name="readOnly">
-                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -3384,9 +3296,6 @@ p, li { white-space: pre-wrap; }
                        <property name="frame">
                         <bool>false</bool>
                        </property>
-                       <property name="readOnly">
-                        <bool>true</bool>
-                       </property>
                       </widget>
                      </item>
                      <item row="0" column="1">
@@ -3404,9 +3313,6 @@ p, li { white-space: pre-wrap; }
                         </size>
                        </property>
                        <property name="frame">
-                        <bool>false</bool>
-                       </property>
-                       <property name="readOnly">
                         <bool>false</bool>
                        </property>
                       </widget>
@@ -3917,75 +3823,7 @@ p, li { white-space: pre-wrap; }
           <property name="spacing">
            <number>2</number>
           </property>
-          <item row="2" column="4" colspan="2">
-           <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob">
-            <property name="focusPolicy">
-             <enum>Qt::ClickFocus</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="5">
-           <widget class="QToolButton" name="btnShowSuppliersDlg">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>...</string>
-            </property>
-            <property name="icon">
-             <iconset resource="resources.qrc">
-              <normaloff>:/resources/arrow-down.png</normaloff>:/resources/arrow-down.png</iconset>
-            </property>
-            <property name="checkable">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="4" colspan="2">
-           <widget class="vmLineEdit" name="txtBuyTotalPaidForJob">
-            <property name="focusPolicy">
-             <enum>Qt::ClickFocus</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0" colspan="6">
-           <layout class="QVBoxLayout" name="layoutSuppliersUtility">
-            <property name="spacing">
-             <number>2</number>
-            </property>
-            <item>
-             <widget class="vmListWidget" name="lstBuySuppliers">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
           <item row="5" column="0" colspan="6">
-           <layout class="QVBoxLayout" name="layoutBuysListUtility">
-            <property name="spacing">
-             <number>2</number>
-            </property>
-            <item>
-             <widget class="vmListWidget" name="buysList">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="0" colspan="6">
            <layout class="QHBoxLayout" name="horizontalLayout_19">
             <item>
              <widget class="QLabel" name="lblBuyAllPurchases">
@@ -4003,7 +3841,7 @@ p, li { white-space: pre-wrap; }
             </item>
            </layout>
           </item>
-          <item row="6" column="0" colspan="6">
+          <item row="8" column="0" colspan="6">
            <widget class="QLabel" name="lblBuySupplierBuys">
             <property name="text">
              <string>TextLabel</string>
@@ -4073,6 +3911,88 @@ p, li { white-space: pre-wrap; }
           </item>
           <item row="0" column="1" colspan="4">
            <widget class="vmComboBox" name="cboBuySuppliers"/>
+          </item>
+          <item row="2" column="4" colspan="2">
+           <widget class="vmLineEdit" name="txtBuyTotalPurchasePriceForJob">
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="5">
+           <widget class="QToolButton" name="btnShowSuppliersDlg">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>...</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/resources/arrow-down.png</normaloff>:/resources/arrow-down.png</iconset>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4" colspan="2">
+           <widget class="vmLineEdit" name="txtBuyTotalPaidForJob">
+            <property name="focusPolicy">
+             <enum>Qt::ClickFocus</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0" colspan="6">
+           <layout class="QVBoxLayout" name="layoutSuppliersUtility">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <item>
+             <widget class="vmListWidget" name="lstBuySuppliers">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="6" column="0" colspan="6">
+           <layout class="QVBoxLayout" name="layoutBuysListUtility">
+            <property name="spacing">
+             <number>2</number>
+            </property>
+            <item>
+             <widget class="vmListWidget" name="buysList">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0" colspan="6">
+           <widget class="Line" name="line_6">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="6">
+           <widget class="Line" name="line_8">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -4309,9 +4229,6 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="focusPolicy">
                <enum>Qt::ClickFocus</enum>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
               </property>
              </widget>
             </item>

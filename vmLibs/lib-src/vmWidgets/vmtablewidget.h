@@ -40,7 +40,7 @@ enum contextMenuDefaultActions {
 };
 
 struct spreadRow {
-	VMList<QString> field_value;
+	vmList<QString> field_value;
 	podList<uint> column;
 	int row;
 
@@ -142,6 +142,7 @@ public:
 
 	inline uint colCount () const { return m_ncols; }
 	inline int totalsRow () const { return mTotalsRow; }
+	inline int lastRow () const { return isPlainTable () ? rowCount () : totalsRow () - 1; }
 	void setLastUsedRow ( const int row );
 	inline int lastUsedRow () const { return m_lastUsedRow; }
 
@@ -172,7 +173,7 @@ public:
 	bool isColumnSelectedForSearch ( const uint column ) const;
 	void setColumnSearchStatus ( const uint column, const bool bsearch );
 	void reHilightItems ( vmTableItem* next, vmTableItem* prev );
-	void displayContextMenuForCell ( const QPoint& pos );
+	void displayContextMenuForCell ( const QPoint pos );
 
 	inline static QString defaultBackgroundColor () { return vmTableWidget::defaultBGColor; }
 	inline QModelIndex indexFromItem ( const vmTableItem* const item ) const { return QTableWidget::indexFromItem ( static_cast<QTableWidgetItem*>( const_cast<vmTableItem*>( item ) ) ); }
@@ -246,10 +247,10 @@ private:
 	uint readOnlyColumnsMask; // columns set here do not receive user input
 
 	podList<uint> modifiedRows;
-	PointersList<const vmTableItem*> mMonitoredCells;
-	PointersList<vmTableItem*> m_highlightedCells;
-	PointersList<vmTableItem*> m_itemsToReScan;
-	PointersList<vmTableItem*> mSearchList;
+	pointersList<const vmTableItem*> mMonitoredCells;
+	pointersList<vmTableItem*> m_highlightedCells;
+	pointersList<vmTableItem*> m_itemsToReScan;
+	pointersList<vmTableItem*> mSearchList;
 
 	QMenu* mContextMenu, *mSubMenuFormula;
 	vmAction* mCopyCellAction, *mCopyRowContents, *mInsertRowAction, *mAppendRowAction,
@@ -282,7 +283,6 @@ protected:
 	std::function<void ( const uint row )> rowInserted_func;
 	std::function<void ( const int row )> rowActivated_func;
 	std::function<void ( vmWidget* widget, const int completer_type )> completer_func;
-
 };
 
 #endif // VMTABLEWIDGET_H

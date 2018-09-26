@@ -36,7 +36,7 @@ public:
 		return *this;
 	}
 	
-	virtual ~vmTableItem ();
+	virtual ~vmTableItem () override;
 	
 	inline void setTable ( vmTableWidget* table ) { m_table = table; }
 	inline vmTableWidget* table () const { return m_table; }
@@ -84,13 +84,6 @@ public:
 	inline void setDefaultValue ( const QString& text ) { mDefaultValue = text; }
 	inline const QString& defaultValue () const { return mDefaultValue; }
 
-	inline void setCompleterType ( int customCompleterType ) {
-		mcompleter_type = customCompleterType;
-	}
-	inline int completerType () const {
-		return mcompleter_type;
-	}
-
 	inline void setWidgetType ( const PREDEFINED_WIDGET_TYPES wtype ) { m_wtype = wtype; }
 	inline PREDEFINED_WIDGET_TYPES widgetType () const { return m_wtype; }
 
@@ -103,7 +96,6 @@ protected:
 private:
 	PREDEFINED_WIDGET_TYPES m_wtype;
 	vmLineEditWithButton::LINE_EDIT_BUTTON_TYPE m_btype;
-	int mcompleter_type;
 
 	bool mb_hasFormula, mb_formulaOverride, mb_customFormula;
 	bool mb_CellAltered;
@@ -112,7 +104,7 @@ private:
 	QVariant mCache, mprev_datacache, mBackupData_cache;
 
 	vmTableWidget* m_table;
-	PointersList<vmTableItem*> m_targets;
+	pointersList<vmTableItem*> m_targets;
 	vmWidget* m_widget;
 };
 

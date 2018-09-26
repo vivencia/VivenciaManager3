@@ -29,7 +29,7 @@ public:
 	static void loadCompleterStrings ( QStringList& completer_strings, const COMPLETER_CATEGORIES category );
 	static void loadCompleterStringsForProductsAndServices ( QStringList& completer_strings, QStringList& completer_strings_2 );
 	void updateTable ( const COMPLETER_CATEGORIES category, const QString& str, const bool b_reset_search = true );
-	void batchUpdateTable ( const COMPLETER_CATEGORIES category, const QStringList& str_list );
+	void batchUpdateTable ( const COMPLETER_CATEGORIES category, QStringList& str_list );
 
 protected:
 	friend bool updateCompleterRecordTable ();

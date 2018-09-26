@@ -16,7 +16,6 @@ void table_item_swap ( vmTableItem& t_item1, vmTableItem& t_item2 )
 	using std::swap;
 	swap ( t_item1.m_wtype, t_item2.m_wtype );
 	swap ( t_item1.m_btype, t_item2.m_btype );
-	swap ( t_item1.mcompleter_type, t_item2.mcompleter_type );
 	swap ( t_item1.mb_hasFormula, t_item2.mb_hasFormula );
 	swap ( t_item1.mb_formulaOverride, t_item2.mb_formulaOverride );
 	swap ( t_item1.mb_customFormula, t_item2.mb_customFormula );
@@ -29,7 +28,7 @@ void table_item_swap ( vmTableItem& t_item1, vmTableItem& t_item2 )
 	swap ( t_item1.mprev_datacache, t_item2.mprev_datacache );
 	swap ( t_item1.mBackupData_cache, t_item2.mBackupData_cache );
 	swap ( t_item1.m_table, t_item2.m_table );
-	PointersList<vmTableItem*>::vmlist_swap ( t_item1.m_targets, t_item2.m_targets );
+	pointersList<vmTableItem*>::vmList_swap ( t_item1.m_targets, t_item2.m_targets );
 	swap ( t_item1.m_widget, t_item2.m_widget );
 }
 
@@ -49,7 +48,7 @@ static void decode_pos ( const QString& pos, int* const row, int* const col )
 
 vmTableItem::vmTableItem ()
 	: QTableWidgetItem (), vmWidget ( WT_TABLE_ITEM ),
-	  m_wtype ( WT_WIDGET_UNKNOWN ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ), mcompleter_type ( -1 ),
+	  m_wtype ( WT_WIDGET_UNKNOWN ), m_btype ( vmLineEditWithButton::LEBT_NO_BUTTON ),
 	  mb_hasFormula ( false ), mb_formulaOverride ( false ), mb_customFormula ( false ),
 	  mb_CellAltered ( false ), mDefaultValue (), mCache (), m_table ( nullptr ),
 	  m_targets ( 4 ), m_widget ( nullptr )
@@ -79,7 +78,6 @@ void vmTableItem::copy ( const vmTableItem& src_item )
 {
 	m_wtype = src_item.m_wtype;
 	m_btype = src_item.m_btype;
-	mcompleter_type = src_item.mcompleter_type;
 	mb_hasFormula = src_item.mb_hasFormula;
 	mb_formulaOverride = src_item.mb_formulaOverride;
 	mb_customFormula = src_item.mb_customFormula;
@@ -181,14 +179,14 @@ void vmTableItem::setText ( const QString& text, const bool b_notify, const bool
 void vmTableItem::setDate ( const vmNumber& date )
 {
 	if ( m_widget->type () == WT_DATEEDIT )
-		static_cast<vmDateEdit*>( m_widget )->setDate ( date, isEditable () );
+		dynamic_cast<vmDateEdit*>( m_widget )->setDate ( date, isEditable () );
 }
 
 vmNumber vmTableItem::date ( const bool bCurText ) const
 {
 	if ( m_widget->type () == WT_DATEEDIT )
 	{
-		return bCurText ? vmNumber ( static_cast<vmDateEdit*>( m_widget )->date () ) :
+		return bCurText ? vmNumber ( dynamic_cast<vmDateEdit*>( m_widget )->date () ) :
 					vmNumber ( originalText (), VMNT_DATE, vmNumber::VDF_HUMAN_DATE );
 	}
 	return vmNumber::emptyNumber;
@@ -203,7 +201,7 @@ static VM_NUMBER_TYPE textTypeToNbrType ( const vmLineEdit::TEXT_TYPE tt )
 		case vmWidget::TT_PHONE:	return VMNT_PHONE;
 		case vmWidget::TT_INTEGER:	return VMNT_INT;
 		case vmWidget::TT_TEXT:
-		case vmWidget::TT_NUMBER_PLUS_SYMBOL:
+		case vmWidget::TT_ZIPCODE:
 		case vmWidget::TT_UPPERCASE:
 									return VMNT_UNSET;
 	}

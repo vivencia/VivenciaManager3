@@ -88,7 +88,7 @@ public:
 
 	void setAction ( const RECORD_ACTION action, const bool bSetDBRec = false, const bool bSelfOnly = false );
 	virtual void createDBRecord ();
-	virtual bool loadData ();
+	virtual bool loadData ( const bool b_read_all_data );
 	inline virtual void update () override { setLabel ( text () ); }
 	virtual void relationActions ( dbListItem* = nullptr ) { ; }
 	void setRelatedItem ( const uint rel_idx, dbListItem* const item );
@@ -101,7 +101,7 @@ public:
 	inline bool isGoodToSave () const { return n_badInputs <= 0; }
 	inline bool fieldInputStatus ( const uint field ) const { return badInputs_ptr[translatedInputFieldIntoBadInputField( field )]; }
 
-	void setFieldInputStatus ( const uint field, const bool ok, const vmWidget* widget );
+	void setFieldInputStatus ( const uint field, const bool ok, const vmWidget* const widget );
 
 	// Will not check field boundary; trust caller
 	inline void setSearchFieldStatus ( const uint field, const SEARCH_STATUS ss ) {
@@ -159,12 +159,12 @@ public:
 
 	void update () override;
 	void createDBRecord () override;
-	bool loadData () override;
+	bool loadData ( const bool b_read_all_data ) override;
 	void relationActions ( dbListItem* subordinateItem = nullptr ) override;
 
-	PointersList<jobListItem*>* jobs;
-	PointersList<payListItem*>* pays;
-	PointersList<buyListItem*>* buys;
+	pointersList<jobListItem*>* jobs;
+	pointersList<payListItem*>* pays;
+	pointersList<buyListItem*>* buys;
 
 private:
 	bool badInputs[client_nBadInputs];
@@ -188,7 +188,7 @@ public:
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const override;
 
 	void createDBRecord () override;
-	bool loadData () override;
+	bool loadData ( const bool b_read_all_data ) override;
 	void update () override;
 	void relationActions ( dbListItem* subordinateItem = nullptr ) override;
 
@@ -201,8 +201,8 @@ public:
 	podList<uint>* searchSubFields () const;
 	void setReportSearchFieldFound ( const uint report_field, const uint day );
 
-	PointersList<buyListItem*>* buys;
-	PointersList<vmListItem*>* daysList;
+	pointersList<buyListItem*>* buys;
+	pointersList<vmListItem*>* daysList;
 
 private:
 	podList<uint>* mSearchSubFields;
@@ -228,7 +228,7 @@ public:
 	uint translatedInputFieldIntoBadInputField ( const uint field ) const override;
 
 	void createDBRecord () override;
-	bool loadData () override;
+	bool loadData ( const bool b_read_all_data ) override;
 	void update () override;
 	void updatePayCalendarItem ();
 	void updatePayExtraItems ( uint relation );
@@ -252,7 +252,7 @@ public:
 	inline Buy* buyRecord () const { return static_cast<Buy*> ( dbRec () ); }
 
 	void createDBRecord () override;
-	bool loadData () override;
+	bool loadData ( const bool b_read_all_data ) override;
 	void update () override;
 	void updateBuyExtraItem ( const QString& label );
 	void updateBuyCalendarItem ();

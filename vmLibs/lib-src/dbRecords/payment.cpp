@@ -96,5 +96,5 @@ void Payment::setListItem ( payListItem* pay_item )
 
 payListItem* Payment::payItem () const
 {
-	return static_cast<payListItem*>( DBRecord::mListItem );
+	return dynamic_cast<payListItem*>( DBRecord::mListItem );
 }

@@ -120,7 +120,7 @@ public:
 	void setCurrentWindow ( reportGenerator* report );
 
 private:
-	PointersList<reportGenerator*> instances;
+	pointersList<reportGenerator*> instances;
 	reportGenerator* cur_report;
 	QVBoxLayout* mainLayout;
 };
@@ -130,7 +130,7 @@ class dockBJ : public QDockWidget
 
 public:
 	explicit dockBJ ();
-	virtual ~dockBJ ();
+	virtual ~dockBJ () final;
 
 	void attach ( reportGenerator* instance );
 	void detach ( reportGenerator* instance );
@@ -142,7 +142,7 @@ public:
 	void btnCopyJobReport_clicked ();
 
 private:
-	PointersList<reportGenerator*> instances;
+	pointersList<reportGenerator*> instances;
 
 	QFrame* frmBriefJob;
 	vmLineEdit* txtBriefJobType;

@@ -32,7 +32,7 @@ public:
 	};
 
 	explicit spreadSheetEditor ( documentEditor* mdiParent = nullptr );
-	virtual ~spreadSheetEditor ();
+	virtual ~spreadSheetEditor () override;
 
 	void setupUI ();
 	void prepareToShow ( const Job* const job = nullptr );

@@ -23,8 +23,6 @@ vmTaskPanel::vmTaskPanel ( const QString& title, QWidget* parent )
 	}
 }
 
-vmTaskPanel::~vmTaskPanel () {}
-
 void vmTaskPanel::setTitle ( const QString& new_title )
 {
 	if ( !mTitle )
@@ -45,8 +43,7 @@ void vmTaskPanel::setScheme ( const QString& style )
 		for ( uint i ( 0 ); i < mGroups.count (); ++i )
 			mGroups.at ( i )->setScheme ( scheme );
 		
-		if ( mScheme != nullptr )
-			delete mScheme;
+		delete mScheme;
 		mScheme = scheme;
 		update ();
 	}
@@ -66,7 +63,7 @@ void vmTaskPanel::addStretch ( const int s )
 vmActionGroup* vmTaskPanel::createGroup (const QString& title, const bool expandable,
 		const bool stretchContents, const bool closable )
 {
-	vmActionGroup* box ( new vmActionGroup ( title, expandable, stretchContents, closable, this ) );
+	auto box ( new vmActionGroup ( title, expandable, stretchContents, closable, this ) );
 	addWidget ( box );
 	mGroups.append ( box );
 	return box;
@@ -75,7 +72,7 @@ vmActionGroup* vmTaskPanel::createGroup (const QString& title, const bool expand
 vmActionGroup* vmTaskPanel::createGroup ( const QIcon& icon, const QString& title,
 		const bool expandable, const bool stretchContents, const bool closable )
 {
-	vmActionGroup* box ( new vmActionGroup ( icon, title, expandable, stretchContents, closable, this ) );
+	auto box ( new vmActionGroup ( icon, title, expandable, stretchContents, closable, this ) );
 	addWidget ( box );
 	mGroups.append ( box );
 	return box;
@@ -90,7 +87,7 @@ void vmTaskPanel::removeGroup ( vmActionGroup* group, const bool bDelete )
 	}
 }
 
-QSize vmTaskPanel::minimumSizeHint ()  const
+QSize vmTaskPanel::minimumSizeHint () const
 {
-	return QSize ( 200, 150 );
+	return { 200, 150 };
 }

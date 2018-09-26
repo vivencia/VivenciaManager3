@@ -1,5 +1,5 @@
 #include "actionpanelscheme.h"
-#include "global.h"
+#include "vmlibs.h"
 
 const QString ActionPanelScheme::PanelStyleStr[6] =
 {

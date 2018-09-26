@@ -80,5 +80,5 @@ QRect vmCheckedTableItem::checkBoxRect ( const QRect& sourceRect ) const
 	const QPoint checkBoxPoint ( sourceRect.x () + 2,
 								 sourceRect.y () + sourceRect.height () / 2 -
 								 checkBoxRect.height () / 2 );
-	return QRect ( checkBoxPoint, checkBoxRect.size () );
+	return { checkBoxPoint, checkBoxRect.size () };
 }

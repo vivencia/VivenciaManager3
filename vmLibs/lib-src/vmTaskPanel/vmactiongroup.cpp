@@ -18,14 +18,12 @@ TaskGroup::TaskGroup ( QWidget *parent, const bool stretchContents )
 	setProperty ( "class", QStringLiteral ( "content" ) );
 	setProperty ( "header", QStringLiteral ( "true" ) );
 	setScheme ( ActionPanelScheme::defaultScheme () );
-	QVBoxLayout* vbl ( new QVBoxLayout () );
+	auto vbl ( new QVBoxLayout () );
 	vbl->setMargin ( 2 );
 	vbl->setSpacing ( 4 );
 	setLayout ( vbl );
 	setSizePolicy ( QSizePolicy::Minimum, QSizePolicy::Minimum );
 }
-
-TaskGroup::~TaskGroup () {}
 
 void TaskGroup::setScheme ( ActionPanelScheme* scheme )
 {
@@ -47,7 +45,7 @@ void TaskGroup::addQEntry ( QWidget* widget, QLayout* l, const bool addStretch )
 
 	if ( l )
 	{
-		if ( l->property ( "tg_added" ).toBool () == false )
+		if ( !l->property ( "tg_added" ).toBool () )
 		{
 			l->setProperty ( "tg_added", true  );
 			groupLayout ()->addLayout ( l );
@@ -58,7 +56,7 @@ void TaskGroup::addQEntry ( QWidget* widget, QLayout* l, const bool addStretch )
 	{
 		if ( addStretch )
 		{
-			QHBoxLayout* hbl ( new QHBoxLayout () );
+			auto hbl ( new QHBoxLayout () );
 			hbl->setMargin ( 0 );
 			hbl->setSpacing ( 0 );
 			hbl->addWidget ( widget );
@@ -106,7 +104,7 @@ TaskHeader::TaskHeader ( const QIcon& icon, const QString& title,
 	timerSlide = new QTimer ( this );
 	connect ( timerSlide, &QTimer::timeout, this, [&] () { return animate (); } );
 
-	QHBoxLayout* hbl ( new QHBoxLayout () );
+	auto hbl ( new QHBoxLayout () );
 	hbl->setMargin ( 2 );
 	setLayout ( hbl );
 	hbl->addWidget ( mTitle );
@@ -325,7 +323,7 @@ void TaskHeader::keyPressEvent ( QKeyEvent *event )
 	{
 		case Qt::Key_Down:
 		{
-			QKeyEvent ke ( QEvent::KeyPress, Qt::Key_Tab, 0 );
+			QKeyEvent ke ( QEvent::KeyPress, Qt::Key_Tab, nullptr );
 			QApplication::sendEvent ( this, &ke );
 			return;
 		}
@@ -349,7 +347,7 @@ void TaskHeader::keyReleaseEvent ( QKeyEvent* event )
 	{
 		case Qt::Key_Down:
 		{
-			QKeyEvent ke ( QEvent::KeyRelease, Qt::Key_Tab, 0 );
+			QKeyEvent ke ( QEvent::KeyRelease, Qt::Key_Tab, nullptr );
 			QApplication::sendEvent ( this, &ke );
 			return;
 		}
@@ -409,7 +407,7 @@ void vmActionGroup::init ()
 	timerHide->setSingleShot ( true );
 	connect ( timerHide, &QTimer::timeout, this, [&] () { return processHide (); } );
 
-	QVBoxLayout* vbl ( new QVBoxLayout () );
+	auto vbl ( new QVBoxLayout () );
 	vbl->setMargin ( 0 );
 	vbl->setSpacing ( 0 );
 	setLayout ( vbl );
@@ -445,7 +443,7 @@ bool vmActionGroup::addEntry ( vmWidget* entry, QLayout* l, const bool addStretc
 	{
 		if ( entry->type () == WT_ACTION )
 		{
-			vmActionLabel* label ( new vmActionLabel ( static_cast<vmAction*> ( entry ), this ) );
+			auto label ( new vmActionLabel ( dynamic_cast<vmAction*> ( entry ), this ) );
 			mGroup->addQEntry ( label->toQWidget (), l, addStretch );
 		}
 		else
@@ -600,6 +598,6 @@ void vmActionGroup::setHeaderText ( const QString& headerText )
 
 QSize vmActionGroup::minimumSizeHint () const
 {
-	return QSize ( 200, ( mbStretchContents ? 100 : mGroup->minimumHeight () + mHeader->height () ) );
+	return { 200, ( mbStretchContents ? 100 : mGroup->minimumHeight () + mHeader->height () ) };
 }
 //--------------------------------------ACTION-GROUP-----------------------------------------------

@@ -31,11 +31,13 @@ friend class dockBJ;
 
 public:
 	explicit textEditor ( documentEditor* mdiParent );
-	virtual ~textEditor ();
+	virtual ~textEditor () override;
 
 	static inline QString filter () {
 		return tr ( "Text files (*.txt);;Richtext files (*.rtf)" );
 	}
+
+	void setEditable ( const bool b_editable );
 
 	void cut () override;
 	void copy () override;
@@ -75,7 +77,7 @@ friend class reportGenerator;
 
 public:
 	textEditorToolBar ();
-	virtual ~textEditorToolBar ();
+	virtual ~textEditorToolBar () override;
 	void setCurrentWindow ( textEditor *ed );
 	inline textEditor *currentWindow () const {
 		return mEditorWindow;
@@ -155,8 +157,9 @@ Q_OBJECT
 Q_INTERFACES ( QTextObjectInterface )
 
 public:
-	QSizeF intrinsicSize ( QTextDocument* /*doc*/, int /*posInDocument*/, const QTextFormat &/*format*/ );
-	void drawObject ( QPainter* /*painter*/, const QRectF &/*rect*/, QTextDocument* /*doc*/, int /*posInDocument*/, const QTextFormat &/*format*/ );
+	virtual ~imageTextObject () override;
+	QSizeF intrinsicSize ( QTextDocument* /*doc*/, int posInDocument /*posInDocument*/, const QTextFormat& format ) override;
+	void drawObject ( QPainter* painter, const QRectF &rect, QTextDocument* doc, int posInDocument, const QTextFormat &format ) override;
 };
 
 inline textEditorToolBar *TEXT_EDITOR_TOOLBAR ()

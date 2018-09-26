@@ -28,7 +28,7 @@ simpleCalculator::~simpleCalculator ()
 void simpleCalculator::setupUi ()
 {
 	this->resize ( 400, 300 );
-	QGridLayout *gridLayout ( new QGridLayout );
+	auto gridLayout ( new QGridLayout );
 	gridLayout->setSpacing ( 2 );
 	gridLayout->setContentsMargins ( 2, 2, 2, 2 );
 	txtResult = new QPlainTextEdit;
@@ -36,7 +36,7 @@ void simpleCalculator::setupUi ()
 	txtResult->setPlainText ( QStringLiteral ( "" ) );
 	gridLayout->addWidget ( txtResult, 0, 0, 1, 2 );
 
-	QLabel* lblExpression ( new QLabel );
+	auto lblExpression ( new QLabel );
 	lblExpression->setTextFormat ( Qt::PlainText );
 	gridLayout->addWidget ( lblExpression, 1, 0, 1, 1 );
 
@@ -46,7 +46,7 @@ void simpleCalculator::setupUi ()
 				return relevantKeyPressed ( qe ); } );
 	gridLayout->addWidget ( txtInput, 1, 1, 1, 1 );
 
-	QHBoxLayout* horizontalLayout ( new QHBoxLayout );
+	auto horizontalLayout ( new QHBoxLayout );
 	btnCalc = new QPushButton;
 	btnCalc->setText ( APP_TR_FUNC ( "Calculate" ) );
 	btnCalc->setIcon ( ICON ( "icons/calc.png" ) );

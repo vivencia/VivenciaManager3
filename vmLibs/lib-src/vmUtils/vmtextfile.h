@@ -78,7 +78,7 @@ protected:
 								counter ( 0 ), modifierInstance ( nullptr ) {}
 	};
 
-	static PointersList<sharedResources*> sharedResList;
+	static pointersList<sharedResources*> sharedResList;
 	sharedResources* mUsedRes;
 
 	sharedResources* findSharedResource ( const QString& filename );
@@ -118,7 +118,7 @@ protected:
 
 private:
 	struct configFile_st;
-	PointersList<configFile_st*> cfgData;
+	pointersList<configFile_st*> cfgData;
 	QString m_objectName;
 };
 //--------------------------------------------CONFIG-FILE--------------------------------

@@ -19,10 +19,10 @@ friend class VivenciaDB;
 
 public:
 	explicit Inventory ( const bool connect_helper_funcs = false );
-	virtual ~Inventory ();
+	virtual ~Inventory () override;
 
-	uint isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const;
-	inline QString isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int = -1 ) const
+	uint isrRecordField ( const ITEMS_AND_SERVICE_RECORD isr_field ) const override;
+	inline QString isrValue ( const ITEMS_AND_SERVICE_RECORD isr_field, const int = -1 ) const override
 	{
 		return recStrValue ( this, isrRecordField ( isr_field ) );
 	}

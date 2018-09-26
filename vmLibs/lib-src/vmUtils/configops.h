@@ -5,6 +5,8 @@
 
 #include <QtCore/QString>
 
+#include <functional>
+
 class configFile;
 class configDialog;
 
@@ -15,11 +17,11 @@ enum CFG_FIELDS
 	BACKUP_DIR, DROPBOX_DIR, EMAIL_ADDRESS
 };
 
-static const QLatin1String STR_VIVENCIA_LOGO ( "vivencia.jpg" );
-static const QLatin1String STR_VIVENCIA_REPORT_LOGO ( "vivencia_report_logo_2.jpg" );
-static const QLatin1String STR_PROJECT_DOCUMENT_FILE ( "project.docx" );
-static const QLatin1String STR_PROJECT_SPREAD_FILE ( "spreadsheet.xlsx" );
-static const QLatin1String STR_PROJECT_PDF_FILE ( "projeto.pdf" );
+static const QString STR_VIVENCIA_LOGO ( QStringLiteral ( "vivencia.jpg" ) );
+static const QString STR_VIVENCIA_REPORT_LOGO ( QStringLiteral ( "vivencia_report_logo_2.jpg" ) );
+static const QString STR_PROJECT_DOCUMENT_FILE ( QStringLiteral ( "project.docx" ) );
+static const QString STR_PROJECT_SPREAD_FILE ( QStringLiteral ( "spreadsheet.xlsx" ) );
+static const QString STR_PROJECT_PDF_FILE ( QStringLiteral ( "projeto.pdf" ) );
 static const QString XDG_OPEN ( QStringLiteral ( "xdg-open" ) );
 
 constexpr const int CFG_CATEGORIES ( 14 );
@@ -39,7 +41,7 @@ public:
 
 	static inline void setDefaultSectionName ( const QString& name ) { configOps::m_defaultSectionName = name; }
 	static inline const QString& defaultSectionName () { return configOps::m_defaultSectionName; }
-	const QString& getValue ( const QString& section_name, const QString& category_name );
+	const QString& getValue ( const QString& section_name, const QString& category_name, const bool b_save_if_not_in_file = true );
 	void setValue ( const QString& section_name, const QString& category_name, const QString& value );
 
 	static const QString kdesu ( const QString& message );
@@ -50,7 +52,7 @@ public:
 	static const QString homeDir ();
 	static const QString defaultConfigDir ();
 	static const QString appConfigFile ();
-	static const QString appDataDir();
+	static const QString appDataDir ();
 
 	inline const QString& loggedUser () const
 	{
@@ -137,10 +139,7 @@ public:
 		return setApp ( XLS_EDITOR, str );
 	}
 
-	inline const QString& projectsBaseDir () const
-	{
-		return const_cast<configOps*>(this)->getValue ( defaultSectionName (), configDefaultFieldsNames[BASE_PROJECT_DIR] );
-	}
+	std::function<const QString& ()> projectsBaseDir;
 
 	inline const QString& setProjectsBaseDir ( const QString& str )
 	{
@@ -149,11 +148,11 @@ public:
 
 	const QString& getProjectBasePath ( const QString& client_name );
 
-	inline static const QString estimatesDirSuffix () { return QStringLiteral ( "Orçamentos" ); }
+	inline static const QString estimatesDirSuffix () { return QStringLiteral ( u"Orçamentos" ); }
 	const QString& estimatesDir ( const QString& client_name );
 	const QString& setEstimatesDir ( const QString&, const bool full_path = false );
 
-	inline static const QString reportsDirSuffix () { return QStringLiteral ( "Relatórios" ); }
+	inline static const QString reportsDirSuffix () { return QStringLiteral ( u"Relatórios" ); }
 	const QString& reportsDir ( const QString& client_name );
 	const QString& setReportsDir ( const QString& str, const bool full_path = false );
 
@@ -175,26 +174,26 @@ public:
 		return appDataDir () + STR_PROJECT_PDF_FILE;
 	}
 
-	static inline const QLatin1String projectDocumentExtension () {
-		return QLatin1String ( ".docx" );
+	static inline const QString projectDocumentExtension () {
+		return QStringLiteral ( ".docx" );
 	}
-	static inline const QLatin1String projectDocumentFormerExtension () {
-		return QLatin1String ( ".doc" );
+	static inline const QString projectDocumentFormerExtension () {
+		return QStringLiteral ( ".doc" );
 	}
-	static inline const QLatin1String projectReportExtension () {
-		return QLatin1String ( ".vmr" );
+	static inline const QString projectReportExtension () {
+		return QStringLiteral ( ".vmr" );
 	}
-	static inline const QLatin1String projectSpreadSheetExtension () {
-		return QLatin1String ( ".xlsx" );
+	static inline const QString projectSpreadSheetExtension () {
+		return QStringLiteral ( ".xlsx" );
 	}
-	static inline const QLatin1String projectSpreadSheetFormerExtension () {
-		return QLatin1String ( ".xls" );
+	static inline const QString projectSpreadSheetFormerExtension () {
+		return QStringLiteral ( ".xls" );
 	}
-	static inline const QLatin1String projectPDFExtension () {
-		return QLatin1String ( ".pdf" );
+	static inline const QString projectPDFExtension () {
+		return QStringLiteral ( ".pdf" );
 	}
-	static inline const QLatin1String projectExtraFilesExtension () {
-		return QLatin1String ( ".txt" );
+	static inline const QString projectExtraFilesExtension () {
+		return QStringLiteral ( ".txt" );
 	}
 
 	void getWindowGeometry ( QWidget* window, const QString& section_name, const QString& category_name );
@@ -203,12 +202,14 @@ public:
 private:
 	friend const QString& getDefaultFieldValuesByCategoryName ( const QString& category_name );
 
+	const QString& projectsBaseDir_init ();
+	const QString& projectsBaseDir_fast () { return mStrBaseDir; }
 	const QString& setApp ( const CFG_FIELDS field, const QString& app );
 	const QString& setDir ( const CFG_FIELDS field, const QString& dir );
 
-	QString m_filename, mRetString;
 	configFile* m_cfgFile;
 
+	QString m_filename, mRetString, mStrBaseDir;
 	static QString _appName;
 	static QString m_defaultSectionName;
 	static const QString configDefaultFieldsNames[CFG_CATEGORIES];

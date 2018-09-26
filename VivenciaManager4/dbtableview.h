@@ -51,7 +51,7 @@ class tableViewWidget : public QFrame
 public:
 	explicit tableViewWidget ( const QString& tablename );
 	tableViewWidget ( QSqlQuery* const query );
-	virtual ~tableViewWidget ();
+	virtual ~tableViewWidget () final = default;
 	
 	void showTable ();
 	void load ();
@@ -69,7 +69,7 @@ private:
 	bool rowRemoved ( const uint row );
 	
 	vmTableWidget* m_table;
-	VMList<QString> m_cols;
+	vmList<QString> m_cols;
 	QString m_tablename;
 	QVBoxLayout* mLayout;
 	vmNumber m_updatedate, m_updatetime;

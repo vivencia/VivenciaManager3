@@ -34,16 +34,16 @@ static inline void fillJobTypeList ( QStringList& list, const QString& clientid 
 newProjectDialog::newProjectDialog ( QWidget *parent )
 	: QDialog ( parent, Qt::Tool ), mJobItem ( nullptr ), bresult ( false )
 {
-	QLabel* lblClient ( new QLabel ( TR_FUNC ( "Client:" ) ) );
+	auto lblClient ( new QLabel ( TR_FUNC ( "Client:" ) ) );
 	cboClients = new vmComboBox;
 	cboClients->setCallbackForIndexChanged ( [&] ( const int idx ) { return loadJobsList ( Client::clientID ( cboClients->itemText ( idx ) ) ); } );
 	
-	QLabel* lblJobType ( new QLabel ( TR_FUNC ( "Select target job ..." ) ) );
+	auto lblJobType ( new QLabel ( TR_FUNC ( "Select target job ..." ) ) );
 	lstJobTypes = new vmListWidget;
 	lstJobTypes->setCallbackForCurrentItemChanged ( [&] ( vmListItem* current ) {
 		return jobTypeItemSelected ( static_cast<dbListItem*>( current ) ); } );
 
-	QLabel* lblProjectName ( new QLabel ( TR_FUNC ( "Project Name:" ) ) );
+	auto lblProjectName ( new QLabel ( TR_FUNC ( "Project Name:" ) ) );
 	txtProjectName = new vmLineEdit;
 	txtProjectName->setCallbackForContentsAltered ( [&] ( const vmWidget* const widget ) {
 		return txtProjectNameAltered ( widget ); } );
@@ -62,7 +62,7 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 	btnCancel = new QPushButton ( TR_FUNC ( "Cancel" ) );
 	connect ( btnCancel, &QPushButton::clicked, this, [&] () { return btnCancel_clicked (); } );
 
-	QVBoxLayout* vbLayout ( new QVBoxLayout );
+	auto vbLayout ( new QVBoxLayout );
 	vbLayout->setMargin ( 2 );
 	vbLayout->setSpacing ( 2 );
 	vbLayout->addWidget ( lblClient );
@@ -70,7 +70,7 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 	vbLayout->addWidget( lblJobType );
 	vbLayout->addWidget( lstJobTypes, 2 );
 
-	QGridLayout* gLayout ( new QGridLayout );
+	auto gLayout ( new QGridLayout );
 	gLayout->setMargin ( 2 );
 	gLayout->setSpacing ( 2 );
 	gLayout->setColumnStretch ( 0, 3 );
@@ -80,20 +80,18 @@ newProjectDialog::newProjectDialog ( QWidget *parent )
 	gLayout->addWidget ( chkUseDefaultName, 2, 0, 2, 4 );
 	gLayout->addItem ( new QSpacerItem ( 0, 0 ), 3, 0, 5, 4 );
 
-	QHBoxLayout* btnsLayout ( new QHBoxLayout );
+	auto btnsLayout ( new QHBoxLayout );
 	btnsLayout->addWidget ( btnOK );
 	btnsLayout->addWidget ( btnCancel );
 	gLayout->addLayout ( btnsLayout, 6, 0, 6, 5 );
 
-	QHBoxLayout* mainLayout ( new QHBoxLayout );
+	auto mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 0 );
 	mainLayout->setSpacing ( 2 );
 	mainLayout->addLayout ( vbLayout, 1 );
 	mainLayout->addLayout ( gLayout, 1 );
 	setLayout ( mainLayout );
 }
-
-newProjectDialog::~newProjectDialog () {}
 
 void newProjectDialog::showDialog ( const QString& clientname, const bool b_allow_other_client, const bool b_allow_name_change )
 {
@@ -155,12 +153,12 @@ void newProjectDialog::jobTypeItemSelected ( dbListItem* item )
 	if ( item != nullptr )
 	{
 		mJobItem = static_cast<jobListItem*> ( item );
-		if ( mJobItem->loadData () )
+		if ( mJobItem->loadData ( true ) )
 		{
 			if ( chkUseDefaultName->isChecked () )
 			{
 				txtProjectName->setText ( mJobItem->jobRecord ()->date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE ) +
-							QLatin1String ( " - " ) + recStrValue ( mJobItem->jobRecord (), FLD_JOB_TYPE ), true );
+							QStringLiteral ( " - " ) + recStrValue ( mJobItem->jobRecord (), FLD_JOB_TYPE ), true );
 			}
 			else
 				txtProjectName->setText ( item->data ( Qt::UserRole ).toString (), true );
@@ -174,7 +172,7 @@ void newProjectDialog::txtProjectNameAltered ( const vmWidget* const )
 	{
 		mProjectID = mJobItem->jobRecord ()->date ( FLD_JOB_STARTDATE ).toDate ( vmNumber::VDF_FILE_DATE );
 		if ( !txtProjectName->text ().startsWith ( mProjectID ) )
-			txtProjectName->setText ( mProjectID + QLatin1String ( " - " ) + txtProjectName->text (), false );
+			txtProjectName->setText ( mProjectID + QStringLiteral ( " - " ) + txtProjectName->text (), false );
 		mProjectPath = CONFIG ()->getProjectBasePath ( recStrValue ( mClientItem->clientRecord (), FLD_CLIENT_NAME ) ) 
 				+ txtProjectName->text () + CHR_F_SLASH;
 	}

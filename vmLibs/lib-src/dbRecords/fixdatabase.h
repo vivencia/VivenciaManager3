@@ -32,14 +32,14 @@ public:
 	bool checkDatabase ();
 	bool fixTables ( const QString& table = QLatin1String ( "*" ) );
 
-	inline void badTables ( PointersList<fixDatabase::badTable*>& tables ) const {
+	inline void badTables ( pointersList<fixDatabase::badTable*>& tables ) const {
 		tables = m_badtables;
 	}
 
 private:
 	bool readOutputFile ( const QString& r_passwd );
 
-	PointersList<fixDatabase::badTable*> m_badtables;
+	pointersList<fixDatabase::badTable*> m_badtables;
 	bool b_needsfixing;
 	QString mStrOutput;
 	passwordSessionManager* m_pwdMngr;

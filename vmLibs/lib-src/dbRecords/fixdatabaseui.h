@@ -31,6 +31,6 @@ private:
 	QPushButton* btnFix;
 	QPushButton* btnClose;
 
-	PointersList<fixDatabase::badTable*> m_tables;
+	pointersList<fixDatabase::badTable*> m_tables;
 };
 #endif // FIXDATABASEUI_H

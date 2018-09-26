@@ -17,7 +17,7 @@ public:
 	enum CMW_TYPE { CMW_PHONES = 0, CMW_EMAIL = 1 };
 
 	contactsManagerWidget ( QWidget* parent, const CMW_TYPE type = CMW_PHONES );
-	virtual ~contactsManagerWidget () override;
+	virtual ~contactsManagerWidget () final = default;
 
 	inline void setContactType ( const CMW_TYPE type ) { m_contact_type = type; }
 	void initInterface ();

@@ -39,15 +39,15 @@ DEFINES += DEBUG QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPE
 INCLUDEPATH += -I/usr/include $$PWD/../../common
 QMAKE_CXXFLAGS_RELEASE += -O3 -march=native -fomit-frame-pointer -funroll-loops -Ofast
 QMAKE_CXXFLAGS_DEBUG += -g
-QMAKE_CXXFLAGS += -Werror -Wall -Wextra -pedantic -std=c++14
+QMAKE_CXXFLAGS += -Werror -Wall -Wextra -pedantic -std=c++14 -finput-charset=UTF-8 -fexec-charset=UTF-8
 
 INCLUDEPATH += $$PWD/../../common $$PWD/../../lib-src
 
 RESOURCES += \
     icons.qrc
 
-unix:!macx: LIBS += -L$$PWD/../../../build-vmWidgets-Desktop-Debug/ -lvmWidgets
+unix:!macx: LIBS += -L$$PWD/../build-vmWidgets-Desktop-Debug/ -lvmWidgets
 DEPENDPATH += $$PWD/../vmWidgets
 
-unix:!macx: LIBS += -L$$PWD/../../../build-vmUtils-Desktop-Debug/ -lvmUtils
-DEPENDPATH += $$PWD/../build-vmUtils-Desktop-Debug
+unix:!macx: LIBS += -L$$PWD/../build-vmUtils-Desktop-Debug/ -lvmUtils
+DEPENDPATH += $$PWD/../vmUtils

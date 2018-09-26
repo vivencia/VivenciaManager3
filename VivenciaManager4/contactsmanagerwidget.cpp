@@ -30,8 +30,6 @@ contactsManagerWidget::contactsManagerWidget ( QWidget* parent, const CMW_TYPE t
 	: QFrame ( parent ), vmWidget ( WT_COMBO ), cboInfoData ( nullptr ), btnExtra ( nullptr ),
 	  m_contact_type ( type ), insertFunc ( nullptr ), removeFunc ( nullptr ) {}
 
-contactsManagerWidget::~contactsManagerWidget () {}
-
 void contactsManagerWidget::initInterface ()
 {
 	if ( cboInfoData != nullptr )
@@ -48,11 +46,11 @@ void contactsManagerWidget::initInterface ()
 
 	btnAdd = new QToolButton ( this );
 	btnAdd->setCheckable ( true );
-	btnAdd->setIcon ( ICON ( "add" ) );
+	btnAdd->setIcon ( ICON ( "browse-controls/add.png" ) );
 	connect ( btnAdd, static_cast<void (QToolButton::*)( bool )>( &QToolButton::clicked ), this, [&] ( const bool checked ) {
 		return btnAdd_clicked ( checked ); } );
 	btnDel = new QToolButton ( this );
-	btnDel->setIcon ( ICON ( "remove" ) );
+	btnDel->setIcon ( ICON ( "browse-controls/remove.png" ) );
 	connect ( btnDel, &QToolButton::clicked, this, [&] () { return btnDel_clicked (); } );
 
 	QHBoxLayout* mainLayout ( new QHBoxLayout );
@@ -135,12 +133,12 @@ void contactsManagerWidget::btnAdd_clicked ( const bool checked )
 	}
 	else
 	{
-		cboInfoData->editor ()->updateText ();
+		//cboInfoData->editor ()->updateText ();
 		bool input_ok ( false );
 		if ( m_contact_type == CMW_PHONES )
 		{
-			const vmNumber phone ( cboInfoData->text (), VMNT_PHONE );
-			input_ok = phone.isPhone ();
+			cboInfoData->editor ()->updateText ( false );
+			input_ok = true;
 		}
 		else
 		{

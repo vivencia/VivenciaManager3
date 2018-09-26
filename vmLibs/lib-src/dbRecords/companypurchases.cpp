@@ -14,15 +14,9 @@ constexpr DB_FIELD_TYPE CP_FIELDS_TYPE[COMPANY_PURCHASES_FIELD_COUNT] =
 	DBTYPE_PRICE, DBTYPE_LIST, DBTYPE_LIST
 };
 
-bool updateCPTable ()
+bool updateCPTable ( const unsigned char /*current_table_version*/ )
 {
-#ifdef TABLE_UPDATE_AVAILABLE
-	VivenciaDB::optimizeTable ( &companyPurchases::t_info );
-	return true;
-#else
-	VivenciaDB::optimizeTable ( &companyPurchases::t_info );
 	return false;
-#endif //TABLE_UPDATE_AVAILABLE
 }
 
 const TABLE_INFO companyPurchases::t_info =
@@ -83,8 +77,8 @@ void companyPurchases::exportToInventory ()
 {
 	Inventory inv_rec;
 	const stringTable& cp_itemreport ( recStrValue ( this, FLD_CP_ITEMS_REPORT ) );
-	stringRecord* item_report ( nullptr );
-	if ( ( item_report = const_cast<stringRecord*>( &cp_itemreport.first () ) ) )
+	const stringRecord* item_report ( nullptr );
+	if ( ( item_report = &cp_itemreport.first () ) )
 	{
 		do {
 			inv_rec.setAction ( ACTION_ADD );
@@ -97,7 +91,7 @@ void companyPurchases::exportToInventory ()
 			setRecValue ( &inv_rec, FLD_INVENTORY_PRICE, item_report->fieldValue ( ISR_UNIT_PRICE ) );
 			setRecValue ( &inv_rec, FLD_INVENTORY_SUPPLIER, recStrValue ( this, FLD_CP_SUPPLIER ) );
 			setRecValue ( &inv_rec, FLD_INVENTORY_PLACE, APP_TR_FUNC ( "Company purchases storage room" ) );
-			item_report = const_cast<stringRecord*>( &cp_itemreport.next () );
+			item_report = &cp_itemreport.next ();
 			inv_rec.saveRecord ();
 			inv_rec.clearAll ();
 		} while ( item_report->isOK () );

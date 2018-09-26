@@ -6,7 +6,7 @@
 #include "completerrecord.h"
 
 #include <vmUtils/fast_library_functions.h>
-
+#include <vmWidgets/vmwidgets.h>
 #include <vmStringRecord/stringrecord.h>
 
 #include <QtGui/QStandardItemModel>
@@ -43,7 +43,7 @@ void vmCompleters::loadCompleters ()
 {
 	QStringList completer_strings;
 	QStandardItemModel* item_model ( nullptr );
-	QStandardItemModel* model_all ( static_cast<QStandardItemModel*> ( completersList.at ( ALL_CATEGORIES )->model () ) );
+	auto model_all ( dynamic_cast<QStandardItemModel*> ( completersList.at ( ALL_CATEGORIES )->model () ) );
 
 	for ( int i ( 2 ), x ( 0 ), str_count ( 0 ); i < static_cast<int>( COMPLETERS_COUNT ); ++i )
 	{
@@ -51,7 +51,7 @@ void vmCompleters::loadCompleters ()
 		str_count = completer_strings.count ();
 		if ( str_count > 0 )
 		{
-			item_model = static_cast<QStandardItemModel*>( completersList.at ( i )->model () );
+			item_model = dynamic_cast<QStandardItemModel*>( completersList.at ( i )->model () );
 			for ( x = 0; x < str_count; ++x )
 			{
 				item_model->appendRow ( new QStandardItem ( completer_strings.at ( x ) ) );
@@ -66,7 +66,7 @@ void vmCompleters::loadCompleters ()
 	const int str_count ( static_cast<int> ( qMin ( completer_strings.count (), completer_strings_2.count () ) ) );
 	if ( str_count > 0 )
 	{
-		item_model = static_cast<QStandardItemModel*>( completersList.at ( PRODUCT_OR_SERVICE )->model () );
+		item_model = dynamic_cast<QStandardItemModel*>( completersList.at ( PRODUCT_OR_SERVICE )->model () );
 		for ( int x ( 0 ); x < str_count; ++x )
 		{
 			item_model->insertRow ( x, QList<QStandardItem *> () <<
@@ -76,12 +76,40 @@ void vmCompleters::loadCompleters ()
 	}
 }
 
+void vmCompleters::setCompleterForWidget ( vmWidget* widget, const int completer_type )
+{
+	if ( completer_type >= 0 )
+	{
+		QCompleter* const completer ( getCompleter ( static_cast<COMPLETER_CATEGORIES> ( completer_type ) ) );
+
+		switch ( widget->type () )
+		{
+			case WT_LINEEDIT:
+				dynamic_cast<vmLineEdit*>( widget )->QLineEdit::setCompleter ( completer );
+			break;
+			case WT_LINEEDIT_WITH_BUTTON:
+				dynamic_cast<vmLineEditWithButton*>( widget )->lineControl ()->QLineEdit::setCompleter ( completer );
+			break;
+			case WT_COMBO:
+			{
+				//static_cast<vmComboBox*>( widget )->vmComboBox::setCompleter ( completer );
+				QStringList items;
+				fillList ( static_cast<COMPLETER_CATEGORIES> ( completer_type ), items );
+				dynamic_cast<vmComboBox*>( widget )->addItems ( items );
+			}
+			break;
+			default:
+			break;
+		}
+	}
+}
+
 void vmCompleters::updateCompleter ( const DBRecord* const db_rec, const uint field, const COMPLETER_CATEGORIES type )
 {
 	if ( type >= COMPLETER_CATEGORIES::SUPPLIER )
 	{
 		updateCompleter ( recStrValue ( db_rec, field ), type );
-		if ( ( type != SUPPLIER ) || ( type != BRAND ) || type != ITEM_NAMES )
+		if ( (type != SUPPLIER) && (type != BRAND) && (type != ITEM_NAMES) )
 			return;
 	}
 	encodeCompleterISRForSpreadSheet ( db_rec );
@@ -97,10 +125,10 @@ void vmCompleters::updateCompleter ( const QString& str, const COMPLETER_CATEGOR
 		if ( inList ( str, type ) == -1 )
 		{
 			const QCompleter* completer ( completersList.at ( static_cast<int>( type ) ) );
-			QStandardItemModel* item_model ( static_cast<QStandardItemModel*>(completer->model ()) );
+			auto item_model ( dynamic_cast<QStandardItemModel*>(completer->model ()) );
 		
 			item_model->appendRow ( new QStandardItem ( str ) );
-			QStandardItemModel* model_all ( static_cast<QStandardItemModel*>( completersList.at ( ALL_CATEGORIES )->model () ) );
+			auto model_all ( dynamic_cast<QStandardItemModel*>( completersList.at ( ALL_CATEGORIES )->model () ) );
 			model_all->appendRow ( new QStandardItem ( str ) );
 			completerRecord cr_rec;
 			cr_rec.updateTable ( type, str );
@@ -110,10 +138,10 @@ void vmCompleters::updateCompleter ( const QString& str, const COMPLETER_CATEGOR
 
 void vmCompleters::fillList ( const COMPLETER_CATEGORIES type, QStringList& list ) const
 {
-	const QStandardItemModel* __restrict model ( static_cast<QStandardItemModel*>( completersList.at ( static_cast<int> ( type ) )->model () ) );
+	const auto* __restrict model ( dynamic_cast<QStandardItemModel*>( completersList.at ( static_cast<int> ( type ) )->model () ) );
 	if ( model )
 	{
-		const uint n_items ( static_cast<uint> ( model->rowCount () ) );
+		const auto n_items ( static_cast<uint> ( model->rowCount () ) );
 		if ( n_items > 0 )
 		{
 			const QModelIndex index ( model->index ( 0, 0 ) );
@@ -131,7 +159,7 @@ int vmCompleters::inList ( const QString& str, const COMPLETER_CATEGORIES type )
 {
 	if ( mbFullInit )
 	{
-		const QStandardItemModel* __restrict model ( static_cast<QStandardItemModel*>( completersList.at ( static_cast<int> ( type ) )->model () ) );
+		const auto* __restrict model ( dynamic_cast<QStandardItemModel*>( completersList.at ( static_cast<int> ( type ) )->model () ) );
 		const QModelIndex index ( model->index ( 0, 0 ) );
 		const int n_items ( model->rowCount () );
 		for ( int i_row ( 0 ); i_row < n_items; ++i_row )
@@ -167,8 +195,7 @@ COMPLETER_CATEGORIES vmCompleters::completerType ( QCompleter* completer, const 
 		}
 		return ret;
 	}
-	else
-		return NONE;
+	return NONE;
 }
 
 void vmCompleters::encodeCompleterISRForSpreadSheet ( const DBRecord* dbrec )
@@ -179,7 +206,7 @@ void vmCompleters::encodeCompleterISRForSpreadSheet ( const DBRecord* dbrec )
 	if ( !dbrec->completerUpdated () )
 	{
 		stringRecord info;
-		QStandardItemModel* model ( static_cast<QStandardItemModel*>( completersList.at ( PRODUCT_OR_SERVICE )->model () ) );
+		auto model ( static_cast<QStandardItemModel*>( completersList.at ( PRODUCT_OR_SERVICE )->model () ) );
 
 		const QString compositItemName (	dbrec->isrValue ( ISR_NAME ) + QLatin1String ( " (" ) +
 											dbrec->isrValue ( ISR_UNIT ) + QLatin1String ( ") " ) +

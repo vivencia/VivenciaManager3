@@ -2,7 +2,7 @@
 #define DOCUMENTEDITORWINDOW_H
 
 #include <QtCore/QFileInfo>
-#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QWidget>
 
 #include <functional>
 
@@ -14,7 +14,7 @@ class documentEditorWindow : public QWidget
 
 public:
 	explicit documentEditorWindow ( documentEditor* parent );
-	virtual ~documentEditorWindow ();
+	virtual ~documentEditorWindow () override;
 
 	inline uint editorType () const { return m_type; }
 	inline void setEditorType ( const uint type ) { m_type = type; }

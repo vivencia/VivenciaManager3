@@ -34,6 +34,9 @@ public:
 	inline void setDeleteItemsWhenDestroyed ( const bool b_destroydelete ) { mbDestroyDelete = b_destroydelete; }
 	inline bool isDeleteItemsWhenDestroyed () const { return mbDestroyDelete; }
 	
+	void setEnableSorting ( const bool b_enable );
+	inline bool isSortEnabled () const { return mbIsSorted; }
+
 	/* This property signifies that mCurrentItemChangedFunc is called even if mCurrentItem is asked to become again mCurrentItem.
 	 * i.e. setCurrentRow ( row == mCurrentItem.row () ) or setCurrentItem ( item == mCurrentItem ), etc.
 	 * It is useful when more than one list widget is associated with a common display view. The comparison for likelihood should
@@ -54,7 +57,7 @@ protected:
 private:
 	void rowSelected ( const int row, const int prev_row );
 	
-	bool mbIgnore, mbDestroyDelete, mbForceEmit;
+	bool mbIgnore, mbDestroyDelete, mbForceEmit, mbIsSorted;
 	int mPrevRow;
 	vmListItem* mCurrentItem, *mPrevItem;
 	std::function<void( vmListItem* current )> mCurrentItemChangedFunc;

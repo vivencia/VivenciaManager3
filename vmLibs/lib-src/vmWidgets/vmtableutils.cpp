@@ -8,10 +8,10 @@
 #include <QtGui/QHideEvent>
 
 vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
-	: QFrame ( nullptr ), m_SearchedWord ( emptyString ), m_table ( const_cast<vmTableWidget*>( table ) ),
+	: QFrame ( nullptr ), m_SearchedWord ( emptyString ), m_utilidx ( -1 ), m_table ( const_cast<vmTableWidget*>( table ) ),
 	  chkSearchAllTable ( nullptr )
 {
-	QLabel* lblSearch ( new QLabel ( TR_FUNC ( "Search:" ) ) );
+	auto lblSearch ( new QLabel ( TR_FUNC ( "Search:" ) ) );
 	txtSearchTerm = new vmLineEdit;
 	txtSearchTerm->setEditable ( true );
 	txtSearchTerm->setCallbackForRelevantKeyPressed ( ( [&]( const QKeyEvent* ke, const vmWidget* const ) {
@@ -36,7 +36,7 @@ vmTableSearchPanel::vmTableSearchPanel ( const vmTableWidget* const table )
 	btnSearchCancel->setIcon ( ICON ( "cancel" ) );
 	static_cast<void>( connect ( btnSearchCancel, &QToolButton::clicked, this, [&] () { return hide (); } ) );
 
-	QHBoxLayout* mLayout ( new QHBoxLayout );
+	auto mLayout ( new QHBoxLayout );
 	mLayout->setSpacing( 2 );
 	mLayout->setMargin ( 2 );
 	mLayout->addWidget ( lblSearch );
@@ -80,12 +80,12 @@ void vmTableSearchPanel::hideEvent ( QHideEvent* he )
 void vmTableSearchPanel::searchFieldsChanged ( const vmCheckBox* const )
 {
 	if ( chkSearchAllTable && chkSearchAllTable->isChecked () )
-		static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setCheckable ( false );
+		dynamic_cast<vmCheckedTableItem*>( m_table->horizontalHeader () )->setCheckable ( false );
 	else
 	{
-		static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setCheckable ( true );
+		dynamic_cast<vmCheckedTableItem*>( m_table->horizontalHeader () )->setCheckable ( true );
 		for ( uint col ( 0 ); col < m_table->colCount (); ++col )
-			static_cast<vmCheckedTableItem*> ( m_table->horizontalHeader () )->setChecked ( col, false );
+			dynamic_cast<vmCheckedTableItem*>( m_table->horizontalHeader () )->setChecked ( col, false );
 	}
 }
 
@@ -147,20 +147,20 @@ void vmTableSearchPanel::txtSearchTerm_keyPressed ( const QKeyEvent* ke )
 }
 
 vmTableFilterPanel::vmTableFilterPanel ( const vmTableWidget * const table )
-	: QFrame ( nullptr ), m_table ( const_cast<vmTableWidget*>( table ) ), searchLevels ( 10 )
+	: QFrame ( nullptr ), m_utilidx ( -1 ), m_table ( const_cast<vmTableWidget*>( table ) ), searchLevels ( 10 )
 {
 	searchLevels.setAutoDeleteItem ( true );
 	
 	m_btnClose = new QToolButton;
-	m_btnClose->setIcon ( ICON ( "stylepanel/panelCloseOver" ) );
+	m_btnClose->setIcon ( ICON ( "cancel" ) );
 	connect ( m_btnClose, &QToolButton::clicked, this, [&] () { return hide (); } );
 
-	QLabel* lblFilter ( new QLabel ( TR_FUNC ( "Filter:" ) ) );
+	auto lblFilter ( new QLabel ( TR_FUNC ( "Filter:" ) ) );
 	m_txtFilter = new vmLineFilter;
 	m_txtFilter->setEditable ( true );
 	m_txtFilter->setCallbackForValidKeyEntered ( [&] ( const triStateType level, const int startlevel ) { return doFilter ( level, startlevel ); } );
 
-	QHBoxLayout* mainLayout ( new QHBoxLayout );
+	auto mainLayout ( new QHBoxLayout );
 	mainLayout->setMargin ( 2 );
 	mainLayout->setSpacing ( 2 );
 	mainLayout->addWidget ( lblFilter );
@@ -186,7 +186,7 @@ void vmTableFilterPanel::hideEvent ( QHideEvent* he )
 	m_table->setFocus ();
 }
 
-void vmTableFilterPanel::doFilter ( const triStateType level, const int startlevel )
+void vmTableFilterPanel::doFilter ( const triStateType& level, const int startlevel )
 {
 	if ( level == CLEAR_LEVEL )
 	{
@@ -211,7 +211,7 @@ void vmTableFilterPanel::doFilter ( const triStateType level, const int startlev
 		{
 			bool b_keeprow ( false );
 			uint i_row ( 0 );
-			podList<int>* newRowLevel ( new podList<int> );
+			auto newRowLevel ( new podList<int> );
 			newRowLevel->setPreAllocNumber ( m_table->visibleRows () );
 			const uint max_cols ( m_table->isList () ? 1 : m_table->colCount () );
 			

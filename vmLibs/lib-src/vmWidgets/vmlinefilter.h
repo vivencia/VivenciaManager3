@@ -14,13 +14,13 @@ class vmLineFilter : public vmLineEdit
 
 public:
 	explicit vmLineFilter ( QWidget* parent = nullptr, QWidget* ownerWindow = nullptr );
-	virtual ~vmLineFilter ();
+	virtual ~vmLineFilter () final = default;
 
 	inline void setCallbackForValidKeyEntered ( const std::function<void ( const triStateType, const int )>& func ) 
 			{ validkey_func = func; }
-	
+
 	inline const QString& buffer () const { return mBuffer; }
-	
+
 	bool matches ( const QString& haystack ) const;
 
 private:

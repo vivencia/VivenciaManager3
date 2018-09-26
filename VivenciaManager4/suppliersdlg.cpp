@@ -22,7 +22,7 @@
 
 suppliersDlg::suppliersDlg ()
 	: QDialog ( nullptr ), supRec ( new supplierRecord ( true ) ),
-	  m_supchanged ( true ), m_bEditing ( false ), widgetList ( SUPPLIER_FIELD_COUNT + 1 )
+	  widgetList ( SUPPLIER_FIELD_COUNT + 1 )
 {
 	setWindowTitle ( TR_FUNC ( "Suppliers" ) );
 	setWindowFlags ( Qt::Tool | Qt::WindowStaysOnTopHint );
@@ -53,7 +53,7 @@ void suppliersDlg::setupUI ()
 	saveWidget ( txtSupID, FLD_SUPPLIER_ID );
 	txtSupID->setEditable ( false );
 
-	QHBoxLayout* hLayout1 ( new QHBoxLayout );
+	auto hLayout1 ( new QHBoxLayout );
 	hLayout1->addWidget ( new QLabel ( TR_FUNC ( "Name: " ) ) );
 	hLayout1->addWidget ( txtSupName, 1 );
 	hLayout1->addWidget ( new QLabel ( QStringLiteral ( "ID" ) ) );
@@ -65,7 +65,7 @@ void suppliersDlg::setupUI ()
 		return txtSupplier_textAltered ( sender ); } );
 	txtSupStreet->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return keyPressedSelector ( ke ); } );
-	txtSupStreet->setCompleter ( COMPLETERS ()->getCompleter ( ADDRESS ) );
+	COMPLETERS ()->setCompleterForWidget ( txtSupStreet, COMPLETER_CATEGORIES::ADDRESS );
 
 	txtSupNbr = new vmLineEdit;
 	saveWidget ( txtSupNbr, FLD_SUPPLIER_NUMBER );
@@ -75,7 +75,7 @@ void suppliersDlg::setupUI ()
 	txtSupNbr->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return keyPressedSelector ( ke ); } );
 
-	QHBoxLayout* hLayout2 ( new QHBoxLayout );
+	auto hLayout2 ( new QHBoxLayout );
 	hLayout2->addWidget ( new QLabel ( TR_FUNC ( "Address: " ) ), 0 );
 	hLayout2->addWidget ( txtSupStreet, 1 );
 	hLayout2->addWidget ( new QLabel ( QStringLiteral ( "#: " ) ), 0 );
@@ -87,7 +87,7 @@ void suppliersDlg::setupUI ()
 		return txtSupplier_textAltered ( sender ); } );
 	txtSupDistrict->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return keyPressedSelector ( ke ); } );
-	txtSupDistrict->setCompleter ( COMPLETERS ()->getCompleter ( ADDRESS ) );
+	COMPLETERS ()->setCompleterForWidget ( txtSupDistrict, COMPLETER_CATEGORIES::ADDRESS );
 
 	txtSupCity = new vmLineEdit;
 	saveWidget ( txtSupCity, FLD_SUPPLIER_CITY );
@@ -95,9 +95,9 @@ void suppliersDlg::setupUI ()
 		return txtSupplier_textAltered ( sender ); } );
 	txtSupCity->setCallbackForRelevantKeyPressed ( [&] ( const QKeyEvent* const ke, const vmWidget* const ) {
 		return keyPressedSelector ( ke ); } );
-	txtSupCity->setCompleter ( COMPLETERS ()->getCompleter ( ADDRESS ) );
+	COMPLETERS ()->setCompleterForWidget ( txtSupCity, COMPLETER_CATEGORIES::ADDRESS );
 
-	QHBoxLayout* hLayout3 ( new QHBoxLayout );
+	auto hLayout3 ( new QHBoxLayout );
 	hLayout3->addWidget ( new QLabel ( TR_FUNC ( "District: " ) ), 0 );
 	hLayout3->addWidget ( txtSupDistrict, 1 );
 	hLayout3->addWidget ( new QLabel ( TR_FUNC ( "City: " ) ), 0 );
@@ -111,10 +111,10 @@ void suppliersDlg::setupUI ()
 		return contactsAdd ( phone, sender ); } );
 	contactsPhones->setCallbackForRemoval ( [&] ( const int idx, const vmWidget* const sender ) {
 		return contactsDel ( idx, sender ); } );
-	QLabel* lblPhone ( new QLabel ( TR_FUNC ( "Phones: " ) ) );
+	auto lblPhone ( new QLabel ( TR_FUNC ( "Phones: " ) ) );
 	lblPhone->setBuddy ( contactsPhones );
 
-	QFrame* vline ( new QFrame );
+	auto vline ( new QFrame );
 	vline->setFrameStyle ( QFrame::VLine|QFrame::Raised );
 
 	contactsEmails = new contactsManagerWidget ( nullptr );
@@ -125,10 +125,10 @@ void suppliersDlg::setupUI ()
 		return contactsAdd ( addrs, sender ); } );
 	contactsEmails->setCallbackForRemoval ( [&] ( const int idx, const vmWidget* const sender ) {
 		return contactsDel ( idx, sender ); } );
-	QLabel* lblEMail ( new QLabel ( TR_FUNC ( "EMail/Site: " ) ) );
+	auto lblEMail ( new QLabel ( TR_FUNC ( "EMail/Site: " ) ) );
 	lblEMail->setBuddy ( contactsEmails );
 
-	QHBoxLayout* hLayout4 ( new QHBoxLayout );
+	auto hLayout4 ( new QHBoxLayout );
 	hLayout4->addWidget ( lblPhone, 0 );
 	hLayout4->addWidget ( contactsPhones, 1 );
 	hLayout4->addWidget ( vline, 0 );
@@ -146,23 +146,19 @@ void suppliersDlg::setupUI ()
 		return btnEditClicked ( checked ); } );
 
 	btnCancel = new QPushButton ( ICON ( "cancel" ), TR_FUNC ( "Cancel" ) );
-	connect ( btnCancel, &QPushButton::clicked, this, [&] () {
-		return btnCancelClicked (); } );
+	connect ( btnCancel, &QPushButton::clicked, this, [&] () { return btnCancelClicked (); } );
 
 	btnRemove = new QPushButton ( ICON ( "browse-controls/remove" ), TR_FUNC ( "Remove" ) );
-	connect ( btnRemove, &QPushButton::clicked, this, [&] () {
-		return btnRemoveClicked (); } );
+	connect ( btnRemove, &QPushButton::clicked, this, [&] () { return btnRemoveClicked (); } );
 
 	btnCopyToEditor = new QPushButton ( TR_FUNC ( "Open in editor" ) );
-	connect ( btnCopyToEditor, &QPushButton::clicked, this, [&] () {
-		return btnCopyToEditorClicked (); } );
+	connect ( btnCopyToEditor, &QPushButton::clicked, this, [&] () { return btnCopyToEditorClicked (); } );
 
 	btnCopyAllToEditor = new QPushButton ( TR_FUNC ( "Open all in editor" ) );
 	btnCopyToEditor = new QPushButton ( TR_FUNC ( "Open in editor" ) );
-	connect ( btnCopyAllToEditor, &QPushButton::clicked, this, [&] () {
-		return btnCopyAllToEditorClicked (); } );
+	connect ( btnCopyAllToEditor, &QPushButton::clicked, this, [&] () { return btnCopyAllToEditorClicked (); } );
 
-	QHBoxLayout* hLayout5 ( new QHBoxLayout );
+	auto hLayout5 ( new QHBoxLayout );
 	hLayout5->addWidget ( btnInsert, 1 );
 	hLayout5->addWidget ( btnEdit, 1 );
 	hLayout5->addWidget ( btnCancel, 1 );
@@ -170,7 +166,7 @@ void suppliersDlg::setupUI ()
 	hLayout5->addWidget ( btnCopyToEditor, 1 );
 	hLayout5->addWidget ( btnCopyAllToEditor, 1 );
 
-	QVBoxLayout* mainLayout ( new QVBoxLayout );
+	auto mainLayout ( new QVBoxLayout );
 	mainLayout->addLayout ( hLayout1, 1 );
 	mainLayout->addLayout ( hLayout2, 1 );
 	mainLayout->addLayout ( hLayout3, 1 );
@@ -181,23 +177,27 @@ void suppliersDlg::setupUI ()
 	adjustSize ();
 }
 
-void suppliersDlg::retrieveInfo ()
+void suppliersDlg::retrieveInfo ( const QString& name )
 {
-	if ( m_supchanged )
+	if ( supRec->readRecord ( FLD_SUPPLIER_NAME, name ) )
 	{
-		clearForms ( false );
-		if ( supRec->readRecord ( FLD_SUPPLIER_NAME, txtSupName->text () ) )
-		{
-			txtSupID->setText ( recStrValue ( supRec, FLD_SUPPLIER_ID ) );
-			txtSupStreet->setText ( recStrValue ( supRec, FLD_SUPPLIER_STREET ) );
-			txtSupNbr->setText ( recStrValue ( supRec, FLD_SUPPLIER_NUMBER ) );
-			txtSupDistrict->setText ( recStrValue ( supRec, FLD_SUPPLIER_DISTRICT ) );
-			txtSupCity->setText ( recStrValue ( supRec, FLD_SUPPLIER_CITY ) );
-			contactsPhones->decodePhones ( recStrValue ( supRec, FLD_SUPPLIER_PHONES ) );
-			contactsEmails->decodeEmails ( recStrValue ( supRec, FLD_SUPPLIER_EMAIL ) );
-		}
-		controlForms ();
+		txtSupID->setText ( recStrValue ( supRec, FLD_SUPPLIER_ID ) );
+		txtSupName->setText ( recStrValue ( supRec, FLD_SUPPLIER_NAME ) );
+		txtSupStreet->setText ( recStrValue ( supRec, FLD_SUPPLIER_STREET ) );
+		txtSupNbr->setText ( recStrValue ( supRec, FLD_SUPPLIER_NUMBER ) );
+		txtSupDistrict->setText ( recStrValue ( supRec, FLD_SUPPLIER_DISTRICT ) );
+		txtSupCity->setText ( recStrValue ( supRec, FLD_SUPPLIER_CITY ) );
+		contactsPhones->decodePhones ( recStrValue ( supRec, FLD_SUPPLIER_PHONES ) );
+		contactsEmails->decodeEmails ( recStrValue ( supRec, FLD_SUPPLIER_EMAIL ) );
 	}
+	else
+	{
+		supRec->clearAll ();
+		clearForms ();
+		txtSupName->setText ( name );
+		txtSupplier_textAltered ( txtSupName );
+	}
+	controlForms ();
 }
 
 void suppliersDlg::controlForms ()
@@ -245,17 +245,15 @@ void suppliersDlg::keyPressedSelector ( const QKeyEvent* ke )
 	}
 }
 
-void suppliersDlg::clearForms ( const bool b_clear_supname )
+void suppliersDlg::clearForms ()
 {
-	if ( b_clear_supname )
-		txtSupName->clear ();
+	txtSupName->clear ();
 	txtSupID->clear ();
 	txtSupStreet->clear ();
 	txtSupDistrict->clear ();
 	txtSupCity->clear ();
 	contactsPhones->clearAll ();
 	contactsEmails->clearAll ();
-	supRec->clearAll ();
 }
 
 void suppliersDlg::txtSupplier_textAltered ( const vmWidget* const sender )
@@ -281,18 +279,13 @@ void suppliersDlg::contactsDel ( const int idx, const vmWidget* const sender )
 
 void suppliersDlg::displaySupplier ( const QString& supName, const bool b_showdlg )
 {
-	if ( b_showdlg )
-		show ();
-
-	if  ( isVisible () )
+	if ( supName != recStrValue ( supRec, FLD_SUPPLIER_NAME ) )
 	{
-		if ( supName != txtSupName->text () )
-		{
-			txtSupName->setText ( supName );
-			m_supchanged = true;
-			retrieveInfo ();
-			m_supchanged = false;
-		}
+		retrieveInfo ( supName );
+	}
+	if ( b_showdlg )
+	{
+		show ();
 	}
 }
 
@@ -300,13 +293,19 @@ void suppliersDlg::btnInsertClicked ( const bool checked )
 {
 	if ( checked )
 	{
-		clearForms ();
+		// if we have a name in txtSupName but the name cannot be found in the database, we use that name as the
+		// intended new name for the inserting record. Elsewise, we clean everything
+		if ( supRec->readRecord ( FLD_SUPPLIER_NAME, txtSupName->text () ) )
+		{
+			clearForms ();
+		}
 		supRec->setAction ( ACTION_ADD );
 	}
 	else
 	{
 		supRec->saveRecord ();
 		supRec->setAction ( ACTION_READ );
+		txtSupID->setText ( recStrValue ( supRec, FLD_SUPPLIER_ID ) );
 	}
 	controlForms ();
 }
@@ -314,7 +313,9 @@ void suppliersDlg::btnInsertClicked ( const bool checked )
 void suppliersDlg::btnEditClicked ( const bool checked )
 {
 	if ( checked )
+	{
 		supRec->setAction ( ACTION_EDIT );
+	}
 	else
 	{
 		supRec->saveRecord ();
@@ -326,15 +327,13 @@ void suppliersDlg::btnEditClicked ( const bool checked )
 void suppliersDlg::btnCancelClicked ()
 {
 	supRec->setAction ( ACTION_REVERT );
-	m_supchanged = true;
-	retrieveInfo ();
+	retrieveInfo ( recStrValue ( supRec, FLD_SUPPLIER_NAME ) );
 }
 
 void suppliersDlg::btnRemoveClicked ()
 {
 	supRec->deleteRecord ();
-	m_supchanged = true;
-	retrieveInfo ();
+	clearForms ();
 }
 
 void suppliersDlg::btnCopyToEditorClicked ()
@@ -344,7 +343,7 @@ void suppliersDlg::btnCopyToEditorClicked ()
 	if ( !info.isEmpty () )
 	{
 		hideDialog ();
-		textEditor* editor ( EDITOR ()->startNewTextEditor () );
+		auto editor ( EDITOR ()->startNewTextEditor () );
 		editor->displayText ( info );
 		EDITOR ()->show ();
 	}
@@ -357,7 +356,7 @@ void suppliersDlg::btnCopyAllToEditorClicked ()
 	if ( !info.isEmpty () )
 	{
 		hideDialog ();
-		textEditor* editor ( EDITOR ()->startNewTextEditor () );
+		auto editor ( EDITOR ()->startNewTextEditor () );
 		editor->displayText ( info );
 		EDITOR ()->show ();
 	}
@@ -365,8 +364,10 @@ void suppliersDlg::btnCopyAllToEditorClicked ()
 
 void suppliersDlg::hideDialog ()
 {
-	if ( m_bEditing )
+	if ( supRec->action () != ACTION_READ )
+	{
 		return;
+	}
 	hide ();
 }
 
@@ -399,7 +400,9 @@ void suppliersDlg::supplierInfo ( const QString& name, QString& info )
 		cmd.replace ( QStringLiteral ( "%3" ), name );
 	}
 	else
+	{
 		cmd.truncate ( cmd.indexOf ( QStringLiteral ( "WHERE" ), 16 ) );
+	}
 
 	QSqlQuery query ( cmd, *( VDB ()->database () ) );
 	query.setForwardOnly ( true );

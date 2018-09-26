@@ -49,12 +49,10 @@ dbStatistics::dbStatistics ( QObject* parent )
 	mainLayout->addWidget ( m_textinfo );
 }
 
-dbStatistics::~dbStatistics () {}
-
 void dbStatistics::reload ()
 {
 	m_textinfo->clear ();
-	dbStatisticsWorker* worker ( new dbStatisticsWorker );
+	auto worker ( new dbStatisticsWorker );
 	
 #ifdef USE_THREADS
 	QThread* workerThread ( new QThread );
@@ -88,8 +86,6 @@ dbStatisticsWorker::dbStatisticsWorker ()
 	m_readyFunc = nullptr;
 #endif
 }
-
-dbStatisticsWorker::~dbStatisticsWorker () {}
 
 void dbStatisticsWorker::startWorks ()
 {
@@ -256,7 +252,7 @@ void dbStatisticsWorker::countJobs ()
 	{
 		vmNumber db_date;
 		podList<uint> count_years ( 0, vmNumber::currentDate ().year () - 2009 + 1 );
-		VMList<vmNumber> count_hours ( vmNumber (), count_years.preallocNumber () );
+		vmList<vmNumber> count_hours ( vmNumber (), count_years.preallocNumber () );
 		podList<uint> count_days ( 0, count_years.preallocNumber () );
 		do
 		{
@@ -290,7 +286,7 @@ void dbStatisticsWorker::jobPrices ()
 	{
 		vmNumber db_date, price, total_income;
 		podList<uint> count_jobs ( 0, vmNumber::currentDate ().year () - 2009 + 1 );
-		VMList<vmNumber> count_price ( vmNumber (), count_jobs.preallocNumber () );
+		vmList<vmNumber> count_price ( vmNumber (), count_jobs.preallocNumber () );
 		
 		do
 		{
@@ -367,7 +363,7 @@ void dbStatisticsWorker::countPayments ()
 	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT INFO FROM PAYMENTS" ), queryRes ) )
 	{
 		vmNumber db_date, price, total_income;
-		VMList<vmNumber> count_price ( vmNumber (), vmNumber::currentDate ().year () - 2009 + 1 );
+		vmList<vmNumber> count_price ( vmNumber (), vmNumber::currentDate ().year () - 2009 + 1 );
 		stringTable payInfo;
 		stringRecord* payRecord ( nullptr );
 		uint n_pays ( 0 );
@@ -382,7 +378,7 @@ void dbStatisticsWorker::countPayments ()
 				db_date.fromTrustedStrDate ( payRecord->fieldValue ( PHR_DATE ), vmNumber::VDF_DB_DATE );
 				if ( db_date.year () >= 2009 )
 				{
-					price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ), 1 );
+					price.fromTrustedStrPrice ( payRecord->fieldValue ( PHR_VALUE ) );
 					total_income += price;
 					count_price[db_date.year () - 2009] += price;
 				}

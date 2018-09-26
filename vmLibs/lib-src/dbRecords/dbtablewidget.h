@@ -15,14 +15,14 @@ class dbTableWidget : public vmTableWidget
 public:
 	explicit dbTableWidget ( QWidget* parent = nullptr );
 	dbTableWidget ( const uint rows, QWidget* parent = nullptr );
-	virtual ~dbTableWidget ();
+	virtual ~dbTableWidget () override;
 
 	static void setCompleterManager ( vmCompleters* const completer );
 	inline static vmCompleters* completerManager () { return dbTableWidget::completer_manager; }
 
 	void setIgnoreChanges ( const bool b_ignore ) override;
 	void exportPurchaseToSupplies ( const DBRecord* const src_dbrec, dbSupplies* const dst_dbrec );
-	void interceptCompleterActivated ( const QModelIndex& index, const dbTableWidget* const table );
+	void interceptCompleterActivated ( const QModelIndex& index );
 
 	static dbTableWidget* createPurchasesTable ( dbTableWidget* table = nullptr, QWidget* parent = nullptr );
 

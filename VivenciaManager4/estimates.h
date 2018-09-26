@@ -36,11 +36,11 @@ private:
 	void openWithDoubleClick ( QTreeWidgetItem* item );
 	void scanDir ();
 	void setupActions ();
-	void addToTree ( PointersList<fileOps::st_fileInfo *> &files, const QString& c_name, const int newItemType = -1 );
+	void addToTree ( pointersList<fileOps::st_fileInfo *> &files, const QString& c_name, const int newItemType = -1 );
 	void removeFiles ( QTreeWidgetItem* item, const bool bSingleFile = false, const bool bAsk = false );
 	bool removeDir ( QTreeWidgetItem* item, const bool bAsk = false );
 	bool renameDir ( QTreeWidgetItem* item, QString& strNewName );
-	void addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, QString& projectid, PointersList<fileOps::st_fileInfo*>& files );
+	void addFilesToDir ( const bool bAddDoc, const bool bAddXls, const QString& projectpath, QString& projectid, pointersList<fileOps::st_fileInfo*>& files );
 	void execAction ( const QTreeWidgetItem* item, const int action_id );
 
 	newProjectDialog* m_npdlg;

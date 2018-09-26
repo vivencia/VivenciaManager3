@@ -19,11 +19,11 @@ enum VM_NUMBER_TYPE
 	VMNT_UNSET, VMNT_INT, VMNT_DOUBLE, VMNT_PRICE, VMNT_TIME, VMNT_PHONE, VMNT_DATE
 };
 
-static constexpr const QLatin1String TIME_FORMAT_DEFAULT ( "HH:mm", 5 );
-const QString DATE_FORMAT_DB ( QStringLiteral ( "yyyy/MM/dd" ) );
-const QString DATE_FORMAT_HUMAN ( QStringLiteral ( "dd/MM/yyyy" ) );
+static const QString TIME_FORMAT_DEFAULT ( QStringLiteral ( "HH:mm" ) );
+static const QString DATE_FORMAT_DB ( QStringLiteral ( "yyyy/MM/dd" ) );
+static const QString DATE_FORMAT_HUMAN ( QStringLiteral ( "dd/MM/yyyy" ) );
 
-//constexpr const QLatin1String DATE_FORMAT_LONG ( " dddd, dd 'de' MMMM 'de' yyyy" );
+//constexpr const QStringLiteral DATE_FORMAT_LONG ( " dddd, dd 'de' MMMM 'de' yyyy" );
 
 class vmNumber
 {
@@ -51,10 +51,10 @@ public:
 	inline explicit vmNumber ( const double n ) {
 		fromDoubleNbr ( n );
 	}
-	inline explicit vmNumber ( const QDate& date ) {
+	inline explicit vmNumber ( const QDate date ) {
 		fromQDate ( date );
 	}
-	inline explicit vmNumber ( const QTime& time ) {
+	inline explicit vmNumber ( const QTime time ) {
 		fromQTime ( time );
 	}
 	
@@ -177,8 +177,8 @@ public:
 
 	const QString& toDate ( const VM_DATE_FORMAT format ) const;
 
-	void fromQDate ( const QDate& date );
-	const QDate& toQDate () const;
+	void fromQDate ( const QDate date );
+	const QDate toQDate () const;
 
 	inline unsigned int day () const {
 		return nbr_upart[VM_IDX_DAY];
@@ -240,10 +240,10 @@ public:
 	vmNumber& fromStrTime ( const QString& time );
 	vmNumber& fromTrustedStrTime ( const QString& time, const VM_TIME_FORMAT format, const bool cache = true );
 
-	void fromQTime ( const QTime &time );
+	void fromQTime ( const QTime time );
 
 	const QString& toTime ( const VM_TIME_FORMAT format = VTF_DAYS ) const;
-	const QTime& toQTime () const;
+	const QTime toQTime () const;
 	const QString& formatTime ( const int hour, const int min, const int sec, const VM_TIME_FORMAT format ) const;
 
 	inline int hours () const {
@@ -267,7 +267,7 @@ public:
 	//operators are added as needed//
 
 	// These functions may change the type of the number
-	vmNumber& operator= ( const QDate& date );
+	vmNumber& operator= ( const QDate date );
 	vmNumber& operator= ( const int n );
 	vmNumber& operator= ( const unsigned int n );
 	vmNumber& operator= ( const double n );
@@ -313,8 +313,8 @@ private:
 	}
 
 	mutable VM_NUMBER_TYPE m_type;
-	int nbr_part[5];
-	unsigned int nbr_upart[5];
+	mutable int nbr_part[5];
+	mutable unsigned int nbr_upart[5];
 	mutable QString cached_str;
 	mutable bool mb_cached;
 	mutable bool mb_valid;

@@ -55,7 +55,7 @@ public:
 	
 	friend void vmwidget_swap ( vmWidget& widget1, vmWidget& widget2 );
 	
-	enum TEXT_TYPE { TT_TEXT = 0x1, TT_UPPERCASE = 0x2, TT_PHONE = 0x4, TT_NUMBER_PLUS_SYMBOL = 0x8,
+	enum TEXT_TYPE { TT_TEXT = 0x1, TT_UPPERCASE = 0x2, TT_PHONE = 0x4, TT_ZIPCODE = 0x8,
 					 TT_PRICE = 0x10, TT_INTEGER = 0x20, TT_DOUBLE = 0x40
 				   };
 
@@ -96,7 +96,11 @@ public:
 	// TODO: consider using heapManager to manage the created object.
 	virtual vmWidget* stringToWidget ( const QString& str_widget );
 
-	inline virtual void setEditable ( const bool editable ) { setFontAttributes ( mb_editable = editable ); }
+	inline virtual void setEditable ( const bool editable )
+	{
+		setFontAttributes ( mb_editable = editable );
+	}
+
 	inline bool isEditable () const { return mb_editable; }
 
 	void setFontAttributes ( const bool italic, const bool bold = false );
@@ -123,6 +127,9 @@ public:
 	inline void setInternalData ( const QVariant& data ) { m_data = data; }
 	inline const QVariant& internalData () const { return m_data; }
 
+	inline void setCompleterType ( const int completer_type ) { m_completerid = completer_type; }
+	inline int completerType () const { return m_completerid; }
+
 	inline void setUtilitiesPlaceLayout ( QVBoxLayout* layoutUtilities ) { m_LayoutUtilities = layoutUtilities; }
 	inline QVBoxLayout* utilitiesLayout () { return m_LayoutUtilities; }
 	inline int addUtilityPanel ( QWidget* panel ) { return m_UtilityWidgetsList.append ( panel ); }
@@ -142,6 +149,7 @@ private:
 	int m_type;
 	int m_subtype;
 	int m_id;
+	int m_completerid;
 	bool mb_editable;
 	QVariant m_data;
 
@@ -149,7 +157,7 @@ private:
 	vmWidget* mParent;
 	vmTableItem* m_sheetItem;
 	QVBoxLayout* m_LayoutUtilities;
-	PointersList<QWidget*> m_UtilityWidgetsList;
+	pointersList<QWidget*> m_UtilityWidgetsList;
 	TEXT_TYPE mTextType;
 };
 

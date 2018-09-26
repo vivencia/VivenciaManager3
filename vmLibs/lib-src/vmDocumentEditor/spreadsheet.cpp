@@ -32,8 +32,8 @@ constexpr inline uint dbColumnToGuiColumn ( const uint db_col )
 static const QString MODIFIED ( APP_TR_FUNC ( "Modified - " ) );
 
 spreadSheetEditor::spreadSheetEditor ( documentEditor* mdiParent )
-	: QDialog (), m_parentEditor ( mdiParent ), m_table ( nullptr ), mbQPChanged ( false ), qp_rec ( new quickProject ),
-	  mJob ( nullptr ), funcClosed ( nullptr )
+	: QDialog (), m_parentEditor ( mdiParent ), m_table ( nullptr ), mCompleterManager ( nullptr ), mbQPChanged ( false ),
+	  qp_rec ( new quickProject ), mJob ( nullptr ), funcClosed ( nullptr )
 {
 	setWindowFlags ( Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowMinMaxButtonsHint ); // remove close button
 	setCompleterManager ( parentEditor ()->completerManager () );
@@ -64,7 +64,7 @@ void spreadSheetEditor::setupUI ()
 	btnClose->setFixedSize ( 100, 30 );
 	static_cast<void>(connect ( btnClose, &QPushButton::clicked, this, [&] () { return closeClicked (); } ));
 
-	QHBoxLayout* hLayout1 ( new QHBoxLayout );
+	auto hLayout1 ( new QHBoxLayout );
 	hLayout1->setMargin ( 2 );
 	hLayout1->setSpacing ( 2 );
 	hLayout1->addWidget ( btnEditTable, 1 );
@@ -200,7 +200,7 @@ void spreadSheetEditor::completeItem ( const QModelIndex& index )
 			m_table->setCurrentCell ( 0, SPREADSHEET_ITEM, QItemSelectionModel::Select );
 		if ( m_table->currentRow () != -1 )
 		{
-			const uint current_row ( static_cast<uint>(m_table->currentRow ()) );
+			const auto current_row ( static_cast<uint>(m_table->currentRow ()) );
 			m_table->sheetItem ( current_row, SPREADSHEET_ITEM )->setText ( record.fieldValue ( ISR_NAME ), false, true );
 			m_table->sheetItem ( current_row, SPREADSHEET_PURCHASE_UNIT_PRICE )->setText ( record.fieldValue ( ISR_UNIT_PRICE ), false, true );
 			m_table->sheetItem ( current_row, SPREADSHEET_PURCHASE_QUANTITY )->setText ( CHR_ONE, false, true );

@@ -26,7 +26,7 @@ public:
 private:
 	static const TABLE_INFO t_info;
 
-	friend bool updateCPTable ();
+	friend bool updateCPTable ( const unsigned char current_table_version );
 
 	RECORD_FIELD m_RECFIELDS[COMPANY_PURCHASES_FIELD_COUNT];
 	void ( *helperFunction[COMPANY_PURCHASES_FIELD_COUNT] ) ( const DBRecord* );

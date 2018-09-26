@@ -9,6 +9,8 @@
 #include <vmWidgets/vmtablewidget.h>
 #include <vmNotify/vmnotify.h>
 
+#include <QtGui/QGuiApplication>
+#include <QtGui/QScreen>
 #include <QtGui/QKeyEvent>
 #include <QtSql/QSqlQuery>
 #include <QtSql/QSqlRecord>
@@ -18,7 +20,6 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QDesktopWidget>
 
 static const QString information_schema_tables[] = {
 	"TABLE_CATALOG", "TABLE_SCHEMA",
@@ -31,12 +32,11 @@ static RECORD_ACTION getQueryAction ( const QString& query )
 {
 	if ( query.startsWith ( QStringLiteral ( "UPDATE " ) ) )
 		return ACTION_EDIT;
-	else if ( query.startsWith ( QStringLiteral ( "INSERT INTO " ) ) )
+	if ( query.startsWith ( QStringLiteral ( "INSERT INTO " ) ) )
 		return ACTION_ADD;
-	else if ( query.startsWith ( QStringLiteral ( "DELETE FROM " ) ) ) 
+	if ( query.startsWith ( QStringLiteral ( "DELETE FROM " ) ) )
 		return ACTION_DEL;
-	else
-		return ACTION_NONE;
+	return ACTION_NONE;
 }
 
 static const QString query_key_words ( QStringLiteral ( "SELECT UPDATE INSERT INTO VALUES SET WHERE DELETE FROM ID" ) );
@@ -139,16 +139,15 @@ static TABLE_IDS tableNameToTableId ( const QString& table_name )
 	{
 		if ( table_name.startsWith ( QLatin1Char ( 'J' ) ) )
 			return JOB_TABLE;
-		else if ( table_name.startsWith ( QLatin1Char ( 'I' ) ) )
+		if ( table_name.startsWith ( QLatin1Char ( 'I' ) ) )
 			return INVENTORY_TABLE;
-		else if ( table_name.startsWith ( QLatin1Char ( 'M' ) ) )
+		if ( table_name.startsWith ( QLatin1Char ( 'M' ) ) )
 			return MACHINES_TABLE;
-		else if ( table_name.startsWith ( QLatin1Char ( 'G' ) ) )
+		if ( table_name.startsWith ( QLatin1Char ( 'G' ) ) )
 			return GENERAL_TABLE;
-		else if ( table_name.startsWith ( QLatin1Char ( 'Q' ) ) )
+		if ( table_name.startsWith ( QLatin1Char ( 'Q' ) ) )
 			return QUICK_PROJECT_TABLE;
-		else
-			return USERS_TABLE;
+		return USERS_TABLE;
 	}
 }
 
@@ -159,12 +158,12 @@ dbTableView::dbTableView ()
 	mTablesList->setMaximumWidth ( 300 );
 	mTablesList->setCallbackForCurrentItemChanged ( [&] ( vmListItem* item ) { return showTable ( mTablesList->item ( item->row () )->text () ); } );
 
-	vmAction* actionReload ( new vmAction ( 0 ) );
+	auto actionReload ( new vmAction ( 0 ) );
 	actionReload->setShortcut ( QKeySequence ( Qt::Key_F5 ) );
 	static_cast<void>( connect ( actionReload, &QAction::triggered, this, [&] ( const bool ) { return reload (); } ) );	
 	mTablesList->addAction ( actionReload );
 	
-	QVBoxLayout* vLayout ( new QVBoxLayout );
+	auto vLayout ( new QVBoxLayout );
 	vLayout->addWidget ( new QLabel ( TR_FUNC ( "Available tables in the database:" ) ) );
 	vLayout->addWidget ( mTablesList, 3 );
 	
@@ -184,7 +183,7 @@ dbTableView::dbTableView ()
 	mMainLayoutSplitter->insertWidget ( 0, mLeftFrame );
 	mMainLayoutSplitter->insertWidget ( 1, mTabView );
 	
-	const int screen_width ( qApp->desktop ()->availableGeometry ().width () );
+	const int screen_width ( QGuiApplication::primaryScreen ()->availableGeometry ().width () );
 	mMainLayoutSplitter->setSizes ( QList<int> () << static_cast<int>( screen_width / 5 ) << static_cast<int>( 4 * screen_width / 5 ) );
 
 	mTxtQuery = new vmLineEdit;
@@ -195,7 +194,7 @@ dbTableView::dbTableView ()
 	mBtnRunQuery->setIcon ( ICON ( "arrow-right.png" ) );
 	mBtnRunQuery->setEnabled ( false );
 	static_cast<void>( connect ( mBtnRunQuery, &QToolButton::clicked, this, [&] () { runPersonalQuery (); } ) );
-	QHBoxLayout* hLayout ( new QHBoxLayout );
+	auto hLayout ( new QHBoxLayout );
 	hLayout->addWidget ( new QLabel ( TR_FUNC ( "Execute custom SQL query: " ) ), 1 );
 	hLayout->addWidget ( mTxtQuery, 5 );
 	hLayout->addWidget ( mBtnRunQuery, 0 );
@@ -227,7 +226,7 @@ void dbTableView::loadTablesIntoList ()
 	}
 	for ( int i ( 0 ); i < mTabView->count (); ++i )
 	{
-		tableViewWidget* widget ( static_cast<tableViewWidget*>( mTabView->widget ( i ) ) );
+		auto widget ( static_cast<tableViewWidget*>( mTabView->widget ( i ) ) );
 		if ( widget && widget->isVisible () )
 			widget->reload ();
 	}
@@ -238,7 +237,7 @@ void dbTableView::showTable ( const QString& tablename )
 	bool b_widgetpresent ( false );
 	for ( int i ( 0 ); i < mTabView->count (); ++i )
 	{
-		tableViewWidget* widget ( static_cast<tableViewWidget*>( mTabView->widget ( i ) ) );
+		auto widget ( static_cast<tableViewWidget*>( mTabView->widget ( i ) ) );
 		if ( widget )
 		{
 			if ( widget->tableName () == tablename )
@@ -259,7 +258,7 @@ void dbTableView::showTable ( const QString& tablename )
 	}
 	if ( !b_widgetpresent )
 	{
-		tableViewWidget* widget ( new tableViewWidget ( tablename ) );
+		auto widget ( new tableViewWidget ( tablename ) );
 		mTabView->setCurrentIndex ( mTabView->addTab ( widget, tablename ) );
 		widget->setFocus ();
 	}
@@ -351,8 +350,6 @@ tableViewWidget::tableViewWidget ( QSqlQuery* const query )
 	showTable ();
 }
 
-tableViewWidget::~tableViewWidget () {}
-
 void tableViewWidget::showTable ()
 {
 	if ( !mb_loaded )
@@ -371,7 +368,7 @@ void tableViewWidget::load ()
 		str_tables.chop ( 1 );
 		
 		/* From the Qt's doc: Using SELECT * is not recommended because the order of the fields in the query is undefined.*/
-		if ( !VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT " ) + str_tables + QLatin1String ( " FROM " ) + tableName (), query ) )
+		if ( !VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT " ) + str_tables + QStringLiteral ( " FROM " ) + tableName (), query ) )
 			return;
 	}
 	else
@@ -411,7 +408,7 @@ void tableViewWidget::reload ()
 	if ( b_doreload )
 	{
 		//Reload column information
-		VMList<QString> old_cols ( m_cols );
+		vmList<QString> old_cols ( m_cols );
 		getTableInfo ();
 		mLayout->removeWidget ( m_table );
 		delete m_table;
@@ -449,19 +446,19 @@ void tableViewWidget::createTable ()
 	}
 	m_table->setIsPlainTable ( false );
 	m_table->setCallbackForCellChanged ( [&] ( const vmTableItem* const item ) { return updateTable ( item ); } );
+	m_table->setPlainTableEditable ( true );
 	m_table->initTable ( m_nrows );
 	m_table->setMinimumWidth ( 800 );
 	m_table->setColumnsAutoResize ( true );
 	m_table->addToLayout ( mLayout, 3 );
-	m_table->setPlainTableEditable ( true );
 	m_table->setCallbackForRowInserted ( [&] ( const uint row ) { return rowInserted ( row ); } );
 	m_table->setCallbackForRowRemoved ( [&] ( const uint row ) { return rowRemoved ( row ); } );
 	
-	vmAction* actionReload ( new vmAction ( 0 ) );
+	auto actionReload ( new vmAction ( 0 ) );
 	actionReload->setShortcut ( QKeySequence ( Qt::Key_F5 ) );
 	static_cast<void>( connect ( actionReload, &QAction::triggered, this, [&] ( const bool ) { return reload (); } ) );	
 	addAction ( actionReload );
-	m_table->setEditable ( true );
+	//m_table->setEditable ( true );
 }
 
 void tableViewWidget::getTableInfo ()
@@ -470,14 +467,14 @@ void tableViewWidget::getTableInfo ()
 	if ( mQuery == nullptr )
 	{
 		QSqlQuery query;
-		if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "DESCRIBE " ) + tableName (), query ) )
+		if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "DESCRIBE " ) + tableName (), query ) )
 		{
 			do {
 				m_cols.append ( query.value ( 0 ).toString () );
 			} while ( query.next () );
 		}
 		query.clear ();
-		if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[7] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
+		if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT " ) + information_schema_tables[7] + QStringLiteral ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
 			m_nrows = query.value ( 0 ).toUInt ();
 	}
 	else
@@ -499,7 +496,7 @@ void tableViewWidget::getTableInfo ()
 void tableViewWidget::getTableLastUpdate ( vmNumber& date, vmNumber& time )
 {
 	QSqlQuery query;
-	if ( VDB ()->runSelectLikeQuery ( QLatin1String ( "SELECT " ) + information_schema_tables[15] + QLatin1String ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
+	if ( VDB ()->runSelectLikeQuery ( QStringLiteral ( "SELECT " ) + information_schema_tables[15] + QStringLiteral ( " FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE '" ) + tableName () + QLatin1Char ( '\'' ), query ) )
 	{
 		const QString query_res ( query.value ( 0 ).toString () );
 		date.dateFromMySQLDate ( query_res.left ( 10 ) );
@@ -511,10 +508,10 @@ void tableViewWidget::updateTable ( const vmTableItem* const item )
 		
 {
 	const QString record_id ( m_table->sheetItem ( static_cast<uint>( item->row () ), 0 )->text () );
-	const uint field ( static_cast<uint>( item->column () ) );
+	const auto field ( static_cast<uint>( item->column () ) );
 	QSqlQuery query;
-	if ( VDB ()->runModifyingQuery ( QLatin1String ( "UPDATE " ) + tableName () + QLatin1String ( " SET " ) +
-							m_cols.at ( field ) + QLatin1String ( "=\'" ) + item->text () + QLatin1String ( "\' WHERE ID=" )
+	if ( VDB ()->runModifyingQuery ( QStringLiteral ( "UPDATE " ) + tableName () + QStringLiteral ( " SET " ) +
+							m_cols.at ( field ) + QStringLiteral ( "=\'" ) + item->text () + QStringLiteral ( "\' WHERE ID=" )
 							+ record_id, query ) )
 	{
 		getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
@@ -534,7 +531,7 @@ void tableViewWidget::rowInserted ( const uint row )
 		QSqlQuery query;
 		const QString new_id ( QString::number ( m_table->sheetItem ( row - 1, 0 )->text ().toUInt () + 1 ) );
 		
-		if ( VDB ()->runModifyingQuery ( QLatin1String ( "INSERT INTO " ) + tableName () + QLatin1String ( " VALUES ( " ) + new_id + QLatin1String ( " )" ), query ) )
+		if ( VDB ()->runModifyingQuery ( QStringLiteral ( "INSERT INTO " ) + tableName () + QStringLiteral ( " VALUES ( " ) + new_id + QStringLiteral ( " )" ), query ) )
 		{
 			getTableLastUpdate ( m_updatedate, m_updatetime ); // save the last update time to avoid unnecessary reloads
 			m_table->enableQtListenerToSimpleTableItemEdition ( false );
@@ -551,13 +548,13 @@ void tableViewWidget::rowInserted ( const uint row )
 
 bool tableViewWidget::rowRemoved ( const uint row )
 {
-	if ( NOTIFY ()->questionBox ( TR_FUNC ( "Delete record?" ), TR_FUNC ( "Are you sure you want to remove the record " ) + QString::number ( row ) +
-																				QLatin1String ( " (ID " ) + m_table->sheetItem ( row, 0 )->text () + QLatin1String ( ") ?" ), this ) )
+	if ( NOTIFY ()->questionBox ( TR_FUNC ( "Delete record?" ), TR_FUNC ( "Are you sure you want to remove the record " ) + QString::number ( row + 1 ) +
+																				QStringLiteral ( " (ID " ) + m_table->sheetItem ( row, 0 )->text () + QStringLiteral ( ") ?" ), this ) )
 	{
 		QSqlQuery query;
 		const QString id ( m_table->sheetItem ( row, 0 )->text () );
 		
-		if ( VDB ()->runModifyingQuery ( QLatin1String ( "DELETE FROM " ) + tableName () + QLatin1String ( " WHERE ID='" ) + id + CHR_CHRMARK, query ) )
+		if ( VDB ()->runModifyingQuery ( QStringLiteral ( "DELETE FROM " ) + tableName () + QStringLiteral ( " WHERE ID='" ) + id + CHR_CHRMARK, query ) )
 		{
 			NOTIFY ()->notifyMessage ( TR_FUNC ( "Warning!! Table %1 updated" ).arg ( tableName () ),
 										  TR_FUNC ( "The record with ID=%1 was removed from the table" ).arg ( id ) );

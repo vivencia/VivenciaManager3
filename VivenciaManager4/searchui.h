@@ -61,11 +61,11 @@ private:
 	void btnNextClicked ();
 	void listRowSelected ( const int row );
 	dbListItem* getOtherItem ( const uint typeID, const uint id ) const;
-	void getClientInfo ( const clientListItem* const client_rec, VMList<QString>& cellData );
-	bool getJobInfo (jobListItem* job_item, VMList<QString>& cellData );
-	bool getPayInfo ( payListItem* pay_item, VMList<QString>& cellData );
-	bool getBuyInfo ( buyListItem* buy_item, VMList<QString>& cellData );
-	bool getOtherInfo ( dbListItem* item, VMList<QString>& cellData );
+	void getClientInfo ( const clientListItem* const client_rec, vmList<QString>& cellData );
+	bool getJobInfo (jobListItem* job_item, vmList<QString>& cellData );
+	bool getPayInfo ( payListItem* pay_item, vmList<QString>& cellData );
+	bool getBuyInfo ( buyListItem* buy_item, vmList<QString>& cellData );
+	bool getOtherInfo ( dbListItem* item, vmList<QString>& cellData );
 
 	QString mSearchTerm;
 	bool mbShow;
@@ -76,7 +76,7 @@ private:
 	QToolButton* mBtnPrev;
 	QPushButton* mBtnClose;
 	QWidget* mWidget;
-	PointersList<dbListItem*> mFoundItems;
+	pointersList<dbListItem*> mFoundItems;
 	vmTableItem* mPreviusItemActivated;
 	std::function<void ( dbListItem* item, const bool bshow )> displayFunc;
 };

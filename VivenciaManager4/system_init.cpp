@@ -60,9 +60,9 @@ void deleteInstances ()
 
 void Sys_Init::restartProgram ()
 {
-	char* args[2] = { 0, 0 };
-	args[0] = static_cast<char*> ( ::malloc ( static_cast<size_t>(APP_START_CMD.toLocal8Bit ().count ()) * sizeof (char) ) );
-	::strcpy ( args[0], APP_START_CMD.toLocal8Bit ().constData () );
+	char* args[2] = { nullptr, nullptr };
+	args[0] = static_cast<char*> ( ::malloc ( static_cast<size_t>(APP_START_CMD.toUtf8 ().size ()) * sizeof (char) ) );
+	::strcpy ( args[0], APP_START_CMD.toUtf8 ().constData () );
 	::execv ( args[0], args );
 	::free ( args[0] );
 	qApp->exit ( 0 );
@@ -87,7 +87,7 @@ DB_ERROR_CODES Sys_Init::checkSystem ( const bool bFirstPass )
 			APP_TR_FUNC ( "To access mysql databases you need to belong the the mysql group. This program will add you to that group, "
 						  "but it needs administrator privileges." ) ) )
 		{
-			static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( passwd, QLatin1String ( "adduser " ) + fileOps::currentUser () + QLatin1String ( " mysql" ) ) ) );
+			static_cast<void>( fileOps::sysExec ( sudoCommand.arg ( passwd, QStringLiteral ( "adduser " ) + fileOps::currentUser () + QStringLiteral ( " mysql" ) ) ) );
 			ret = checkSystem ( false );
 			if ( !ret )
 				return ERR_USER_NOT_ADDED_TO_MYSQL_GROUP;
@@ -172,13 +172,12 @@ void Sys_Init::init ( const QString& cmd )
 	//DBRecord::setDatabaseManager ( vdb_instance );
 	DBRecord::setCompleterManager ( completers_instance );
 	documentEditor::setCompleterManager ( completers_instance );
+	dbTableWidget::setCompleterManager ( completers_instance );
 	dbListItem::appStartingProcedures ();
 	vmDateEdit::appStartingProcedures ();
 
 	checkSetup ();
 	VDB ()->doPreliminaryWork ();
-
-	loadDataIntoMemory ();
 	MAINWINDOW ()->continueStartUp ();
 }
 
@@ -203,80 +202,3 @@ void Sys_Init::deInit ( int err_code )
 	::exit ( err_code );
 }
 
-void Sys_Init::loadDataIntoMemory ()
-{	
-	// To debug the GUI, it is possible to introduce a return here and skip all the code below
-	clientListItem* client_item ( nullptr );
-	jobListItem* job_item ( nullptr );
-	payListItem* pay_item ( nullptr );
-	buyListItem* buy_item ( nullptr ), *buy_item2 ( nullptr );
-	QString jobid;
-
-	uint id ( VDB ()->getLowestID ( TABLE_CLIENT_ORDER ) );
-	const uint lastRec ( VDB ()->getHighestID ( TABLE_CLIENT_ORDER ) );
-
-	Client client;
-	Job job;
-	Payment pay;
-	Buy buy;
-	do
-	{
-		if ( client.readRecord ( id, false ) )
-		{
-			client_item = new clientListItem;
-			client_item->setDBRecID ( id );
-			client_item->setRelation ( RLI_CLIENTITEM );
-			client_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
-			static_cast<void>( client_item->loadData () );
-			client_item->addToList ( MAINWINDOW ()->UserInterface ()->clientsList );
-
-			if ( job.readFirstRecord ( FLD_JOB_CLIENTID, QString::number ( id ), false ) )
-			{
-				do
-				{
-					job_item = new jobListItem;
-					job_item->setDBRecID ( static_cast<uint>(job.actualRecordInt ( FLD_JOB_ID )) );
-					job_item->setRelation ( RLI_CLIENTITEM );
-					job_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
-					job_item->setRelatedItem ( RLI_JOBPARENT, job_item );
-					job_item->setRelatedItem ( RLI_JOBITEM, job_item );
-					client_item->jobs->append ( job_item );
-					jobid = QString::number ( job.actualRecordInt ( FLD_JOB_ID ) );
-
-					if ( pay.readFirstRecord ( FLD_PAY_JOBID, jobid, false ) )
-					{
-						do
-						{
-							pay_item = new payListItem;
-							pay_item->setDBRecID ( static_cast<uint>(pay.actualRecordInt ( FLD_PAY_ID )) );
-							pay_item->setRelation ( RLI_CLIENTITEM );
-							pay_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
-							pay_item->setRelatedItem ( RLI_JOBPARENT, job_item );
-							client_item->pays->append ( pay_item );
-							job_item->setPayItem ( pay_item );
-						} while ( pay.readNextRecord ( true, false ) );
-					}
-
-					if ( buy.readFirstRecord ( FLD_BUY_JOBID, jobid, false ) )
-					{
-						do
-						{
-							buy_item = new buyListItem;
-							buy_item->setDBRecID ( static_cast<uint>(buy.actualRecordInt ( FLD_BUY_ID )) );
-							buy_item->setRelation ( RLI_CLIENTITEM );
-							buy_item->setRelatedItem ( RLI_CLIENTPARENT, client_item );
-							buy_item->setRelatedItem ( RLI_JOBPARENT, job_item );
-							client_item->buys->append ( buy_item );
-
-							buy_item2 = new buyListItem;
-							buy_item2->setRelation ( RLI_JOBITEM );
-							buy_item->syncSiblingWithThis ( buy_item2 );
-							job_item->buys->append ( buy_item2 );
-						} while ( buy.readNextRecord ( true, false ) );
-					}
-
-				} while ( job.readNextRecord ( true, false ) );
-			}
-		}
-	} while ( ++id <= lastRec );
-}

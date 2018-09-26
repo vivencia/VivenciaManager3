@@ -43,6 +43,7 @@ public:
 	static QString getTableColumnName ( const TABLE_INFO* t_info, uint column );
 	static QString getTableColumnFlags ( const TABLE_INFO* t_info, uint column );
 	static QString getTableColumnLabel ( const TABLE_INFO* t_info, uint column );
+	static int getTableColumnIndex ( const TABLE_INFO* t_info, const QString& column_name );
 	static QString tableName ( const TABLE_ORDER table );
 
 	static inline const TABLE_INFO* tableInfo ( const uint to ) //to = table order
@@ -53,6 +54,7 @@ public:
 	static inline QString backupApp () { return QStringLiteral ( "mysqldump" ); }
 	static inline QString importApp () { return STR_MYSQL; }
 	static inline QString restoreApp () { return QStringLiteral ( "mysqlimport" ); }
+    static inline QString adminApp () { return QStringLiteral ( "mysqladmin" ); }
 	//-----------------------------------------STATIC---------------------------------------------
 	
 	inline QSqlDatabase* database () const
@@ -72,6 +74,7 @@ public:
 	bool openDataBase ();
 	void doPreliminaryWork ();
 	bool createDatabase ();
+	bool changeRootPassword ( const QString& oldpasswd, const QString& newpasswd );
 	bool createUser ();
 	bool createAllTables ();
 	bool createTable ( const TABLE_INFO* t_info );
@@ -140,7 +143,7 @@ public:
 private:
 	QSqlDatabase* m_db;
 
-	static const TABLE_INFO* table_info[TABLES_IN_DB];
+	static const TABLE_INFO* const table_info[TABLES_IN_DB];
 
 	bool m_ok, mNewDB;
 	mutable bool mBackupSynced;
@@ -169,7 +172,7 @@ class threadedDBOps
 {
 
 public:
-	~threadedDBOps ();
+	~threadedDBOps () = default;
 #endif
 	
 	explicit threadedDBOps ( VivenciaDB* vdb );
